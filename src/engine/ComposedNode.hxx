@@ -64,7 +64,7 @@ namespace YACS
       DeploymentTree checkDeploymentTree(bool deep) const throw(Exception);
       std::vector<Task *> getNextTasks(bool& isMore);
       virtual bool isPlacementPredictableB4Run() const = 0;
-      void notifyFrom(const Task *sender, YACS::Event event);
+      void notifyFrom(const Task *sender, YACS::Event event, const Executor *execInst);
       bool edAddLink(OutPort *start, InPort *end) throw(Exception);
       virtual bool edAddDFLink(OutPort *start, InPort *end) throw(Exception);
       //Node* DISOWNnode is a SWIG notation to indicate that the ownership of the node is transfered to C++
@@ -136,10 +136,10 @@ namespace YACS
       static bool splitNamesBySep(const std::string& globalName, const char separator[],
                                   std::string& firstPart, std::string& lastPart, bool priority) throw(Exception);
       virtual Node *getChildByShortName(const std::string& name) const throw(Exception) = 0;
-      YACS::Event updateStateFrom(Node *node, YACS::Event event);//update the state of this. Precondition : node->_father == this
+      YACS::Event updateStateFrom(Node *node, YACS::Event event, const Executor *execInst);//update the state of this. Precondition : node->_father == this
       virtual YACS::Event updateStateOnStartEventFrom(Node *node);//transition 3 doc P.R
       virtual YACS::Event updateStateOnFinishedEventFrom(Node *node) = 0;//transition 9 doc P.R.
-      virtual YACS::Event updateStateOnFailedEventFrom(Node *node);//transition 9 doc P.R.
+      virtual YACS::Event updateStateOnFailedEventFrom(Node *node, const Executor *execInst);//transition 9 doc P.R.
       virtual void checkLinkPossibility(OutPort *start, const std::list<ComposedNode *>& pointsOfViewStart,
                                         InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd) throw(Exception);
       virtual void buildDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView);

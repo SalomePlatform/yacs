@@ -124,7 +124,7 @@ namespace YACS
       TypeOfNode getIdentityOfNotifyerNode(const Node *node, unsigned& id);
       InputPort *getDynInputPortByAbsName(int branchNb, const std::string& name, bool initNodeAdmitted);
       virtual void forwardExecStateToOriginalBody(Node *execNode);
-      virtual YACS::Event updateStateOnFailedEventFrom(Node *node);
+      virtual YACS::Event updateStateOnFailedEventFrom(Node *node, const Executor *execInst);
       std::vector<Node *> cloneAndPlaceNodesCoherently(const std::vector<Node *> & origNodes);
       Node * checkConsistencyAndSetNode(Node* &nodeToReplace, Node* DISOWNnode);
       Node * removeNode(Node* &nodeToRemove);

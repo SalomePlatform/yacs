@@ -67,5 +67,5 @@
 %include "YACSloaderExport.hxx"
 %include "parsers.hxx"
 %import "xmlParserBase.hxx"
-//%include "LoadState.hxx"
+%include "LoadState.hxx"
 

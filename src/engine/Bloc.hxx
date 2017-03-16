@@ -69,7 +69,7 @@ namespace YACS
       void checkNoCyclePassingThrough(Node *node) throw(Exception);
       std::vector< std::pair<OutGate *, InGate *> > getSetOfInternalCFLinks() const;
       YACS::Event updateStateOnFinishedEventFrom(Node *node);
-      YACS::Event updateStateOnFailedEventFrom(Node *node);
+      YACS::Event updateStateOnFailedEventFrom(Node *node, const Executor *execInst);
       void initComputation() const;
       void performCFComputationsOnlyOneLevel(LinkInfo& info) const;
       void performCFComputations(LinkInfo& info) const;

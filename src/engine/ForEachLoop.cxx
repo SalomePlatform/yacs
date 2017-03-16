@@ -882,14 +882,13 @@ YACS::Event ForEachLoop::updateStateForFinalizeNodeOnFinishedEventFrom(Node *nod
     return YACS::NOEVENT;
 }
 
-YACS::Event ForEachLoop::updateStateOnFailedEventFrom(Node *node)
+YACS::Event ForEachLoop::updateStateOnFailedEventFrom(Node *node, const Executor *execInst)
 {
   unsigned int id;
   DynParaLoop::TypeOfNode ton(getIdentityOfNotifyerNode(node,id));
-  // TODO: deal with keepgoing
-  // if(ton!=WORK_NODE || !execInst->getKeepGoingProperty())
-  if(ton!=WORK_NODE )
-    return DynParaLoop::updateStateOnFailedEventFrom(node);
+  // TODO: deal with keepgoing without the dependency to Executor
+  if(ton!=WORK_NODE || !execInst->getKeepGoingProperty())
+    return DynParaLoop::updateStateOnFailedEventFrom(node,execInst);
   else
     {
       _failedCounter++;

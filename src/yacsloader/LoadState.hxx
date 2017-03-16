@@ -102,6 +102,7 @@ namespace YACS
       static std::map<std::string, YACS::StatesForNode> _nodeStates;
     };
 
+#ifndef SWIG
     class YACSLOADER_EXPORT graphParser: public stateParser
     {
     public:
@@ -212,7 +213,7 @@ namespace YACS
     private:
       loopPortParser* _sampleFather;
     };
-
+#endif
   }
 }
 #endif
