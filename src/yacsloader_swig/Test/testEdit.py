@@ -34,30 +34,30 @@ class TestEdit(unittest.TestCase):
 
     def test1_edit(self):
         p = self.r.createProc("pr")
-        print p.typeMap
+        print(p.typeMap)
         t=p.getTypeCode("double")
-        print t.kind()
+        print(t.kind())
         t=p.typeMap["double"]
         
         td=p.createType("double","double")
         ti=p.createType("int","int")
         tc1=p.createInterfaceTc("","Obj",[])
-        print tc1.name(),tc1.id()
+        print(tc1.name(),tc1.id())
         tc2=p.createInterfaceTc("","Obj2",[tc1])
-        print tc2.name(),tc2.id()
+        print(tc2.name(),tc2.id())
         tc3=p.createSequenceTc("","seqdbl",td)
-        print tc3.name(),tc3.id(),tc3.contentType()
+        print(tc3.name(),tc3.id(),tc3.contentType())
         tc4=p.createSequenceTc("","seqObj2",tc2)
         tc5=p.createSequenceTc("","seqint",ti)
-        print tc4.name(),tc4.id()
-        print tc4.isA(tc1),0
-        print tc2.isA(tc1),1
-        print tc1.isA(tc2),0
-        print td.isA(ti),0
-        print td.isAdaptable(ti),1
-        print ti.isAdaptable(td),0
-        print tc5.isAdaptable(tc3),0
-        print tc3.isAdaptable(tc5),1
+        print(tc4.name(),tc4.id())
+        print(tc4.isA(tc1),0)
+        print(tc2.isA(tc1),1)
+        print(tc1.isA(tc2),0)
+        print(td.isA(ti),0)
+        print(td.isAdaptable(ti),1)
+        print(ti.isAdaptable(td),0)
+        print(tc5.isAdaptable(tc3),0)
+        print(tc3.isAdaptable(tc5),1)
         
         n=self.r.createScriptNode("","node1")
         n.setScript("print 'coucou1'")
@@ -68,13 +68,13 @@ class TestEdit(unittest.TestCase):
         retex=None
         try:
             inport.edInitXML("<value><intt>5</int></value>")
-        except ValueError, ex:
-            print "Value Error: ", ex
+        except ValueError as ex:
+            print("Value Error: ", ex)
             retex=ex
-        except pilot.Exception,ex:
-            print "YACS exception:",ex.what()
+        except pilot.Exception as ex:
+            print("YACS exception:",ex.what())
             retex=ex.what()
-        self.assert_(retex is not None, "exception not raised, or wrong type")
+        self.assertTrue(retex is not None, "exception not raised, or wrong type")
         inport.edInitXML("<value><int>5</int></value>")
 
         # --- create script node node2
@@ -188,8 +188,8 @@ def f():
 
         try:
           self.e.RunW(p,0)
-        except pilot.Exception,ex:
-          print ex.what()
+        except pilot.Exception as ex:
+          print(ex.what())
           self.fail(ex)
         
         #self.e.displayDot(p)

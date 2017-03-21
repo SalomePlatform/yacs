@@ -38,7 +38,7 @@ class TestExec(unittest.TestCase):
     def test1_StepByStep(self):
         # --- execution step by step
        
-        print "================= Start of STEPBYSTEP ==================="
+        print("================= Start of STEPBYSTEP ===================")
         self.e.setExecMode(1) # YACS::STEPBYSTEP
         
         run1 = threading.Thread(None, self.e.RunPy, "stepbystep", (self.p,0))
@@ -51,7 +51,7 @@ class TestExec(unittest.TestCase):
             self.e.waitPause()
             #e.displayDot(p)
             bp = self.e.getTasksToLoad()
-            print "nexts possible steps = ", bp
+            print("nexts possible steps = ", bp)
             if len(bp) > 0:
                 tte= bp[-1:] # only one node at each step, the last one in the list
                 r = self.e.setStepsToExecute(tte)
@@ -60,7 +60,7 @@ class TestExec(unittest.TestCase):
             else:
                 tocont = False
                 pass
-            print "toContinue = ", tocont
+            print("toContinue = ", tocont)
             pass
         
         self.e.resumeCurrentBreakPoint()
@@ -73,13 +73,13 @@ class TestExec(unittest.TestCase):
         self.assertEqual(106, self.p.getChildByName('c0.c1.n1').getEffectiveState())
         self.assertEqual(999, self.p.getChildByName('c0.n2').getEffectiveState())
         self.assertEqual(888, self.p.getChildByName('node62').getEffectiveState())
-        print "================= End of STEPBYSTEP ====================="
+        print("================= End of STEPBYSTEP =====================")
         pass
 
     def test2_StopToBreakpoint(self):
         # --- start execution, set a breakpoint before node48, then continue
         time.sleep(1)
-        print "================= Start of BREAKPOINT ==================="
+        print("================= Start of BREAKPOINT ===================")
         brp=['node48']
         self.e.setListOfBreakPoints(brp)
         self.e.setExecMode(2) # YACS::STOPBEFORENODES
@@ -88,9 +88,9 @@ class TestExec(unittest.TestCase):
         time.sleep(0.1)
         self.e.waitPause()
         #self.e.displayDot(p)
-        print "================= reach BREAKPOINT ======================"
+        print("================= reach BREAKPOINT ======================")
         # --- resume from breakpoint
-        print "=========== BREAKPOINT, start RESUME ===================="
+        print("=========== BREAKPOINT, start RESUME ====================")
         time.sleep(1)
         self.e.setExecMode(0) # YACS::CONTINUE
         self.e.resumeCurrentBreakPoint()
@@ -106,14 +106,14 @@ class TestExec(unittest.TestCase):
         self.assertEqual(106, self.p.getChildByName('c0.c1.n1').getEffectiveState())
         self.assertEqual(999, self.p.getChildByName('c0.n2').getEffectiveState())
         self.assertEqual(888, self.p.getChildByName('node62').getEffectiveState())
-        print "================= End of RESUME ========================="
+        print("================= End of RESUME =========================")
         pass
     
     def test3_RunWithoutBreakpoints(self):
         # --- start execution, run without breakpoints
         time.sleep(1)
         
-        print "================= Start of CONTINUE ====================="
+        print("================= Start of CONTINUE =====================")
         self.e.setExecMode(0) # YACS::CONTINUE
         run3 = threading.Thread(None, self.e.RunPy, "continue", (self.p,0))
         run3.start()
@@ -129,14 +129,14 @@ class TestExec(unittest.TestCase):
         self.assertEqual(106, self.p.getChildByName('c0.c1.n1').getEffectiveState())
         self.assertEqual(999, self.p.getChildByName('c0.n2').getEffectiveState())
         self.assertEqual(888, self.p.getChildByName('node62').getEffectiveState())
-        print "================= End of CONTINUE ======================="
+        print("================= End of CONTINUE =======================")
         pass
 
     def test4_StopOnError(self):
         # --- stop execution on first error and save state
         time.sleep(1)
 
-        print "================= Start of STOPONERROR =================="
+        print("================= Start of STOPONERROR ==================")
         self.e.setStopOnError()
         run4 = threading.Thread(None, self.e.RunPy, "continue", (self.p,0))
         run4.start()
@@ -148,15 +148,15 @@ class TestExec(unittest.TestCase):
         #self.e.displayDot(self.p)
         s13 = self.p.getChildByName('node13').getEffectiveState()
         s43 = self.p.getChildByName('node43').getEffectiveState()
-        self.assert_((s13==999) or (s43==999))
-        print "================= End of STOPONERROR ====================="
+        self.assertTrue((s13==999) or (s43==999))
+        print("================= End of STOPONERROR =====================")
         pass
 
     def test5_PartialExec(self):
         # --- stop execution after breakpoint
         time.sleep(1)
 
-        print "================= Start of PARTIALEXEC ==================="
+        print("================= Start of PARTIALEXEC ===================")
         brp=['node35']
         self.e.setListOfBreakPoints(brp)
         self.e.setExecMode(2) # YACS::STOPBEFORENODES
@@ -173,7 +173,7 @@ class TestExec(unittest.TestCase):
         #self.e.displayDot(self.p)
         self.assertEqual(106, self.p.getChildByName('node34').getEffectiveState())
         self.assertEqual(101, self.p.getChildByName('node35').getEffectiveState())
-        print "================= reach BREAKPOINT PARTIAL EXEC =========="
+        print("================= reach BREAKPOINT PARTIAL EXEC ==========")
         pass
                           
     pass

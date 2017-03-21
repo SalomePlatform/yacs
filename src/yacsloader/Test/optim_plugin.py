@@ -33,11 +33,11 @@ class myalgosync(SALOMERuntime.OptimizerAlgSync):
     """Optional method called on initialization.
        The type of "input" is returned by "getTCForAlgoInit"
     """
-    print "Algo initialize, input = ", input.getIntValue()
+    print("Algo initialize, input = ", input.getIntValue())
 
   def start(self):
     """Start to fill the pool with samples to evaluate."""
-    print "Algo start "
+    print("Algo start ")
     self.iter=0
     # pushInSample(id, value)
     self.pool.pushInSample(self.iter, 1)
@@ -50,7 +50,7 @@ class myalgosync(SALOMERuntime.OptimizerAlgSync):
     currentId=self.pool.getCurrentId()
     valIn = self.pool.getCurrentInSample().getIntValue()
     valOut = self.pool.getCurrentOutSample().getIntValue()
-    print "Algo takeDecision currentId=%s, valIn=%s, valOut=%s" % (currentId, valIn, valOut)
+    print("Algo takeDecision currentId=%s, valIn=%s, valOut=%s" % (currentId, valIn, valOut))
 
     self.iter=self.iter+1
     if self.iter < 3:
@@ -61,7 +61,7 @@ class myalgosync(SALOMERuntime.OptimizerAlgSync):
   def finish(self):
     """Optional method called when the algorithm has finished, successfully
        or not, to perform any necessary clean up."""
-    print "Algo finish"
+    print("Algo finish")
     self.pool.destroyAll()
 
   def getAlgoResult(self):

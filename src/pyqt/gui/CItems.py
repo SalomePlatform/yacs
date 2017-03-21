@@ -22,7 +22,7 @@ from qt import *
 from qtcanvas import *
 import pilot
 import pypilot
-import Item
+from . import Item
 import math
 
 dispatcher=pilot.Dispatcher.getDispatcher()
@@ -246,7 +246,7 @@ class LinkItem:
     return menu
 
   def delete(self):
-    print "delete link"
+    print("delete link")
 
   def tooltip(self,view,pos):
     r = QRect(pos.x(), pos.y(), pos.x()+10, pos.y()+10)
@@ -293,10 +293,10 @@ class ControlItem(QCanvasRectangle):
     return menu
 
   def connect(self):
-    print "ControlItem.connect",self.context
-    print self.port
+    print("ControlItem.connect",self.context)
+    print(self.port)
     item=Item.adapt(self.port)
-    print item
+    print(item)
     item.connect()
     self.context.connecting(item)
     #self.context.connecting(self)
@@ -305,7 +305,7 @@ class ControlItem(QCanvasRectangle):
     #Protocol to link 2 objects (ports, at first)
     #First, notify the canvas View (or any view that can select) we are connecting (see method connect above)
     #Second (and last) make the link in the link method of object that was declared connecting
-    print "link:",obj
+    print("link:",obj)
 
   def tooltip(self,view,pos):
     r = QRect(pos.x(), pos.y(), self.width(), self.height())
@@ -331,7 +331,7 @@ class InControlItem(ControlItem):
   def link(self,obj):
     #Here we create the link between self and obj.
     #self has been declared connecting in connect method
-    print "link:",obj
+    print("link:",obj)
     if isinstance(obj,OutControlItem):
       #Connection possible
       l=LinkItem(obj,self,self.canvas())
@@ -358,7 +358,7 @@ class OutControlItem(ControlItem):
   def link(self,obj):
     #Here we create the link between self and obj.
     #self has been declared connecting in connect method
-    print "link:",obj
+    print("link:",obj)
     if isinstance(obj,InControlItem):
       #Connection possible
       l=LinkItem(self,obj,self.canvas())
@@ -405,15 +405,15 @@ class PortItem(QCanvasEllipse):
     return menu
 
   def connect(self):
-    print "PortItem.connect",self.context
-    print self.port
+    print("PortItem.connect",self.context)
+    print(self.port)
     item=Item.adapt(self.port)
-    print item
+    print(item)
     self.context.connecting(item)
     #self.context.connecting(self)
 
   def link(self,obj):
-    print "PortItem.link:",obj
+    print("PortItem.link:",obj)
 
   def tooltip(self,view,pos):
     r = QRect(pos.x(),pos.y(),self.width(), self.height())
@@ -440,7 +440,7 @@ class InPortItem(PortItem):
   def link(self,obj):
     #Here we create the link between self and obj.
     #self has been declared connecting in connect method
-    print "link:",obj
+    print("link:",obj)
     if isinstance(obj,OutPortItem):
       #Connection possible
       l=LinkItem(obj,self,self.canvas())
@@ -461,7 +461,7 @@ class OutPortItem(PortItem):
   def link(self,obj):
     #Here we create the link between self and obj.
     #self has been declared connecting in connect method
-    print "link:",obj
+    print("link:",obj)
     if isinstance(obj,InPortItem):
       #Connection possible
       l=LinkItem(self,obj,self.canvas())
@@ -588,7 +588,7 @@ class Cell(QCanvasRectangle,pypilot.PyObserver):
       color= self.colors.get(color,Qt.white)
       self.setBrush(QBrush(color))
     else:
-      print "Unknown custom event type:", event.type()
+      print("Unknown custom event type:", event.type())
 
   def moveBy(self,dx,dy):
     QCanvasRectangle.moveBy(self,dx,dy)
@@ -624,7 +624,7 @@ class Cell(QCanvasRectangle,pypilot.PyObserver):
     #QToolTip(view).tip( r, s )
 
   def browse(self):
-    print "browse"
+    print("browse")
 
   def selected(self):
     """The canvas item has been selected"""

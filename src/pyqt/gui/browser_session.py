@@ -19,8 +19,8 @@
 
 import sys
 from qt import *
-import browser
-import sessions
+from . import browser
+from . import sessions
 import pilot
 
 class Browser(browser.Browser):

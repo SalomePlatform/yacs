@@ -29,7 +29,7 @@ else:
 pass
 #
 #
-print "Test Program of Cpp_Template_ component"
+print("Test Program of Cpp_Template_ component")
 
 # ...
 

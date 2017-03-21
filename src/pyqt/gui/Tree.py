@@ -26,8 +26,8 @@
 
 import sys
 from qt import *
-import Icons
-import CONNECTOR
+from . import Icons
+from . import CONNECTOR
 
 class Tree(QListView):
   """Tree(parent=None)
@@ -156,7 +156,7 @@ class Node(QListViewItem):
        
 
 if __name__ == "__main__":
-  from Item import Item
+  from .Item import Item
   app = QApplication(sys.argv)
   t=Tree()
   t.additem(Item("item1"))

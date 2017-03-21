@@ -37,7 +37,7 @@ def _adapt_by_registry(obj, protocol, alternate):
         else:
             adapter = factory(obj, protocol, alternate)
         if adapter is AdaptationError:
-            raise AdaptationError,obj
+            raise AdaptationError(obj)
         else:
             return adapter
 

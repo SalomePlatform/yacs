@@ -19,16 +19,16 @@
 
 import sys
 import pilot
-import Item
+from . import Item
 from qt import *
 from qtcanvas import *
-from GraphViewer import GraphViewer
-import Editor
-import CItems
+from .GraphViewer import GraphViewer
+from . import Editor
+from . import CItems
 import pygraphviz
 from pygraphviz import graphviz as gv
 import traceback
-import CONNECTOR
+from . import CONNECTOR
 import bisect
 
 class MyCanvas(QCanvas):
@@ -68,7 +68,7 @@ class Graph:
       citems[n.ptr()]=c
       c.show()
 
-    for k,n in citems.items():
+    for k,n in list(citems.items()):
       for p in n.inports:
         pitems[p.port.ptr()]=p
       for p in n.outports:
@@ -91,7 +91,7 @@ class Graph:
     self.layout("LR")
 
   def addLink(self,link):
-    print "graph.addLink",link
+    print("graph.addLink",link)
     #CItem for outport
     nodeS=self.citems[link.pout.getNode().ptr()]
     nodeE=self.citems[link.pin.getNode().ptr()]
@@ -127,7 +127,7 @@ class Graph:
     G.graph_attr["dpi"]="72"
     dpi=72.
     aspect=dpi/72
-    for k,n in self.citems.items():
+    for k,n in list(self.citems.items()):
       #k is node address (YACS)
       #n is item in canvas
       G.add_node(k)
@@ -139,7 +139,7 @@ class Graph:
         continue
       G.add_edge(pout.getNode().ptr(),pin.getNode().ptr())
 
-    for k,n in self.citems.items():
+    for k,n in list(self.citems.items()):
       for ndown in n.node.getOutNodes():
         G.add_edge(n.node.ptr(),ndown.ptr())
 
@@ -183,7 +183,7 @@ class Graph:
     self.canvas.update()
 
   def clearLinks(self):
-    items=self.citems.values()
+    items=list(self.citems.values())
     for node in items:
       for port in node.outports:
         if not hasattr(port,"links"):
@@ -193,7 +193,7 @@ class Graph:
     self.canvas.update()
 
   def orthoLinks(self):
-    items=self.citems.values()
+    items=list(self.citems.values())
     g=grid(items)
     for node in items:
       for port in node.outports:
@@ -328,10 +328,10 @@ class grid:
     self.xs=xs
     self.ys=ys
     self.cols=[]
-    for w in xrange(len(xs)-1):
+    for w in range(len(xs)-1):
       col=[]
       x=(xs[w]+xs[w+1])/2
-      for h in xrange(len(ys)-1):
+      for h in range(len(ys)-1):
         y=(ys[h]+ys[h+1])/2
         col.append(node((x,y),(w,h)))
       self.cols.append(col)
@@ -412,7 +412,7 @@ class grid:
     self.open.append((fromNode.total,fromNode))
     toNode=self.get(toLoc)
     if toNode.blocked:
-      print "toNode is blocked"
+      print("toNode is blocked")
       return []
     destx,desty=toNode.coord
     while self.open:

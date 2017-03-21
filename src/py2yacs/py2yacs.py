@@ -184,9 +184,9 @@ if __name__ == '__main__':
   
   fn_name = args.def_name
   functions,errors = get_properties(text_file)
-  print "global errors:", errors
+  print("global errors:", errors)
   for f in functions:
-    print f
+    print(f)
   
   fn_properties = next((f for f in functions if f.name == fn_name), None)
   if fn_properties is not None :
@@ -195,7 +195,7 @@ if __name__ == '__main__':
                        fn_properties.inputs, fn_properties.outputs,
                        args.output)
     else:
-      print "\n".join(fn_properties.errors)
+      print("\n".join(fn_properties.errors))
   else:
-    print "Function not found:", fn_name
+    print("Function not found:", fn_name)
   

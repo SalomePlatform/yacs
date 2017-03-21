@@ -162,7 +162,7 @@ class GraphViewer(QCanvasView):
     #self.canvas().update()
 
   def addNode(self):
-    print "addNode"    
+    print("addNode")    
 
   def zoomIn(self):
     m = self.worldMatrix()
@@ -184,7 +184,7 @@ class GraphViewer(QCanvasView):
 
   def connecting(self,obj):
     """Method called by an item to notify canvasView a connection has begun"""
-    print "connecting",obj
+    print("connecting",obj)
     self.__connecting=obj
 
   def contentsMouseMoveEvent(self,e):
@@ -270,7 +270,7 @@ class LinkItem(QCanvasLine):
     return menu
 
   def delete(self):
-    print "delete link"
+    print("delete link")
 
   def tooltip(self,view,pos):
     r = QRect(pos.x(), pos.y(), pos.x()+10, pos.y()+10)
@@ -304,11 +304,11 @@ class PortItem(QCanvasEllipse):
     return menu
 
   def connect(self):
-    print "connect",self.context
+    print("connect",self.context)
     self.context.connecting(self)
 
   def link(self,obj):
-    print "link:",obj
+    print("link:",obj)
 
   def tooltip(self,view,pos):
     r = QRect(self.x(), self.y(), self.width(), self.height())
@@ -326,7 +326,7 @@ class InPortItem(PortItem):
       link.setToPoint( int(self.x()), int(self.y()) )
 
   def link(self,obj):
-    print "link:",obj
+    print("link:",obj)
     if isinstance(obj,OutPortItem):
       #Connection possible
       l=LinkItem(obj,self,self.canvas())
@@ -345,7 +345,7 @@ class OutPortItem(PortItem):
       link.setFromPoint( int(self.x()), int(self.y()) )
 
   def link(self,obj):
-    print "link:",obj
+    print("link:",obj)
     if isinstance(obj,InPortItem):
       #Connection possible
       l=LinkItem(self,obj,self.canvas())
@@ -399,10 +399,10 @@ class Cell(QCanvasRectangle):
     view.tip( r, s )
 
   def browse(self):
-    print "browse"
+    print("browse")
 
   def selected(self):
-    print "selected"
+    print("selected")
 
 if __name__=='__main__':
   app=QApplication(sys.argv)

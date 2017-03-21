@@ -51,12 +51,12 @@ class CONNECTOR:
   def Connect(self, object, channel, function, args):
     ###print "Connect",object, channel, function, args
     idx = id(object)
-    if self.connections.has_key(idx):
+    if idx in self.connections:
        channels = self.connections[idx]
     else:
        channels = self.connections[idx] = {}
 
-    if channels.has_key(channel):
+    if channel in channels:
        receivers = channels[channel]
     else:
        receivers = channels[channel] = []
@@ -75,8 +75,7 @@ class CONNECTOR:
     try:
        receivers = self.connections[id(object)][channel]
     except KeyError:
-       raise ConnectorError, \
-            'no receivers for channel %s of %s' % (channel, object)
+       raise ConnectorError('no receivers for channel %s of %s' % (channel, object))
 
     for funct,fargs in receivers[:]:
         if funct() is None:
@@ -94,9 +93,8 @@ class CONNECTOR:
                  del self.connections[id(object)]
            return
 
-    raise ConnectorError,\
-          'receiver %s%s is not connected to channel %s of %s' \
-          % (function, args, channel, object)
+    raise ConnectorError('receiver %s%s is not connected to channel %s of %s' \
+          % (function, args, channel, object))
 
 
   def Emit(self, object, channel, *args):
@@ -112,7 +110,7 @@ class CONNECTOR:
        try:
           func=rfunc()
           if func:
-             apply(func, args + fargs)
+             func(*args + fargs)
           else:
              # Le receveur a disparu
              if (rfunc,fargs) in receivers:receivers.remove((rfunc,fargs))
@@ -127,8 +125,8 @@ def ref(target,callback=None):
 
 class BoundMethodWeakref(object):
    def __init__(self,callable):
-       self.Self=weakref.ref(callable.im_self)
-       self.Func=weakref.ref(callable.im_func)
+       self.Self=weakref.ref(callable.__self__)
+       self.Func=weakref.ref(callable.__func__)
 
    def __call__(self):
        target=self.Self()
@@ -146,27 +144,27 @@ if __name__ == "__main__":
    class A:pass
    class B:
      def add(self,a):
-       print "add",self,a
+       print("add",self,a)
      def __del__(self):
-       print "__del__",self
+       print("__del__",self)
 
    def f(a):
-     print f,a
-   print "a=A()"
+     print(f,a)
+   print("a=A()")
    a=A()
-   print "b=B()"
+   print("b=B()")
    b=B()
-   print "c=B()"
+   print("c=B()")
    c=B()
    Connect(a,"add",b.add,())
    Connect(a,"add",b.add,())
    Connect(a,"add",c.add,())
    Connect(a,"add",f,())
    Emit(a,"add",1)
-   print "del b"
+   print("del b")
    del b
    Emit(a,"add",1)
-   print "del f"
+   print("del f")
    del f
    Emit(a,"add",1)
    Disconnect(a,"add",c.add,())

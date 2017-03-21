@@ -40,14 +40,14 @@ usage="""USAGE: runSalome.py [options]
 #
 
 def killSalome():
-    print "arret des serveurs SALOME"
-    for pid, cmd in process_id.items():
-        print "arret du process %s : %s"% (pid, cmd[0])
+    print("arret des serveurs SALOME")
+    for pid, cmd in list(process_id.items()):
+        print("arret du process %s : %s"% (pid, cmd[0]))
         try:
             os.kill(pid,signal.SIGKILL)
         except:
-            print "  ------------------ process %s : %s inexistant"% (pid, cmd[0])
-    print "arret du naming service"
+            print("  ------------------ process %s : %s inexistant"% (pid, cmd[0]))
+    print("arret du naming service")
     os.system("killall -9 omniNames")
 
 # -----------------------------------------------------------------------------
@@ -56,7 +56,7 @@ def killSalome():
 #
 
 def message(code, msg=''):
-    if msg: print msg
+    if msg: print(msg)
     sys.exit(code)
 
 import sys,os,string,glob,time,signal,pickle,getopt
@@ -78,7 +78,7 @@ with_container_superv=0
 try:
     for o, a in opts:
         if o in ('-h', '--help'):
-            print usage
+            print(usage)
             sys.exit(1)
         elif o in ('-g', '--gui'):
             with_gui=1
@@ -113,7 +113,7 @@ try:
                 fpid=open(filedict, 'r')
                 found = 1
             except:
-                print "le fichier %s des process SALOME n'est pas accessible"% filedict
+                print("le fichier %s des process SALOME n'est pas accessible"% filedict)
 
             if found:
                 process_id=pickle.load(fpid)
@@ -122,8 +122,8 @@ try:
                 process_id={}
                 os.remove(filedict)
 
-except getopt.error, msg:
-    print usage
+except getopt.error as msg:
+    print(usage)
     sys.exit(1)
 
 # -----------------------------------------------------------------------------
@@ -134,7 +134,7 @@ try:
     kernel_root_dir=os.environ["KERNEL_ROOT_DIR"]
     modules_root_dir["KERNEL"]=kernel_root_dir
 except:
-    print usage
+    print(usage)
     sys.exit(1)
 
 for module in liste_modules :
@@ -143,7 +143,7 @@ for module in liste_modules :
         module_root_dir=os.environ[module +"_ROOT_DIR"]
         modules_root_dir[module]=module_root_dir
     except:
-        print usage
+        print(usage)
         sys.exit(1)
 
 # il faut KERNEL en premier dans la liste des modules
@@ -156,7 +156,7 @@ liste_modules[:0]=["KERNEL"]
 #print liste_modules
 #print modules_root_dir
 
-os.environ["SALOMEPATH"]=":".join(modules_root_dir.values())
+os.environ["SALOMEPATH"]=":".join(list(modules_root_dir.values()))
 if "SUPERV" in liste_modules:with_container_superv=1
 
 
@@ -187,7 +187,7 @@ class CatalogServer(Server):
         for module in liste_modules:
             module_root_dir=modules_root_dir[module]
             module_cata=module+"Catalog.xml"
-            print "   ", module_cata
+            print("   ", module_cata)
             cata_path.extend(glob.glob(os.path.join(module_root_dir,"share","salome","resources",module_cata)))
         self.CMD=self.SCMD1 + [string.join(cata_path,':')] + self.SCMD2
 
@@ -367,7 +367,7 @@ def startSalome():
     SalomeDSServer().run()
 
     if "GEOM" in liste_modules:
-        print "GEOM OCAF Resources"
+        print("GEOM OCAF Resources")
         os.environ["CSF_GEOMDS_ResourcesDefaults"]=os.path.join(modules_root_dir["GEOM"],"share","salome","resources")
 
 
@@ -430,8 +430,8 @@ def startSalome():
     #session.GetInterface()
 
     end_time = os.times()
-    print
-    print "Start SALOME, elpased time : %5.1f seconds"% (end_time[4] - init_time[4])
+    print()
+    print("Start SALOME, elpased time : %5.1f seconds"% (end_time[4] - init_time[4]))
 
     return clt
 
@@ -444,9 +444,9 @@ if __name__ == "__main__":
     try:
         clt = startSalome()
     except:
-        print
-        print
-        print "--- erreur au lancement Salome ---"
+        print()
+        print()
+        print("--- erreur au lancement Salome ---")
 
     #print process_id
 
@@ -458,7 +458,7 @@ if __name__ == "__main__":
     pickle.dump(process_id,fpid)
     fpid.close()
 
-    print """
+    print("""
 
  Sauvegarde du dictionnaire des process dans , %s
  Pour tuer les process SALOME, executer : python killSalome.py depuis
@@ -471,15 +471,15 @@ if __name__ == "__main__":
  Pour lancer uniquement le GUI, executer startGUI() depuis le present interpreteur,
  s'il n'est pas fermé.
 
- """ % filedict
+ """ % filedict)
 
     #
     #  Impression arborescence Naming Service
     #
 
     if clt != None:
-        print
-        print " --- registered objects tree in Naming Service ---"
+        print()
+        print(" --- registered objects tree in Naming Service ---")
         clt.showNS()
         session=clt.waitNS("/Kernel/Session")
         catalog=clt.waitNS("/Kernel/ModulCatalog")
@@ -520,4 +520,4 @@ if __name__ == "__main__":
         f.write(PYTHONSTARTUP)
         f.close()
 
-    exec PYTHONSTARTUP in {}
+    exec(PYTHONSTARTUP, {})

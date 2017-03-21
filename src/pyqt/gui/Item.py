@@ -19,8 +19,8 @@
 
 import sys
 from qt import *
-import CONNECTOR
-import adapt
+from . import CONNECTOR
+from . import adapt
 
 class Item:
   def __init__(self,label=""):
@@ -62,7 +62,7 @@ class Item:
 ADAPT=adapt.adapt
 items={}
 def adapt(obj):
-  if items.has_key(obj.ptr()):
+  if obj.ptr() in items:
     return items[obj.ptr()]
   else:
     item= ADAPT(obj,Item)

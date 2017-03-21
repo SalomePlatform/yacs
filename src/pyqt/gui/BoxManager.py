@@ -18,7 +18,7 @@
 #
 
 from qt import *
-import CONNECTOR
+from . import CONNECTOR
 
 class BoxManager(QWidgetStack):
   """ A BoxManager manages a collection of widget 
@@ -35,7 +35,7 @@ class BoxManager(QWidgetStack):
     CONNECTOR.Connect(self.rootItem,"selected",self.setview,())
 
   def setview(self,item):
-    if not self.panels.has_key(item):
+    if item not in self.panels:
       CONNECTOR.Connect(item,"changed",self.changePanel,(item,))
       panel=item.box(self)
       self.panels[item]=panel
@@ -43,8 +43,8 @@ class BoxManager(QWidgetStack):
     self.raiseWidget(self.panels[item])
 
   def changePanel(self,item):
-    print "changePanel",item
-    if self.panels.has_key(item):
+    print("changePanel",item)
+    if item in self.panels:
       self.removeWidget(self.panels[item])
     panel=item.box(self)
     self.panels[item]=panel
