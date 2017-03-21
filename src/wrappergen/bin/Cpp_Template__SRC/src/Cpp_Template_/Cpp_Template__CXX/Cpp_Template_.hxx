@@ -28,7 +28,7 @@ namespace MEDMEM {
 
 class Cpp_Template_
 {
-// Méthodes publiques
+// MÃ©thodes publiques
 public:
     Cpp_Template_();
     MEDMEM::FIELD<double>* createField();

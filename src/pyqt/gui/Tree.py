@@ -19,9 +19,9 @@
 
 # -*- coding: iso-8859-15 -*-
 #
-"""Ce module permet de créer des vues sous forme d'arbre
-   Ces vues sont construites à partir des informations
-   fournies par un modèle
+"""Ce module permet de crÃ©er des vues sous forme d'arbre
+   Ces vues sont construites Ã  partir des informations
+   fournies par un modÃ¨le
 """
 
 import sys

@@ -20,18 +20,18 @@
 # -*- coding: iso-8859-15 -*-
 #
 """
-  La classe CONNECTOR sert à enregistrer les observateurs d'objets et à délivrer
-  les messages émis à ces objets.
+  La classe CONNECTOR sert Ã  enregistrer les observateurs d'objets et Ã  dÃ©livrer
+  les messages Ã©mis Ã  ces objets.
 
-  Le principe général est le suivant : un objet (subscriber) s'enregistre aupres du 
+  Le principe gÃ©nÃ©ral est le suivant : un objet (subscriber) s'enregistre aupres du 
   connecteur global (theconnector) pour observer un objet emetteur de messages (publisher) 
-  sur un canal donné (channel). Il demande à etre notifie par appel d'une fonction (listener).
-  La séquence est donc :
+  sur un canal donnÃ© (channel). Il demande Ã  etre notifie par appel d'une fonction (listener).
+  La sÃ©quence est donc :
 
      - enregistrement du subscriber pour le publisher : theconnector.Connect(publisher,channel,listener,args)
-     - émission du message par le publisher : theconnector.Emit(publisher,channel,cargs)
+     - Ã©mission du message par le publisher : theconnector.Emit(publisher,channel,cargs)
 
-  args et cargs sont des tuples contenant les arguments de la fonction listener qui sera appelée
+  args et cargs sont des tuples contenant les arguments de la fonction listener qui sera appelÃ©e
   comme suit::
 
      listener(cargs+args)

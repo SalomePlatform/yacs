@@ -41,9 +41,9 @@
 
 #define ROSENBROCK
 
-/* constante dépendant du choix de l'évaluateur */
+/* constante dÃ©pendant du choix de l'Ã©valuateur */
 
-// nombre de paramètre
+// nombre de paramÃ¨tre
 #ifdef GRIEWANK
 #define NBGENE   30
 #else

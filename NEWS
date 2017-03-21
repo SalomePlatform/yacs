@@ -655,9 +655,9 @@ status--: OK
 description:
  --	   Import test_schema.xml
  --	   Select block node "bbb" => modify its parameters as: 
-	   ·  Delete "node4" from first line
-	   ·  Create new line by "+" pressing
-	   ·  Add "nnode0"
+	   Â·  Delete "node4" from first line
+	   Â·  Create new line by "+" pressing
+	   Â·  Add "nnode0"
  --	   Press Apply button 
 Result: SIGSEGV
 comments: OCC: DONE
@@ -668,8 +668,8 @@ status--: OK
 description:
  --	   Import test_schema_last.xml
  --	   Select node "node1" => modify its parameters as: 
-	   ·  Change name
-	   ·  Assign new valyes to X and Y
+	   Â·  Change name
+	   Â·  Assign new valyes to X and Y
  --	   Press Apply button 
  --	   Select in 2D Viewer block node"Sb1", for which previous node belongs
 Result: SIGSEGV
