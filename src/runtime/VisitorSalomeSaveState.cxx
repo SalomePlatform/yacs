@@ -111,24 +111,13 @@ void VisitorSalomeSaveState::visitForEachLoop(ForEachLoop *node)
   _out << "  </node>" << std::endl;
 }
 
-
-SchemaSaveState::SchemaSaveState(Proc* proc, Executor* exec)
-: _p(proc),
-  _exec(exec)
+void YACS::ENGINE::schemaSaveState(Proc* proc,
+                                  Executor* exec,
+                                  const std::string& xmlSchemaFile)
 {
-  YASSERT(_p);
-  YASSERT(_exec);
-}
-
-SchemaSaveState::~SchemaSaveState()
-{
-}
-
-void SchemaSaveState::save(std::string xmlSchemaFile)
-{
-  YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&(_exec->getTheMutexForSchedulerUpdate()));
-  VisitorSalomeSaveState vss(_p);
+  YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&(exec->getTheMutexForSchedulerUpdate()));
+  VisitorSalomeSaveState vss(proc);
   vss.openFileDump(xmlSchemaFile);
-  _p->accept(&vss);
+  proc->accept(&vss);
   vss.closeFileDump();
 }

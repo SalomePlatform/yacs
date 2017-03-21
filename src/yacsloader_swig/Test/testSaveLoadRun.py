@@ -1516,7 +1516,7 @@ o2=2*i1
     myRun.start()
     import time
     time.sleep(5)
-    p.saveState(xmlStateFileName)
+    SALOMERuntime.schemaSaveState(p, ex, xmlStateFileName)
     a,b,c=n1.getPassedResults(ex)
     myRun.join()
     t0=datetime.now()-startt
@@ -1544,6 +1544,39 @@ o2=5*i1
     self.assertEqual(n1.getState(),pilot.DONE)
     self.assertEqual(p.getState(),pilot.DONE)
     self.assertEqual(p.getChildByName("n2").getOutputPort("o4").getPyObj(),[0L,2L,10L,15L,20L,25L])
+    pass
+  pass
+
+  def test22(self):
+    """Restart from a saved state in a foreach loop without using assignPassedResults.
+       This test uses the files test21.xml and saveState21.xml produced by test21.
+    """
+    fname="test21.xml"
+    xmlStateFileName="saveState21.xml"
+
+    ex=pilot.ExecutorSwig()
+    l=loader.YACSLoader()
+    q=l.load(fname)
+    q.getChildByName("n0").setScript("o0=[ 3*elt for elt in range(6) ]")
+    q.getChildByName("n1").getChildByName("n10").setScript("""
+import time
+time.sleep(0.1)
+print "execution n10:", i1
+o2=5*i1
+""")
+    q.getChildByName("n2").setScript("""
+print "execution n2:", i3
+o4=i3
+""")
+    loader.loadState(q, xmlStateFileName)
+    q.resetState(1)
+    q.exUpdateState()
+    #
+    ex.RunW(q,0,False)
+    #
+    self.assertEqual(q.getChildByName("n1").getState(),pilot.DONE)
+    self.assertEqual(q.getState(),pilot.DONE)
+    self.assertEqual(q.getChildByName("n2").getOutputPort("o4").getPyObj(),[0L,2L,10L,15L,20L,25L])
     pass
   pass
 

@@ -36,16 +36,9 @@ namespace YACS
       virtual void visitForEachLoop(ForEachLoop *node);
     };
 
-    class YACSLIBENGINE_EXPORT SchemaSaveState
-    {
-    public:
-      SchemaSaveState(Proc* proc, Executor* exec);
-      virtual ~SchemaSaveState();
-      virtual void save(std::string xmlSchemaFile);
-    private:
-      Proc* _p;
-      Executor* _exec;
-    };
+    YACSLIBENGINE_EXPORT void schemaSaveState(Proc* proc,
+                                              Executor* exec,
+                                              const std::string& xmlSchemaFile);
   }
 }
 #endif // VISITORSALOMESAVESTATE_HXX

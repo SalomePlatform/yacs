@@ -140,12 +140,9 @@ namespace YACS
 {
   namespace ENGINE
   {
-    class SchemaSaveState
-    {
-    public:
-      SchemaSaveState(Proc* proc, Executor* exec);
-      virtual void save(std::string xmlSchemaFile);
-    };
+    void schemaSaveState(Proc* proc,
+                         Executor* exec,
+                         const std::string& xmlSchemaFile);
   }
 }
 
