@@ -19,11 +19,22 @@
 #ifndef _PY2YACS_H_
 #define _PY2YACS_H_
 
+#ifdef WIN32
+#  if defined py2yacslib_EXPORTS
+#    define PY2YACSLIB_EXPORT __declspec( dllexport )
+#  else
+#    define PY2YACSLIB_EXPORT __declspec( dllimport )
+#  endif
+#else
+#  define PY2YACSLIB_EXPORT
+#endif
+
+
 #include <string>
 #include <list>
 #include <exception>
 
-class Py2yacsException: std::exception
+class PY2YACSLIB_EXPORT Py2yacsException: std::exception
 {
   public:
     Py2yacsException(const std::string& what);
@@ -41,7 +52,7 @@ namespace YACS
   };
 };
 
-struct FunctionProperties
+struct PY2YACSLIB_EXPORT FunctionProperties
 {
   public:
     std::string _name;
@@ -55,7 +66,7 @@ struct FunctionProperties
  *  This class converts a string containing a python script to a yacs schema
  *  containing a python script node.
  */
-class Py2yacs
+class PY2YACSLIB_EXPORT Py2yacs
 {
   public:
     Py2yacs();

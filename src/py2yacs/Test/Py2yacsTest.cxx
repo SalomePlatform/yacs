@@ -156,7 +156,7 @@ void Py2yacsTest::t3()
                          "  print b\n"
                          "  print c\n";
   const char* input_ports[] = {"a", "b", "c"};
-  const char* output_ports[] = {};
+  const char** output_ports;
   verifyCorrectPycode(code_py, "f1", 3, input_ports, 0, output_ports);
 }
 
@@ -166,7 +166,7 @@ void Py2yacsTest::t4()
                          "  print 'toto'\n"
                          "  return\n";
   const char* input_ports[] = {"a", "b", "c"};
-  const char* output_ports[] = {};
+  const char** output_ports;
   verifyCorrectPycode(code_py, "f1", 0, input_ports, 0, output_ports);
 }
 

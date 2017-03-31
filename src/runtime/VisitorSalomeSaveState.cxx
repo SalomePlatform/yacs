@@ -68,14 +68,14 @@ void VisitorSalomeSaveState::visitForEachLoop(ForEachLoop *node)
   }
   
   StatesForNode state = node->getState();
-  if(YACS::LOADED == state or
-    YACS::ACTIVATED == state or
-    YACS::SUSPENDED == state or
-    YACS::EXECFAILED == state or
-    YACS::PAUSE == state or
-    YACS::TORECONNECT == state or
-    YACS::INTERNALERR == state or
-    YACS::FAILED == state or
+  if(YACS::LOADED == state ||
+    YACS::ACTIVATED == state ||
+    YACS::SUSPENDED == state ||
+    YACS::EXECFAILED == state ||
+    YACS::PAUSE == state ||
+    YACS::TORECONNECT == state ||
+    YACS::INTERNALERR == state ||
+    YACS::FAILED == state ||
     YACS::ERROR == state)
   {
     ForEachLoopPassedData* processedData = node->getProcessedData();
