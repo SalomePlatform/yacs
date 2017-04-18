@@ -272,9 +272,9 @@ std::string InputCorbaPort::dump()
 
 std::string InputCorbaPort::valToStr()
 {
-  int isString = PyString_Check(getPyObj());
+  int isString = PyBytes_Check(getPyObj());
   PyObject *strPyObj = PyObject_Str(getPyObj());
-  string val = PyString_AsString(strPyObj);
+  string val = PyBytes_AsString(strPyObj);
   if (isString)
     val = "\"" + val + "\"";
   Py_DECREF(strPyObj);
@@ -466,7 +466,7 @@ namespace YACS {
 std::string OutputCorbaPort::valToStr()
 {
   PyObject *strPyObj = PyObject_Str(getPyObj());
-  string val = PyString_AsString(strPyObj);
+  string val = PyBytes_AsString(strPyObj);
   Py_DECREF(strPyObj);
   return val;
 }

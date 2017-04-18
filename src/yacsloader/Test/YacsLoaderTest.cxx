@@ -238,7 +238,7 @@ void YacsLoaderTest::eschema()
   if (p)
     {
       PyObject *data = ((OutputPyPort*)p->nodeMap["node2"]->getOutputPort("p1"))->get();
-      char *text = PyString_AsString(data);
+      char *text = PyBytes_AsString(data);
       CPPUNIT_ASSERT_EQUAL(string("coucoucoucoucoucoucoucou"), string(text));
       delete p;
     }
@@ -254,7 +254,7 @@ void YacsLoaderTest::fschema()
   if (p)
     {
       PyObject *data = ((OutputPyPort*)p->nodeMap["node2"]->getOutputPort("p1"))->get();
-      char *text = PyString_AsString(data);;
+      char *text = PyBytes_AsString(data);;
       CPPUNIT_ASSERT_EQUAL(string("coucoucoucoucoucoucoucou"), string(text) );
       delete p;
     }

@@ -32,27 +32,8 @@
 #ifdef OMNIORB
 #include <omniORB4/CORBA.h>
 
-//--- from omniORBpy.h (not present on Debian Sarge packages)
-struct omniORBPYAPI
-{
-  PyObject* (*cxxObjRefToPyObjRef)(const CORBA::Object_ptr cxx_obj,
-           CORBA::Boolean hold_lock);
-  // Convert a C++ object reference to a Python object reference.
-  // If <hold_lock> is true, caller holds the Python interpreter lock.
-
-  CORBA::Object_ptr (*pyObjRefToCxxObjRef)(PyObject* py_obj,
-             CORBA::Boolean hold_lock);
-  // Convert a Python object reference to a C++ object reference.
-  // Raises BAD_PARAM if the Python object is not an object reference.
-  // If <hold_lock> is true, caller holds the Python interpreter lock.
-
-  PyObject* (*handleCxxSystemException)(const CORBA::SystemException& ex);
-  // Sets the Python exception state to reflect the given C++ system
-  // exception. Always returns NULL. The caller must hold the Python
-  // interpreter lock.
-};
-
-omniORBPYAPI* api;
+#include <omniORBpy.h>
+omniORBpyAPI* api=0;
 
 #define OMNIPY_CATCH_AND_HANDLE_SYSTEM_EXCEPTIONS \
 catch (const CORBA::SystemException& ex) { \

@@ -86,7 +86,7 @@ std::string copyList(PyObject *pyList, std::list<std::string>& cppList)
     for(int i=0; i<n; i++)
     {
       PyObject *elem = PyList_GetItem(pyList,i);
-      if(not PyString_Check(elem))
+      if(not PyBytes_Check(elem))
       {
         std::stringstream message;
         message << "List element number " << i << " is not a string.\n";
@@ -95,7 +95,7 @@ std::string copyList(PyObject *pyList, std::list<std::string>& cppList)
       }
       else
       {
-        const char * portName = PyString_AsString(elem);
+        const char * portName = PyBytes_AsString(elem);
         cppList.push_back(portName);
       }
     }
@@ -113,14 +113,14 @@ std::string getPyErrorText()
     PyObject *pystr, *module_name, *pyth_module, *pyth_func;
     PyErr_Fetch(&ptype, &pvalue, &ptraceback);
     pystr = PyObject_Str(pvalue);
-    result = PyString_AsString(pystr);
+    result = PyBytes_AsString(pystr);
     result += "\n";
     Py_DECREF(pystr);
     
     /* See if we can get a full traceback */
     if(ptraceback)
     {
-      module_name = PyString_FromString("traceback");
+      module_name = PyBytes_FromString("traceback");
       pyth_module = PyImport_Import(module_name);
       Py_DECREF(module_name);
       if (pyth_module)
@@ -136,7 +136,7 @@ std::string getPyErrorText()
             for(int i=0; i<n; i++)
             {
               pystr = PyList_GetItem(pyList,i);
-              result += PyString_AsString(pystr);
+              result += PyBytes_AsString(pystr);
             }
             Py_DECREF(pyList);
           }
@@ -180,7 +180,7 @@ void Py2yacs::load(const std::string& python_code)
     
     // Py_Initialize();
     YACS::ENGINE::AutoGIL agil;
-    pValue = PyString_FromString(_python_parser_module.c_str());
+    pValue = PyBytes_FromString(_python_parser_module.c_str());
     pModule = PyImport_Import(pValue);
     Py_DECREF(pValue);
 
@@ -198,7 +198,7 @@ void Py2yacs::load(const std::string& python_code)
       if (pFunc && PyCallable_Check(pFunc))
       {
         pArgs = PyTuple_New(1);
-        pValue = PyString_FromString(python_code.c_str());
+        pValue = PyBytes_FromString(python_code.c_str());
         PyTuple_SetItem(pArgs, 0, pValue);
         
         pValue = PyObject_CallObject(pFunc, pArgs);
@@ -232,7 +232,7 @@ void Py2yacs::load(const std::string& python_code)
               
               if(pAttribute = checkAndGetAttribute(fpy, "name", errorMessage))
               {
-                if(not PyString_Check(pAttribute))
+                if(not PyBytes_Check(pAttribute))
                 {
                   errorMessage += "Attribute 'name' should be a string.\n";
                   Py_DECREF(pAttribute);
@@ -241,7 +241,7 @@ void Py2yacs::load(const std::string& python_code)
                 {
                   _functions.push_back(FunctionProperties());
                   FunctionProperties& fcpp = _functions.back();
-                  fcpp._name=PyString_AsString(pAttribute);
+                  fcpp._name=PyBytes_AsString(pAttribute);
                   Py_DECREF(pAttribute);
                   
                   if(pAttribute = checkAndGetAttribute(fpy, "inputs", errorMessage))

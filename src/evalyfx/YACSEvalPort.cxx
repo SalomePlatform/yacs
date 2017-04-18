@@ -149,8 +149,8 @@ YACSEvalAny *YACSEvalInputPort::getDefaultValueDefined() const
         throw YACS::Exception("YACSEvalInputPort::getDefaultValueDefined : internal error !");
       if(PyFloat_Check(data))
         return new YACSEvalAnyDouble(PyFloat_AsDouble(data));
-      if(PyInt_Check(data))
-        return new YACSEvalAnyInt((int)PyInt_AsLong(data));
+      if(PyLong_Check(data))
+        return new YACSEvalAnyInt((int)PyLong_AsLong(data));
       throw YACS::Exception("YACSEvalInputPort::getDefaultValueDefined : unmanaged types different from int and double for py !");
     }
   YACS::ENGINE::AnyInputPort *i1(dynamic_cast<YACS::ENGINE::AnyInputPort *>(_ptr));
@@ -220,7 +220,7 @@ void YACSEvalInputPort::setDefaultValue(const YACSEvalAny *parameter)
             }
           else if(par1)
             {
-              PyObject *obj(PyInt_FromLong(par1->toInt()));
+              PyObject *obj(PyLong_FromLong(par1->toInt()));
               i0->put(obj);
               Py_XDECREF(obj);
             }

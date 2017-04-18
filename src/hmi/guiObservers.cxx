@@ -197,11 +197,11 @@ void Subject::select(bool isSelected)
 
 void Subject::update(GuiEvent event,int type, Subject* son)
 {
-  //DEBTRACE("Subject::update " << type << "," << GuiObserver::eventName(event) << "," << son);
+    std::cerr << "Subject::update " << type << "," << GuiObserver::eventName(event) << "," << son << std::endl;
   set<GuiObserver*> copySet = _setObs;
   for (set<GuiObserver *>::iterator it = copySet.begin(); it != copySet.end(); ++it)
     {
-      //DEBTRACE("Subject::update " << *it);
+        std::cerr << "Subject::update " << *it << std::endl;
       try
         {
           (*it)->update(event, type, son);
@@ -209,11 +209,13 @@ void Subject::update(GuiEvent event,int type, Subject* son)
       catch(Exception& ex)
         {
           std::cerr << "Internal error in Subject::update: " << ex.what() << std::endl;
+          std::cerr << "ERREUR ICI" << std::endl;
         }
-      catch(...)
-        {
-          std::cerr << "Internal error in Subject::update: " << std::endl;
-        }
+      //catch(...)
+      //  {
+      //    std::cerr << "Internal error in Subject::update: " << std::endl;
+      //    std::cerr << "ERREUR OU LA " << std::endl;
+      //  }
     }
 }
 

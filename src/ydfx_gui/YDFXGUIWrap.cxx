@@ -74,7 +74,7 @@ void YACSEvalYFXWrap::registerObserver(YACSEvalObserver *observer)
 void YACSEvalYFXWrap::unlockAll()
 {
   _efx->unlockAll();
-  emit lockSignal(false);
+  Q_EMIT lockSignal(false);
 }
 
 void YACSEvalYFXWrap::lockPortsForEvaluation()
@@ -97,7 +97,7 @@ void YACSEvalYFXWrap::lockPortsForEvaluation()
   _efx->lockPortsForEvaluation(inps2,outps2);
   _efx->giveResources();//do not remove this line to generate resource info
   if(!lockedOrNot)
-    emit lockSignal(true);
+    Q_EMIT lockSignal(true);
 }
 
 int YACSEvalYFXWrap::getNbOfItems() const
@@ -132,7 +132,7 @@ YACSEvalYFXWrap::~YACSEvalYFXWrap()
 void YACSEvalYFXWrap::setRunningStatus(bool status)
 {
   if(_isRunning!=status)
-    emit runSignal(status);
+    Q_EMIT runSignal(status);
   _isRunning=status;
 }
 
@@ -143,7 +143,7 @@ void YACSEvalYFXWrap::updateSequencesStatus()
   if(_isSeqOfValsSet!=newStatus)
     {
       _isSeqOfValsSet=newStatus;
-      emit sequencesAreSetSignal(_isSeqOfValsSet);
+      Q_EMIT sequencesAreSetSignal(_isSeqOfValsSet);
     }
 }
 

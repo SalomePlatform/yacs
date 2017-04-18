@@ -48,32 +48,32 @@ typedef int Py_ssize_t;
 using namespace YACS::ENGINE;
 using namespace std;
 
-const char PythonEntry::SCRIPT_FOR_SIMPLE_SERIALIZATION[]="import cPickle\n"
+const char PythonEntry::SCRIPT_FOR_SIMPLE_SERIALIZATION[]="import pickle\n"
     "def pickleForVarSimplePyth2009(val):\n"
-    "  return cPickle.dumps(val,-1)\n"
+    "  return pickle.dumps(val,-1)\n"
     "\n";
 
 const char PythonNode::IMPL_NAME[]="Python";
 const char PythonNode::KIND[]="Python";
 
-const char PythonNode::SCRIPT_FOR_SERIALIZATION[]="import cPickle\n"
+const char PythonNode::SCRIPT_FOR_SERIALIZATION[]="import pickle\n"
     "def pickleForDistPyth2009(kws):\n"
-    "  return cPickle.dumps(((),kws),-1)\n"
+    "  return pickle.dumps(((),kws),-1)\n"
     "\n"
     "def unPickleForDistPyth2009(st):\n"
-    "  args=cPickle.loads(st)\n"
+    "  args=pickle.loads(st)\n"
     "  return args\n";
 
 const char PythonNode::REMOTE_NAME[]="remote";
 
 const char PythonNode::DPL_INFO_NAME[]="my_dpl_localization";
 
-const char PyFuncNode::SCRIPT_FOR_SERIALIZATION[]="import cPickle\n"
+const char PyFuncNode::SCRIPT_FOR_SERIALIZATION[]="import pickle\n"
     "def pickleForDistPyth2009(*args,**kws):\n"
-    "  return cPickle.dumps((args,kws),-1)\n"
+    "  return pickle.dumps((args,kws),-1)\n"
     "\n"
     "def unPickleForDistPyth2009(st):\n"
-    "  args=cPickle.loads(st)\n"
+    "  args=pickle.loads(st)\n"
     "  return args\n";
 
 
@@ -424,7 +424,7 @@ void PythonNode::executeRemote()
       //The pickled string may contain NULL characters so use PyString_AsStringAndSize
       char *serializationInputC(0);
       Py_ssize_t len;
-      if (PyString_AsStringAndSize(serializationInput, &serializationInputC, &len))
+      if (PyBytes_AsStringAndSize(serializationInput, &serializationInputC, &len))
         throw Exception("DistributedPythonNode problem in python pickle");
       serializationInputCorba->length(len);
       for(int i=0; i < len ; i++)
@@ -476,7 +476,7 @@ void PythonNode::executeRemote()
   {
       AutoGIL agil;
       PyObject *args(0),*ob(0);
-      PyObject* resultPython=PyString_FromStringAndSize(resultCorbaC,resultCorba->length());
+      PyObject* resultPython=PyBytes_FromStringAndSize(resultCorbaC,resultCorba->length());
       delete [] resultCorbaC;
       args = PyTuple_New(1);
       PyTuple_SetItem(args,0,resultPython);
@@ -573,7 +573,7 @@ void PythonNode::executeLocal()
     PyObject* code=Py_CompileString(_script.c_str(), stream.str().c_str(), Py_file_input);
     if(code == NULL)
       {
-        _errorDetails="";
+        _errorDetails=""; 
         PyObject* new_stderr = newPyStdOut(_errorDetails);
         PySys_SetObject((char*)"stderr", new_stderr);
         PyErr_Print();
@@ -581,7 +581,7 @@ void PythonNode::executeLocal()
         Py_DECREF(new_stderr);
         throw Exception("Error during execution");
       }
-    PyObject *res = PyEval_EvalCode((PyCodeObject *)code, _context, _context);
+    PyObject *res = PyEval_EvalCode(  code, _context, _context);
 
     Py_DECREF(code);
     Py_XDECREF(res);
@@ -737,7 +737,7 @@ void PythonNode::applyDPLScope(ComposedNode *gfn)
       {
         const std::pair<std::string,int>& p(ret[i]);
         PyObject *elt(PyTuple_New(2));
-        PyTuple_SetItem(elt,0,PyString_FromString(p.first.c_str()));
+        PyTuple_SetItem(elt,0,PyBytes_FromString(p.first.c_str()));
         PyTuple_SetItem(elt,1,PyLong_FromLong(p.second));
         PyList_SetItem(ob,i,elt);
       }
@@ -751,7 +751,7 @@ void PythonNode::applyDPLScope(ComposedNode *gfn)
         Py_XDECREF(ob);
         char *serializationInputC(0);
         Py_ssize_t len;
-        if (PyString_AsStringAndSize(serializationInput, &serializationInputC, &len))
+        if (PyBytes_AsStringAndSize(serializationInput, &serializationInputC, &len))
           throw Exception("DistributedPythonNode problem in python pickle");
         serializationInputCorba->length(len);
         for(int i=0; i < len ; i++)
@@ -897,7 +897,7 @@ void PyFuncNode::loadLocal()
         Py_DECREF(new_stderr);
         throw Exception("Error during execution");
       }
-    PyObject *res = PyEval_EvalCode((PyCodeObject *)code, _context, _context);
+    PyObject *res = PyEval_EvalCode( code, _context, _context);
     Py_DECREF(code);
     Py_XDECREF(res);
 
@@ -981,7 +981,7 @@ void PyFuncNode::executeRemote()
       //The pickled string may contain NULL characters so use PyString_AsStringAndSize
       char *serializationInputC(0);
       Py_ssize_t len;
-      if (PyString_AsStringAndSize(serializationInput, &serializationInputC, &len))
+      if (PyBytes_AsStringAndSize(serializationInput, &serializationInputC, &len))
         throw Exception("DistributedPythonNode problem in python pickle");
 
       serializationInputCorba->length(len);
@@ -1019,7 +1019,7 @@ void PyFuncNode::executeRemote()
   {
       AutoGIL agil;
 
-      PyObject *resultPython(PyString_FromStringAndSize(resultCorbaC,resultCorba->length()));
+      PyObject *resultPython(PyBytes_FromStringAndSize(resultCorbaC,resultCorba->length()));
       delete [] resultCorbaC;
       PyObject *args(PyTuple_New(1)),*ob(0);
       PyTuple_SetItem(args,0,resultPython);

@@ -1155,107 +1155,134 @@ void RuntimeTest::manualExecuteNoThread()
   ((ElementaryNode*)_nodeMap["Node_10"])->load();
   ((ElementaryNode*)_nodeMap["Node_10"])->execute();
   //  CPPUNIT_ASSERT_DOUBLES_EQUAL(10.51, (ElementaryNode*)_nodeMap["Node_10"])
-
+  std::cerr << __LINE__ << std::endl;
   DEBTRACE(" --- execution Python Node_11" );
+  std::cerr << __LINE__ << std::endl;
   ((ElementaryNode*)_nodeMap["Node_11"])->load();
+  std::cerr << __LINE__ << std::endl;
   ((ElementaryNode*)_nodeMap["Node_11"])->execute();
+  std::cerr << __LINE__ << std::endl;
 
   DEBTRACE(" --- execution Python Node_12" );
   ((ElementaryNode*)_nodeMap["Node_12"])->load();
   ((ElementaryNode*)_nodeMap["Node_12"])->execute();
 
+  std::cerr << __LINE__ << std::endl;
   DEBTRACE(" --- execution CORBA Node_16" );
   ((ElementaryNode*)_nodeMap["Node_16"])->load();
   ((ElementaryNode*)_nodeMap["Node_16"])->execute();
 
+  std::cerr << __LINE__ << std::endl;
   DEBTRACE(" --- execution CORBA Node_17" );
   ((ElementaryNode*)_nodeMap["Node_17"])->load();
   ((ElementaryNode*)_nodeMap["Node_17"])->execute();
 
+  std::cerr << __LINE__ << std::endl;
   DEBTRACE(" --- execution CORBA Node_18" );
   ((ElementaryNode*)_nodeMap["Node_18"])->load();
   ((ElementaryNode*)_nodeMap["Node_18"])->execute();
 
+  std::cerr << __LINE__ << std::endl;
   DEBTRACE(" --- execution CORBA Node_19" );
   ((ElementaryNode*)_nodeMap["Node_19"])->load();
   ((ElementaryNode*)_nodeMap["Node_19"])->execute();
 
+  std::cerr << __LINE__ << std::endl;
   DEBTRACE(" --- execution CORBA Node_20" );
   ((ElementaryNode*)_nodeMap["Node_20"])->load();
   ((ElementaryNode*)_nodeMap["Node_20"])->execute();
 
+  std::cerr << __LINE__ << std::endl;
   DEBTRACE(" --- execution CORBA Node_21" );
   ((ElementaryNode*)_nodeMap["Node_21"])->load();
   ((ElementaryNode*)_nodeMap["Node_21"])->execute();
 
+  std::cerr << __LINE__ << std::endl;
   DEBTRACE(" --- execution CORBA Node_29" );
   ((ElementaryNode*)_nodeMap["Node_29"])->load();
   ((ElementaryNode*)_nodeMap["Node_29"])->execute();
 
+  std::cerr << __LINE__ << std::endl;
   DEBTRACE(" --- execution Python Node_13" );
   ((ElementaryNode*)_nodeMap["Node_13"])->load();
   ((ElementaryNode*)_nodeMap["Node_13"])->execute();
 
+  std::cerr << __LINE__ << std::endl;
   DEBTRACE(" --- execution CORBA Node_22" );
   ((ElementaryNode*)_nodeMap["Node_22"])->load();
   ((ElementaryNode*)_nodeMap["Node_22"])->execute();
 
+  std::cerr << __LINE__ << std::endl;
   DEBTRACE(" --- execution CORBA Node_23" );
   ((ElementaryNode*)_nodeMap["Node_23"])->load();
   ((ElementaryNode*)_nodeMap["Node_23"])->execute();
 
+  std::cerr << __LINE__ << std::endl;
   DEBTRACE(" --- execution CORBA Node_24" );
   ((ElementaryNode*)_nodeMap["Node_24"])->load();
   ((ElementaryNode*)_nodeMap["Node_24"])->execute();
 
+  std::cerr << __LINE__ << std::endl;
   DEBTRACE(" --- execution CORBA Node_27" );
   ((ElementaryNode*)_nodeMap["Node_27"])->load();
   ((ElementaryNode*)_nodeMap["Node_27"])->execute();
 
+  std::cerr << __LINE__ << std::endl;
   DEBTRACE(" --- execution CORBA Node_28" );
   ((ElementaryNode*)_nodeMap["Node_28"])->load();
   ((ElementaryNode*)_nodeMap["Node_28"])->execute();
 
+  std::cerr << __LINE__ << std::endl;
   DEBTRACE(" --- execution CORBA Node_30" );
   ((ElementaryNode*)_nodeMap["Node_30"])->load();
   ((ElementaryNode*)_nodeMap["Node_30"])->execute();
 
+  std::cerr << __LINE__ << std::endl;
   DEBTRACE(" --- execution CORBA Node_32" );
   ((ElementaryNode*)_nodeMap["Node_32"])->load();
   ((ElementaryNode*)_nodeMap["Node_32"])->execute();
 
+  std::cerr << __LINE__ << std::endl;
   DEBTRACE(" --- execution CORBA Node_26" );
   ((ElementaryNode*)_nodeMap["Node_26"])->load();
   ((ElementaryNode*)_nodeMap["Node_26"])->execute();
 
+  std::cerr << __LINE__ << std::endl;
   DEBTRACE(" --- execution CORBA Node_31" );
   ((ElementaryNode*)_nodeMap["Node_31"])->load();
   ((ElementaryNode*)_nodeMap["Node_31"])->execute();
 
+  std::cerr << __LINE__ << std::endl;
   DEBTRACE(" --- execution Python Node_14" );
   ((ElementaryNode*)_nodeMap["Node_14"])->load();
   ((ElementaryNode*)_nodeMap["Node_14"])->execute();
 
+  std::cerr << __LINE__ << std::endl;
   DEBTRACE(" --- execution Python Node_15" );
   ((ElementaryNode*)_nodeMap["Node_15"])->load();
   ((ElementaryNode*)_nodeMap["Node_15"])->execute();
 
+  std::cerr << __LINE__ << std::endl;
   DEBTRACE(" --- execution XML Node_36" );
   ((ElementaryNode*)_nodeMap["Node_36"])->load();
   ((ElementaryNode*)_nodeMap["Node_36"])->execute();
 
+  std::cerr << __LINE__ << std::endl;
   DEBTRACE(" --- execution CORBA Node_33" );
   ((ElementaryNode*)_nodeMap["Node_33"])->load();
   ((ElementaryNode*)_nodeMap["Node_33"])->execute();
 
+  std::cerr << __LINE__ << std::endl;
   DEBTRACE(" --- execution CORBA Node_34" );
   ((ElementaryNode*)_nodeMap["Node_34"])->load();
   ((ElementaryNode*)_nodeMap["Node_34"])->execute();
 
+  std::cerr << __LINE__ << std::endl;
   DEBTRACE(" --- execution CORBA Node_35" );
   ((ElementaryNode*)_nodeMap["Node_35"])->load();
   ((ElementaryNode*)_nodeMap["Node_35"])->execute();
 
+  std::cerr << __LINE__ << std::endl;
   DEBTRACE(" --- end of execution" );
 }
 

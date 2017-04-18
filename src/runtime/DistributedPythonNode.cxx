@@ -72,7 +72,7 @@ void DistributedPythonNode::load()
         _errorDetails=msg.str();
         throw Exception(msg.str());
       }
-    const char picklizeScript[]="import cPickle\ndef pickleForDistPyth2009(*args,**kws):\n  return cPickle.dumps((args,kws),-1)\n\ndef unPickleForDistPyth2009(st):\n  args=cPickle.loads(st)\n  return args\n";
+    const char picklizeScript[]="import pickle\ndef pickleForDistPyth2009(*args,**kws):\n  return pickle.dumps((args,kws),-1)\n\ndef unPickleForDistPyth2009(st):\n  args=pickle.loads(st)\n  return args\n";
     PyObject *res=PyRun_String(picklizeScript,Py_file_input,_context,_context);
     if(res == NULL)
       {
@@ -181,7 +181,7 @@ void DistributedPythonNode::execute()
         PyTuple_SetItem(args,pos,ob);
       }
     PyObject *serializationInput=PyObject_CallObject(_pyfuncSer,args);
-    std::string serializationInputC=PyString_AsString(serializationInput);
+    std::string serializationInputC=PyBytes_AsString(serializationInput);
     serializationInputCorba=new Engines::pickledArgs;
     int len=serializationInputC.length();
     serializationInputCorba->length(serializationInputC.length());
@@ -213,7 +213,7 @@ void DistributedPythonNode::execute()
   {
     AutoGIL agil;
     args = PyTuple_New(1);
-    PyObject* resultPython=PyString_FromString(resultCorbaC);
+    PyObject* resultPython=PyBytes_FromString(resultCorbaC);
     delete [] resultCorbaC;
     PyTuple_SetItem(args,0,resultPython);
     PyObject *finalResult=PyObject_CallObject(_pyfuncUnser,args);

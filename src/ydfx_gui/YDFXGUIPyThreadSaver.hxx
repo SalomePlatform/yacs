@@ -21,9 +21,10 @@
 #ifndef __YDFXGUIPYTHREADSAVER_HXX__
 #define __YDFXGUIPYTHREADSAVER_HXX__
 
+#include "Python.h"
+
 #include "ydfxwidgetsExport.hxx"
 
-#include "Python.h"
 
 class QThread;
 

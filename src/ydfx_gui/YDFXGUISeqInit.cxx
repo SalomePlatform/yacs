@@ -18,6 +18,7 @@
 //
 // Author : Anthony Geay (EDF R&D)
 
+#include "Python.h"
 #include "YDFXGUISeqInit.hxx"
 
 #include <QFile>
@@ -31,7 +32,6 @@
 #include <QFileDialog>
 #include <QApplication>
 
-#include "Python.h"
 
 #include "AutoGIL.hxx"
 
@@ -101,7 +101,7 @@ bool YDFXGUISeqSetterP::executeScript(int& sz)
   //
   if(_fileName.isEmpty())
     {
-      emit problemDetected(QString("For \"%1\" : no file defined !").arg(zeBossc->getName()));
+      Q_EMIT problemDetected(QString("For \"%1\" : no file defined !").arg(zeBossc->getName()));
       return false;
     }
   QFile file(_fileName);
@@ -117,7 +117,7 @@ bool YDFXGUISeqSetterP::executeScript(int& sz)
       double v(line2.toDouble(&isOK));
       if(!isOK)
         {
-          emit problemDetected(QString("For \"%1\" : At line %2 it is not a float !").arg(zeBossc->getName()).arg(i));
+          Q_EMIT problemDetected(QString("For \"%1\" : At line %2 it is not a float !").arg(zeBossc->getName()).arg(i));
           return false;
         }
       _vect.push_back(v);
@@ -203,22 +203,22 @@ bool YDFXGUISeqSetterT::executeScript(int& sz)
     AutoPyRef code(Py_CompileString(txt.c_str(),TMP_FILENAME, Py_file_input));
     if(code.get() == NULL)
       {
-        emit problemDetected(QString("For \"%1\" : python code is invalid !").arg(zeBossc->getName()));
+        Q_EMIT problemDetected(QString("For \"%1\" : python code is invalid !").arg(zeBossc->getName()));
         return false;
       }
     AutoPyRef context(PyDict_New());
     PyDict_SetItemString( context, "__builtins__", PyEval_GetBuiltins() );
-    AutoPyRef res(PyEval_EvalCode((PyCodeObject *)code.get(), context, context));
+    AutoPyRef res(PyEval_EvalCode(code.get(), context, context));
     PyObject *item(PyDict_GetItemString(context,name.c_str()));
     //
     if(!item)
       {
-        emit problemDetected(QString("For \"%1\" : Py var %1 is not defined !").arg(zeBossc->getName()));
+        Q_EMIT problemDetected(QString("For \"%1\" : Py var %1 is not defined !").arg(zeBossc->getName()));
         return false;
       }
     if(!PyList_Check(item))
       {
-        emit problemDetected(QString("For \"%1\" : Py var %1 must be a list !").arg(zeBossc->getName()));
+        Q_EMIT problemDetected(QString("For \"%1\" : Py var %1 must be a list !").arg(zeBossc->getName()));
         return false;
       }
     sz=PyList_Size(item);
@@ -228,7 +228,7 @@ bool YDFXGUISeqSetterT::executeScript(int& sz)
         PyObject *val(PyList_GetItem(item,i));
         if(!PyFloat_Check(val))
           {
-            emit problemDetected(QString("For \"%1\" : At pos %2 of python list, it is not a float !").arg(zeBossc->getName()).arg(i));
+            Q_EMIT problemDetected(QString("For \"%1\" : At pos %2 of python list, it is not a float !").arg(zeBossc->getName()).arg(i));
             return false;
           }
         _vect[i]=PyFloat_AS_DOUBLE(val);
@@ -409,7 +409,7 @@ YDFXGUISeqLine::YDFXGUISeqLine(QWidget *parent, YACSEvalInputPort *inp):_combo(0
   connect(_combo,SIGNAL(currentIndexChanged(int)),this,SLOT(typeOfAssignmentChanged(int)));
   horizontalLayout->addWidget(_setter);
   _combo->setCurrentIndex(0);
-  emit _combo->currentIndexChanged(0);//to be sure to sync widgets
+  Q_EMIT _combo->currentIndexChanged(0);//to be sure to sync widgets
 }
 
 void YDFXGUISeqLine::loadState(const QMap<QString,QString>& state)
@@ -551,7 +551,7 @@ void YDFXGUISeqInitEff::assignButtonClicked()
 {
   int sz;
   bool verdict(checkConsistency(sz));
-  emit configurationIsOK(verdict);
+  Q_EMIT configurationIsOK(verdict);
 }
 
 void YDFXGUISeqInitEff::applyOnEFX()
@@ -572,7 +572,7 @@ bool YDFXGUISeqInitEff::checkConsistency(int& sz)
         refSz=locSz;
       if(locSz!=refSz)
         {
-          emit line->setter()->problemDetected(QString("Var %1 does not have the same number of elts than others !").arg(line->getName()));
+          Q_EMIT line->setter()->problemDetected(QString("Var %1 does not have the same number of elts than others !").arg(line->getName()));
           return false;
         }
     }

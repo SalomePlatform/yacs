@@ -1,4 +1,4 @@
-// Copyright (C) 2012-2016  CEA/DEN, EDF R&D
+  // Copyright (C) 2012-2016  CEA/DEN, EDF R&D
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -120,7 +120,7 @@ void YACSEvalSeqAnyInt::initialize(YACS::ENGINE::InputPyPort *p) const
   PyObject *ob(PyList_New(sz));
   for(std::size_t i=0;i<sz;i++)
     {
-      PyList_SetItem(ob,i,PyInt_FromLong((*_arr)[i]));
+      PyList_SetItem(ob,i,PyLong_FromLong((*_arr)[i]));
     }
   p->put(ob);
   p->exSaveInit();

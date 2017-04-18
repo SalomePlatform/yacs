@@ -18,11 +18,11 @@
 //
 // Author : Anthony Geay (EDF R&D)
 
+#include "YDFXGUIPyThreadSaver.hxx"
 #include "YDFXGUIPushButtons.hxx"
 
 #include "YDFXGUIWrap.hxx"
 #include "YDFXGUISeqInit.hxx"
-#include "YDFXGUIPyThreadSaver.hxx"
 #include "YDFXGUIHostParametrizer.hxx"
 
 #include "YACSEvalSession.hxx"
@@ -95,7 +95,7 @@ void YDFXGUISeqInitButton::sequenceInitRequested()
   if(dial.exec())
     {
       _state=zeWidget->saveState();
-      emit sequenceWellDefined(true);
+      Q_EMIT sequenceWellDefined(true);
     }
 }
 
@@ -111,7 +111,7 @@ void YDFXGUIRunInfo::startComputation()
   std::fill(_items.begin(),_items.end(),0);
   _computationInProgress=true;
   _mut.unlock();
-  emit somethingChanged();
+  Q_EMIT somethingChanged();
 }
 
 void YDFXGUIRunInfo::endComputation()
@@ -119,7 +119,7 @@ void YDFXGUIRunInfo::endComputation()
   _mut.lock();
   _computationInProgress=false;
   _mut.unlock();
-  emit somethingChanged();
+  Q_EMIT somethingChanged();
 }
 
 void YDFXGUIRunInfo::sampleOK(int pos)
@@ -127,7 +127,7 @@ void YDFXGUIRunInfo::sampleOK(int pos)
   _mut.lock();
   _items[pos]=1;
   _mut.unlock();
-  emit somethingChanged();
+  Q_EMIT somethingChanged();
 }
 
 void YDFXGUIRunInfo::sampleKO(int pos)
@@ -135,7 +135,7 @@ void YDFXGUIRunInfo::sampleKO(int pos)
   _mut.lock();
   _items[pos]=2;
   _mut.unlock();
-  emit somethingChanged();
+  Q_EMIT somethingChanged();
 }
 
 std::vector<char> YDFXGUIRunInfo::getItems() const
