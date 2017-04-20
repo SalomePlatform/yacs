@@ -238,7 +238,7 @@ void DistributedPythonNode::execute()
           {
             OutputPyPort *p=(OutputPyPort *)*iter;
             DEBTRACE( "port name: " << p->getName() );
-            DEBTRACE( "port kind: " << p->edGetType()->kind() );
+            DEBTRACE( "port kind: " << p->typeName() );
             DEBTRACE( "port pos : " << pos );
             if(PyTuple_Check(finalResult))ob=PyTuple_GetItem(finalResult,pos) ;
             else ob=finalResult;

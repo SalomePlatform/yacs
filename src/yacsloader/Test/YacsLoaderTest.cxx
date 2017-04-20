@@ -53,16 +53,20 @@ int driverTest(Proc* &p, const char* schema)
 
   YACSLoader loader;
   Executor executor;
-  
   try
     {
       p=loader.load(schema);
+        
+      std::cerr << __FILE__ << std::endl;
       DEBTRACE("Proc *p = " << p);
       std::ofstream f("toto");
       p->writeDot(f);
       f.close();
       DEBTRACE("+++++++++++++++++++ BEGIN execution " << schema);
+      std::cerr << __FILE__ << std::endl;    
       executor.RunW(p,0);
+      std::cerr << __FILE__ << std::endl;
+
       DEBTRACE("+++++++++++++++++++   END execution " << schema);
       std::ofstream g("titi");
       p->writeDot(g);
@@ -73,13 +77,20 @@ int driverTest(Proc* &p, const char* schema)
   catch (YACS::Exception& e)
     {
       DEBTRACE("YACS exception caught: ");
+        std::cerr << __FILE__ << std::endl;
       DEBTRACE(e.what());
+        std::cerr << __FILE__ << std::endl;
+
       DEBTRACE("+++++++++++++++++++ END test in error " << schema);
       return 1;
     }
   catch (const std::ios_base::failure&)
     {
+        std::cerr << __FILE__ << std::endl;
+
       DEBTRACE("io failure");
+  std::cerr << __FILE__ << std::endl;
+
       DEBTRACE("+++++++++++++++++++ END test in error " << schema);
       return 1;
     }
@@ -92,10 +103,13 @@ int driverTest(Proc* &p, const char* schema)
       const char *p = tc->name();
       if ( *p != '\0' )
         {
+            std::cerr << __FILE__ << std::endl;
+
           DEBTRACE(p);
         }
       else
         {
+  std::cerr << __FILE__ << std::endl;
           DEBTRACE(tc->id());
         }
       DEBTRACE("+++++++++++++++++++ END test in error " << schema);

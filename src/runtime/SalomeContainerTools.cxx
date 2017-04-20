@@ -328,7 +328,7 @@ void SalomeContainerTools::Start(const std::vector<std::string>& compoNames, Sal
 
   bool isEmptyName;
   std::string str(sct.getNotNullContainerName(cont,askingNode,isEmptyName));
-  DEBTRACE("SalomeContainer::start " << str <<";"<< _sct.getHostName() <<";"<<_type);
+  DEBTRACE("SalomeContainer::start " << str <<";"<< sct.getHostName() <<";"<<shutdownLevel);
 
   // Finalize parameters with components found in the container
 
@@ -380,13 +380,13 @@ void SalomeContainerTools::Start(const std::vector<std::string>& compoNames, Sal
       if(!CORBA::is_nil(trueCont))
         {
           shutdownLevel=3;
-          DEBTRACE( "container found: " << str << " " << _shutdownLevel );
+          DEBTRACE( "container found: " << str << " " << shutdownLevel );
         }
       else
         {
           shutdownLevel=2;
           myparams.mode="start";
-          DEBTRACE( "container not found: " << str << " " << _shutdownLevel);
+          DEBTRACE( "container not found: " << str << " " << shutdownLevel);
         }
     }
 

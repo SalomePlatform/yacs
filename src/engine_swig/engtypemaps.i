@@ -823,7 +823,7 @@ static void convertFromPyObjVectorOfObj(PyObject *pyLi, swig_type_info *ty, cons
  To overload standard SWIG wrapping we define a full specialization of std::map
  with %extend for 4 basic methods : getitem, setitem, delitem and keys.
  Then we complete the interface by deriving the shadow wrapper from
- the python mixin class (UserDict.DictMixin).
+ the python mixin class (UserDict.DictMixin / collections.MutableMapping with Python 3).
  Do not forget to declare the new shadow class to SWIG with tname_swigregister(tname).
  Objects returned by __getitem__ are declared new (%newobject) so that when destroyed they
  call decrRef (see feature("unref") for RefCounter).
@@ -883,8 +883,8 @@ public:
 %template()   std::pair<std::string, T* >;
 %template(tname)    std::map<std::string, T* >;
 %pythoncode{
-from UserDict import DictMixin
-class tname(tname,DictMixin):pass
+from collections import MutableMapping    
+class tname(tname,MutableMapping):pass
 tname##_swigregister(tname)
 }
 %enddef
