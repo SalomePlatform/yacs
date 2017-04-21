@@ -94,4 +94,12 @@ private:
   YACSEvalSeqAnyInternal<int> *_arr;
 };
 
+template<class T>
+std::size_t YACSEvalSeqAnyInternal<T>::size() const
+{
+  if(!_arr)
+    throw YACS::Exception("YACSEvalSeqAnyDouble<T>::size : empty array !");
+  return _arr->size();
+}
+
 #endif

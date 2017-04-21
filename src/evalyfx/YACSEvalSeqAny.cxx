@@ -34,14 +34,6 @@ YACSEvalSeqAny *YACSEvalSeqAny::BuildEmptyFromType(const std::string& dataType)
     throw YACS::Exception("YACSEvalSeqAny::BuildEmptyFromType : Only int and double are actualy managed !");
 }
 
-template<class T>
-std::size_t YACSEvalSeqAnyInternal<T>::size() const
-{
-  if(!_arr)
-    throw YACS::Exception("YACSEvalSeqAnyDouble<T>::size : empty array !");
-  return _arr->size();
-}
-
 YACSEvalSeqAnyDouble::YACSEvalSeqAnyDouble(const std::vector<double>& arr):_arr(0)
 {
   std::vector<double> *zeArr(new std::vector<double>(arr));
