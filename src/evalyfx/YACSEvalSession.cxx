@@ -36,13 +36,8 @@ const char YACSEvalSession::NSPORT_VAR_NAME[]="NSPORT";
 
 YACSEvalSession::YACSEvalSession():_isAttached(false),_isLaunched(false),_isForcedPyThreadSaved(false),_port(-1),_salomeInstanceModule(0),_salomeInstance(0),_internal(new YACSEvalSessionInternal)
 {
-  if(!Py_IsInitialized())
-    Py_Initialize();
-  //
-  {
-    YACS::ENGINE::AutoGIL gal;
-    _salomeInstanceModule=PyImport_ImportModule(const_cast<char *>("salome_instance"));
-  }
+  YACS::ENGINE::AutoGIL gal;
+  _salomeInstanceModule=PyImport_ImportModule(const_cast<char *>("salome_instance"));
 }
 
 YACSEvalSession::~YACSEvalSession()
