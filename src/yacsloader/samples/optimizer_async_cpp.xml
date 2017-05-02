@@ -50,7 +50,7 @@
    <optimizer name="OptimizerLoop1" nbranch="1" lib="libTestOptLoop" entry="createOptimizerAlgASyncExample">
       <inline name="PyScript7">
          <script><code><![CDATA[o9 = int(i8)
-print "traitement:", i8
+print("traitement:", i8)
 ]]></code></script>
          <load container="DefaultContainer"/>
          <inport name="i8" type="double"/>

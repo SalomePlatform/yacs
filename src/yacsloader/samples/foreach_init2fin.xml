@@ -33,7 +33,7 @@
    <foreach name="ForEachLoop" nbranch="4" type="int">
       <initnode>
       <inline name="initScript">
-         <script><code><![CDATA[print "initnode"
+         <script><code><![CDATA[print("initnode")
 o1=7
 ]]></code></script>
          <outport name="o1" type="int"/>
@@ -52,7 +52,7 @@ o1=7
       </inline>
       <finalizenode>
       <inline name="finalizeScript">
-         <script><code><![CDATA[print "finalizenode"
+         <script><code><![CDATA[print("finalizenode")
 ]]></code></script>
          <inport name="i2" type="int"/>
       </inline>
@@ -63,9 +63,9 @@ o1=7
       </datalink>
    </foreach>
    <inline name="PostProc">
-      <script><code><![CDATA[print "Post-traitement"
+      <script><code><![CDATA[print("Post-traitement")
 for x in i5:
-    print x
+    print(x)
 ]]></code></script>
       <load container="DefaultContainer"/>
       <inport name="i5" type="seqint"/>

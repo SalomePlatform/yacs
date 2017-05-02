@@ -31,7 +31,7 @@
     </inline>
     <inline name="n2" >
         <script>
-            <code>print p1</code>
+            <code>print(p1)</code>
         </script>
         <inport name="p1" type="double"/>
         <outport name="p1" type="double"/>
@@ -39,7 +39,7 @@
     <switch name="b1">
       <case id="1">
         <inline name="n2" >
-          <script><code>print p1</code></script>
+          <script><code>print(p1)</code></script>
           <inport name="p1" type="double"/>
           <outport name="p1" type="double"/>
         </inline>
@@ -48,7 +48,7 @@
         <while name="b" >
           <inline name="n2" >
               <script>
-                  <code>print p1</code>
+                  <code>print(p1)</code>
                   <code>p1=p1+20</code>
                   <code><![CDATA[condition=p1 < 90.]]> </code>
               </script>
@@ -64,7 +64,7 @@
       </case>
       <default>
         <inline name="n2" >
-          <script><code>print p1</code></script>
+          <script><code>print(p1)</code></script>
           <inport name="p1" type="double"/>
           <outport name="p1" type="double"/>
         </inline>

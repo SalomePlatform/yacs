@@ -60,7 +60,7 @@ class TestEdit(unittest.TestCase):
         print(tc3.isAdaptable(tc5),1)
         
         n=self.r.createScriptNode("","node1")
-        n.setScript("print 'coucou1'")
+        n.setScript("print('coucou1')")
         n.edAddInputPort("p1",ti)
         n.edAddOutputPort("p1",ti)
         p.edAddChild(n)
@@ -79,7 +79,7 @@ class TestEdit(unittest.TestCase):
 
         # --- create script node node2
         n2=self.r.createScriptNode("","node2")
-        n2.setScript("print 'coucou2'")
+        n2.setScript("print('coucou2')")
         n2.edAddInputPort("p1",ti)
         p.edAddChild(n2)
         # --- end of node
@@ -95,7 +95,7 @@ class TestEdit(unittest.TestCase):
         n=self.r.createFuncNode("","node3")
         n.setScript("""
         def f():
-        print 'coucou3'
+        print('coucou3')
         """)
         n.setFname("f")
         p.edAddChild(n)
@@ -126,7 +126,7 @@ class TestEdit(unittest.TestCase):
         p.edAddChild(b)
         
         n=self.r.createScriptNode("","b1.node2")
-        n.setScript("print 'coucou2'")
+        n.setScript("print('coucou2')")
         b.edAddChild(n)
         # --- end bloc
 
@@ -137,7 +137,7 @@ class TestEdit(unittest.TestCase):
         ip.edInitInt(3)
 
         n=self.r.createScriptNode("","l1.node2")
-        n.setScript("print 'coucou2'")
+        n.setScript("print('coucou2')")
         lo.edSetNode(n)
         # --- end loop
 
@@ -151,7 +151,7 @@ class TestEdit(unittest.TestCase):
         n=self.r.createFuncNode("","w1.node3")
         n.setScript("""
 def f():
-  print 'coucou3'
+  print('coucou3')
   return 0
 """)
         n.setFname("f")
@@ -168,7 +168,7 @@ def f():
         n=self.r.createFuncNode("","sw1.node3")
         n.setScript("""
 def f():
-  print 'case1'
+  print('case1')
   return 0
 """)
         n.setFname("f")
@@ -177,7 +177,7 @@ def f():
         n=self.r.createFuncNode("","sw1.node4")
         n.setScript("""
 def f():
-  print 'default'
+  print('default')
   return 0
 """)
         n.setFname("f")

@@ -65,12 +65,12 @@ $PYTHON -c "
 import sys, os, string, py_compile
 
 files = '''$*'''
-print 'Byte-compiling python modules...'
+print('Byte-compiling python modules...')
 for file in string.split(files):
     $trans
     if not os.path.exists(path) or not (len(path) >= 3 and path[-3:] == '.py'):
 	continue
-    print file,
+    print(file, end='')
     sys.stdout.flush()
     py_compile.compile(path)
 print" || exit $?
@@ -80,12 +80,12 @@ $PYTHON -O -c "
 import sys, os, string, py_compile
 
 files = '''$*'''
-print 'Byte-compiling python modules (optimised versions) ...'
+print('Byte-compiling python modules (optimised versions) ...')
 for file in string.split(files):
     $trans
     if not os.path.exists(path) or not (len(path) >= 3 and path[-3:] == '.py'):
 	continue
-    print file,
+    print(file, end='')
     sys.stdout.flush()
     py_compile.compile(path)
 print" 2>/dev/null || :

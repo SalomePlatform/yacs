@@ -32,7 +32,7 @@
     </inline>
     <inline name="n2" >
         <script>
-            <code>print p1</code>
+            <code>print(p1)</code>
         </script>
         <inport name="p1" type="double"/>
         <outport name="p1" type="double"/>
@@ -40,7 +40,7 @@
     <switch name="b1">
       <case id="1">
         <inline name="n2" >
-          <script><code>print p1</code></script>
+          <script><code>print(p1)</code></script>
           <inport name="p1" type="double"/>
           <outport name="p1" type="double"/>
         </inline>
@@ -48,7 +48,7 @@
       <case id="3">
         <bloc name="b">
           <inline name="n2" >
-            <script><code>print p1</code></script>
+            <script><code>print(p1)</code></script>
             <inport name="p1" type="double"/>
             <outport name="p1" type="double"/>
           </inline>
@@ -56,7 +56,7 @@
       </case>
       <default>
         <inline name="n2" >
-          <script><code>print p1</code></script>
+          <script><code>print(p1)</code></script>
           <inport name="p1" type="double"/>
           <outport name="p1" type="double"/>
         </inline>

@@ -60,10 +60,10 @@ if err > epsilon :
     msg += "refOutput - output : %f - %f \n"%(refOutput, output);
     msg += "Got abs relative diff  %f .\n"%err
     ret = False;
-    print msg;
+    print(msg);
     pass
     
-print "+++ OK " , i , " +++", ret
+print("+++ OK " , i , " +++", ret)
 ]]></code></script>
             <inport name="i" type="int"/>
             <inport name="refOutputs" type="pyobj"/>
@@ -262,7 +262,7 @@ refOutputs = [
    <inline name="PyBuildLoopIndex">
       <function name="make_indexes">
          <code><![CDATA[def make_indexes(inVal, outVal) :
-    print "In make_indexes" ;
+    print("In make_indexes") ;
     if ( len(inVal) != len(outVal) ) :
         msg = "len(inVal) (%i) != len(outVal) (%i). "%( len(inVal), len(outVal) ) ;
         raise ValueError(msg)       
@@ -311,8 +311,8 @@ filepath = resourcesDir + filename;
       <outport name="filepath" type="string"/>
    </inline>
    <inline name="PyGetRes">
-      <script><code><![CDATA[print "retVec ";
-print retVec;
+      <script><code><![CDATA[print("retVec ");
+print(retVec);
 res = "True";
 for ret in retVec:
     if not ret:

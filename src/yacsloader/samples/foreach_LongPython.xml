@@ -36,9 +36,9 @@
         <function name="f">
             <code>import time</code>
             <code>def f(p1):</code>
-            <code>  print "+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ start ", p1</code>
+            <code>  print("+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ start ", p1)</code>
             <code>  time.sleep(0.1)</code>
-            <code>  print "----------------------------------------- stop  ", p1</code>
+            <code>  print("----------------------------------------- stop  ", p1)</code>
             <code>  return p1</code>
         </function>
         <inport name="p1" type="double"/>
@@ -47,7 +47,7 @@
     </foreach>
     <inline name="node1" >
       <script>
-        <code>print p1</code>
+        <code>print(p1)</code>
       </script>
       <inport name="p1" type="dblevec"/>
     </inline>

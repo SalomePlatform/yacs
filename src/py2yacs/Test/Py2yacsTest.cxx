@@ -225,7 +225,7 @@ void Py2yacsTest::unaccepted_statement2()
   const char * code_py = "def f(a):\n"
                          "  return a\n"
                          "if __name__ == '__main__':"
-                         "  print 'toto'\n";
+                         "  print('toto')\n";
   verifyWrongPycode(code_py, "f", "not accepted statement");
 }
 

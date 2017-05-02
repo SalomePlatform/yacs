@@ -54,27 +54,27 @@
 
     <inline name="node1" >
         <script>
-            <code>print p1</code>
+            <code>print(p1)</code>
         </script>
         <inport name="p1" type="int"/>
     </inline>
     <inline name="node11" >
         <script>
-            <code>print p1</code>
+            <code>print(p1)</code>
         </script>
         <inport name="p1" type="string"/>
     </inline>
     <inline name="node12" >
         <script>
-            <code>print p1</code>
-            <code>print "coucou"</code>
+            <code>print(p1)</code>
+            <code>print("coucou")</code>
         </script>
         <inport name="p1" type="dblevec"/>
     </inline>
     <inline name="node13" >
         <script>
-            <code><![CDATA[print p1]]></code>
-            <code><![CDATA[print "coucou"]]> </code>
+            <code><![CDATA[print(p1)]]></code>
+            <code><![CDATA[print("coucou")]]> </code>
         </script>
         <inport name="p1" type="dblevecvec"/>
         <outport name="p1" type="dblevecvec"/>
@@ -112,10 +112,10 @@
         <script>
            <code>import eo</code>
            <code>obj=obj._narrow(eo.Echo)</code>
-           <code>print p1</code>
-           <code>print obj</code>
+           <code>print(p1)</code>
+           <code>print(obj)</code>
            <code>p2=obj.echoC(p1)</code>
-           <code>print p2</code>
+           <code>print(p2)</code>
         </script>
         <inport name="p1" type="C"/>
         <inport name="obj" type="Echo"/>
@@ -123,14 +123,14 @@
     </inline>
     <inline name="node34" >
         <script>
-        <code>print p1;p2=p1</code>
+        <code>print(p1);p2=p1</code>
         </script>
         <inport name="p1" type="C"/>
         <outport name="p2" type="C"/>
     </inline>
     <inline name="node35" >
         <script>
-        <code>print p1;p2=p1</code>
+        <code>print(p1);p2=p1</code>
         </script>
         <inport name="p1" type="C"/>
         <outport name="p2" type="C"/>

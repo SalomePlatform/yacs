@@ -47,9 +47,9 @@
          <code><![CDATA[import time
 
 def f():
-    print my_container
-    for n in xrange(15):
-      print time.time()
+    print(my_container)
+    for n in range(15):
+      print(time.time())
       time.sleep(1)
     
 ]]></code>
@@ -60,9 +60,9 @@ def f():
       <function name="f">
          <code><![CDATA[import time
 def f():
-    print my_container
-    for n in xrange(15):
-      print time.time()
+    print(my_container)
+    for n in range(15):
+      print(time.time())
       time.sleep(1)
 ]]></code>
       </function>

@@ -47,10 +47,10 @@
             <code><![CDATA[import time
 
 def f(i5):
-    print my_container
-    print "nouvelle branche avec ", i5
-    for n in xrange(15):
-      print time.time()
+    print(my_container)
+    print("nouvelle branche avec ", i5)
+    for n in range(15):
+      print(time.time())
       time.sleep(1)
     
 ]]></code>

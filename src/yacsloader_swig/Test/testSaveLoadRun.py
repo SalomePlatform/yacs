@@ -56,7 +56,7 @@ def ff(nb,dbg):
             t+=1.+cos(1.*(x*3.14159))
             pass
         pass
-    print "coucou from script0-%i  -> %s"%(dbg,str(datetime.datetime.now()-ref))
+    print("coucou from script0-%i  -> %s"%(dbg,str(datetime.datetime.now()-ref)))
     return t
 """
     script1="""
@@ -69,7 +69,7 @@ for i in xrange(i1):
     x=j*pas
     o2+=1.+cos(1.*(x*3.14159))
     pass
-print "coucou from script1-%i  -> %s"%(dbg,str(datetime.datetime.now()-ref))
+print("coucou from script1-%i  -> %s"%(dbg,str(datetime.datetime.now()-ref)))
 """
     for i in range(nbOfNodes):
       node0=self.r.createFuncNode("DistPython","node%i"%(i))
@@ -150,7 +150,7 @@ def ff(nb,dbg):
             t+=1.+cos(1.*(x*3.14159))
             pass
         pass
-    print "coucou from script0-%i  -> %s"%(dbg,str(datetime.datetime.now()-ref))
+    print("coucou from script0-%i  -> %s"%(dbg,str(datetime.datetime.now()-ref)))
     return t
 """
     # here in script1 aa is refered ! aa will exist thanks to HPCont Init Script
@@ -164,7 +164,7 @@ for i in xrange(i1):
     x=j*pas
     o2+=1.+cos(1.*(x*3.14159))
     pass
-print "coucou %lf from script1-%i  -> %s"%(aa,dbg,str(datetime.datetime.now()-ref))
+print("coucou %lf from script1-%i  -> %s"%(aa,dbg,str(datetime.datetime.now()-ref)))
 aa+=1.
 """
     #
@@ -216,7 +216,7 @@ aa+=1.
     """ Test on HP Containers in foreach context."""
     script0="""def ff():
     global aa
-    print "%%lf - %%s"%%(aa,str(my_container))
+    print("%%lf - %%s"%%(aa,str(my_container)))
     return 16*[%i],0
 """
     script1="""from math import cos
@@ -228,7 +228,7 @@ for i in xrange(i1):
     x=j*pas
     o2+=1.+cos(1.*(x*3.14159))
     pass
-print "coucou %lf from script  -> %s"%(aa,str(datetime.datetime.now()-ref))
+print("coucou %lf from script  -> %s"%(aa,str(datetime.datetime.now()-ref)))
 aa+=1.
 o3=0
 """
@@ -313,7 +313,7 @@ o3=0
     """ Test that focuses on parallel load of containers."""
     script0="""def ff():
     global aa
-    print "%%lf - %%s"%%(aa,str(my_container))
+    print("%%lf - %%s"%%(aa,str(my_container)))
     return 100*[%i],0
 """
     script1="""from math import cos
@@ -325,7 +325,7 @@ for i in xrange(i1):
     x=j*pas
     o2+=1.+cos(1.*(x*3.14159))
     pass
-print "coucou %lf from script  -> %s"%(aa,str(datetime.datetime.now()-ref))
+print("coucou %lf from script  -> %s"%(aa,str(datetime.datetime.now()-ref)))
 aa+=1.
 o3=0
 """
@@ -1157,7 +1157,7 @@ for i in i8:
     node00.edAddChild(node000_1)
     i7=node000_1.edAddInputPort("i7",ti2)
     i5=node000_1.edAddInputPort("i5",ti2)
-    node000_1.setScript("for i in i7:\n    print i\nprint \"separation\"\nfor i in i5:\n    print i")
+    node000_1.setScript("for i in i7:\n    print(i)\nprint(\"separation\")\nfor i in i5:\n    print(i)")
     node000_1.setContainer(cont)
     node000_1.setExecutionMode("remote")
     p.edAddLink(o5,i7)

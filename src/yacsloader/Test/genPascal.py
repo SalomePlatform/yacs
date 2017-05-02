@@ -41,7 +41,7 @@ aa=Decimal(a)
 bb=Decimal(b)
 cc=aa+bb
 c=str(cc)
-print "cc=",cc
+print("cc=",cc)
 time.sleep(1)
 </code></script>
 <inport name="a" type="string"/>
@@ -59,7 +59,7 @@ time.sleep(1)
     print("for i in range (" + str(n+1) + "):")
     print("    v='a' + str(i)")
     print("    tot+=Decimal(eval(v))")
-    print("print tot")
+    print("print(tot)")
     print("result=str(tot)")
     print("ref=Decimal(2)**" + str(n))
     print("reference=str(ref)")

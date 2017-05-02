@@ -35,7 +35,7 @@
     <inline name="poly_7" >
        <script>
           <code>Pn=(429*x**7 -693*x**5+315*x**3 -35*x)/16</code>
-          <code>print "reference P7=",Pn</code>
+          <code>print("reference P7=",Pn)</code>
        </script>
        <inport name="x" type="double"/>
        <outport name="Pn" type="double"/>
@@ -73,7 +73,7 @@
           <inline name="iter1" >
              <script>
                 <code>Pn = ((2*n-1)*x*Pnm1 -(n-1)*Pnm2)/n</code>
-                <code>print "n=",n," Pn=",Pn</code>
+                <code>print("n=",n," Pn=",Pn)</code>
                 <code>n=n+1</code>
              </script>
              <inport name="Pnm1" type="double"/>

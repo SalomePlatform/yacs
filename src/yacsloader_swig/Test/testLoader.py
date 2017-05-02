@@ -44,8 +44,8 @@ class TestLoader(unittest.TestCase):
     except IOError as ex:
       print("IO Error: ", ex)
       retex=ex
-    #except pilot.invalid_argument,ex:
-    #  print "invalid_argument:",ex.what()
+    # except pilot.invalid_argument as ex:
+    #  print("invalid_argument:",str(ex))
     #  retex=ex.what()
     self.assertTrue(retex is not None, "exception not raised, or wrong type")
     pass

@@ -28,7 +28,7 @@
       <code>def f(p1):</code> 
       <code>   global a</code> 
       <code>   a=a+1</code> 
-      <code>   print a</code> 
+      <code>   print(a)</code> 
       <code>   return p1</code> 
     </function>
     <inport name="p1" type="int"/>

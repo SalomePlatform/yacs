@@ -38,9 +38,9 @@
             <code><![CDATA[def f(p1):]]> </code>
             <code><![CDATA[  global a]]> </code>
             <code><![CDATA[  p1= p1+10.]]> </code>
-            <code><![CDATA[  print a]]> </code>
+            <code><![CDATA[  print(a)]]> </code>
             <code><![CDATA[  a=a+p1]]> </code>
-            <code><![CDATA[  print "a:",a]]> </code>
+            <code><![CDATA[  print("a:",a)]]> </code>
             <code><![CDATA[  condition=p1 < 50.]]> </code>
             <code><![CDATA[  return p1,condition]]> </code>
           </function>
