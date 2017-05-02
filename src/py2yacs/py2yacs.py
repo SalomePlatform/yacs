@@ -41,7 +41,7 @@ class FunctionProperties:
 
 class v(ast.NodeVisitor):
   def visit_Module(self, node):
-    #print type(node).__name__, ":"
+    #print(type(node).__name__, ":")
     accepted_tokens = ["Import", "ImportFrom", "FunctionDef", "ClassDef"]
     #print "module body:"
     self.global_errors=[]
@@ -51,8 +51,8 @@ class v(ast.NodeVisitor):
         error="py2yacs error at line %s: not accepted statement '%s'." % (
                e.lineno, type_name)
         self.global_errors.append(error)
-      #print type_name
-    #print "------------------------------------------------------------------"
+      #print(type_name)
+    #print("------------------------------------------------------------------")
     self.functions=[]
     self.lastfn=""
     self.infunc=False
@@ -60,7 +60,7 @@ class v(ast.NodeVisitor):
     self.generic_visit(node)
     pass
   def visit_FunctionDef(self, node):
-    #print type(node).__name__, ":", node.name
+    #print(type(node).__name__, ":", node.name)
     if not self.infunc:
       self.lastfn = FunctionProperties(node.name)
       self.functions.append(self.lastfn)
@@ -71,24 +71,12 @@ class v(ast.NodeVisitor):
       self.lastfn = None
       self.infunc=False
     pass
-  def visit_arguments(self, node):
-    #print type(node).__name__, ":"
-    self.inargs=True
-    self.generic_visit(node)
-    self.inargs=False
-    pass
-  def visit_Name(self, node):
-    if self.inargs :
-      #print type(node).__name__, ":", node.id
-      self.lastname=node.id
-      self.generic_visit(node)
-    pass
-  def visit_Param(self, node):
-    #print type(node).__name__, ":", self.lastname
-    self.lastfn.inputs.append(self.lastname)
+  def visit_arg(self, node):
+    #print(type(node).__name__, ":", node.arg)
+    self.lastfn.inputs.append(node.arg)
     pass
   def visit_Return(self, node):
-    #print type(node).__name__, ":", node.value
+    #print(type(node).__name__, ":", node.value)
     if self.lastfn.outputs is not None :
       error="py2yacs error at line %s: multiple returns." % node.lineno
       self.lastfn.errors.append(error)
@@ -198,4 +186,3 @@ if __name__ == '__main__':
       print("\n".join(fn_properties.errors))
   else:
     print("Function not found:", fn_name)
-  
