@@ -292,7 +292,7 @@ YDFXGUISeqSetter::YDFXGUISeqSetter(QWidget *parent, const QString& name):QWidget
   QVBoxLayout *verticalLayout(new QVBoxLayout(this));
   _textEdit=new YDFXGUISeqSetterT(this); verticalLayout->addWidget(_textEdit);
   _push=new YDFXGUISeqSetterP(this); verticalLayout->addWidget(_push);
-  _textEdit->setText(QString("import math\n%1=[math.sqrt(float(elt)+0.) for elt in xrange(4)]").arg(name));
+  _textEdit->setText(QString("import math\n%1=[math.sqrt(float(elt)+0.) for elt in range(4)]").arg(name));
   _textEdit->hide();
   _push->hide();
 }

@@ -50,8 +50,8 @@ def ff(nb,dbg):
     
     ref=datetime.datetime.now()
     t=0. ; pas=1./float(nb)
-    for i in xrange(nb):
-        for j in xrange(nb):
+    for i in range(nb):
+        for j in range(nb):
             x=j*pas
             t+=1.+cos(1.*(x*3.14159))
             pass
@@ -64,8 +64,8 @@ from math import cos
 import datetime
 ref=datetime.datetime.now()
 o2=0. ; pas=1./float(i1)
-for i in xrange(i1):
-  for j in xrange(i1):
+for i in range(i1):
+  for j in range(i1):
     x=j*pas
     o2+=1.+cos(1.*(x*3.14159))
     pass
@@ -144,8 +144,8 @@ def ff(nb,dbg):
     
     ref=datetime.datetime.now()
     t=0. ; pas=1./float(nb)
-    for i in xrange(nb):
-        for j in xrange(nb):
+    for i in range(nb):
+        for j in range(nb):
             x=j*pas
             t+=1.+cos(1.*(x*3.14159))
             pass
@@ -159,8 +159,8 @@ from math import cos
 import datetime
 ref=datetime.datetime.now()
 o2=0. ; pas=1./float(i1)
-for i in xrange(i1):
-  for j in xrange(i1):
+for i in range(i1):
+  for j in range(i1):
     x=j*pas
     o2+=1.+cos(1.*(x*3.14159))
     pass
@@ -223,8 +223,8 @@ aa+=1.
 import datetime
 ref=datetime.datetime.now()
 o2=0. ; pas=1./float(i1)
-for i in xrange(i1):
-  for j in xrange(i1):
+for i in range(i1):
+  for j in range(i1):
     x=j*pas
     o2+=1.+cos(1.*(x*3.14159))
     pass
@@ -320,8 +320,8 @@ o3=0
 import datetime
 ref=datetime.datetime.now()
 o2=0. ; pas=1./float(i1)
-for i in xrange(i1):
-  for j in xrange(i1):
+for i in range(i1):
+  for j in range(i1):
     x=j*pas
     o2+=1.+cos(1.*(x*3.14159))
     pass
@@ -412,9 +412,9 @@ o3=0
     script1="""nb=7
 ii=0
 o1=nb*[None]
-for i in xrange(nb):
+for i in range(nb):
     tmp=(i+10)*[None]
-    for j in xrange(i+10):
+    for j in range(i+10):
         tmp[j]=ii
         ii+=1
         pass
@@ -497,9 +497,9 @@ for i in xrange(nb):
     script1="""nb=7
 ii=0
 o1=nb*[None]
-for i in xrange(nb):
+for i in range(nb):
     tmp=(i+10)*[None]
-    for j in xrange(i+10):
+    for j in range(i+10):
         tmp[j]=ii
         ii+=1
         pass
@@ -1264,7 +1264,7 @@ for i in i8:
     
     n00=self.r.createScriptNode("Salome","n00") ; n0.edAddChild(n00)
     o0=n00.edAddOutputPort("o0",tp2)
-    n00.setScript("o0=[[i+1] for i in xrange(8)]")
+    n00.setScript("o0=[[i+1] for i in range(8)]")
     n01=self.r.createScriptNode("Salome","n01") ; n0.edAddChild(n01)
     i1=n01.edAddInputPort("i1",tp)
     n01.setScript("assert(i1==[[1], [2], [3], [4], [5], [6], [7], [8]])")
@@ -1288,7 +1288,7 @@ for i in i8:
     
     n00=self.r.createScriptNode("Salome","n00") ; n0.edAddChild(n00)
     o0=n00.edAddOutputPort("o0",tp2)
-    n00.setScript("o0=[[i+1] for i in xrange(8)]")
+    n00.setScript("o0=[[i+1] for i in range(8)]")
     n01=self.r.createScriptNode("Salome","n01") ; n0.edAddChild(n01)
     i1=n01.edAddInputPort("i1",tp)
     n01.setScript("assert(i1==[[1], [2], [3], [4], [5], [6], [7], [8]])")
