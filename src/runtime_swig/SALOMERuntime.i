@@ -234,6 +234,6 @@ namespace YACS
   PyObject *createContainer(const std::string& kind="")
   {
     YACS::ENGINE::Container *ret(self->createContainer(kind));
-    return convertContainer2(ret);
+    return convertContainer2(ret,SWIG_POINTER_OWN | 0);
   }
 }
