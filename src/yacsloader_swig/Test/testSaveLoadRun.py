@@ -1578,6 +1578,59 @@ o4=i3
     self.assertEqual(q.getState(),pilot.DONE)
     self.assertEqual(q.getChildByName("n2").getOutputPort("o4").getPyObj(),[0L,2L,10L,15L,20L,25L])
     pass
+
+  def test23(self):
+    """ test focused on weight attribut after a dump and reload from a xml file
+    """
+    fname="test23.xml"
+    xmlStateFileName="saveState23.xml"
+    from datetime import datetime
+    p=self.r.createProc("prTest23")
+    cont=p.createContainer("gg","Salome")
+    cont.setProperty("name","localhost")
+    cont.setProperty("hostname","localhost")
+    cont.setProperty("type","multi")
+    td=p.createType("double","double")
+    ti=p.createType("int","int")
+    tsi=p.createSequenceTc("seqint","seqint",ti)
+    tsd=p.createSequenceTc("seqdbl","seqdbl",td)
+    n0=self.r.createScriptNode("","n0")
+    o0=n0.edAddOutputPort("o0",tsi)
+    n0.setScript("o0=[ elt for elt in range(6) ]")
+    p.edAddChild(n0)
+    n1=self.r.createForEachLoop("n1",ti)
+    n1.setWeight(3)
+    n10=self.r.createScriptNode("","n10")
+    n10.setExecutionMode("remote")
+    n10.setContainer(cont)
+    n1.edAddChild(n10)
+    n10.setScript("""
+import time
+time.sleep(2)
+o2=2*i1
+""")
+    i1=n10.edAddInputPort("i1",ti)
+    o2=n10.edAddOutputPort("o2",ti)
+    p.edAddChild(n1)
+    p.edAddLink(o0,n1.edGetSeqOfSamplesPort())
+    p.edAddLink(n1.edGetSamplePort(),i1)
+    p.edAddCFLink(n0,n1)
+    n1.edGetNbOfBranchesPort().edInitPy(2)
+    n2=self.r.createScriptNode("","n2")
+    n2.setScript("o4=i3")
+    i3=n2.edAddInputPort("i3",tsi)
+    o4=n2.edAddOutputPort("o4",tsi)
+    n2.setScript("o4=i3")
+    p.edAddChild(n2)
+    p.edAddCFLink(n1,n2)
+    p.edAddLink(o2,i3)
+    p.saveSchema(fname)
+    #
+    l=loader.YACSLoader()
+    p=l.load(fname)
+    self.assertEqual(p.getChildByName("n1").getWeight(),3.0)
+    pass
+
   pass
 
 if __name__ == '__main__':
