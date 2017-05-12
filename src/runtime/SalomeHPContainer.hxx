@@ -75,6 +75,7 @@ namespace YACS
       void addComponentName(const std::string& name);
       void checkCapabilityToDealWith(const ComponentInstance *inst) const throw(YACS::Exception);
       Engines::Container_var getContainerPtr(const Task *askingNode) const;
+      std::vector<std::string> getKernelContainerNames() const;
     public:
       int getShutdownLev() const { return _shutdownLevel; }
       YACS::BASES::AutoRefCnt<HomogeneousPoolContainer> decorate(YACS::BASES::AutoConstRefCnt<PartDefinition> pd);
@@ -141,6 +142,8 @@ namespace YACS
       int getNumberOfCoresPerWorker() const { return _directFather->getNumberOfCoresPerWorker(); }
       void prepareMaskForExecution() const;
       void forYourTestsOnly(ForTestOmlyHPContCls *data) const;
+      std::string getName() const;
+      std::string getDiscreminantStrOfThis(const Task *askingNode) const;
     public:
       std::string getKind() const;
       void start(const Task *askingNode) throw(Exception);

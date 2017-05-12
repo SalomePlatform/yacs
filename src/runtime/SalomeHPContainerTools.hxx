@@ -61,6 +61,8 @@ namespace YACS
       void lock();
       //! For thread safety for concurrent load operation on same Container.
       void unLock();
+    public:
+      std::vector<std::string> getKernelContainerNames() const;
     private:
       ~SalomeHPContainerVectOfHelper() { }
       void checkNoCurrentWork() const;

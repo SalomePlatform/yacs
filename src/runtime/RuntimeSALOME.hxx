@@ -124,7 +124,9 @@ namespace YACS
       virtual ServiceInlineNode *createSInlineNode(const std::string& kind, const std::string& name);
       virtual ComponentInstance* createComponentInstance(const std::string& name,
                                                          const std::string& kind="");
+#ifndef SWIG
       virtual Container *createContainer(const std::string& kind="");
+#endif
       virtual WhileLoop* createWhileLoop(const std::string& name);
       virtual ForLoop* createForLoop(const std::string& name);
       virtual OptimizerLoop* createOptimizerLoop(const std::string& name,const std::string& algLib,

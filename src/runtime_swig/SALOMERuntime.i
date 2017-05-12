@@ -85,6 +85,23 @@
   Py_DECREF(pyapi);
 %}
 
+%{
+static PyObject *convertContainer2(YACS::ENGINE::Container *cont, int owner=0)
+{
+  if(!cont)
+    return SWIG_NewPointerObj((void*)cont,SWIGTYPE_p_YACS__ENGINE__Container, owner);
+  if(dynamic_cast<YACS::ENGINE::SalomeHPContainer *>(cont))
+    {
+      return SWIG_NewPointerObj((void*)dynamic_cast<YACS::ENGINE::SalomeHPContainer *>(cont),SWIGTYPE_p_YACS__ENGINE__SalomeHPContainer, owner);
+    }
+  if(dynamic_cast<YACS::ENGINE::SalomeContainer *>(cont))
+    {
+      return SWIG_NewPointerObj((void*)dynamic_cast<YACS::ENGINE::SalomeContainer *>(cont),SWIGTYPE_p_YACS__ENGINE__SalomeContainer, owner);
+    }
+  return SWIG_NewPointerObj((void*)cont,SWIGTYPE_p_YACS__ENGINE__Container, owner);
+}
+%}
+
 // ----------------------------------------------------------------------------
 
 #ifdef SWIGPYTHON
@@ -211,3 +228,12 @@ namespace YACS
 %rename(OptimizerAlgSync) YACS::ENGINE::PyOptimizerAlgBase;
 %rename(OptimizerAlgASync) YACS::ENGINE::PyOptimizerAlgASync;
 %include "PyOptimizerAlg.hxx"
+
+%extend YACS::ENGINE::RuntimeSALOME
+{
+  PyObject *createContainer(const std::string& kind="")
+  {
+    YACS::ENGINE::Container *ret(self->createContainer(kind));
+    return convertContainer2(ret);
+  }
+}

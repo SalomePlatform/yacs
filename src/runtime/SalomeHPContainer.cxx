@@ -216,6 +216,11 @@ Engines::Container_var SalomeHPContainerBase::getContainerPtr(const Task *asking
   return helper->getContainer(NULL);
 }
 
+std::vector<std::string> SalomeHPContainerBase::getKernelContainerNames() const
+{
+  return _launchModeType->getKernelContainerNames();
+}
+
 ////////////////
 
 SalomeHPContainer::SalomeHPContainer():SalomeHPContainerBase(new SalomeHPContainerVectOfHelper)
@@ -327,6 +332,16 @@ Container *SalomeHPContainerShared::clone() const
 Container *SalomeHPContainerShared::cloneAlways() const
 {
   throw Exception("SalomeHPContainerShared::cloneAlways : you are not supposed to be in this situation ! This type of container has only existence during execution !");
+}
+
+std::string SalomeHPContainerShared::getName() const
+{
+  return getTheBoss()->getName();
+}
+
+std::string SalomeHPContainerShared::getDiscreminantStrOfThis(const Task *askingNode) const
+{
+  return getTheBoss()->getDiscreminantStrOfThis(askingNode);
 }
 
 void SalomeHPContainerShared::start(const Task *askingNode) throw(Exception)

@@ -157,6 +157,21 @@ void SalomeHPContainerVectOfHelper::shutdown()
         (*it)->shutdown();
 }
 
+std::vector<std::string> SalomeHPContainerVectOfHelper::getKernelContainerNames() const
+{
+  std::vector<std::string> ret;
+  {
+    YACS::BASES::AutoLocker<SalomeHPContainerVectOfHelper> alck(const_cast<SalomeHPContainerVectOfHelper *>(this));
+    std::size_t sz(_launchModeType.size());
+    ret.resize(sz);
+    for(std::size_t i=0;i<sz;i++)
+      {
+        ret[i]=_launchModeType[i]->getKernelContainerName();
+      }
+  }
+  return ret;
+}
+
 void SalomeHPContainerVectOfHelper::lock()
 {
   _mutex.lock();

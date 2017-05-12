@@ -105,6 +105,15 @@ void SalomeContainerMonoHelper::shutdown()
   _trueCont=Engines::Container::_nil();
 }
 
+std::string SalomeContainerMonoHelper::getKernelContainerName() const
+{
+  if(CORBA::is_nil(_trueCont))
+    return std::string("NULL");
+  CORBA::String_var containerName(_trueCont->name());
+  std::string ret(containerName);
+  return ret;
+}
+
 SalomeContainerMonoHelper::~SalomeContainerMonoHelper()
 {
 }

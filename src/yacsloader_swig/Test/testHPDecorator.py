@@ -287,6 +287,74 @@ class TestHPDecortator(unittest.TestCase):
         exe.RunW(p,0)
         assert(p.getState()==pilot.DONE)
         pass
+
+    def test3(self):
+        """ First test coming from the big boss."""
+        SALOMERuntime.RuntimeSALOME.setRuntime()
+        r=SALOMERuntime.getSALOMERuntime()
+        pg=pilot.PlayGround()
+        pg.loadFromKernelCatalog()
+        assert(len(pg.getData())!=0)
+        p=r.createProc("p0")
+        td=p.createType("double","double")
+        tdd=p.createSequenceTc("seqdouble","seqdouble",td)
+        hp1=r.createContainer("HPSalome") ; hp1.setName("HP1")
+        #
+        n0=r.createScriptNode("Salome","n0")
+        n0.setExecutionMode("local")
+        out0_0=n0.edAddOutputPort("o1",tdd)
+        n0.setScript("""o1=[float(i)+0.1 for i in range(1000)]""")
+        p.edAddChild(n0)
+        #
+        n1_0=r.createForEachLoop("n1_0",td)
+        n2_0=r.createForEachLoop("n2_0",td)
+        p.edAddChild(n1_0)
+        p.edAddChild(n2_0)
+        p.edAddCFLink(n0,n1_0)
+        p.edAddCFLink(n1_0,n2_0)
+        p.edAddLink(out0_0,n1_0.edGetSeqOfSamplesPort())
+        p.edAddLink(out0_0,n2_0.edGetSeqOfSamplesPort())
+        ##
+        n1_0_sc=r.createScriptNode("Salome","n1_0_sc")
+        n1_0.edAddChild(n1_0_sc)
+        n1_0_sc.setExecutionMode("remote")
+        n1_0_sc.setScript("""2*i1""")
+        i1_0_sc=n1_0_sc.edAddInputPort("i1",td)
+        p.edAddLink(n1_0.edGetSamplePort(),i1_0_sc)
+        n1_0_sc.setContainer(hp1)
+        ##
+        n2_0_sc=r.createScriptNode("Salome","n2_0_sc")
+        n2_0.edAddChild(n2_0_sc)
+        n2_0_sc.setExecutionMode("remote")
+        n2_0_sc.setScript("""2*i1""")
+        i2_0_sc=n2_0_sc.edAddInputPort("i1",td)
+        p.edAddLink(n2_0.edGetSamplePort(),i2_0_sc)
+        n2_0_sc.setContainer(hp1)
+        ##
+        hp1.setProperty("nb_proc_per_node","1")
+        pg.setData([("localhost",3)])
+        p.fitToPlayGround(pg)########### ZE CALL
+        assert(hp1.getSizeOfPool()==3)
+        fyto=pilot.ForTestOmlyHPContCls()
+        n1_0_sc.getContainer().forYourTestsOnly(fyto)
+        assert(fyto.getContainerType()=="HPContainerShared")
+        pd=fyto.getPD()
+        assert(isinstance(pd,pilot.AllPartDefinition))
+        assert(fyto.getIDS()==(0,1,2))
+        fyto=pilot.ForTestOmlyHPContCls()
+        n2_0_sc.getContainer().forYourTestsOnly(fyto)
+        assert(fyto.getContainerType()=="HPContainerShared")
+        pd=fyto.getPD()
+        assert(isinstance(pd,pilot.AllPartDefinition))
+        assert(fyto.getIDS()==(0,1,2))
+        assert(n1_0.edGetNbOfBranchesPort().getPyObj()==3)
+        assert(n2_0.edGetNbOfBranchesPort().getPyObj()==3)
+        #
+        exe=pilot.ExecutorSwig()
+        assert(p.getState()==pilot.READY)
+        exe.RunW(p,0)
+        assert(len(set(hp1.getKernelContainerNames()))==3)
+        pass
     
     pass
 
