@@ -30,9 +30,4 @@ IF(NOT WIN32)
                                     LABELS "${COMPONENT_NAME}"
 				    )
 
-  SET(TEST_NAME ${COMPONENT_NAME}_HPDecorator)
-  ADD_TEST(${TEST_NAME} python ${SALOME_TEST_DRIVER} ${TIMEOUT} python testHPDecorator.py)
-  SET_TESTS_PROPERTIES(${TEST_NAME} PROPERTIES
-                                    LABELS "${COMPONENT_NAME}"
-                      )
 ENDIF()
