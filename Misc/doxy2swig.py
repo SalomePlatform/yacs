@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright (C) 2006-2016  CEA/DEN, EDF R&D
 #
 # This library is free software; you can redistribute it and/or
@@ -20,10 +20,6 @@
 
 """Doxygen XML to SWIG docstring converter.
 
-Usage:
-
-  doxy2swig.py [options] input.xml output.i
-
 Converts Doxygen generated XML files into a file containing docstrings
 that can be used by SWIG-1.3.x.  Note that you need to get SWIG
 version > 1.3.23 or use Robin Dunn's docstring patch to be able to use
@@ -33,6 +29,8 @@ input.xml is your doxygen generated XML file and output.i is where the
 output will be written (the file will be clobbered).
 
 """
+
+__usage__ = "doxy2swig.py [options] input.xml output.i"
 ######################################################################
 #
 # This code is implemented using Mark Pilgrim's code as a guideline:
@@ -53,20 +51,20 @@ import textwrap
 import sys
 import types
 import os.path
-import optparse
+import argparse
 
 
 def my_open_read(source):
     if hasattr(source, "read"):
         return source
     else:
-        return open(source)
+        return open(source, encoding='utf8')
 
 def my_open_write(dest):
     if hasattr(dest, "write"):
         return dest
     else:
-        return open(dest, 'w')
+        return open(dest, 'w', encoding='utf8')
 
 
 class Doxy2SWIG:    
@@ -445,24 +443,23 @@ def convert(input, output, include_function_definition=True, quiet=False):
     p.write(output)
 
 def main():
-    usage = __doc__
-    parser = optparse.OptionParser(usage)
-    parser.add_option("-n", '--no-function-definition',
-                      action='store_true',
-                      default=False,
-                      dest='func_def',
-                      help='do not include doxygen function definitions')
-    parser.add_option("-q", '--quiet',
-                      action='store_true',
-                      default=False,
-                      dest='quiet',
-                      help='be quiet and minimise output')
+    parser = argparse.ArgumentParser(description=__doc__, usage = __usage__)
+    parser.add_argument("-n", '--no-function-definition',
+                        action='store_true',
+                        default=False,
+                        dest='func_def',
+                        help='do not include doxygen function definitions')
+    parser.add_argument("-q", '--quiet',
+                        action='store_true',
+                        default=False,
+                        dest='quiet',
+                        help='be quiet and minimise output')
+    parser.add_argument('input')
+    parser.add_argument('ouput')
     
-    options, args = parser.parse_args()
-    if len(args) != 2:
-        parser.error("error: no input and output specified")
+    args = parser.parse_args()
 
-    convert(args[0], args[1], not options.func_def, options.quiet)
+    convert(args.input, args.output, not options.func_def, options.quiet)
     
 
 if __name__ == '__main__':
