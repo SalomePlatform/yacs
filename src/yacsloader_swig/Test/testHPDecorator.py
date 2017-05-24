@@ -226,7 +226,8 @@ class TestHPDecortator(unittest.TestCase):
         assert(list(fyto.getIDS())==range(8))
         pass
 
-    def tess2(self):
+    @unittest.skip("requires 2 machines in catalog")
+    def test2(self):
         """ This test is desactivated because it requires multi nodes. To be moved at the right place to support this.
         This test is not launched here because it requires 2 machines in catalog"""
         m1="dsp0764200"

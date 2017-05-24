@@ -134,6 +134,7 @@ void VisitorSaveSchema::visitForEachLoop(ForEachLoop *node)
     _out << " state=\"disabled\"";
   if (!nbranch->isEmpty())
     _out << " nbranch=\"" << nbranch->getIntValue() << "\"";
+  _out << " weight=\"" << node->getWeight() << "\"";
   if (node->edGetSamplePort())
     _out << " type=\"" << node->edGetSamplePort()->edGetType()->name() << "\"";
   _out << ">" << endl;
@@ -159,6 +160,7 @@ void VisitorSaveSchema::visitOptimizerLoop(OptimizerLoop *node)
     _out << " state=\"disabled\"";
   if (!nbranch->isEmpty())
     _out << " nbranch=\"" << nbranch->getIntValue() << "\"";
+  _out << " weight=\"" << node->getWeight() << "\"";
   _out << " lib=\"" << node->getAlgLib() << "\"";
   _out << " entry=\"" << node->getSymbol() << "\"";
   _out << ">" << endl;
