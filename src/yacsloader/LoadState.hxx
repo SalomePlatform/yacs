@@ -22,9 +22,12 @@
 
 #include "YACSloaderExport.hxx"
 #include "xmlParserBase.hxx"
+#include "InputPort.hxx"
 
 #include "define.hxx"
 #include "Exception.hxx"
+#include <vector>
+#include <list>
 
 namespace YACS
 {
@@ -32,6 +35,9 @@ namespace YACS
   {
     class Proc;
     class Runtime;
+    class SequenceAny;
+    class Any;
+    class TypeCode;
 
     //! Load state from a file into a Proc
     /*!
@@ -96,6 +102,7 @@ namespace YACS
       static std::map<std::string, YACS::StatesForNode> _nodeStates;
     };
 
+#ifndef SWIG
     class YACSLOADER_EXPORT graphParser: public stateParser
     {
     public:
@@ -105,14 +112,18 @@ namespace YACS
     };
 
 
+    class loopPortParser;
     class YACSLOADER_EXPORT nodeParser: public stateParser
     {
     public:
       virtual void init(const xmlChar** p, xmlParserBase* father=0);
       virtual void onStart (const XML_Char* elem, const xmlChar** p);
       virtual void onEnd   (const XML_Char* name);
+      Any* xmlToAny(const std::string& data, const TypeCode* tc)const;
       std::string _nodeName;
       std::string _nodeState;
+    private:
+      std::list<loopPortParser*> _loopSamples;
     };
 
     class YACSLOADER_EXPORT attrParser: public stateParser
@@ -172,6 +183,37 @@ namespace YACS
       virtual void charData(std::string data);
     };
 
+    class YACSLOADER_EXPORT loopPortParser: public stateParser
+    {
+    public:
+      virtual void init(const xmlChar** p, xmlParserBase* father=0);
+      virtual void onStart (const XML_Char* elem, const xmlChar** p);
+      virtual void onEnd   (const XML_Char* name);
+      virtual void charData(std::string data);
+      void addSample(int index, const std::string data);
+      unsigned int getNbSamples()const;
+      unsigned int getSampleId(unsigned int i)const;
+      const std::string& getSampleData(unsigned int i)const;
+      const std::string& getPortName()const;
+    private:
+      std::vector<unsigned int> _ids;
+      std::vector<std::string> _sampleData;
+    };
+
+    class YACSLOADER_EXPORT sampleParser: public stateParser
+    {
+    public:
+      sampleParser(loopPortParser* father);
+      virtual void init(const xmlChar** p, xmlParserBase* father=0);
+      virtual void onStart (const XML_Char* elem, const xmlChar** p);
+      virtual void onEnd   (const XML_Char* name);
+      virtual void charData(std::string data);
+    //protected:
+    //  Any* xmlToAny()throw(ConversionException);
+    private:
+      loopPortParser* _sampleFather;
+    };
+#endif
   }
 }
 #endif

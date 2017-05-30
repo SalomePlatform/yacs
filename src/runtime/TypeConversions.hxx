@@ -57,45 +57,47 @@ namespace YACS
     class TypeCode;
     class Any;
 
-    CORBA::TypeCode_ptr getCorbaTC(const TypeCode *t);
+    YACSRUNTIMESALOME_EXPORT CORBA::TypeCode_ptr getCorbaTC(const TypeCode *t);
 
-    int isAdaptableCorbaPyObject(const TypeCode * t1, const TypeCode * t2);
-    int isAdaptableCorbaNeutral(const TypeCode * t1, const TypeCode * t2);
-    int isAdaptableCorbaCorba(const TypeCode * t1, const TypeCode * t2);
+    YACSRUNTIMESALOME_EXPORT int isAdaptableCorbaPyObject(const TypeCode * t1, const TypeCode * t2);
+    YACSRUNTIMESALOME_EXPORT int isAdaptableCorbaNeutral(const TypeCode * t1, const TypeCode * t2);
+    YACSRUNTIMESALOME_EXPORT int isAdaptableCorbaCorba(const TypeCode * t1, const TypeCode * t2);
 
-    int isAdaptableNeutralCorba(const TypeCode * t1, const TypeCode * t2);
-    int isAdaptableNeutralNeutral(const TypeCode * t1, const TypeCode * t2);
-    int isAdaptableNeutralXml(const TypeCode * t1, const TypeCode * t2);
-    int isAdaptableNeutralPyObject(const TypeCode * t1, const TypeCode * t2);
+    YACSRUNTIMESALOME_EXPORT int isAdaptableNeutralCorba(const TypeCode * t1, const TypeCode * t2);
+    YACSRUNTIMESALOME_EXPORT int isAdaptableNeutralNeutral(const TypeCode * t1, const TypeCode * t2);
+    YACSRUNTIMESALOME_EXPORT int isAdaptableNeutralXml(const TypeCode * t1, const TypeCode * t2);
+    YACSRUNTIMESALOME_EXPORT int isAdaptableNeutralPyObject(const TypeCode * t1, const TypeCode * t2);
 
-    int isAdaptablePyObjectPyObject(const TypeCode * t1, const TypeCode * t2);
-    int isAdaptablePyObjectCorba(const TypeCode * t1, const TypeCode * t2);
-    int isAdaptablePyObjectNeutral(const TypeCode * t1, const TypeCode * t2);
+    YACSRUNTIMESALOME_EXPORT int isAdaptablePyObjectPyObject(const TypeCode * t1, const TypeCode * t2);
+    YACSRUNTIMESALOME_EXPORT int isAdaptablePyObjectCorba(const TypeCode * t1, const TypeCode * t2);
+    YACSRUNTIMESALOME_EXPORT int isAdaptablePyObjectNeutral(const TypeCode * t1, const TypeCode * t2);
 
-    int isAdaptableXmlNeutral(const TypeCode *t1,const TypeCode *t2);
-    int isAdaptableXmlCorba(const TypeCode *t1, const TypeCode *t2);
+    YACSRUNTIMESALOME_EXPORT int isAdaptableXmlNeutral(const TypeCode *t1,const TypeCode *t2);
+    YACSRUNTIMESALOME_EXPORT int isAdaptableXmlCorba(const TypeCode *t1, const TypeCode *t2);
 
-    PyObject *convertCorbaPyObject(const TypeCode * t,CORBA::Any* ob);
-    CORBA::Any *convertCorbaCorba(const TypeCode * t,CORBA::Any* ob);
-    YACS::ENGINE::Any *convertCorbaNeutral(const TypeCode *t,CORBA::Any* ob);
-    std::string convertCorbaXml(const TypeCode * t,CORBA::Any* ob);
+    YACSRUNTIMESALOME_EXPORT PyObject *convertCorbaPyObject(const TypeCode * t,CORBA::Any* ob);
+    YACSRUNTIMESALOME_EXPORT PyObject *convertCorbaPyObject(const TypeCode * t,CORBA::Any* ob);
+    YACSRUNTIMESALOME_EXPORT PyObject *convertCorbaPyObject(const TypeCode * t,CORBA::Any* ob);
+    YACSRUNTIMESALOME_EXPORT CORBA::Any *convertCorbaCorba(const TypeCode * t,CORBA::Any* ob);
+    YACSRUNTIMESALOME_EXPORT YACS::ENGINE::Any *convertCorbaNeutral(const TypeCode *t,CORBA::Any* ob);
+    YACSRUNTIMESALOME_EXPORT std::string convertCorbaXml(const TypeCode * t,CORBA::Any* ob);
 
-    CORBA::Any *convertPyObjectCorba(const TypeCode *t,PyObject *ob);
+    YACSRUNTIMESALOME_EXPORT CORBA::Any *convertPyObjectCorba(const TypeCode *t,PyObject *ob);
     YACSRUNTIMESALOME_EXPORT std::string convertPyObjectXml(const TypeCode * t,PyObject* ob);
-    YACS::ENGINE::Any *convertPyObjectNeutral(const TypeCode *t,PyObject* ob);
-    PyObject* convertPyObjectPyObject(const TypeCode *t,PyObject *ob);
-    std::string convertPyObjectToString(PyObject* ob);
-    bool checkPyObject(const TypeCode *t,PyObject* ob);
+    YACSRUNTIMESALOME_EXPORT YACS::ENGINE::Any *convertPyObjectNeutral(const TypeCode *t,PyObject* ob);
+    YACSRUNTIMESALOME_EXPORT PyObject* convertPyObjectPyObject(const TypeCode *t,PyObject *ob);
+    YACSRUNTIMESALOME_EXPORT std::string convertPyObjectToString(PyObject* ob);
+    YACSRUNTIMESALOME_EXPORT bool checkPyObject(const TypeCode *t,PyObject* ob);
 
-    PyObject *convertXmlPyObject(const TypeCode * t,xmlDocPtr doc,xmlNodePtr cur );
-    PyObject *convertXmlStrPyObject(const TypeCode * t,std::string data );
-    CORBA::Any *convertXmlCorba(const TypeCode * t,xmlDocPtr doc,xmlNodePtr cur );
-    YACS::ENGINE::Any *convertXmlNeutral(const TypeCode * t,xmlDocPtr doc,xmlNodePtr cur );
+    YACSRUNTIMESALOME_EXPORT PyObject *convertXmlPyObject(const TypeCode * t,xmlDocPtr doc,xmlNodePtr cur );
+    YACSRUNTIMESALOME_EXPORT PyObject *convertXmlStrPyObject(const TypeCode * t,std::string data );
+    YACSRUNTIMESALOME_EXPORT CORBA::Any *convertXmlCorba(const TypeCode * t,xmlDocPtr doc,xmlNodePtr cur );
+    YACSRUNTIMESALOME_EXPORT YACS::ENGINE::Any *convertXmlNeutral(const TypeCode * t,xmlDocPtr doc,xmlNodePtr cur );
 
-    PyObject *convertNeutralPyObject(const TypeCode * t,YACS::ENGINE::Any* ob);
-    std::string convertNeutralXml(const TypeCode * t,YACS::ENGINE::Any* ob);
-    CORBA::Any *convertNeutralCorba(const TypeCode *t,YACS::ENGINE::Any *ob);
-    YACS::ENGINE::Any *convertNeutralNeutral(const TypeCode *t, YACS::ENGINE::Any* ob);
+    YACSRUNTIMESALOME_EXPORT PyObject *convertNeutralPyObject(const TypeCode * t,YACS::ENGINE::Any* ob);
+    YACSRUNTIMESALOME_EXPORT std::string convertNeutralXml(const TypeCode * t,YACS::ENGINE::Any* ob);
+    YACSRUNTIMESALOME_EXPORT CORBA::Any *convertNeutralCorba(const TypeCode *t,YACS::ENGINE::Any *ob);
+    YACSRUNTIMESALOME_EXPORT YACS::ENGINE::Any *convertNeutralNeutral(const TypeCode *t, YACS::ENGINE::Any* ob);
   }
 
 }

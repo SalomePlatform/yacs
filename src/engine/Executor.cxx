@@ -651,6 +651,7 @@ bool Executor::saveState(const std::string& xmlFile)
   DEBTRACE("Executor::saveState() in " << xmlFile);
   bool result = false;
   try {
+    YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForSchedulerUpdate);
     YACS::ENGINE::VisitorSaveState vst(_root);
     vst.openFileDump(xmlFile.c_str());
     _root->accept(&vst);

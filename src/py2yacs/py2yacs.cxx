@@ -75,7 +75,7 @@ static
 std::string copyList(PyObject *pyList, std::list<std::string>& cppList)
 {
   std::string error="";
-  if(not PyList_Check(pyList))
+  if(!PyList_Check(pyList))
   {
     error = "Not a python list.\n";
     //throw Py2yacsException("Not a python list.");
@@ -86,7 +86,7 @@ std::string copyList(PyObject *pyList, std::list<std::string>& cppList)
     for(Py_ssize_t i=0; i<n; i++)
     {
       PyObject *elem = PyList_GetItem(pyList,i);
-      if(not PyUnicode_Check(elem))
+      if(!PyUnicode_Check(elem))
       {
         std::stringstream message;
         message << "List element number " << i << " is not a string.\n";
@@ -157,7 +157,7 @@ PyObject* checkAndGetAttribute(PyObject *p,
                                std::string& error)
 {
   PyObject *pAttribute = PyObject_GetAttrString(p, attribute);
-  if(not pAttribute)
+  if(!pAttribute)
   {
     error += "Attribute '";
     error += attribute;
@@ -183,7 +183,7 @@ void Py2yacs::load(const std::string& python_code)
     pModule = PyImport_Import(pValue);
     Py_DECREF(pValue);
 
-    if (not pModule)
+    if (!pModule)
     {
       errorMessage  = getPyErrorText();
       errorMessage += "\nFailed to load ";
@@ -202,11 +202,11 @@ void Py2yacs::load(const std::string& python_code)
         
         pValue = PyObject_CallObject(pFunc, pArgs);
         Py_DECREF(pArgs);
-        if (not pValue)
+        if (!pValue)
             errorMessage = getPyErrorText();
         else
         {
-          if (not PyTuple_Check(pValue))
+          if (!PyTuple_Check(pValue))
           {
             errorMessage += "Parsing function should return a tuple of two string lists.\n";
           }
@@ -216,7 +216,7 @@ void Py2yacs::load(const std::string& python_code)
             errorMessage += "Parsing function should return two string lists.\n";
           }
           PyObject *pyList = PyTuple_GetItem(pValue, 0);
-          if(not PyList_Check(pyList))
+          if(!PyList_Check(pyList))
           {
             errorMessage += "The first returned value of the parsing function"
                             " should be a python list.\n";
@@ -231,7 +231,7 @@ void Py2yacs::load(const std::string& python_code)
               
               if(pAttribute = checkAndGetAttribute(fpy, "name", errorMessage))
               {
-                if(not PyUnicode_Check(pAttribute))
+                if(!PyUnicode_Check(pAttribute))
                 {
                   errorMessage += "Attribute 'name' should be a string.\n";
                   Py_DECREF(pAttribute);
@@ -281,7 +281,7 @@ void Py2yacs::load(const std::string& python_code)
       Py_DECREF(pModule);
     }
     
-    if(not errorMessage.empty())
+    if(!errorMessage.empty())
       throw Py2yacsException(errorMessage);
     // Py_Finalize();
 }
@@ -296,7 +296,7 @@ void Py2yacs::save(const std::string& file_path,
 
 YACS::ENGINE::Proc* Py2yacs::createProc(const std::string& python_function)const
 {
-  if(not _global_errors.empty())
+  if(!_global_errors.empty())
   {
     std::string error_message = "The python script contains errors.\n";
     std::list<std::string>::const_iterator it;
@@ -307,7 +307,7 @@ YACS::ENGINE::Proc* Py2yacs::createProc(const std::string& python_function)const
   
   // find function properties
   std::list<FunctionProperties>::const_iterator fn_prop = _functions.begin();
-  while(fn_prop != _functions.end() and fn_prop->_name != python_function)
+  while(fn_prop != _functions.end() && fn_prop->_name != python_function)
     fn_prop++;
   
   if(fn_prop == _functions.end())
@@ -315,7 +315,7 @@ YACS::ENGINE::Proc* Py2yacs::createProc(const std::string& python_function)const
     throw Py2yacsException(std::string("Function not found: ")+python_function);
   }
   
-  if(not fn_prop->_errors.empty())
+  if(!fn_prop->_errors.empty())
   {
     std::string error_message = "Function contains errors.\n";
     std::list<std::string>::const_iterator it;
@@ -333,7 +333,7 @@ YACS::ENGINE::Proc* Py2yacs::createProc(const std::string& python_function)const
       it!=fn_prop->_output_ports.end();
       it++)
   {
-    if (not first)
+    if (!first)
       fn_call << ",";
     first = false;
     fn_call << *it;
@@ -344,7 +344,7 @@ YACS::ENGINE::Proc* Py2yacs::createProc(const std::string& python_function)const
       it != fn_prop->_input_ports.end();
       it++)
   {
-    if (not first)
+    if (!first)
       fn_call << ",";
     first = false;
     fn_call << *it;

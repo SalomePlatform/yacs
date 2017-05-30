@@ -98,6 +98,8 @@ namespace YACS
       virtual void setEdition(bool edition);
       virtual void modified();
       virtual void saveSchema(const std::string& xmlSchemaFile);
+      //! deprecated. See VisitorSalomeSaveState and schemaSaveState in order
+      //! to deal with the execution state of ForEachLoop.
       virtual void saveState(const std::string& xmlStateFile);
     protected:
       void removeContainers();

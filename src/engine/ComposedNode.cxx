@@ -241,7 +241,7 @@ std::vector<Task *> ComposedNode::getNextTasks(bool& isMore)
  * Calls ComposedNode::updateStateFrom to update state from task to root node
  */
 void ComposedNode::notifyFrom(const Task *sender, //* I : task emitting event
-                              YACS::Event event,   //* I : event emitted
+                              YACS::Event event,  //* I : event emitted
                               const Executor *execInst
                               )
 {
@@ -1376,7 +1376,7 @@ OutputDataStreamPort *ComposedNode::getOutputDataStreamPort(const std::string& n
  * Called by ComposedNode::notifyFrom
  */
 YACS::Event ComposedNode::updateStateFrom(Node *node,        //* I : node emitting event
-                                          YACS::Event event,  //* I : event emitted
+                                          YACS::Event event, //* I : event emitted
                                           const Executor *execInst
                                           )
 {
