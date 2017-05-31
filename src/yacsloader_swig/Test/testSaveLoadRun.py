@@ -1561,11 +1561,11 @@ o2=5*i1
     q.getChildByName("n1").getChildByName("n10").setScript("""
 import time
 time.sleep(0.1)
-print "execution n10:", i1
+print("execution n10:", i1)
 o2=5*i1
 """)
     q.getChildByName("n2").setScript("""
-print "execution n2:", i3
+print("execution n2:", i3)
 o4=i3
 """)
     loader.loadState(q, xmlStateFileName)

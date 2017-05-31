@@ -175,15 +175,16 @@ class TestExec(unittest.TestCase):
         self.assertEqual(101, self.p.getChildByName('node35').getEffectiveState())
         print("================= reach BREAKPOINT PARTIAL EXEC ==========")
         pass
-                          
+
     pass
 
 if __name__ == '__main__':
-  import os
-  U = os.getenv('USER')
-  f=open("/tmp/" + U + "/UnitTestsResult", 'a')
-  f.write("  --- TEST src/yacsloader: testExec.py\n")
-  suite = unittest.makeSuite(TestExec)
-  result=unittest.TextTestRunner(f, descriptions=1, verbosity=1).run(suite)
-  f.close()
-  sys.exit(not result.wasSuccessful())
+    import os
+    import sys
+    U = os.getenv('USER')
+    with open(os.path.join("/tmp", U, "UnitTestsResult"), 'a') as f:
+        f.write("  --- TEST src/yacsloader: testExec.py\n")
+        suite = unittest.makeSuite(TestExec)
+        result = unittest.TextTestRunner(f, descriptions=1, verbosity=1).run(suite)
+
+    sys.exit(not result.wasSuccessful())
