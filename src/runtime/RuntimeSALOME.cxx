@@ -324,7 +324,7 @@ void RuntimeSALOME::init(long flags, int argc, char* argv[])
   
       if (PyDict_GetItemString(globals, "__builtins__") == NULL) 
         {
-          PyObject *bimod = PyImport_ImportModule("__builtin__");
+          PyObject *bimod = PyImport_ImportModule("builtins");
           if (bimod == NULL || PyDict_SetItemString(globals, "__builtins__", bimod) != 0)
             Py_FatalError("can't add __builtins__ to __main__");
           Py_DECREF(bimod);
@@ -358,7 +358,7 @@ void RuntimeSALOME::init(long flags, int argc, char* argv[])
                            "from omniORB import CORBA\n"
                            "from omniORB import any\n"
                            "orb = CORBA.ORB_init([], CORBA.ORB_ID)\n"
-                           "#print sys.getrefcount(orb)\n"
+                           "#print(sys.getrefcount(orb))\n"
                            "try:\n"
                            "  import SALOME\n"
                            "except:\n"
