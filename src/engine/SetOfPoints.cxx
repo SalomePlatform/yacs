@@ -61,7 +61,7 @@ void SetOfPoints::simplify()
         continue;
       _bp->deal2Ter(somethingDone);
       if(!somethingDone)
-        throw Exception("SetOfPoints::simplify : not implemented yet !");
+        throw Exception("SetOfPoints::simplify : not implemented yet !\nPlease check if there are any recursively redundant links (can be removed by removeRecursivelyRedundantCL method).");
     }
 }
 
