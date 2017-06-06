@@ -24,6 +24,7 @@
 #include "TypeCode.hxx"
 #include "SalomeProc.hxx"
 
+#include "Basics_Utils.hxx"
 #include "SALOME_NamingService.hxx"
 #include "SALOMEDS.hh"
 #include "SALOMEDS_Attributes.hh"
@@ -280,7 +281,7 @@ void StudyOutNode::execute()
       //open a new one
       std::stringstream msg;
       msg << "Study" << studyid;
-      myStudy=aStudyManager->NewStudy(msg.str().c_str());
+      myStudy=aStudyManager->NewStudy(Kernel_Utils::decode_s(msg.str()));
       if(CORBA::is_nil(myStudy))
         {
           _errorDetails="Execution problem: can not create new study " + msg.str();
@@ -311,7 +312,7 @@ void StudyOutNode::execute()
   // save in file if ref is given
   if(_ref != "")
     {
-      aStudyManager->SaveAs(_ref.c_str(),myStudy, false);
+      aStudyManager->SaveAs(Kernel_Utils::decode_s(_ref),myStudy, false);
     }
   DEBTRACE("+++++++ end StudyOutNode::execute +++++++++++" );
 }
