@@ -140,6 +140,7 @@ namespace YACS
       HomogeneousPoolContainer *getDirectFather() { return _directFather; }
       const HomogeneousPoolContainer *getDirectFather() const { return _directFather; }
       int getNumberOfCoresPerWorker() const { return _directFather->getNumberOfCoresPerWorker(); }
+      std::string getProperty(const std::string& name) const { return _directFather->getProperty(name); }
       void prepareMaskForExecution() const;
       void forYourTestsOnly(ForTestOmlyHPContCls *data) const;
       std::string getName() const;

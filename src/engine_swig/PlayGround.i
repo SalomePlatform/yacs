@@ -94,8 +94,8 @@ namespace YACS
       virtual PartDefinition *copy() const;
       virtual std::string printSelf() const;
       virtual int getNumberOfCoresConsumed() const;
-    private:
-      PartDefinition(const PlayGround *pg, int nbOfCoresPerComp);
+    protected:
+      PartDefinition();
       ~PartDefinition();
     };
 

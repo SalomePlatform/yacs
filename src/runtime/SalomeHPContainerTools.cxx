@@ -23,6 +23,7 @@
 #include "Exception.hxx"
 
 #include <algorithm>
+#include <limits>
 
 using namespace YACS::ENGINE;
 

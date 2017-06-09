@@ -109,6 +109,7 @@ SET(SWIGINCLUDES ${ENGINEINCL}
 
 SET(SWIG_MODULE_pilot_EXTRA_DEPS engtypemaps.i ${SWIGINCLUDES})
 SWIG_ADD_MODULE(pilot python pilot.i ExecutorSwig.cxx)
+SWIG_CHECK_GENERATION(pilot)
 
 SET(SWIG_MODULE_pypilot_EXTRA_DEPS pilot.i engtypemaps.i _pilot ${SWIGINCLUDES})
 SWIG_ADD_MODULE(pypilot python pypilot.i)
