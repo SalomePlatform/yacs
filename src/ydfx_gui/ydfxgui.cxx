@@ -21,6 +21,7 @@
 #include "YACSEvalSession.hxx"
 
 #include "YDFXGUIMain.hxx"
+#include <Python.h>
 
 #include <QApplication>
 
@@ -28,6 +29,7 @@ int main(int argc, char *argv[])
 {
   QApplication app(argc,argv);
   //
+  Py_Initialize();
   YACSEvalSession session;
   session.launch();
   YDFXGUI mygui(&session);

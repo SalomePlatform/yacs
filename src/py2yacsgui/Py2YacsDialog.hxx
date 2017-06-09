@@ -37,6 +37,7 @@ class PY2YACSGUILIB_EXPORT Py2YacsDialog : public QDialog
   public:
     Py2YacsDialog( QWidget* parent=0);
     YACS::ENGINE::Proc* getYacsSchema();
+    QString getYacsFile();
     
   public slots:
     virtual void onFunctionNamesChange(std::list<std::string> validFunctionNames);
@@ -48,7 +49,8 @@ class PY2YACSGUILIB_EXPORT Py2YacsDialog : public QDialog
     virtual void onSave();
     virtual void onSaveAs();
   private:
-    Py2YacsModel model;
+    Py2YacsModel _model;
+    QString _yacsFile;
 #ifdef HAS_PYEDITOR
     PyEditor_Editor *_pyEditor;
 #else

@@ -50,10 +50,9 @@ Py2YacsDialog::Py2YacsDialog( QWidget* parent)
   _exportButton = new QPushButton(tr("E&xport to YACS schema..."));
   exportLayout->addWidget(new QLabel(tr("Function to run:")));
   exportLayout->addWidget(_functionChosen);
-  exportLayout->addWidget(_exportButton);
 
   QHBoxLayout *validationLayout = new QHBoxLayout;
-  _okButton = new QPushButton(tr("O&k"));
+  _okButton = new QPushButton(tr("Save YACS schema and &quit"));
   QPushButton * cancelButton = new QPushButton(tr("&Cancel"));
   validationLayout->addWidget(_okButton);
   validationLayout->addWidget(cancelButton);
@@ -63,6 +62,7 @@ Py2YacsDialog::Py2YacsDialog( QWidget* parent)
   editLayout->addLayout(fileLayout);
   editLayout->addWidget(_pyEditor);
   editLayout->addWidget(applyButton);
+  editLayout->addLayout(exportLayout);
   editWidget->setLayout(editLayout);
   
   QGroupBox *messageWidget = new QGroupBox(tr("Messages:"));
@@ -76,7 +76,6 @@ Py2YacsDialog::Py2YacsDialog( QWidget* parent)
 
   QVBoxLayout *mainLayout = new QVBoxLayout;
   mainLayout->addWidget(splitterW);
-  mainLayout->addLayout(exportLayout);
   mainLayout->addLayout(validationLayout);
   setLayout(mainLayout);
   setWindowTitle(tr("Python to YACS schema editor"));
@@ -86,20 +85,20 @@ Py2YacsDialog::Py2YacsDialog( QWidget* parent)
   connect(_pyEditor, SIGNAL(textChanged()), this, SLOT(invalidModel()));
   connect(applyButton,SIGNAL(clicked()),this, SLOT(onApply()));
   
-  connect(&model, SIGNAL(scriptChanged(const QString&)),
+  connect(&_model, SIGNAL(scriptChanged(const QString&)),
           _pyEditor, SLOT(setText(const QString&)));
-  connect(&model, SIGNAL(errorChanged(const QString&)),
+  connect(&_model, SIGNAL(errorChanged(const QString&)),
           errorMessages, SLOT(setText(const QString&)));
-  connect(&model, SIGNAL(functionsChanged(std::list<std::string>)),
+  connect(&_model, SIGNAL(functionsChanged(std::list<std::string>)),
           this, SLOT(onFunctionNamesChange(std::list<std::string>)));
   connect(_functionChosen,SIGNAL(currentIndexChanged(const QString &)),
-          &model, SLOT(setFunctionName(const QString&)));
+          &_model, SLOT(setFunctionName(const QString&)));
   connect(loadButton,SIGNAL(clicked()),this, SLOT(onLoad()));
   connect(_saveButton,SIGNAL(clicked()),this, SLOT(onSave()));
   connect(saveAsButton,SIGNAL(clicked()),this, SLOT(onSaveAs()));
   connect(_exportButton,SIGNAL(clicked()),this, SLOT(onExport()));
   connect(cancelButton,SIGNAL(clicked()),this, SLOT(reject()));
-  connect(_okButton,SIGNAL(clicked()),this, SLOT(accept()));
+  connect(_okButton,SIGNAL(clicked()),this, SLOT(onExport()));
 }
 
 void Py2YacsDialog::onFunctionNamesChange(std::list<std::string> validFunctionNames)
@@ -134,8 +133,8 @@ void Py2YacsDialog::onLoad()
     QFile file(fileName);
     settings.setValue("currentDir", QFileInfo(fileName).absolutePath());
     
-    model.loadFile(fileName.toStdString());
-    _saveButton->setEnabled(model.savePossible());
+    _model.loadFile(fileName.toStdString());
+    _saveButton->setEnabled(_model.savePossible());
     checkModel();
   }
 }
@@ -157,13 +156,17 @@ void Py2YacsDialog::onExport()
     QFile file(fileName);
     settings.setValue("currentDir", QFileInfo(fileName).absolutePath());
     
-    model.exportToXml(fileName.toStdString());
+    if(_model.exportToXml(fileName.toStdString()))
+    {
+      _yacsFile = fileName;
+      accept();
+    }
   }
 }
 
 void Py2YacsDialog::onApply()
 {
-  model.setScript(_pyEditor->toPlainText().toStdString());
+  _model.setScript(_pyEditor->toPlainText().toStdString());
   checkModel();
 }
 
@@ -176,7 +179,7 @@ void Py2YacsDialog::invalidModel()
 
 void Py2YacsDialog::checkModel()
 {
-  bool modelState = model.schemaAvailable();
+  bool modelState = _model.schemaAvailable();
   _okButton->setEnabled(modelState);
   _exportButton->setEnabled(modelState);
   _functionChosen->setEnabled(modelState);
@@ -184,8 +187,8 @@ void Py2YacsDialog::checkModel()
 
 void Py2YacsDialog::onSave()
 {
-  model.setScript(_pyEditor->toPlainText().toStdString());
-  model.save();
+  _model.setScript(_pyEditor->toPlainText().toStdString());
+  _model.save();
   checkModel();
 }
 
@@ -206,14 +209,19 @@ void Py2YacsDialog::onSaveAs()
     QFile file(fileName);
     settings.setValue("currentDir", QFileInfo(fileName).absolutePath());
     
-    model.setScript(_pyEditor->toPlainText().toStdString());
-    model.saveAs(fileName.toStdString());
-    _saveButton->setEnabled(model.savePossible());
+    _model.setScript(_pyEditor->toPlainText().toStdString());
+    _model.saveAs(fileName.toStdString());
+    _saveButton->setEnabled(_model.savePossible());
     checkModel();
   }
 }
 
 YACS::ENGINE::Proc* Py2YacsDialog::getYacsSchema()
 {
-  return model.getProc();
+  return _model.getProc();
+}
+
+QString Py2YacsDialog::getYacsFile()
+{
+  return _yacsFile;
 }

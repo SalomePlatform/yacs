@@ -45,7 +45,7 @@ class PY2YACSGUILIB_EXPORT Py2YacsModel : public QObject
   void setScript(const std::string& texte);
   const std::string& getScript();
   const std::string& getLastError();
-  void exportToXml(const std::string& path);
+  bool exportToXml(const std::string& path);
   std::list<std::string> getValidFunctionNames();
   void setFunctionName(const std::string& functionName);
   bool savePossible();

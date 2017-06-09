@@ -23,6 +23,7 @@
 #include "Proc.hxx"
 #include "InlineNode.hxx"
 #include "AutoGIL.hxx"
+#include "InputPort.hxx"
 
 Py2yacsException::Py2yacsException(const std::string& what)
 : std::exception(),
@@ -368,12 +369,16 @@ YACS::ENGINE::Proc* Py2yacs::createProc(const std::string& python_function)const
   for(it = fn_prop->_input_ports.begin();
       it != fn_prop->_input_ports.end();
       it++)
-    node->edAddInputPort(*it, tc_double);
+  {
+    YACS::ENGINE::InputPort *newport = node->edAddInputPort(*it, tc_double);
+    newport->edInit(0.0);
+  }
   
   for(it = fn_prop->_output_ports.begin();
       it != fn_prop->_output_ports.end();
       it++)
     node->edAddOutputPort(*it, tc_double);
-  
+
+  node->setExecutionMode(YACS::ENGINE::InlineNode::REMOTE_STR);
   return schema;
 }

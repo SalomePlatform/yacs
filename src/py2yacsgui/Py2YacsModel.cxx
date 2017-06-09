@@ -139,8 +139,9 @@ const std::string& Py2YacsModel::getLastError()
   return _lastError;
 }
 
-void Py2YacsModel::exportToXml(const std::string& path)
+bool Py2YacsModel::exportToXml(const std::string& path)
 {
+  bool ok = true;
   if(schemaAvailable())
   {
     try
@@ -151,9 +152,11 @@ void Py2YacsModel::exportToXml(const std::string& path)
     {
       _lastError = e.what();
       _lastError += "\n";
+      ok = false;
     }
   }
   emit errorChanged(_lastError.c_str());
+  return ok;
 }
 
 void Py2YacsModel::setFunctionName(const QString& functionName)
