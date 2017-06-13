@@ -1,6 +1,5 @@
 <?xml version='1.0'?>
 <proc>
-   <property name="DefaultStudyID" value="1"/>
    <objref name="GEOM_Shape" id="IDL:GEOM/GEOM_Object:1.0"/>
    <type name="bool" kind="bool"/>
    <sequence name="boolvec" content="bool"/>

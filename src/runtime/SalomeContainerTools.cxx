@@ -217,7 +217,7 @@ CORBA::Object_ptr SalomeContainerToolsBase::CreateComponentInstance(Container *c
       env[item].value <<= itm->second.c_str();
     }
 
-  objComponent=contPtr->create_component_instance_env(compoName.c_str(), studyid, env, reason);
+  objComponent=contPtr->create_component_instance_env(compoName.c_str(), env, reason);
   if(CORBA::is_nil(objComponent))
     {
       std::string text="Error while trying to create a new component: component '"+ compoName;

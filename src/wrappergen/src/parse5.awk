@@ -36,7 +36,6 @@ BEGIN {
         "      <component-author>""</component-author>\n"\
         "      <component-version>1.0</component-version>\n"\
         "      <component-comment></component-comment>\n"\
-        "      <component-multistudy>1</component-multistudy>\n"\
         "      <component-icone>"class_name".png</component-icone>\n"\
         "      <component-impltype>1</component-impltype>\n"\
         "      <component-interface-list>" >> catalog_file

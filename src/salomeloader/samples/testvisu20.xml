@@ -112,13 +112,8 @@
       <PyFunc><![CDATA[    lcc = LifeCycleCORBA(orb)                     ]]></PyFunc>
       <PyFunc><![CDATA[    # --- create a naming service instance              ]]></PyFunc>
       <PyFunc><![CDATA[    naming_service = SALOME_NamingServicePy_i(orb)    ]]></PyFunc>
-      <PyFunc><![CDATA[    # --- get Study Manager reference                     ]]></PyFunc>
-      <PyFunc><![CDATA[    obj = naming_service.Resolve('myStudyManager')    ]]></PyFunc>
-      <PyFunc><![CDATA[    StudyManager = obj._narrow(SALOMEDS.StudyManager)    ]]></PyFunc>
       <PyFunc><![CDATA[    # --- load visu component                          ]]></PyFunc>
       <PyFunc><![CDATA[    aVisu = lcc.FindOrLoadComponent("FactoryServer","VISU")       ]]></PyFunc>
-      <PyFunc><![CDATA[    aStudy = StudyManager.GetStudyByID(1)      ]]></PyFunc>
-      <PyFunc><![CDATA[    aVisu.SetCurrentStudy(aStudy)      ]]></PyFunc>
       <PyFunc><![CDATA[    print "InitDisplay --> aVisu ", aVisu         ]]></PyFunc>
       <PyFunc><![CDATA[    time.sleep(2)         ]]></PyFunc>
       <PyFunc><![CDATA[    aViewManager=aVisu.GetViewManager()         ]]></PyFunc>

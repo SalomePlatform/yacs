@@ -122,8 +122,8 @@ This class contains a constructor whose arguments are imposed by SALOME, a virtu
       const char *instanceName,
       const char *interfaceName);
     virtual ~HELLO();
-    HELLO_ORB::status hello  ( SALOMEDS::Study_ptr study, const char* name );
-    HELLO_ORB::status goodbye( SALOMEDS::Study_ptr study, const char* name );
+    HELLO_ORB::status hello  ( const char* name );
+    HELLO_ORB::status goodbye( const char* name );
     void              copyOrMove( const HELLO_ORB::object_list& what,
 				  SALOMEDS::SObject_ptr where,
 				  CORBA::Long row, CORBA::Boolean isCopy );
@@ -147,12 +147,12 @@ to load the HELLO component::
 The definitions of the constructor and the HELLOEngine_factory instantiation function (both normalized!),
 hello, goodbye and copyOrMove are given in the source file (HELLO.cxx)::	
 
-	HELLO_ORB::status HELLO::hello( SALOMEDS::Study_ptr study, const char* name )
+	HELLO_ORB::status HELLO::hello( const char* name )
 	{
 	...
 	}
 
-	HELLO_ORB::status HELLO::goodbye( SALOMEDS::Study_ptr study, const char* name )
+	HELLO_ORB::status HELLO::goodbye( const char* name )
 	{
 	...
 	}
@@ -237,7 +237,7 @@ Let us check that hello object is correctly typed, and we will call the hello se
 
     >>> print hello
     <HELLO_ORB._objref_HELLO_Gen instance at 0x8274e94>
-    >>> status=hello.hello(salome.myStudy, "Nicolas")
+    >>> status=hello.hello("Nicolas")
     >>> print status
     OP_OK
 

@@ -45,10 +45,8 @@ public:
 
   QxScene_ViewWindow* getNewWindow(QGraphicsScene *scene);
 
-  int AssociateViewToWindow(QGraphicsView* gView,
+  void AssociateViewToWindow(QGraphicsView* gView,
                             QxScene_ViewWindow* viewWindow);
-
-  int activeStudyId();
 
   QDockWidget* objectBrowser();
 

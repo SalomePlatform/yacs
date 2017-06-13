@@ -24,19 +24,19 @@ usage="""USAGE: runSalome.py [options]
 --help                        : affichage de l'aide
 --gui                         : lancement du GUI
 --logger		      : redirection des messages dans un fichier
---xterm			      : les serveurs ouvrent une fenêtre xterm et les messages sont affichés dans cette fenêtre
---modules=module1,module2,... : où modulen est le nom d'un module Salome à charger dans le catalogue
+--xterm			      : les serveurs ouvrent une fenï¿½tre xterm et les messages sont affichï¿½s dans cette fenï¿½tre
+--modules=module1,module2,... : oï¿½ modulen est le nom d'un module Salome ï¿½ charger dans le catalogue
 --containers=cpp,python,superv: lancement des containers cpp, python et de supervision
---killall	              : arrêt des serveurs de salome
+--killall	              : arrï¿½t des serveurs de salome
 
- La variable d'environnement <modulen>_ROOT_DIR doit etre préalablement
- positionnée (modulen doit etre en majuscule).
+ La variable d'environnement <modulen>_ROOT_DIR doit etre prï¿½alablement
+ positionnï¿½e (modulen doit etre en majuscule).
  KERNEL_ROOT_DIR est obligatoire.
 """
 
 # -----------------------------------------------------------------------------
 #
-# Fonction d'arrêt de salome
+# Fonction d'arrï¿½t de salome
 #
 
 def killSalome():
@@ -128,7 +128,7 @@ except getopt.error, msg:
 
 # -----------------------------------------------------------------------------
 #
-# Vérification des variables d'environnement
+# Vï¿½rification des variables d'environnement
 #
 try:
   kernel_root_dir=os.environ["KERNEL_ROOT_DIR"]
@@ -148,7 +148,7 @@ for module in liste_modules :
 
 # il faut KERNEL en premier dans la liste des modules
 # - l'ordre des modules dans le catalogue sera identique
-# - la liste des modules presents dans le catalogue est exploitée pour charger les modules CORBA python,
+# - la liste des modules presents dans le catalogue est exploitï¿½e pour charger les modules CORBA python,
 #   il faut charger les modules python du KERNEL en premier
 
 if "KERNEL" in liste_modules:liste_modules.remove("KERNEL")
@@ -162,7 +162,7 @@ if "SUPERV" in liste_modules:with_container_superv=1
 
 # -----------------------------------------------------------------------------
 #
-# Définition des classes d'objets pour le lancement des Server CORBA
+# Dï¿½finition des classes d'objets pour le lancement des Server CORBA
 #
 
 class Server:
@@ -342,7 +342,7 @@ def startSalome():
   RegistryServer().run()
 
   #
-  # Attente de la disponibilité du Registry dans le Naming Service
+  # Attente de la disponibilitï¿½ du Registry dans le Naming Service
   #
   clt.waitNS("/Registry")
 
@@ -354,7 +354,7 @@ def startSalome():
   cataServer.run()
 
   #
-  # Attente de la disponibilité du Catalog Server dans le Naming Service
+  # Attente de la disponibilitï¿½ du Catalog Server dans le Naming Service
   #
   import SALOME_ModuleCatalog
   clt.waitNS("/Kernel/ModulCatalog",SALOME_ModuleCatalog.ModuleCatalog)
@@ -372,9 +372,9 @@ def startSalome():
 
 
   #
-  # Attente de la disponibilité du SalomeDS dans le Naming Service
+  # Attente de la disponibilitï¿½ du SalomeDS dans le Naming Service
   #
-  clt.waitNS("/myStudyManager")
+  clt.waitNS("/Study")
 
   #
   # Lancement Session Server
@@ -382,7 +382,7 @@ def startSalome():
   SessionServer().run()
 
   #
-  # Attente de la disponibilité du Session Server dans le Naming Service
+  # Attente de la disponibilitï¿½ du Session Server dans le Naming Service
   #
   import SALOME
   session=clt.waitNS("/Kernel/Session",SALOME.Session)
@@ -399,7 +399,7 @@ def startSalome():
   if with_container_cpp:
 	  ContainerCPPServer().run()
 	  #
-	  # Attente de la disponibilité du Container C++ local 
+	  # Attente de la disponibilitï¿½ du Container C++ local 
           # dans le Naming Service
 	  #
 	  clt.waitNS("/Containers/" + theComputer + "/FactoryServer")
@@ -409,7 +409,7 @@ def startSalome():
   if with_container_python:
 	  ContainerPYServer().run()
 	  #
-	  # Attente de la disponibilité du Container Python local 
+	  # Attente de la disponibilitï¿½ du Container Python local 
           #  dans le Naming Service
 	  #
 	  clt.waitNS("/Containers/" + theComputer + "/FactoryServerPy")
@@ -420,7 +420,7 @@ def startSalome():
 	#
 	ContainerSUPERVServer().run()
 	#
-	# Attente de la disponibilité du Container Supervision local 
+	# Attente de la disponibilitï¿½ du Container Supervision local 
         # dans le Naming Service
 	#
 	clt.waitNS("/Containers/" + theComputer + "/SuperVisionContainer")
@@ -463,13 +463,13 @@ if __name__ == "__main__":
 Sauvegarde du dictionnaire des process dans , %s
 Pour tuer les process SALOME, executer : python killSalome.py depuis
 une console, ou bien killSalome() depuis le present interpreteur,
-s'il n'est pas fermé.
+s'il n'est pas fermï¿½.
 
 runSalome, avec l'option --killall, commence par tuer les process restants 
-d'une execution précédente.
+d'une execution prï¿½cï¿½dente.
 
 Pour lancer uniquement le GUI, executer startGUI() depuis le present interpreteur,
-s'il n'est pas fermé.
+s'il n'est pas fermï¿½.
 
 """ % filedict
    

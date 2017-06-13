@@ -318,7 +318,7 @@ A Study node is used to relate the elements of a SALOME study to the data and re
 
 StudyIn node
 ...................
-A StudyIn node has output data ports only. It is used to define data in the calculation scheme originating from a SALOME study. The associated study is given by its SALOME StudyID.
+A StudyIn node has output data ports only. It is used to define data in the calculation scheme originating from a SALOME study.
 
 A port corresponds to data stored in the associated study.  The data has a name (the port name), a type (the port type), and a reference that gives the entry into the study.  This reference is either a SALOME Entry (for example 0:1:1:2) or a path in the SALOME study tree (for example, /Geometry/box_1).
 
@@ -330,7 +330,7 @@ To create this type of node:
 
 StudyOut node
 ...................
-A StudyOut node only has input data ports.  It is used to store results in a SALOME study.  The associated study is given by its SALOME StudyID.
+A StudyOut node only has input data ports.  It is used to store results in a SALOME study.
 
 A port corresponds to a result to be stored in an associated study.  The result has a name (the port name), a type (the port type), and a reference that gives the entry into the study.  This reference is either a SALOME Entry (for example 0:1:1:2) or a path in the SALOME study tree (for example, /Geometry/box_1).
 
@@ -879,16 +879,6 @@ There is an exception to this rule that concerns the Switch node.  In this case,
 that is not a genuine node.  If it is said that block “b” in the previous example is a switch that has a case with a 
 value of 1 and a default case, then the absolute name of node “n” in the case 1 will be “c.b.p1_n” and the absolute name of the node in 
 the default case will be “c.b.default_n”.
-
-Active study
---------------
-A schema can be executed without using the SALOME study manager. But when a schema must be executed in the context
-of a SALOME study, it is possible to specify the studyId to use.
-
-The way to do that is to set the schema property **DefaultStudyID** to the study id.
-
-In the GUI, this is set automatically to the current active studyId.
-For execution in console mode, see :ref:`xml_active_study`
 
 .. _errorreport:
 

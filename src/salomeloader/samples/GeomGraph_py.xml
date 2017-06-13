@@ -370,13 +370,7 @@
       <PyFunc><![CDATA[    # fuse operation 3          ]]></PyFunc>
       <PyFunc><![CDATA[    shape = MakeBoolean(shape1,shape2,3) ]]></PyFunc>
       <PyFunc><![CDATA[    myNamingService = SALOME_NamingServicePy_i(orb) ]]></PyFunc>
-      <PyFunc><![CDATA[    aSession = myNamingService.Resolve('/Kernel/Session') ]]></PyFunc>
-      <PyFunc><![CDATA[    if aSession == None : ]]></PyFunc>
-      <PyFunc><![CDATA[      aStudyId = 1 ]]></PyFunc>
-      <PyFunc><![CDATA[    else : ]]></PyFunc>
-      <PyFunc><![CDATA[      aStudyId = aSession.GetActiveStudyId() ]]></PyFunc>
-      <PyFunc><![CDATA[    myStudyManager = myNamingService.Resolve('/myStudyManager') ]]></PyFunc>
-      <PyFunc><![CDATA[    aStudy = myStudyManager.GetStudyByID(aStudyId) ]]></PyFunc>
+      <PyFunc><![CDATA[    aStudy = myNamingService.Resolve('/Study') ]]</PyFunc>
       <PyFunc><![CDATA[    aSObject = geom.AddInStudy(aStudy, shape, "shape", None) ]]></PyFunc>
       <PyFunc><![CDATA[    return shape ]]></PyFunc>     </PyFunction>    </PyFunction-list>
     <creation-date>29/10/2004 - 10:50:25</creation-date>

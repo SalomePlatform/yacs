@@ -29,6 +29,7 @@ IF(SALOME_YACS_USE_KERNEL)
     SalomeIDLKernel 
     SalomeNS
     SalomeContainer 
+    SalomeKernelHelpers
     SALOMEBasics 
     SalomeResourcesManager 
     OpUtil 

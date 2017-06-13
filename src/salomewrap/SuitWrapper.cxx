@@ -60,15 +60,12 @@ QWidget* SuitWrapper::getNewWindow(QGraphicsScene *scene)
   return module->getNewWindow(scene);
 }
 
-/*!
- * return studyId used in context delete when study is closed.
- */
-int SuitWrapper::AssociateViewToWindow(QGraphicsView* gView, QWidget* viewWindow)
+void SuitWrapper::AssociateViewToWindow(QGraphicsView* gView, QWidget* viewWindow)
 {
   SalomeWrap_Module* module = dynamic_cast<SalomeWrap_Module*>(_wrapped);
   QxScene_ViewWindow *svw = dynamic_cast<QxScene_ViewWindow*>(viewWindow);
   YASSERT(svw);
-  int studyId = module->AssociateViewToWindow(gView, svw);
+  module->AssociateViewToWindow(gView, svw);
   WrapGraphicsView* wgv = dynamic_cast<WrapGraphicsView*>(gView);
   YASSERT(wgv);
   QObject::disconnect(svw->toolMgr()->action(QxScene_ViewWindow::FitAllId),
@@ -112,13 +109,6 @@ int SuitWrapper::AssociateViewToWindow(QGraphicsView* gView, QWidget* viewWindow
   QObject::connect(svw->toolMgr()->action(QxScene_ViewWindow::ResetId),
                    SIGNAL(triggered(bool)),
                    wgv, SLOT(onViewReset()));
-  return studyId;
-}
-
-int SuitWrapper::activeStudyId()
-{
-  SalomeWrap_Module* module = dynamic_cast<SalomeWrap_Module*>(_wrapped);
-  return module->activeStudyId();
 }
 
 QDockWidget* SuitWrapper::objectBrowser()

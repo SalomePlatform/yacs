@@ -25,6 +25,7 @@
 #include "SalomeProc.hxx"
 
 #include "SALOME_NamingService.hxx"
+#include "SALOME_KernelServices.hxx"
 #include "SALOMEDS.hh"
 #include "SALOMEDS_Attributes.hh"
 
@@ -74,47 +75,6 @@ void StudyInNode::setData(OutputPort* port, const std::string& data)
 void StudyInNode::execute()
 {
   DEBTRACE("+++++++ StudyInNode::execute +++++++++++");
-  SALOME_NamingService NS(getSALOMERuntime()->getOrb());
-  CORBA::Object_var obj=NS.Resolve("/myStudyManager");
-  if(CORBA::is_nil(obj)) 
-    {
-      _errorDetails="Execution problem: no naming service";
-      throw Exception(_errorDetails);
-    }
-
-  SALOMEDS::StudyManager_var aStudyManager = SALOMEDS::StudyManager::_narrow(obj);
-  if(CORBA::is_nil(aStudyManager)) 
-    {
-      _errorDetails="Execution problem: no naming service";
-      throw Exception(_errorDetails);
-    }
-
-  int studyid=1;
-  if (getProperty("StudyID") != "")
-    {
-      // StudyId is specified
-      studyid=atoi(getProperty("StudyID").c_str());
-    }
-  else
-    {
-      Proc* p=getProc();
-      if(p)
-        {
-          std::string value=p->getProperty("DefaultStudyID");
-          if(!value.empty())
-            studyid= atoi(value.c_str());
-        }
-    }
-
-
-  SALOMEDS::Study_var myStudy =aStudyManager->GetStudyByID(studyid);
-  if(CORBA::is_nil(myStudy)) 
-    {
-      std::stringstream msg;
-      msg << "Execution problem: no study with id " << studyid;
-      _errorDetails=msg.str();
-      throw Exception(_errorDetails);
-    }
 
   std::list<OutputPort *>::const_iterator iter;
   for(iter = _setOfOutputPort.begin(); iter != _setOfOutputPort.end(); iter++)
@@ -122,7 +82,7 @@ void StudyInNode::execute()
       OutputStudyPort *outp = dynamic_cast<OutputStudyPort *>(*iter);
       try
         {
-          outp->getDataFromStudy(myStudy);
+          outp->getDataFromStudy();
         }
       catch(Exception& e)
         {
@@ -205,10 +165,10 @@ void StudyOutNode::setData(InputPort* port, const std::string& data)
 }
 
 /*
-SALOMEDS::SObject_ptr findOrCreateSoWithName(SALOMEDS::Study_ptr study, SALOMEDS::StudyBuilder_ptr builder,
+SALOMEDS::SObject_ptr findOrCreateSoWithName(SALOMEDS::StudyBuilder_ptr builder,
                                              SALOMEDS::SObject_ptr sobj, const std::string& name)
 {
-  SALOMEDS::ChildIterator_var anIterator= study->NewChildIterator(sobj);
+  SALOMEDS::ChildIterator_var anIterator= KERNEL::getStudyServant()->NewChildIterator(sobj);
   SALOMEDS::GenericAttribute_var anAttr;
   SALOMEDS::AttributeName_var namAttr ;
   SALOMEDS::SObject_var result=SALOMEDS::SObject::_nil();
@@ -242,54 +202,8 @@ SALOMEDS::SObject_ptr findOrCreateSoWithName(SALOMEDS::Study_ptr study, SALOMEDS
 void StudyOutNode::execute()
 {
   DEBTRACE("+++++++ StudyOutNode::execute +++++++++++");
-  SALOME_NamingService NS(getSALOMERuntime()->getOrb());
-  CORBA::Object_var obj=NS.Resolve("/myStudyManager");
-  if(CORBA::is_nil(obj))
-    {
-      _errorDetails="Execution problem: no naming service";
-      throw Exception(_errorDetails);
-    }
 
-  SALOMEDS::StudyManager_var aStudyManager = SALOMEDS::StudyManager::_narrow(obj);
-  if(CORBA::is_nil(aStudyManager))
-    {
-      _errorDetails="Execution problem: no naming service";
-      throw Exception(_errorDetails);
-    }
-
-  int studyid=1;
-  if (getProperty("StudyID") != "")
-    {
-      // StudyId is specified
-      studyid=atoi(getProperty("StudyID").c_str());
-    }
-  else
-    {
-      Proc* p=getProc();
-      if(p)
-        {
-          std::string value=p->getProperty("DefaultStudyID");
-          if(!value.empty())
-            studyid= atoi(value.c_str());
-        }
-    }
-
-  SALOMEDS::Study_var myStudy =aStudyManager->GetStudyByID(studyid);
-  if(CORBA::is_nil(myStudy))
-    {
-      //open a new one
-      std::stringstream msg;
-      msg << "Study" << studyid;
-      myStudy=aStudyManager->NewStudy(msg.str().c_str());
-      if(CORBA::is_nil(myStudy))
-        {
-          _errorDetails="Execution problem: can not create new study " + msg.str();
-          throw Exception(_errorDetails);
-        }
-    }
-  DEBTRACE(myStudy->StudyId());
-
-  SALOMEDS::StudyBuilder_var aBuilder =myStudy->NewBuilder() ;
+  SALOMEDS::StudyBuilder_var aBuilder =KERNEL::getStudyServant()->NewBuilder() ;
   if(CORBA::is_nil(aBuilder))
     {
       _errorDetails="Execution problem: can not create StudyBuilder";
@@ -305,13 +219,13 @@ void StudyOutNode::execute()
   for(iter = _setOfInputPort.begin(); iter != _setOfInputPort.end(); iter++)
     {
       InputStudyPort *inp = dynamic_cast<InputStudyPort *>(*iter);
-      inp->putDataInStudy(myStudy,aBuilder);
+      inp->putDataInStudy(aBuilder);
     }
 
   // save in file if ref is given
   if(_ref != "")
     {
-      aStudyManager->SaveAs(_ref.c_str(),myStudy, false);
+	  KERNEL::getStudyServant()->SaveAs(_ref.c_str(), false, false);
     }
   DEBTRACE("+++++++ end StudyOutNode::execute +++++++++++" );
 }

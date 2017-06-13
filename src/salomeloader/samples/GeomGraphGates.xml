@@ -32,10 +32,6 @@
      <service-name>GeomGraph</service-name>
      <inParameter-list>
       <inParameter>
-       <inParameter-type>long</inParameter-type>
-       <inParameter-name>SetStudyID__theStudyID</inParameter-name>
-      </inParameter>
-      <inParameter>
        <inParameter-type>double</inParameter-type>
        <inParameter-name>MakeBox__theX1</inParameter-name>
       </inParameter>
@@ -108,33 +104,6 @@
    </node>
   </info-list>
   <node-list>
-   <node>
-    <component-name>GEOM_Superv</component-name>
-    <interface-name>GEOM_Superv</interface-name>
-    <node-name>SetStudyID</node-name>
-    <kind>0</kind>
-    <coupled-node>?</coupled-node>
-    <service>
-     <service-name>SetStudyID</service-name>
-     <inParameter-list>
-      <inParameter>
-       <inParameter-type>long</inParameter-type>
-       <inParameter-name>theStudyID</inParameter-name>
-      </inParameter>
-     </inParameter-list>
-     <outParameter-list/>
-    </service>
-    <DataStream-list/>
-    <PyFunction-list/>
-    <creation-date>14/12/2005 - 14:39:18</creation-date>
-    <lastmodification-date>14/12/2005 - 14:39:18</lastmodification-date>
-    <editor-release>2.0</editor-release>
-    <author>?</author>
-    <container>localhost/FactoryServer</container>
-    <comment>SetStudyID from GEOM_Superv</comment>
-    <x-position>14</x-position>
-    <y-position>241</y-position>
-   </node>
    <node>
     <component-name>GEOM_Superv</component-name>
     <interface-name>GEOM_Superv</interface-name>
@@ -414,13 +383,6 @@
   </node-list>
   <link-list>
    <link>
-    <fromnode-name>SetStudyID</fromnode-name>
-    <fromserviceparameter-name>Gate</fromserviceparameter-name>
-    <tonode-name>MakeBox</tonode-name>
-    <toserviceparameter-name>Gate</toserviceparameter-name>
-    <coord-list/>
-   </link>
-   <link>
     <fromnode-name>MakeBox</fromnode-name>
     <fromserviceparameter-name>return</fromserviceparameter-name>
     <tonode-name>MakeCopy</tonode-name>
@@ -531,17 +493,6 @@
    </link>
   </link-list>
   <data-list>
-   <data>
-    <fromnode-name>GeomGraph</fromnode-name>
-    <fromserviceparameter-name>SetStudyID__theStudyID</fromserviceparameter-name>
-    <tonode-name>SetStudyID</tonode-name>
-    <toserviceparameter-name>theStudyID</toserviceparameter-name>
-    <data-value>
-     <value-type>3</value-type>
-     <value>1</value>
-    </data-value>
-    <coord-list/>
-   </data>
    <data>
     <fromnode-name>GeomGraph</fromnode-name>
     <fromserviceparameter-name>MakeBox__theX1</fromserviceparameter-name>
