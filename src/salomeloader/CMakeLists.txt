@@ -25,8 +25,6 @@ ENDIF()
 
 SET(salomeloader_PYTHON
   salomeloader.py
-  ElementTree.py
-  ElementPath.py
   graph.py
   )
 

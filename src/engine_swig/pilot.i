@@ -237,13 +237,50 @@ EXCEPTION(YACS::ENGINE::ExecutorSwig::waitPause)
 %include <Port.hxx>
 %extend YACS::ENGINE::Port
 {
-  int __cmp__(Port* other)
+  /* __cmp__ does not exist in Python 3 */
+  int  __lt__(Port* other)
     {
       if(self==other)
         return 0;
       else 
         return 1;
     }
+  int  __gt__(Port* other)
+    {
+      if(self==other)
+        return 0;
+      else 
+        return 1;
+    }
+  int __ne__(Port* other)
+    {
+      if(self==other)
+        return 0;
+      else 
+        return 1;
+    }
+  int __eq__(Port* other)
+    {
+      if(self==other)
+        return 0;
+      else 
+        return 1;
+    }
+  int __le__(Port* other)
+    {
+      if(self==other)
+        return 0;
+      else 
+        return 1;
+    }
+  int __ge__(Port* other)
+    {
+      if(self==other)
+        return 0;
+      else 
+        return 1;
+    }
+  
   long ptr()
     {
       return (long)self;
@@ -304,13 +341,50 @@ EXCEPTION(YACS::ENGINE::ExecutorSwig::waitPause)
 %include <Node.hxx>
 %extend YACS::ENGINE::Node 
 {
-  int __cmp__(Node* other)
+  /* __cmp__ does not exist in Python 3 */
+  int  __lt__(Node* other)
     {
       if(self==other)
         return 0;
       else 
         return 1;
     }
+  int  __gt__(Node* other)
+    {
+      if(self==other)
+        return 0;
+      else 
+        return 1;
+    }
+  int __ne__(Node* other)
+    {
+      if(self==other)
+        return 0;
+      else 
+        return 1;
+    }
+  int __eq__(Node* other)
+    {
+      if(self==other)
+        return 0;
+      else 
+        return 1;
+    }
+  int __le__(Node* other)
+    {
+      if(self==other)
+        return 0;
+      else 
+        return 1;
+    }
+  int __ge__(Node* other)
+    {
+      if(self==other)
+        return 0;
+      else 
+        return 1;
+    }
+
   long ptr()
     {
           return (long)self;

@@ -991,11 +991,11 @@ namespace YACS
               //It's an objref file. Convert it specially
               return PyUnicode_FromString(o.c_str());
             }
-          if(strncmp(t->id(),"python",6)==0)
+          if(strncmp(t->id(),"python",6)==0) //ex: "python:obj:1.0"
             {
               //It's a python pickled object, unpickled it
               PyObject* mod=PyImport_ImportModule("pickle");
-              PyObject *ob=PyObject_CallMethod(mod,(char *)"loads",(char *)"s#",o.c_str(),o.length());
+              PyObject *ob=PyObject_CallMethod(mod,(char *)"loads",(char *)"y#",o.c_str(),o.length());
               DEBTRACE(PyObject_Repr(ob));
               Py_DECREF(mod);
               if(ob==NULL)
@@ -1014,7 +1014,7 @@ namespace YACS
                   PyErr_Print();
                   throw YACS::ENGINE::ConversionException("Problem in convertToYacsObjref<PYTHONImpl: no simplejson module");
                 }
-              PyObject *ob=PyObject_CallMethod(mod,(char *)"loads",(char *)"s",o.c_str());
+              PyObject *ob=PyObject_CallMethod(mod,(char *)"loads",(char *)"y",o.c_str());
               Py_DECREF(mod);
               if(ob==NULL)
                 {
@@ -1876,7 +1876,7 @@ namespace YACS
 
                   PyGILState_STATE gstate = PyGILState_Ensure(); 
                   PyObject* mod=PyImport_ImportModule("pickle");
-                  PyObject *ob=PyObject_CallMethod(mod,(char *)"loads",(char *)"s#",s,buffer->length());
+                  PyObject *ob=PyObject_CallMethod(mod,(char *)"loads",(char *)"y#",s,buffer->length());
                   PyObject *pickled=PyObject_CallMethod(mod,(char *)"dumps",(char *)"Oi",ob,protocol);
                   DEBTRACE(PyObject_Repr(pickled));
                   std::string mystr=PyBytes_AsString(pickled);
@@ -2301,8 +2301,11 @@ namespace YACS
     {
       PyObject *s;
       PyGILState_STATE gstate = PyGILState_Ensure(); 
-      s=PyObject_Str(ob);
-      std::string ss(PyBytes_AsString(s),PyBytes_Size(s));
+      //s=PyObject_Repr(ob);
+      s=PyObject_ASCII(ob);
+      Py_ssize_t size;
+      char* characters=PyUnicode_AsUTF8AndSize(s, &size);
+      std::string ss( characters, size);
       Py_DECREF(s);
       PyGILState_Release(gstate);
       return ss;

@@ -40,9 +40,8 @@ def echo(args):
   else:
     return args
 
-f=open("input")
-data=f.read()
-f.close()
+with open("input",'r') as f:
+  data=f.read()
 print(data)
 
 class Objref:
@@ -51,10 +50,32 @@ class Objref:
     self.data=data
   def __str__(self):
     return self.data or ""
-  def __cmp__(self, other):
+
+# __cmp__ is not defined in Python 3 : strict ordering
+  def __le__(self, other):
     if isinstance(other, Binary):
       other = other.data
-    return cmp(self.data, other)
+    return self.data <= other
+  def __lt__(self, other):
+    if isinstance(other, Binary):
+      other = other.data
+    return self.data < other
+  def __ge__(self, other):
+    if isinstance(other, Binary):
+      other = other.data
+    return self.data >= other
+  def __gt__(self, other):
+    if isinstance(other, Binary):
+      other = other.data
+    return self.data > other
+  def __eq__(self, other):
+    if isinstance(other, Binary):
+      other = other.data
+    return self.data == other
+  def __ne__(self, other):
+    if isinstance(other, Binary):
+      other = other.data
+    return self.data != other
 
   def decode(self, data):
     self.data = data
@@ -76,16 +97,15 @@ xmlrpc.client.Unmarshaller.dispatch["objref"]=end_objref
 params, method = xmlrpc.client.loads(data)
 
 try:
-   call=eval(method)
-   response=call(params)
-   response = (response,)
+  call=eval(method)
+  response=call(params)
+  response = (response,)
 except:
-   # report exception back to server
-   response = xmlrpc.client.dumps( xmlrpc.client.Fault(1, "%s:%s" % sys.exc_info()[:2]))
+  # report exception back to server
+  response = xmlrpc.client.dumps( xmlrpc.client.Fault(1, "%s:%s" % sys.exc_info()[:2]))
 else:
-   response = xmlrpc.client.dumps( response, methodresponse=1)
+  response = xmlrpc.client.dumps( response, methodresponse=1)
 
 print(response)
-f=open("output",'w')
-f.write(response)
-f.close()
+with open("output",'w') as f:
+  f.write(response)

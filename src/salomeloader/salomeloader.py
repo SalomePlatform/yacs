@@ -26,9 +26,9 @@
 
 import sys,os
 try:
-  import cElementTree as ElementTree
+  from xml.etree import cElementTree as ElementTree
 except ImportError:
-  import ElementTree
+  from xml.etree import ElementTree
 
 #from sets import Set
 Set=set

@@ -292,7 +292,7 @@ pmmlObj.SetCurrentModel( modelname , eval(pmmltype) );
 myFunc = "pyFunc";
 myHeader = "Function processed in YACCS";
 myCode = pmmlObj.ExportPyStr(myFunc, myHeader);
-exec myCode;
+exec(myCode);
 ]]></code></script>
       <inport name="filename" type="string"/>
       <inport name="modelname" type="string"/>
