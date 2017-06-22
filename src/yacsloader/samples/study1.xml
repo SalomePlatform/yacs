@@ -37,7 +37,7 @@
       <script>
         <code>import GEOM</code>
         <code>p1=p1._narrow(GEOM.GEOM_Object)</code>
-        <code>print p1</code>
+        <code>print(p1)</code>
       </script>
       <inport name="p1" type="GEOM/GEOM_Object"/>
       <outport name="p1" type="GEOM/GEOM_Object"/>

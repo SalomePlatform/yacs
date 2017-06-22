@@ -18,8 +18,8 @@
 #
 
 from qt import *
-import browser
-import cataitems
+from . import browser
+from . import cataitems
 
 class Browser(browser.Browser):
   def init(self):
@@ -30,7 +30,7 @@ class Browser(browser.Browser):
     self.connect( but1, SIGNAL("clicked()"), self.handleBut1 )
 
   def handleBut1(self):
-    print "handleBut1",self.selected
+    print("handleBut1",self.selected)
     if hasattr(self.selected,"addNode"):
       self.selected.addNode(self.appli)
     return

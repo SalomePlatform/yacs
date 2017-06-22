@@ -695,8 +695,6 @@ namespace YACS
           double x;
           if (PyFloat_Check(o))
             x=PyFloat_AS_DOUBLE(o);
-          else if (PyInt_Check(o))
-            x=PyInt_AS_LONG(o);
           else if(PyLong_Check(o))
             x=PyLong_AsLong(o);
           else
@@ -718,9 +716,7 @@ namespace YACS
       static inline long convert(const TypeCode *t,PyObject* o,void*)
         {
           long l;
-          if (PyInt_Check(o))
-            l=PyInt_AS_LONG(o);
-          else if(PyLong_Check(o))
+          if(PyLong_Check(o))
             l=PyLong_AsLong(o);
           else
             {
@@ -741,8 +737,14 @@ namespace YACS
       static inline std::string convert(const TypeCode *t,PyObject* o,void*)
         {
           std::string s;
-          if (PyString_Check(o))
-            s= PyString_AS_STRING(o);
+          if (PyUnicode_Check(o))
+            {
+              Py_ssize_t size;
+              char *ptr = PyUnicode_AsUTF8AndSize(o, &size);
+              if (!ptr)
+                throw YACS::ENGINE::ConversionException("Conversion from PyUnicode to string failed");
+              s.assign(ptr, size);
+            }
           else
             {
               stringstream msg;
@@ -764,8 +766,6 @@ namespace YACS
           bool l;
           if (PyBool_Check(o))
               l=(o==Py_True);
-          else if (PyInt_Check(o))
-              l=(PyInt_AS_LONG(o)!=0);
           else if(PyLong_Check(o))
               l=(PyLong_AsLong(o)!=0);
           else
@@ -786,24 +786,30 @@ namespace YACS
     {
       static inline std::string convert(const TypeCode *t,PyObject* o,void*,int protocol)
         {
-          if (PyString_Check(o) && strncmp(t->id(),"python",6)!=0)
+          if (PyUnicode_Check(o) && strncmp(t->id(),"python",6)!=0)
             {
               // the objref is used by Python as a string (prefix:value) keep it as a string
-              return PyString_AS_STRING(o);
+              Py_ssize_t size;
+              std::string s;
+              char *ptr = PyUnicode_AsUTF8AndSize(o, &size);
+              if (!ptr)
+                throw YACS::ENGINE::ConversionException("Conversion from PyUnicode to string failed");
+              s.assign(ptr, size);
+              return s;
             }
           if(strncmp(t->id(),"python",6)==0)
             {
               // It's a native Python object pickle it
-              PyObject* mod=PyImport_ImportModule("cPickle");
+              PyObject* mod=PyImport_ImportModule("pickle");
               PyObject *pickled=PyObject_CallMethod(mod,(char *)"dumps",(char *)"Oi",o,protocol);
-              DEBTRACE(PyObject_REPR(pickled) );
+              DEBTRACE(PyObject_Repr(pickled) );
               Py_DECREF(mod);
               if(pickled==NULL)
                 {
                   PyErr_Print();
                   throw YACS::ENGINE::ConversionException("Problem in convertToYacsObjref<PYTHONImpl");
                 }
-              std::string mystr(PyString_AsString(pickled),PyString_Size(pickled));
+              std::string mystr(PyBytes_AsString(pickled),PyBytes_Size(pickled));
               Py_DECREF(pickled);
               return mystr;
             }
@@ -823,7 +829,7 @@ namespace YACS
                   PyErr_Print();
                   throw YACS::ENGINE::ConversionException("Problem in convertToYacsObjref<PYTHONImpl");
                 }
-              std::string mystr=PyString_AsString(pickled);
+              std::string mystr=PyBytes_AsString(pickled);
               Py_DECREF(pickled);
               return mystr;
             }
@@ -836,7 +842,12 @@ namespace YACS
                   PyErr_Print();
                   throw YACS::ENGINE::ConversionException("Problem in convertToYacsObjref<PYTHONImpl");
                 }
-              std::string mystr=PyString_AsString(pystring);
+              Py_ssize_t size;
+              std::string mystr;
+              char *ptr = PyUnicode_AsUTF8AndSize(pystring, &size);
+              if (!ptr)
+                throw YACS::ENGINE::ConversionException("Conversion from PyUnicode to string failed");
+              mystr.assign(ptr, size);
               Py_DECREF(pystring);
               return mystr;
             }
@@ -954,7 +965,7 @@ namespace YACS
     {
       static inline PyObject* convert(const TypeCode *t,std::string& o)
         {
-          return PyString_FromString(o.c_str());
+          return PyUnicode_FromString(o.c_str());
         }
     };
     template <>
@@ -978,14 +989,14 @@ namespace YACS
           if(t->isA(Runtime::_tc_file))
             {
               //It's an objref file. Convert it specially
-              return PyString_FromString(o.c_str());
+              return PyUnicode_FromString(o.c_str());
             }
-          if(strncmp(t->id(),"python",6)==0)
+          if(strncmp(t->id(),"python",6)==0) //ex: "python:obj:1.0"
             {
               //It's a python pickled object, unpickled it
-              PyObject* mod=PyImport_ImportModule("cPickle");
-              PyObject *ob=PyObject_CallMethod(mod,(char *)"loads",(char *)"s#",o.c_str(),o.length());
-              DEBTRACE(PyObject_REPR(ob));
+              PyObject* mod=PyImport_ImportModule("pickle");
+              PyObject *ob=PyObject_CallMethod(mod,(char *)"loads",(char *)"y#",o.c_str(),o.length());
+              DEBTRACE(PyObject_Repr(ob));
               Py_DECREF(mod);
               if(ob==NULL)
                 {
@@ -1003,7 +1014,7 @@ namespace YACS
                   PyErr_Print();
                   throw YACS::ENGINE::ConversionException("Problem in convertToYacsObjref<PYTHONImpl: no simplejson module");
                 }
-              PyObject *ob=PyObject_CallMethod(mod,(char *)"loads",(char *)"s",o.c_str());
+              PyObject *ob=PyObject_CallMethod(mod,(char *)"loads",(char *)"y",o.c_str());
               Py_DECREF(mod);
               if(ob==NULL)
                 {
@@ -1864,11 +1875,11 @@ namespace YACS
                     }
 
                   PyGILState_STATE gstate = PyGILState_Ensure(); 
-                  PyObject* mod=PyImport_ImportModule("cPickle");
-                  PyObject *ob=PyObject_CallMethod(mod,(char *)"loads",(char *)"s#",s,buffer->length());
+                  PyObject* mod=PyImport_ImportModule("pickle");
+                  PyObject *ob=PyObject_CallMethod(mod,(char *)"loads",(char *)"y#",s,buffer->length());
                   PyObject *pickled=PyObject_CallMethod(mod,(char *)"dumps",(char *)"Oi",ob,protocol);
-                  DEBTRACE(PyObject_REPR(pickled));
-                  std::string mystr=PyString_AsString(pickled);
+                  DEBTRACE(PyObject_Repr(pickled));
+                  std::string mystr=PyBytes_AsString(pickled);
                   Py_DECREF(mod);
                   Py_DECREF(ob);
                   Py_DECREF(pickled);
@@ -2290,8 +2301,11 @@ namespace YACS
     {
       PyObject *s;
       PyGILState_STATE gstate = PyGILState_Ensure(); 
-      s=PyObject_Str(ob);
-      std::string ss(PyString_AsString(s),PyString_Size(s));
+      //s=PyObject_Repr(ob);
+      s=PyObject_ASCII(ob);
+      Py_ssize_t size;
+      char* characters=PyUnicode_AsUTF8AndSize(s, &size);
+      std::string ss( characters, size);
       Py_DECREF(s);
       PyGILState_Release(gstate);
       return ss;
@@ -2493,8 +2507,6 @@ namespace YACS
       {
         if (PyFloat_Check(o))
           return true;
-        else if (PyInt_Check(o))
-          return true;
         else if(PyLong_Check(o))
           return true;
         else
@@ -2507,7 +2519,7 @@ namespace YACS
     template<>
     inline bool checkInt<PYTHONImpl,PyObject*,void*>(const TypeCode *t,PyObject* o,void* aux)
       {
-          if (PyInt_Check(o) || PyLong_Check(o))
+          if (PyLong_Check(o))
             return true;
           else
             {
@@ -2520,8 +2532,6 @@ namespace YACS
     inline bool checkBool<PYTHONImpl,PyObject*,void*>(const TypeCode *t,PyObject* o,void* aux)
       {
           if (PyBool_Check(o))
-              return true;
-          else if (PyInt_Check(o))
               return true;
           else if(PyLong_Check(o))
               return true;
@@ -2536,7 +2546,7 @@ namespace YACS
     template<>
     inline bool checkString<PYTHONImpl,PyObject*,void*>(const TypeCode *t,PyObject* o,void* aux)
       {
-          if (PyString_Check(o))
+          if (PyUnicode_Check(o))
             return true;
           else
             {
@@ -2548,7 +2558,7 @@ namespace YACS
     template<>
     inline bool checkObjref<PYTHONImpl,PyObject*,void*>(const TypeCode *t,PyObject* o,void* aux)
       {
-          if (PyString_Check(o))
+          if (PyUnicode_Check(o))
             return true;
           if(strncmp(t->id(),"python",6)==0) // a Python object is expected (it's always true)
             return true;

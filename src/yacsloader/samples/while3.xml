@@ -38,9 +38,9 @@
             <code>def f(p1):</code>
             <code>  global a</code>
             <code>  p1= p1+10.</code>
-            <code>  print a</code>
+            <code>  print(a)</code>
             <code>  a=a+p1</code>
-            <code>  print "p1:",p1</code>
+            <code>  print("p1:",p1)</code>
             <code><![CDATA[  condition=p1 < 40.]]> </code>
             <code>  return p1,condition</code>
         </function>

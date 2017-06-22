@@ -41,7 +41,7 @@
     </foreach>
     <inline name="node1" >
       <script>
-        <code>print p1</code>
+        <code>print(p1)</code>
       </script>
       <inport name="p1" type="dblevec"/>
     </inline>

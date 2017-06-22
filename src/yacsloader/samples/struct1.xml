@@ -64,14 +64,14 @@
 
     <inline name="pyth3" >
       <script>
-        <code>print s1</code>
+        <code>print(s1)</code>
       </script>
       <inport name="s1" type="eo/S2"/>
     </inline>
 
     <inline name="pyth9" >
       <script>
-        <code>print s1</code>
+        <code>print(s1)</code>
       </script>
       <inport name="s1" type="eo/S2"/>
     </inline>
@@ -92,15 +92,15 @@
 
     <inline name="pyth2" >
       <script>
-        <code>print s1</code>
+        <code>print(s1)</code>
       </script>
       <inport name="s1" type="eo/S2"/>
     </inline>
 
     <inline name="pyth0" >
       <script>
-        <code>print s1</code>
-        <code>print t1</code>
+        <code>print(s1)</code>
+        <code>print(t1)</code>
       </script>
       <inport name="p1" type="double"/>
       <inport name="s1" type="eo/S2"/>
@@ -125,7 +125,7 @@
 
     <inline name="pyth6" >
       <script>
-        <code>print p1</code>
+        <code>print(p1)</code>
       </script>
       <inport name="p1" type="dblevec"/>
       <outport name="p1" type="dblevec"/>

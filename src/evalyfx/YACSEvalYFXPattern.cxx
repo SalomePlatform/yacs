@@ -261,7 +261,7 @@ YACSEvalSeqAny *YACSEvalYFXPattern::BuildValueInPort(YACS::ENGINE::InputPyPort *
       for(std::size_t i=0;i<sz;i++)
         {
           PyObject *elt(PyList_GetItem(obj,i));
-          eltCpp[i]=PyInt_AsLong(elt);
+          eltCpp[i]=PyLong_AsLong(elt);
         }
       YACS::AutoCppPtr<YACSEvalSeqAnyInt> elt(new YACSEvalSeqAnyInt(eltCpp));
       return elt.dettach();
@@ -869,10 +869,10 @@ void YACSEvalYFXGraphGenCluster::generateGraph()
   //
   YACS::ENGINE::AutoPyRef func(YACS::ENGINE::evalPy(EFXGenFileName,EFXGenContent));
   YACS::ENGINE::AutoPyRef val(YACS::ENGINE::evalFuncPyWithNoParams(func));
-  _locSchemaFile=PyString_AsString(val);
+  _locSchemaFile=PyBytes_AsString(val);
   func=YACS::ENGINE::evalPy(EFXGenFileName,EFXGenContent2);
   val=YACS::ENGINE::evalFuncPyWithNoParams(func);
-  _jobName=PyString_AsString(val);
+  _jobName=PyBytes_AsString(val);
   //
   static const char LISTPYOBJ_STR[]="list[pyobj]";
   if(getBoss()->getOutputsOfInterest().empty())

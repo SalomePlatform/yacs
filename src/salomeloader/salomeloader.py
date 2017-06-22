@@ -26,9 +26,9 @@
 
 import sys,os
 try:
-  import cElementTree as ElementTree
+  from xml.etree import cElementTree as ElementTree
 except ImportError:
-  import ElementTree
+  from xml.etree import ElementTree
 
 #from sets import Set
 Set=set
@@ -69,22 +69,22 @@ class SalomeLoader:
     """
     tree = ElementTree.ElementTree(file=filename)
     root = tree.getroot()
-    if debug:print "root.tag:",root.tag,root
+    if debug:print("root.tag:",root.tag,root)
 
     procs=[]
     if root.tag == "dataflow":
       #only one dataflow
       dataflow=root
-      if debug:print dataflow
+      if debug:print(dataflow)
       proc=SalomeProc(dataflow)
       procs.append(proc)
     else:
       #one or more dataflows. The graph contains macros.
       #All macros are defined at the same level in the XML file.
       for dataflow in root.findall("dataflow"):
-        if debug:print dataflow
+        if debug:print(dataflow)
         proc=SalomeProc(dataflow)
-        if debug:print "dataflow name:",proc.name
+        if debug:print("dataflow name:",proc.name)
         procs.append(proc)
     return procs
 
@@ -105,10 +105,10 @@ class SalomeLoader:
     #Put macros in macro_dict
     macro_dict={}
     for p in procs:
-      if debug:print "proc_name:",p.name,"coupled_node:",p.coupled_node
+      if debug:print("proc_name:",p.name,"coupled_node:",p.coupled_node)
       macro_dict[p.name]=p
 
-    if debug:print filename
+    if debug:print(filename)
     yacsproc=ProcNode(proc,macro_dict,filename)
     return yacsproc.createNode()
 
@@ -223,17 +223,17 @@ class InlineNode(Node):
         n.setScript(self.codes[0])
       self.node=n
       for para in self.service.inParameters:
-        if not typeMap.has_key(para.type):
+        if para.type not in typeMap:
           #create the missing type and add it in type map
           typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[objref])
-        if not currentProc.typeMap.has_key(para.type):
+        if para.type not in currentProc.typeMap:
           currentProc.typeMap[para.type]=typeMap[para.type]
         n.edAddInputPort(para.name,typeMap[para.type])
       for para in self.service.outParameters:
-        if not typeMap.has_key(para.type):
+        if para.type not in typeMap:
           #create the missing type and add it in type map
           typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[objref])
-        if not currentProc.typeMap.has_key(para.type):
+        if para.type not in currentProc.typeMap:
           currentProc.typeMap[para.type]=typeMap[para.type]
         n.edAddOutputPort(para.name,typeMap[para.type])
 
@@ -249,7 +249,7 @@ class ComputeNode(Node):
         return self.node
 
       r = pilot.getRuntime()
-      if self.container.components.has_key(self.sComponent):
+      if self.sComponent in self.container.components:
         #a node for this component already exists
         compo_node=self.container.components[self.sComponent]
         #It's a node associated with another node of the same component instance
@@ -271,27 +271,27 @@ class ComputeNode(Node):
 
       #add  dataflow ports in out 
       for para in self.service.inParameters:
-        if not typeMap.has_key(para.type):
+        if para.type not in typeMap:
           #Create the missing type and adds it into types table
           typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[objref])
-        if not currentProc.typeMap.has_key(para.type):
+        if para.type not in currentProc.typeMap:
           currentProc.typeMap[para.type]=typeMap[para.type]
         n.edAddInputPort(para.name,typeMap[para.type])
       for para in self.service.outParameters:
-        if not typeMap.has_key(para.type):
+        if para.type not in typeMap:
           #Create the missing type and adds it into types table
           typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[objref])
-        if not currentProc.typeMap.has_key(para.type):
+        if para.type not in currentProc.typeMap:
           currentProc.typeMap[para.type]=typeMap[para.type]
         pout=n.edAddOutputPort(para.name,typeMap[para.type])
 
       #add datastream ports in and out
       for para in self.inStreams:
-        if debug:print para.name,para.type,para.dependency,para.schema, para.interpolation,
-        if debug:print para.extrapolation
+        if debug:print(para.name,para.type,para.dependency,para.schema, para.interpolation, end=' ')
+        if debug:print(para.extrapolation)
         pin=n.edAddInputDataStreamPort(para.name,typeMap[streamTypes[para.type]])
       for para in self.outStreams:
-        if debug:print para.name,para.type,para.dependency,para.values
+        if debug:print(para.name,para.type,para.dependency,para.values)
         pout=n.edAddOutputDataStreamPort(para.name,typeMap[streamTypes[para.type]])
 
       for d in self.datas:
@@ -323,11 +323,11 @@ class ComposedNode(Node):
         n.inner_nodes=loops[n]
         n.G=graph.InducedSubgraph(loops[n],G)
 
-    if debug:print "all loops"
-    if debug:print loops
+    if debug:print("all loops")
+    if debug:print(loops)
 
     #Get most external loops 
-    outer_loops=loops.keys()
+    outer_loops=list(loops.keys())
     for l in loops:
       for ll in outer_loops:
         if loops[l] < loops[ll]:
@@ -337,7 +337,7 @@ class ComposedNode(Node):
           break
 
     #In the end all remaining loops in outer_loops are the most external
-    if debug:print outer_loops
+    if debug:print(outer_loops)
 
     #We remove all internal nodes of most external loops 
     for l in outer_loops:
@@ -354,14 +354,14 @@ class ComposedNode(Node):
       #outcoming links of internal nodes. Probably not complete.
       inputs={}
       for link in l.endloop.links:
-        if debug:print link.from_node,link.to_node,link.from_param,link.to_param
+        if debug:print(link.from_node,link.to_node,link.from_param,link.to_param)
         inputs[link.to_param]=link.from_node,link.from_param
 
       for s in suiv:
         for link in s.links:
           if link.from_node == l.endloop:
             link.from_node,link.from_param=inputs[link.from_param]
-          if debug:print link.from_node,link.to_node,link.from_param,link.to_param
+          if debug:print(link.from_node,link.to_node,link.from_param,link.to_param)
 
       if debug:graph.display(G)
 
@@ -373,7 +373,7 @@ class ComposedNode(Node):
     """This method connects the salome macros in macro_dict to the master YACS Proc.
        
     """
-    if debug:print "connect_macros",self.node,macro_dict
+    if debug:print("connect_macros",self.node,macro_dict)
     for node in self.G:
       if isinstance(node,MacroNode):
         #node is a macro, connect its definition to self.
@@ -382,7 +382,7 @@ class ComposedNode(Node):
         #node.node is the YACS Bloc equivalent to node
         p=macro_dict[node.coupled_node]
         bloc=node.node
-        if debug:print "macronode:",node.name,node.coupled_node,p
+        if debug:print("macronode:",node.name,node.coupled_node,p)
         #Create a hierarchical graph from the salome graph
         G=p.create_graph()
         node.G=G
@@ -486,17 +486,17 @@ class LoopNode(ComposedNode):
       init.setScript(self.codes[0])
       init.setFname(self.fnames[0])
       for para in self.service.inParameters:
-        if not typeMap.has_key(para.type):
+        if para.type not in typeMap:
           #create the missing type and add it in type map
           typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[objref])
-        if not currentProc.typeMap.has_key(para.type):
+        if para.type not in currentProc.typeMap:
           currentProc.typeMap[para.type]=typeMap[para.type]
         init.edAddInputPort(para.name,typeMap[para.type])
       for para in self.service.outParameters:
-        if not typeMap.has_key(para.type):
+        if para.type not in typeMap:
           #create the missing type and add it in type map
           typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[objref])
-        if not currentProc.typeMap.has_key(para.type):
+        if para.type not in currentProc.typeMap:
           currentProc.typeMap[para.type]=typeMap[para.type]
         init.edAddOutputPort(para.name,typeMap[para.type])
       bloop.edAddChild(init)
@@ -515,17 +515,17 @@ class LoopNode(ComposedNode):
       next.setScript(self.codes[2])
       next.setFname(self.fnames[2])
       for para in self.service.inParameters:
-        if not typeMap.has_key(para.type):
+        if para.type not in typeMap:
           #create the missing type and add it in type map
           typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[objref])
-        if not currentProc.typeMap.has_key(para.type):
+        if para.type not in currentProc.typeMap:
           currentProc.typeMap[para.type]=typeMap[para.type]
         next.edAddInputPort(para.name,typeMap[para.type])
       for para in self.service.outParameters:
-        if not typeMap.has_key(para.type):
+        if para.type not in typeMap:
           #create the missing type and add it in type map
           typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[objref])
-        if not currentProc.typeMap.has_key(para.type):
+        if para.type not in currentProc.typeMap:
           currentProc.typeMap[para.type]=typeMap[para.type]
         next.edAddOutputPort(para.name,typeMap[para.type])
       blnode.edAddChild(next)
@@ -537,18 +537,18 @@ class LoopNode(ComposedNode):
       more.setScript(self.codes[1])
       more.setFname(self.fnames[1])
       for para in self.service.inParameters:
-        if not typeMap.has_key(para.type):
+        if para.type not in typeMap:
           #create the missing type and add it in type map
           typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[objref])
-        if not currentProc.typeMap.has_key(para.type):
+        if para.type not in currentProc.typeMap:
           currentProc.typeMap[para.type]=typeMap[para.type]
         more.edAddInputPort(para.name,typeMap[para.type])
       more.edAddOutputPort("DoLoop",typeMap["int"])
       for para in self.service.outParameters:
-        if not typeMap.has_key(para.type):
+        if para.type not in typeMap:
           #create the missing type and add it in type map
           typeMap[para.type]= currentProc.createInterfaceTc("",para.type,[objref])
-        if not currentProc.typeMap.has_key(para.type):
+        if para.type not in currentProc.typeMap:
           currentProc.typeMap[para.type]=typeMap[para.type]
         more.edAddOutputPort(para.name,typeMap[para.type])
       blnode.edAddChild(more)
@@ -678,7 +678,7 @@ class ProcNode(ComposedNode):
     currentProc.typeMap["CALCIUM_real"]=typeMap["CALCIUM_real"]
 
     #create all containers
-    for name,container in _containers.items():
+    for name,container in list(_containers.items()):
       cont=r.createContainer()
       cont.setName(name)
       cont.setProperty("hostname",container.mach)
@@ -767,23 +767,23 @@ class SalomeProc(ComposedNode):
         #each node has 2 lists of datastream links (inStreams, outStreams)
 
     def parse(self,dataflow):
-        if debug:print "All XML nodes"
+        if debug:print("All XML nodes")
         for node in dataflow:
-            if debug:print node.tag,node
+            if debug:print(node.tag,node)
 
         #Parse dataflow info-list
         self.dataflow_info=self.parseService(dataflow.find("info-list/node/service"))
-        if debug:print self.dataflow_info
-        if debug:print self.dataflow_info.inParameters
-        if debug:print self.dataflow_info.outParameters
+        if debug:print(self.dataflow_info)
+        if debug:print(self.dataflow_info.inParameters)
+        if debug:print(self.dataflow_info.outParameters)
         if debug:
             for para in self.dataflow_info.inParameters:
-                print "inParam:",para.name,para.name.split("__",1)
+                print("inParam:",para.name,para.name.split("__",1))
 
         self.name=dataflow.findtext("info-list/node/node-name")
         self.coupled_node=dataflow.findtext("info-list/node/coupled-node")
 
-        if debug:print "All XML nodes dataflow/node-list"
+        if debug:print("All XML nodes dataflow/node-list")
         nodes=[]
         node_dict={}
         #Parse all nodes
@@ -811,7 +811,7 @@ class SalomeProc(ComposedNode):
               node.container= getContainer(container)
               if not node.container:
                 node.container=addContainer(container)
-              if debug:print "\tcontainer",node.container
+              if debug:print("\tcontainer",node.container)
 
             elif kind == "3":
               #It's a python function
@@ -855,15 +855,15 @@ class SalomeProc(ComposedNode):
               node=MacroNode()
               node.kind=10
             else:
-              raise UnknownKind,kind
+              raise UnknownKind(kind)
 
             node.name=name
             node.service=None
             node.coupled_node=coupled_node
             #Put nodes in a dict to ease search
             node_dict[node.name]=node
-            if debug:print "\tnode-name",node.name
-            if debug:print "\tkind",node.kind,node.__class__.__name__
+            if debug:print("\tnode-name",node.name)
+            if debug:print("\tkind",node.kind,node.__class__.__name__)
 
             s=n.find("service")
             if s:
@@ -871,7 +871,7 @@ class SalomeProc(ComposedNode):
 
 
             #Parse datastream ports
-            if debug:print "DataStream ports"
+            if debug:print("DataStream ports")
             inStreams=[]
             for indata in n.findall("DataStream-list/inParameter"):
                 inStreams.append(self.parseInData(indata))
@@ -884,7 +884,7 @@ class SalomeProc(ComposedNode):
                 outStreams_dict[p.name]=p
             node.outStreams=outStreams
             node.outStreams_dict=outStreams_dict
-            if debug:print "\t++++++++++++++++++++++++++++++++++++++++++++"
+            if debug:print("\t++++++++++++++++++++++++++++++++++++++++++++")
             nodes.append(node)
 
         self.nodes=nodes
@@ -900,9 +900,9 @@ class SalomeProc(ComposedNode):
         <coord-list/>
         </link>
         """
-        if debug:print "All XML nodes dataflow/link-list"
+        if debug:print("All XML nodes dataflow/link-list")
         links=[]
-        if debug:print "\t++++++++++++++++++++++++++++++++++++++++++++"
+        if debug:print("\t++++++++++++++++++++++++++++++++++++++++++++")
         for link in dataflow.findall('link-list/link'):
             l=Link()
             l.from_name=link.findtext("fromnode-name")
@@ -910,52 +910,52 @@ class SalomeProc(ComposedNode):
             l.from_param=link.findtext("fromserviceparameter-name")
             l.to_param=link.findtext("toserviceparameter-name")
             links.append(l)
-            if debug:print "\tfromnode-name",l.from_name
-            if debug:print "\tfromserviceparameter-name",l.from_param
-            if debug:print "\ttonode-name",l.to_name
-            if debug:print "\ttoserviceparameter-name",l.to_param
-            if debug:print "\t++++++++++++++++++++++++++++++++++++++++++++"
+            if debug:print("\tfromnode-name",l.from_name)
+            if debug:print("\tfromserviceparameter-name",l.from_param)
+            if debug:print("\ttonode-name",l.to_name)
+            if debug:print("\ttoserviceparameter-name",l.to_param)
+            if debug:print("\t++++++++++++++++++++++++++++++++++++++++++++")
 
         self.links=links
-        if debug:print "All XML nodes dataflow/data-list"
+        if debug:print("All XML nodes dataflow/data-list")
         datas=[]
         for data in dataflow.findall('data-list/data'):
             d=self.parseData(data)
             datas.append(d)
-            if debug:print "\ttonode-name",d.tonode
-            if debug:print "\ttoserviceparameter-name",d.tonodeparam
-            if debug:print "\tparameter-value",d.value
-            if debug:print "\tparameter-type",d.type
-            if debug:print "\t++++++++++++++++++++++++++++++++++++++++++++"
+            if debug:print("\ttonode-name",d.tonode)
+            if debug:print("\ttoserviceparameter-name",d.tonodeparam)
+            if debug:print("\tparameter-value",d.value)
+            if debug:print("\tparameter-type",d.type)
+            if debug:print("\t++++++++++++++++++++++++++++++++++++++++++++")
 
         self.datas=datas
 
     def parseService(self,s):
         service=Service()
         service.name=s.findtext("service-name")
-        if debug:print "\tservice-name",service.name
+        if debug:print("\tservice-name",service.name)
 
         inParameters=[]
         for inParam in s.findall("inParameter-list/inParameter"):
             p=Parameter()
             p.name=inParam.findtext("inParameter-name")
             p.type=typeName(inParam.findtext("inParameter-type"))
-            if debug:print "\tinParameter-name",p.name
-            if debug:print "\tinParameter-type",p.type
+            if debug:print("\tinParameter-name",p.name)
+            if debug:print("\tinParameter-type",p.type)
             inParameters.append(p)
         service.inParameters=inParameters
-        if debug:print "\t++++++++++++++++++++++++++++++++++++++++++++"
+        if debug:print("\t++++++++++++++++++++++++++++++++++++++++++++")
 
         outParameters=[]
         for outParam in s.findall("outParameter-list/outParameter"):
             p=Parameter()
             p.name=outParam.findtext("outParameter-name")
             p.type=typeName(outParam.findtext("outParameter-type"))
-            if debug:print "\toutParameter-name",p.name
-            if debug:print "\toutParameter-type",p.type
+            if debug:print("\toutParameter-name",p.name)
+            if debug:print("\toutParameter-type",p.type)
             outParameters.append(p)
         service.outParameters=outParameters
-        if debug:print "\t++++++++++++++++++++++++++++++++++++++++++++"
+        if debug:print("\t++++++++++++++++++++++++++++++++++++++++++++")
         return service
 
     def parseData(self,d):
@@ -969,8 +969,8 @@ class SalomeProc(ComposedNode):
         return da
 
     def parsePyFunction(self,pyfunc):
-        if debug:print pyfunc.tag,":",pyfunc
-        if debug:print "\tFuncName",pyfunc.findtext("FuncName")
+        if debug:print(pyfunc.tag,":",pyfunc)
+        if debug:print("\tFuncName",pyfunc.findtext("FuncName"))
         text=""
         for cdata in pyfunc.findall("PyFunc"):
             if text:text=text+'\n'
@@ -994,7 +994,7 @@ class SalomeProc(ComposedNode):
     """
 
     def parseInData(self,d):
-        if debug:print d.tag,":",d
+        if debug:print(d.tag,":",d)
         p=Parameter()
         p.name=d.findtext("inParameter-name")
         p.type=typeName(d.findtext("inParameter-type"))
@@ -1002,17 +1002,17 @@ class SalomeProc(ComposedNode):
         p.schema=d.findtext("inParameter-schema")
         p.interpolation=d.findtext("inParameter-interpolation")
         p.extrapolation=d.findtext("inParameter-extrapolation")
-        if debug:print "\tinParameter-name",p.name
+        if debug:print("\tinParameter-name",p.name)
         return p
 
     def parseOutData(self,d):
-        if debug:print d.tag,":",d
+        if debug:print(d.tag,":",d)
         p=Parameter()
         p.name=d.findtext("outParameter-name")
         p.type=typeName(d.findtext("outParameter-type"))
         p.dependency=d.findtext("outParameter-dependency")
         p.values=d.findtext("outParameter-values")
-        if debug:print "\toutParameter-name",p.name
+        if debug:print("\toutParameter-name",p.name)
         return p
 
     def create_graph(self):
@@ -1030,14 +1030,14 @@ class SalomeProc(ComposedNode):
         from_node=self.node_dict[link.from_name]
         if link.from_param == "Gate" or link.to_param == "Gate":
           #control link salome : add to_name node to neighbours
-          if debug:print "add control link",link.from_name,link.to_name
+          if debug:print("add control link",link.from_name,link.to_name)
           G[self.node_dict[link.from_name]].add(self.node_dict[link.to_name])
 
-        elif from_node.outStreams_dict.has_key(link.from_param):
+        elif link.from_param in from_node.outStreams_dict:
           # datastream link : 
           # 1- add link in link list
           # 2- add in link references on from_node and to_node
-          if debug:print "add stream link",link.from_name,link.to_name
+          if debug:print("add stream link",link.from_name,link.to_name)
           self.node_dict[link.to_name].inStreamLinks.append(link)
           self.node_dict[link.from_name].outStreamLinks.append(link)
           link.from_node=self.node_dict[link.from_name]
@@ -1052,10 +1052,10 @@ class SalomeProc(ComposedNode):
           if isinstance(to_node,LoopNode):
             # If it's the link from EndOfLoop to Loop , we ignore it
             if to_node.coupled_node == from_node.name:
-              if debug:print "backlink loop:",from_node,to_node
+              if debug:print("backlink loop:",from_node,to_node)
               #ignored
               continue
-          if debug:print "add dataflow link",link.from_name,link.to_name
+          if debug:print("add dataflow link",link.from_name,link.to_name)
           G[self.node_dict[link.from_name]].add(self.node_dict[link.to_name])
 
           if link.from_param != "DoLoop" and link.to_param != "DoLoop":
@@ -1074,12 +1074,12 @@ class SalomeProc(ComposedNode):
              and isinstance(self.node_dict[link.to_name],InlineNode):
             #Store the end loop inline node in attribute endloop
             #self.node_dict[link.to_name] is the end node of the head loop node self.node_dict[link.from_name]
-            if debug:print "add loop",link.from_name,link.to_name
+            if debug:print("add loop",link.from_name,link.to_name)
             self.node_dict[link.from_name].endloop=self.node_dict[link.to_name]
             self.node_dict[link.to_name].loop=self.node_dict[link.from_name]
 
       for data in self.datas:
-        if debug:print "datas",data
+        if debug:print("datas",data)
         self.node_dict[data.tonode].datas.append(data)
 
       self.G=G
@@ -1126,7 +1126,7 @@ def main():
     salomeFile=sys.argv[1]
     convertedFile=sys.argv[2]
   except :
-    print usage%(sys.argv[0])
+    print(usage%(sys.argv[0]))
     sys.exit(3)
 
   SALOMERuntime.RuntimeSALOME_setRuntime()
@@ -1144,7 +1144,7 @@ def main():
 
   logger=p.getLogger("parser")
   if not logger.isEmpty():
-    print logger.getStr()
+    print(logger.getStr())
     sys.exit(1)
 
 if __name__ == "__main__":

@@ -67,7 +67,7 @@ void YACSEvalSession::launch()
   _salomeInstance=PyObject_Call(startMeth,myArgs,myKWArgs);//new
   YACS::ENGINE::AutoPyRef getPortMeth(PyObject_GetAttrString(_salomeInstance,const_cast<char *>("get_port")));//new
   YACS::ENGINE::AutoPyRef portPy(PyObject_CallObject(getPortMeth,0));//new
-  _port=PyInt_AsLong(portPy);
+  _port=PyLong_AsLong(portPy);
   //
   int dummy;
   _corbaConfigFileName=GetConfigAndPort(dummy);
@@ -114,7 +114,7 @@ std::string YACSEvalSession::GetPathToAdd()
   PyObject *kernelRootDir(0);// os.environ["KERNEL_ROOT_DIR"]
   {
     YACS::ENGINE::AutoPyRef environPy(PyObject_GetAttrString(osPy,const_cast<char *>("environ")));//new
-    YACS::ENGINE::AutoPyRef kernelRootDirStr(PyString_FromString(const_cast<char *>(KERNEL_ROOT_DIR)));//new
+    YACS::ENGINE::AutoPyRef kernelRootDirStr(PyBytes_FromString(const_cast<char *>(KERNEL_ROOT_DIR)));//new
     kernelRootDir=PyObject_GetItem(environPy,kernelRootDirStr);//new
   }
   {
@@ -122,11 +122,11 @@ std::string YACSEvalSession::GetPathToAdd()
     YACS::ENGINE::AutoPyRef joinPy(PyObject_GetAttrString(pathPy,const_cast<char *>("join")));//new
     YACS::ENGINE::AutoPyRef myArgs(PyTuple_New(4));
     Py_XINCREF(kernelRootDir); PyTuple_SetItem(myArgs,0,kernelRootDir);
-    PyTuple_SetItem(myArgs,1,PyString_FromString(const_cast<char *>("bin")));
-    PyTuple_SetItem(myArgs,2,PyString_FromString(const_cast<char *>("salome")));
-    PyTuple_SetItem(myArgs,3,PyString_FromString(const_cast<char *>("appliskel")));
+    PyTuple_SetItem(myArgs,1,PyBytes_FromString(const_cast<char *>("bin")));
+    PyTuple_SetItem(myArgs,2,PyBytes_FromString(const_cast<char *>("salome")));
+    PyTuple_SetItem(myArgs,3,PyBytes_FromString(const_cast<char *>("appliskel")));
     YACS::ENGINE::AutoPyRef res(PyObject_CallObject(joinPy,myArgs));
-    ret=PyString_AsString(res);
+    ret=PyBytes_AsString(res);
   }
   Py_XDECREF(kernelRootDir);
   return ret;
@@ -137,13 +137,13 @@ std::string YACSEvalSession::GetConfigAndPort(int& port)
   YACS::ENGINE::AutoPyRef osPy(PyImport_ImportModule(const_cast<char *>("os")));//new
   YACS::ENGINE::AutoPyRef environPy(PyObject_GetAttrString(osPy,const_cast<char *>("environ")));//new
   //
-  YACS::ENGINE::AutoPyRef corbaConfigStr(PyString_FromString(const_cast<char *>(CORBA_CONFIG_ENV_VAR_NAME)));//new
+  YACS::ENGINE::AutoPyRef corbaConfigStr(PyBytes_FromString(const_cast<char *>(CORBA_CONFIG_ENV_VAR_NAME)));//new
   YACS::ENGINE::AutoPyRef corbaConfigFileNamePy(PyObject_GetItem(environPy,corbaConfigStr));//new
-  std::string ret(PyString_AsString(corbaConfigFileNamePy));
+  std::string ret(PyBytes_AsString(corbaConfigFileNamePy));
   //
-  YACS::ENGINE::AutoPyRef nsPortStr(PyString_FromString(const_cast<char *>(NSPORT_VAR_NAME)));//new
+  YACS::ENGINE::AutoPyRef nsPortStr(PyBytes_FromString(const_cast<char *>(NSPORT_VAR_NAME)));//new
   YACS::ENGINE::AutoPyRef nsPortValuePy(PyObject_GetItem(environPy,nsPortStr));//new
-  std::string portStr(PyString_AsString(nsPortValuePy));
+  std::string portStr(PyBytes_AsString(nsPortValuePy));
   std::istringstream iss(portStr);
   iss >> port;
   return ret;

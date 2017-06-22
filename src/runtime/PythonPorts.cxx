@@ -38,9 +38,9 @@ void releasePyObj(PyObject* data)
   if (PyObject_HasAttrString(data, (char*)"_is_a"))
     {
       PyObject *result = PyObject_CallMethod(data, (char*)"_is_a", (char*)"s",(char*)"IDL:SALOME/GenericObj:1.0");
-      if(result && PyInt_Check(result))
+      if(result && PyLong_Check(result))
         {
-          if(PyInt_AS_LONG(result))
+          if(PyLong_AS_LONG(result))
             {
               PyObject* o=PyObject_CallMethod(data, (char*)"Destroy", (char*)"");
               if(o)
@@ -74,9 +74,9 @@ void registerPyObj(PyObject* data)
   if (PyObject_HasAttrString(data, (char*)"_is_a"))
     {
       PyObject *result = PyObject_CallMethod(data, (char*)"_is_a", (char*)"s",(char*)"IDL:SALOME/GenericObj:1.0");
-      if(result && PyInt_Check(result))
+      if(result && PyLong_Check(result))
         {
-          if(PyInt_AS_LONG(result))
+          if(PyLong_AS_LONG(result))
             {
               PyObject* o= PyObject_CallMethod(data, (char*)"Register", (char*)"") ;
               if(o)
@@ -198,7 +198,7 @@ std::string InputPyPort::getHumanRepr()
   if(!ret)
     return dump();
   std::string retCpp;
-  char *val(PyString_AsString(ret));
+  char *val(PyBytes_AsString(ret));
   if(val)
     retCpp=val;
   Py_XDECREF(ret);
@@ -262,11 +262,11 @@ std::string InputPyPort::dump()
 
 std::string InputPyPort::valToStr()
 {
-  int isString = PyString_Check(getPyObj());
+  int isString = PyBytes_Check(getPyObj());
   //DEBTRACE("isString=" << isString);
   PyObject *strPyObj = PyObject_Str(getPyObj());
   //DEBTRACE(PyString_Size(strPyObj));
-  string val = PyString_AsString(strPyObj);
+  string val = PyBytes_AsString(strPyObj);
   if (isString)
     val = "\"" + val + "\"";
   //DEBTRACE(val);
@@ -361,7 +361,7 @@ std::string OutputPyPort::dump()
 std::string OutputPyPort::valToStr()
 {
   PyObject *strPyObj = PyObject_Str(getPyObj());
-  string val = PyString_AsString(strPyObj);
+  string val = PyBytes_AsString(strPyObj);
   Py_DECREF(strPyObj);
   return val;
 }

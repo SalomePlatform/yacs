@@ -43,7 +43,7 @@
     </foreach>
     <inline name="node3" >
       <script>
-        <code>print "coucou"</code>
+        <code>print("coucou")</code>
       </script>
     </inline>
     <service name="node4" >
@@ -65,7 +65,7 @@
   </bloc>
     <inline name="node1" >
       <script>
-        <code>print p1</code>
+        <code>print(p1)</code>
       </script>
       <inport name="p1" type="dblevec"/>
     </inline>

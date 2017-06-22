@@ -64,7 +64,7 @@
 
     <inline name="pyth6" >
       <script>
-        <code>print p1</code>
+        <code>print(p1)</code>
       </script>
       <inport name="p1" type="objvec"/>
       <outport name="p1" type="objvec"/>
@@ -96,7 +96,7 @@
     <foreach name="foreach4" nbranch="3" type="Obj" >
       <inline name="pyth" >
         <script>
-          <code>print p1</code>
+          <code>print(p1)</code>
         </script>
         <inport name="p1" type="Obj"/>
         <outport name="p1" type="Obj"/>
@@ -105,7 +105,7 @@
 
     <inline name="pyth7" >
       <script>
-        <code>print p1</code>
+        <code>print(p1)</code>
       </script>
       <inport name="p1" type="objvec"/>
       <outport name="p1" type="objvec"/>

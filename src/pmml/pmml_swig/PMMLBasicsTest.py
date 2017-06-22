@@ -23,8 +23,6 @@ from PMML import PMMLlib, kANN, kLR
 
 # imports python
 import unittest
-import exceptions
-from exceptions import RuntimeError
 import os
 import shutil
 
@@ -36,7 +34,7 @@ class PMMLBasicsTest(unittest.TestCase):
         self.tmpDir += "PmmlUnitTest";
         self.tmpDir += os.sep ;
         if ( not os.path.exists(self.tmpDir) ):
-            os.mkdir(self.tmpDir);
+            os.makedirs(self.tmpDir);
             pass
         pass
 
@@ -51,13 +49,15 @@ class PMMLBasicsTest(unittest.TestCase):
         model = "sANNName";
         exportPyScript = self.tmpDir + "swigTestExportPythonNeuralNet.py";
         refPyFilename = self.resourcesDir + "unittest_ref_ann_model.py";
-        refLines = file(refPyFilename).readlines(); 
+        with open(refPyFilename,"r") as f:
+            refLines = f.readlines(); 
         #
         p = PMMLlib( pmmlFile );
         p.SetCurrentModel( model, kANN );
         p.ExportPython( exportPyScript, "myTestFunc", 
                         "File used by unit test\n PMMLBasicsTest1::testExportNeuralNetworkPython" );
-        myLines = file(exportPyScript).readlines();
+        with open(exportPyScript,"r") as f:
+            myLines = f.readlines();
         self.assertEqual( len(myLines), len(refLines) );
         for (i,line) in enumerate(myLines):
             self.assertEqual( line, refLines[i] );
@@ -69,13 +69,15 @@ class PMMLBasicsTest(unittest.TestCase):
         model = "Modeler[LinearRegression]Tds[steamplant]Predictor[x6:x8:x6x8:x6x6x8]Target[x1]";
         exportPyScript = self.tmpDir + "swigTestExportPythonRegression.py";
         refPyFilename = self.resourcesDir + "unittest_ref_lr_model.py";
-        refLines = file(refPyFilename).readlines(); 
+        with open(refPyFilename,"r") as f:
+            refLines = f.readlines(); 
         #
         p = PMMLlib( pmmlFile );
         p.SetCurrentModel( model, kLR );
         p.ExportPython( exportPyScript, "myTestFunc", 
                                "File used by unit test\n PMMLBasicsTest1::testExportLinearRegressionPython" );
-        myLines = file(exportPyScript).readlines();
+        with open(exportPyScript,"r") as f:
+            myLines = f.readlines();
         self.assertEqual( len(myLines), len(refLines) );
         for (i,line) in enumerate(myLines):
             self.assertEqual( line, refLines[i] );

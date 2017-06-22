@@ -18,7 +18,7 @@ The protocol name appears in the first part of the type Repository ID (before th
 
 The Python protocol
 ++++++++++++++++++++++
-The Python protocol is based on serialisation done by the cPickle module (C implementation of the pickle module).  
+The Python protocol is based on serialisation done by the pickle module.  
 All that is necessary is to define an object reference type with the Python protocol so that Python objects 
 can be exchanged between Python inline nodes and with SALOME components implemented in Python.  
 SALOME components implemented in Python that are required to support this exchange type must be designed 
@@ -61,14 +61,14 @@ The implementation of component compo1 must handle serialisation / deserialisati
 way as the example in the run method described below::
 
   def run(self,s):
-    o=cPickle.loads(s)
+    o=pickle.loads(s)
     ret={'a':6, 'b':[1,2,3]}
-    return cPickle.dumps(ret,-1)
+    return pickle.dumps(ret,-1)
  
 The json protocol
 ++++++++++++++++++++++
 The json protocol is based on `JSON <http://www.json.org/>`_ (JavaScript Object Notation) 
-serialisation / deserialisation instead of cPickle. JSON supports fewer data types and requires that 
+serialisation / deserialisation instead of pickle. JSON supports fewer data types and requires that 
 the simplejson Python module should be installed, but it has the advantage that it is more interoperable.  
 In particular, there are C++ libraries that serialise/deserialise the JSON.
 

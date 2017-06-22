@@ -131,7 +131,7 @@ void YDFXGUIHostParametrizer::applyToEFX()
       YACSEvalParamsForCluster& ps(res->getAddParamsForCluster());
       _clusterAdvInfo->applyToParams(ps);
     }
-  emit readyForRunSignal(true);
+  Q_EMIT readyForRunSignal(true);
 }
 
 QString YDFXGUIHostParametrizer::getNameOfHost()
@@ -148,7 +148,7 @@ void YDFXGUIHostParametrizer::changeMachine(const QString& newMachineSelected)
   ok->setDisabled(!isInterac && !_clusterAdvInfo->isOK());
   if(_wasInteractive!=isInterac)
     {
-      emit interactivityChanged(isInterac);
+      Q_EMIT interactivityChanged(isInterac);
       _wasInteractive=isInterac;
     }
 }
@@ -346,7 +346,7 @@ void YDFXGUIBatchInfo::loadFromSettings(const QSettings& settings)
     }
   bool newOK(isOK());
   _wasOK=newOK;
-  emit statusOfEntryChanged(newOK);
+  Q_EMIT statusOfEntryChanged(newOK);
 }
 
 void YDFXGUIBatchInfo::learnSettings(QSettings& settings) const
@@ -379,7 +379,7 @@ QString YDFXGUIBatchInfo::getNameOfHost()
 
 void YDFXGUIBatchInfo::somethingChanged()
 {
-  emit statusOfEntryChanged(isOK());
+  Q_EMIT statusOfEntryChanged(isOK());
 }
 
 QString YDFXGUIBatchInfo::NormalizeDuration(const QString& txt)

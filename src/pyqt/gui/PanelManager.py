@@ -18,7 +18,7 @@
 #
 
 from qt import *
-import CONNECTOR
+from . import CONNECTOR
 
 class PanelManager(QWidgetStack):
   """ A PanelManager manages a collection of widget
@@ -36,7 +36,7 @@ class PanelManager(QWidgetStack):
     CONNECTOR.Connect(self.rootItem,"dblselected",self.setview,())
 
   def setview(self,item):
-    if not self.panels.has_key(item):
+    if item not in self.panels:
       panel=item.panel(self)
       self.panels[item]=panel
       idd=self.addWidget(panel)

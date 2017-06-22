@@ -20,17 +20,17 @@
 import sys
 import pilot
 import SALOMERuntime
-import Item
-import adapt
+from . import Item
+from . import adapt
 from qt import *
 from qtcanvas import *
-import Editor
-import CItems
+from . import Editor
+from . import CItems
 import pygraphviz
 import traceback
-import CONNECTOR
-import graph
-import panels
+from . import CONNECTOR
+from . import graph
+from . import panels
 
 class DataLinkItem(Item.Item):
   def __init__(self,pin,pout):
@@ -174,7 +174,7 @@ class ItemComposedNode(Item.Item):
     return tabWidget
 
   def addNode(self,service):
-    print "Composed.addNode",service
+    print("Composed.addNode",service)
     #add node service in the parent self which is a ComposedNode
     new_node=service.clone(None)
     ItemComposedNode.n=ItemComposedNode.n+1
@@ -196,7 +196,7 @@ class ItemComposedNode(Item.Item):
   panels=[("Panel1",panel1)]
 
   def addLink(self,link):
-    print "Composed.addLink",link
+    print("Composed.addLink",link)
     if isinstance(link,DataLinkItem):
       self.datalinks.addLink(link)
     elif isinstance(link,StreamLinkItem):
@@ -237,7 +237,7 @@ class ItemSwitch(ItemComposedNode):
 class ItemProc(ItemComposedNode):
   """Item pour la procedure"""
   def connecting(self,item):
-    print "ItemProc.connecting",item
+    print("ItemProc.connecting",item)
     self._connecting=item
 
 class ItemPort(Item.Item):
@@ -276,10 +276,10 @@ class ItemPort(Item.Item):
   box=panel
 
   def link(self,other):
-    print "ItemPort.link:",self,other
+    print("ItemPort.link:",self,other)
 
   def connect(self):
-    print "ItemPort.connect:"
+    print("ItemPort.connect:")
     self.root.connecting(self)
 
 class ItemInPort(ItemPort):
@@ -317,7 +317,7 @@ class ItemOutPort(ItemPort):
       if not cflink:
         #add also a control flow link
         fitem.addLink(ControlLinkItem(nodeS,nodeE))
-    except ValueError,ex:
+    except ValueError as ex:
       traceback.print_exc()
       QMessageBox.warning(None,"YACS error",str(ex))
       return
@@ -340,7 +340,7 @@ class ItemOutStream(ItemPort):
       l=StreamLinkItem(other.port,self.port)
       fitem=Item.adapt(father)
       fitem.addLink(l)
-    except ValueError,ex:
+    except ValueError as ex:
       traceback.print_exc()
       QMessageBox.warning(None,"YACS error",str(ex))
       return

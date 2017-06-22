@@ -23,40 +23,40 @@ usage="""USAGE: runSalome.py [options]
 [command line options] :
 --help                        : affichage de l'aide
 --gui                         : lancement du GUI
---logger		      : redirection des messages dans un fichier
---xterm			      : les serveurs ouvrent une fen�tre xterm et les messages sont affich�s dans cette fen�tre
---modules=module1,module2,... : o� modulen est le nom d'un module Salome � charger dans le catalogue
+--logger                      : redirection des messages dans un fichier
+--xterm                       : les serveurs ouvrent une fen??tre xterm et les messages sont affich??s dans cette fen??tre
+--modules=module1,module2,... : o?? modulen est le nom d'un module Salome ?? charger dans le catalogue
 --containers=cpp,python,superv: lancement des containers cpp, python et de supervision
---killall	              : arr�t des serveurs de salome
+--killall                     : arr??t des serveurs de salome
 
- La variable d'environnement <modulen>_ROOT_DIR doit etre pr�alablement
- positionn�e (modulen doit etre en majuscule).
+ La variable d'environnement <modulen>_ROOT_DIR doit etre pr??alablement
+ positionn??e (modulen doit etre en majuscule).
  KERNEL_ROOT_DIR est obligatoire.
 """
 
 # -----------------------------------------------------------------------------
 #
-# Fonction d'arr�t de salome
+# Fonction d'arr??t de salome
 #
 
 def killSalome():
-   print "arret des serveurs SALOME"
-   for pid, cmd in process_id.items():
-      print "arret du process %s : %s"% (pid, cmd[0])
-      try:
-	os.kill(pid,signal.SIGKILL)
-      except:
-         print "  ------------------ process %s : %s inexistant"% (pid, cmd[0])
-   print "arret du naming service"
-   os.system("killall -9 omniNames")
-   
+    print("arret des serveurs SALOME")
+    for pid, cmd in list(process_id.items()):
+        print("arret du process %s : %s"% (pid, cmd[0]))
+        try:
+            os.kill(pid,signal.SIGKILL)
+        except:
+            print("  ------------------ process %s : %s inexistant"% (pid, cmd[0]))
+    print("arret du naming service")
+    os.system("killall -9 omniNames")
+
 # -----------------------------------------------------------------------------
 #
 # Fonction message
 #
 
 def message(code, msg=''):
-    if msg: print msg
+    if msg: print(msg)
     sys.exit(code)
 
 import sys,os,string,glob,time,signal,pickle,getopt
@@ -76,79 +76,79 @@ with_container_python=0
 with_container_superv=0
 
 try:
-  for o, a in opts:
-    if o in ('-h', '--help'):
-      print usage
-      sys.exit(1)
-    elif o in ('-g', '--gui'):
-      with_gui=1
-    elif o in ('-l', '--logger'):
-      with_logger=1
-    elif o in ('-x', '--xterm'):
-      with_xterm=1
-    elif o in ('-m', '--modules'):
-      liste_modules = [x.upper() for x in a.split(',')]
-    elif o in ('-c', '--containers'):
-      liste_containers = [x.lower() for x in a.split(',')]
-      for r in liste_containers:
-        if r not in ('cpp', 'python', 'superv'):
-	   message(1, 'Invalid -c/--containers option: %s' % a)
-      if 'cpp' in liste_containers:
-	   with_container_cpp=1
-      else:
-	   with_container_cpp=0
-      if 'python' in liste_containers:
-	   with_container_python=1
-      else:
-	   with_container_python=0
-      if 'superv' in liste_containers:
-	   with_container_superv=1
-      else:
-	   with_container_superv=0
-    elif o in ('-k', '--killall'):
-      filedict='/tmp/'+os.getenv('USER')+'_SALOME_pidict'
-      #filedict='/tmp/'+os.getlogin()+'_SALOME_pidict'
-      found = 0
-      try:
-         fpid=open(filedict, 'r')
-	 found = 1
-      except:
-         print "le fichier %s des process SALOME n'est pas accessible"% filedict
+    for o, a in opts:
+        if o in ('-h', '--help'):
+            print(usage)
+            sys.exit(1)
+        elif o in ('-g', '--gui'):
+            with_gui=1
+        elif o in ('-l', '--logger'):
+            with_logger=1
+        elif o in ('-x', '--xterm'):
+            with_xterm=1
+        elif o in ('-m', '--modules'):
+            liste_modules = [x.upper() for x in a.split(',')]
+        elif o in ('-c', '--containers'):
+            liste_containers = [x.lower() for x in a.split(',')]
+            for r in liste_containers:
+                if r not in ('cpp', 'python', 'superv'):
+                    message(1, 'Invalid -c/--containers option: %s' % a)
+            if 'cpp' in liste_containers:
+                with_container_cpp=1
+            else:
+                with_container_cpp=0
+            if 'python' in liste_containers:
+                with_container_python=1
+            else:
+                with_container_python=0
+            if 'superv' in liste_containers:
+                with_container_superv=1
+            else:
+                with_container_superv=0
+        elif o in ('-k', '--killall'):
+            filedict='/tmp/'+os.getenv('USER')+'_SALOME_pidict'
+            #filedict='/tmp/'+os.getlogin()+'_SALOME_pidict'
+            found = 0
+            try:
+                fpid=open(filedict, 'r')
+                found = 1
+            except:
+                print("le fichier %s des process SALOME n'est pas accessible"% filedict)
 
-      if found:
-         process_id=pickle.load(fpid)
-         fpid.close()
-         killSalome()
-	 process_id={}
-         os.remove(filedict)
-	
-except getopt.error, msg:
-  print usage
-  sys.exit(1)
+            if found:
+                process_id=pickle.load(fpid)
+                fpid.close()
+                killSalome()
+                process_id={}
+                os.remove(filedict)
+
+except getopt.error as msg:
+    print(usage)
+    sys.exit(1)
 
 # -----------------------------------------------------------------------------
 #
-# V�rification des variables d'environnement
+# V??rification des variables d'environnement
 #
 try:
-  kernel_root_dir=os.environ["KERNEL_ROOT_DIR"]
-  modules_root_dir["KERNEL"]=kernel_root_dir
+    kernel_root_dir=os.environ["KERNEL_ROOT_DIR"]
+    modules_root_dir["KERNEL"]=kernel_root_dir
 except:
-  print usage
-  sys.exit(1)
+    print(usage)
+    sys.exit(1)
 
 for module in liste_modules :
-   try:
-      module=module.upper()
-      module_root_dir=os.environ[module +"_ROOT_DIR"]
-      modules_root_dir[module]=module_root_dir
-   except:
-      print usage
-      sys.exit(1)
+    try:
+        module=module.upper()
+        module_root_dir=os.environ[module +"_ROOT_DIR"]
+        modules_root_dir[module]=module_root_dir
+    except:
+        print(usage)
+        sys.exit(1)
 
 # il faut KERNEL en premier dans la liste des modules
 # - l'ordre des modules dans le catalogue sera identique
-# - la liste des modules presents dans le catalogue est exploit�e pour charger les modules CORBA python,
+# - la liste des modules presents dans le catalogue est exploit??e pour charger les modules CORBA python,
 #   il faut charger les modules python du KERNEL en premier
 
 if "KERNEL" in liste_modules:liste_modules.remove("KERNEL")
@@ -156,75 +156,75 @@ liste_modules[:0]=["KERNEL"]
 #print liste_modules
 #print modules_root_dir
 
-os.environ["SALOMEPATH"]=":".join(modules_root_dir.values())
+os.environ["SALOMEPATH"]=":".join(list(modules_root_dir.values()))
 if "SUPERV" in liste_modules:with_container_superv=1
 
 
 # -----------------------------------------------------------------------------
 #
-# D�finition des classes d'objets pour le lancement des Server CORBA
+# D??finition des classes d'objets pour le lancement des Server CORBA
 #
 
 class Server:
-   CMD=[]
-   if with_xterm:
-	ARGS=['xterm', '-iconic', '-sb', '-sl', '500', '-e']
-   else:
-   	ARGS=[]	
+    CMD=[]
+    if with_xterm:
+        ARGS=['xterm', '-iconic', '-sb', '-sl', '500', '-e']
+    else:
+        ARGS=[]
 
-   def run(self):
-      args = self.ARGS+self.CMD
-      #print "args = ", args
-      pid = os.spawnvp(os.P_NOWAIT, args[0], args)
-      process_id[pid]=self.CMD
+    def run(self):
+        args = self.ARGS+self.CMD
+        #print "args = ", args
+        pid = os.spawnvp(os.P_NOWAIT, args[0], args)
+        process_id[pid]=self.CMD
 
 class CatalogServer(Server):
-   SCMD1=['SALOME_ModuleCatalog_Server','-common']
-   SCMD2=['-personal','${HOME}/Salome/resources/CatalogModulePersonnel.xml'] 
+    SCMD1=['SALOME_ModuleCatalog_Server','-common']
+    SCMD2=['-personal','${HOME}/Salome/resources/CatalogModulePersonnel.xml']
 
-   def setpath(self,liste_modules):
-      cata_path=[]
-      for module in liste_modules:
-          module_root_dir=modules_root_dir[module]
-          module_cata=module+"Catalog.xml"
-          print "   ", module_cata
-          cata_path.extend(glob.glob(os.path.join(module_root_dir,"share","salome","resources",module_cata)))
-      self.CMD=self.SCMD1 + [string.join(cata_path,':')] + self.SCMD2
+    def setpath(self,liste_modules):
+        cata_path=[]
+        for module in liste_modules:
+            module_root_dir=modules_root_dir[module]
+            module_cata=module+"Catalog.xml"
+            print("   ", module_cata)
+            cata_path.extend(glob.glob(os.path.join(module_root_dir,"share","salome","resources",module_cata)))
+        self.CMD=self.SCMD1 + [string.join(cata_path,':')] + self.SCMD2
 
 class SalomeDSServer(Server):
-   CMD=['SALOMEDS_Server']
+    CMD=['SALOMEDS_Server']
 
 class RegistryServer(Server):
-   CMD=['SALOME_Registry_Server', '--salome_session','theSession']
+    CMD=['SALOME_Registry_Server', '--salome_session','theSession']
 
 class ContainerCPPServer(Server):
-   CMD=['SALOME_Container','FactoryServer','-ORBInitRef','NameService=corbaname::localhost']
+    CMD=['SALOME_Container','FactoryServer','-ORBInitRef','NameService=corbaname::localhost']
 
 class ContainerPYServer(Server):
-   CMD=['SALOME_ContainerPy.py','FactoryServerPy','-ORBInitRef','NameService=corbaname::localhost']
+    CMD=['SALOME_ContainerPy.py','FactoryServerPy','-ORBInitRef','NameService=corbaname::localhost']
 
 class ContainerSUPERVServer(Server):
-   CMD=['SALOME_Container','SuperVisionContainer','-ORBInitRef','NameService=corbaname::localhost']
+    CMD=['SALOME_Container','SuperVisionContainer','-ORBInitRef','NameService=corbaname::localhost']
 
 class LoggerServer(Server):
-   CMD=['SALOME_Logger_Server', 'logger.log']
+    CMD=['SALOME_Logger_Server', 'logger.log']
 
 class SessionLoader(Server):
-   CMD=['SALOME_Session_Loader']
-   if with_container_cpp:
-       CMD=CMD+['CPP']
-   if with_container_python:
-       CMD=CMD+['PY']
-   if with_container_superv:
-       CMD=CMD+['SUPERV']
-   if with_gui:
-       CMD=CMD+['GUI']
+    CMD=['SALOME_Session_Loader']
+    if with_container_cpp:
+        CMD=CMD+['CPP']
+    if with_container_python:
+        CMD=CMD+['PY']
+    if with_container_superv:
+        CMD=CMD+['SUPERV']
+    if with_gui:
+        CMD=CMD+['GUI']
 
 class SessionServer(Server):
-   CMD=['SALOME_Session_Server']
+    CMD=['SALOME_Session_Server']
 
 class NotifyServer(Server):
-   CMD=['notifd','-c','${KERNEL_ROOT_DIR}/share/salome/resources/channel.cfg -DFactoryIORFileName=/tmp/${LOGNAME}_rdifact.ior -DChannelIORFileName=/tmp/${LOGNAME}_rdichan.ior']
+    CMD=['notifd','-c','${KERNEL_ROOT_DIR}/share/salome/resources/channel.cfg -DFactoryIORFileName=/tmp/${LOGNAME}_rdifact.ior -DChannelIORFileName=/tmp/${LOGNAME}_rdichan.ior']
 
 # -----------------------------------------------------------------------------
 #
@@ -232,16 +232,16 @@ class NotifyServer(Server):
 #
 
 def test(clt):
-   """
-        Test function that creates an instance of HXX2SALOME_GENERIC_CLASS_NAME component
-        usage : hello=test(clt)
-   """
-   # create an LifeCycleCORBA instance
-   import LifeCycleCORBA 
-   lcc = LifeCycleCORBA.LifeCycleCORBA(clt.orb)
-   import HXX2SALOME_GENERIC_CLASS_NAME_ORB
-   hello = lcc.FindOrLoadComponent("FactoryServer", "HXX2SALOME_GENERIC_CLASS_NAME")
-   return hello
+    """
+         Test function that creates an instance of HXX2SALOME_GENERIC_CLASS_NAME component
+         usage : hello=test(clt)
+    """
+    # create an LifeCycleCORBA instance
+    import LifeCycleCORBA
+    lcc = LifeCycleCORBA.LifeCycleCORBA(clt.orb)
+    import HXX2SALOME_GENERIC_CLASS_NAME_ORB
+    hello = lcc.FindOrLoadComponent("FactoryServer", "HXX2SALOME_GENERIC_CLASS_NAME")
+    return hello
 
 # -----------------------------------------------------------------------------
 #
@@ -249,14 +249,14 @@ def test(clt):
 #
 
 def add_path(directory):
-   os.environ["PATH"]=directory + ":" + os.environ["PATH"]
+    os.environ["PATH"]=directory + ":" + os.environ["PATH"]
 
 def add_ld_library_path(directory):
-   os.environ["LD_LIBRARY_PATH"]=directory + ":" + os.environ["LD_LIBRARY_PATH"]
+    os.environ["LD_LIBRARY_PATH"]=directory + ":" + os.environ["LD_LIBRARY_PATH"]
 
 def add_python_path(directory):
-   os.environ["PYTHONPATH"]=directory + ":" + os.environ["PYTHONPATH"]
-   sys.path[:0]=[directory]
+    os.environ["PYTHONPATH"]=directory + ":" + os.environ["PYTHONPATH"]
+    sys.path[:0]=[directory]
 
 # -----------------------------------------------------------------------------
 #
@@ -304,221 +304,220 @@ import orbmodule
 #
 
 def startGUI():
-  import SALOME
-  session=clt.waitNS("/Kernel/Session",SALOME.Session)
+    import SALOME
+    session=clt.waitNS("/Kernel/Session",SALOME.Session)
 
-  #
-  # Activation du GUI de Session Server
-  #
-	
-  session.GetInterface()
-  
+    #
+    # Activation du GUI de Session Server
+    #
+
+    session.GetInterface()
+
 #
 # -----------------------------------------------------------------------------
 #
 
 def startSalome():
 
-  #
-  # Lancement Session Loader
-  #
-  SessionLoader().run()
+    #
+    # Lancement Session Loader
+    #
+    SessionLoader().run()
 
-  #
-  # Initialisation ORB et Naming Service
-  #
-  clt=orbmodule.client()
+    #
+    # Initialisation ORB et Naming Service
+    #
+    clt=orbmodule.client()
 
-  # (non obligatoire) Lancement Logger Server et attente de sa 
-  #  disponibilite dans le naming service
-  #
-  if with_logger:
-	LoggerServer().run()
-	clt.waitLogger("Logger")
+    # (non obligatoire) Lancement Logger Server et attente de sa
+    #  disponibilite dans le naming service
+    #
+    if with_logger:
+        LoggerServer().run()
+        clt.waitLogger("Logger")
 
-  #
-  # Lancement Registry Server
-  #
-  RegistryServer().run()
+    #
+    # Lancement Registry Server
+    #
+    RegistryServer().run()
 
-  #
-  # Attente de la disponibilit� du Registry dans le Naming Service
-  #
-  clt.waitNS("/Registry")
+    #
+    # Attente de la disponibilit?? du Registry dans le Naming Service
+    #
+    clt.waitNS("/Registry")
 
-  #
-  # Lancement Catalog Server
-  #
-  cataServer=CatalogServer()
-  cataServer.setpath(liste_modules)
-  cataServer.run()
+    #
+    # Lancement Catalog Server
+    #
+    cataServer=CatalogServer()
+    cataServer.setpath(liste_modules)
+    cataServer.run()
 
-  #
-  # Attente de la disponibilit� du Catalog Server dans le Naming Service
-  #
-  import SALOME_ModuleCatalog
-  clt.waitNS("/Kernel/ModulCatalog",SALOME_ModuleCatalog.ModuleCatalog)
+    #
+    # Attente de la disponibilit?? du Catalog Server dans le Naming Service
+    #
+    import SALOME_ModuleCatalog
+    clt.waitNS("/Kernel/ModulCatalog",SALOME_ModuleCatalog.ModuleCatalog)
 
-  #
-  # Lancement SalomeDS Server
-  #
-  os.environ["CSF_PluginDefaults"]=os.path.join(kernel_root_dir,"share","salome","resources")
-  os.environ["CSF_SALOMEDS_ResourcesDefaults"]=os.path.join(kernel_root_dir,"share","salome","resources")
-  SalomeDSServer().run()
+    #
+    # Lancement SalomeDS Server
+    #
+    os.environ["CSF_PluginDefaults"]=os.path.join(kernel_root_dir,"share","salome","resources")
+    os.environ["CSF_SALOMEDS_ResourcesDefaults"]=os.path.join(kernel_root_dir,"share","salome","resources")
+    SalomeDSServer().run()
 
-  if "GEOM" in liste_modules:
-	print "GEOM OCAF Resources"
-	os.environ["CSF_GEOMDS_ResourcesDefaults"]=os.path.join(modules_root_dir["GEOM"],"share","salome","resources")
+    if "GEOM" in liste_modules:
+        print("GEOM OCAF Resources")
+        os.environ["CSF_GEOMDS_ResourcesDefaults"]=os.path.join(modules_root_dir["GEOM"],"share","salome","resources")
 
 
-  #
-  # Attente de la disponibilit� du SalomeDS dans le Naming Service
-  #
-  clt.waitNS("/Study")
+    #
+    # Attente de la disponibilit?? du SalomeDS dans le Naming Service
+    #
+    clt.waitNS("/myStudyManager")
 
-  #
-  # Lancement Session Server
-  #
-  SessionServer().run()
+    #
+    # Lancement Session Server
+    #
+    SessionServer().run()
 
-  #
-  # Attente de la disponibilit� du Session Server dans le Naming Service
-  #
-  import SALOME
-  session=clt.waitNS("/Kernel/Session",SALOME.Session)
+    #
+    # Attente de la disponibilit?? du Session Server dans le Naming Service
+    #
+    import SALOME
+    session=clt.waitNS("/Kernel/Session",SALOME.Session)
 
-  #
-  # Lancement containers
-  #
-  theComputer = os.getenv("HOSTNAME")
-  theComputer = theComputer.split('.')[0]
+    #
+    # Lancement containers
+    #
+    theComputer = os.getenv("HOSTNAME")
+    theComputer = theComputer.split('.')[0]
 
-  #
-  # Lancement Container C++ local
-  #
-  if with_container_cpp:
-	  ContainerCPPServer().run()
-	  #
-	  # Attente de la disponibilit� du Container C++ local 
-          # dans le Naming Service
-	  #
-	  clt.waitNS("/Containers/" + theComputer + "/FactoryServer")
-  #
-  # Lancement Container Python local
-  #
-  if with_container_python:
-	  ContainerPYServer().run()
-	  #
-	  # Attente de la disponibilit� du Container Python local 
-          #  dans le Naming Service
-	  #
-	  clt.waitNS("/Containers/" + theComputer + "/FactoryServerPy")
-
-  if with_container_superv:
-	#
-	# Lancement Container Supervision local
-	#
-	ContainerSUPERVServer().run()
-	#
-	# Attente de la disponibilit� du Container Supervision local 
+    #
+    # Lancement Container C++ local
+    #
+    if with_container_cpp:
+        ContainerCPPServer().run()
+        #
+        # Attente de la disponibilit?? du Container C++ local
         # dans le Naming Service
-	#
-	clt.waitNS("/Containers/" + theComputer + "/SuperVisionContainer")
-  #
-  # Activation du GUI de Session Server
-  #
-  #session.GetInterface()
+        #
+        clt.waitNS("/Containers/" + theComputer + "/FactoryServer")
+    #
+    # Lancement Container Python local
+    #
+    if with_container_python:
+        ContainerPYServer().run()
+        #
+        # Attente de la disponibilit?? du Container Python local
+        #  dans le Naming Service
+        #
+        clt.waitNS("/Containers/" + theComputer + "/FactoryServerPy")
 
-  end_time = os.times()
-  print
-  print "Start SALOME, elpased time : %5.1f seconds"% (end_time[4] - init_time[4])
+    if with_container_superv:
+        #
+        # Lancement Container Supervision local
+        #
+        ContainerSUPERVServer().run()
+        #
+        # Attente de la disponibilit?? du Container Supervision local
+        # dans le Naming Service
+        #
+        clt.waitNS("/Containers/" + theComputer + "/SuperVisionContainer")
+    #
+    # Activation du GUI de Session Server
+    #
+    #session.GetInterface()
 
-  return clt
+    end_time = os.times()
+    print()
+    print("Start SALOME, elpased time : %5.1f seconds"% (end_time[4] - init_time[4]))
+
+    return clt
 
 #
 # -----------------------------------------------------------------------------
 #
 
 if __name__ == "__main__":
-   clt=None
-   try:
-      clt = startSalome()
-   except:
-      print
-      print
-      print "--- erreur au lancement Salome ---"
-   
-   #print process_id
-   
-   
-   filedict='/tmp/'+os.getenv('USER')+'_SALOME_pidict'
-   #filedict='/tmp/'+os.getlogin()+'_SALOME_pidict'
-   
-   fpid=open(filedict, 'w')
-   pickle.dump(process_id,fpid)
-   fpid.close()
-   
-   print """
+    clt=None
+    try:
+        clt = startSalome()
+    except:
+        print()
+        print()
+        print("--- erreur au lancement Salome ---")
 
-Sauvegarde du dictionnaire des process dans , %s
-Pour tuer les process SALOME, executer : python killSalome.py depuis
-une console, ou bien killSalome() depuis le present interpreteur,
-s'il n'est pas ferm�.
+    #print process_id
 
-runSalome, avec l'option --killall, commence par tuer les process restants 
-d'une execution pr�c�dente.
 
-Pour lancer uniquement le GUI, executer startGUI() depuis le present interpreteur,
-s'il n'est pas ferm�.
+    filedict='/tmp/'+os.getenv('USER')+'_SALOME_pidict'
+    #filedict='/tmp/'+os.getlogin()+'_SALOME_pidict'
 
-""" % filedict
-   
-   #
-   #  Impression arborescence Naming Service
-   #
-   
-   if clt != None:
-     print
-     print " --- registered objects tree in Naming Service ---"
-     clt.showNS()
-     session=clt.waitNS("/Kernel/Session")
-     catalog=clt.waitNS("/Kernel/ModulCatalog")
-     import socket
-     container =  clt.waitNS("/Containers/" + socket.gethostname().split('.')[0] + "/FactoryServerPy")
-   
-   if os.path.isfile("~/.salome/pystartup"):
-      f=open(os.path.expanduser("~/.salome/pystartup"),'w')
-      PYTHONSTARTUP=f.read()
-      f.close()
-   else:
-      PYTHONSTARTUP="""
-# Add auto-completion and a stored history file of commands to your Python
-# interactive interpreter. Requires Python 2.0+, readline. Autocomplete is
-# bound to the TAB key by default (you can change it - see readline docs).
-#
-# Store the history in ~/.salome/pyhistory, 
-#
-import atexit
-import os
-import readline
-import rlcompleter
-readline.parse_and_bind('tab: complete')
+    fpid=open(filedict, 'w')
+    pickle.dump(process_id,fpid)
+    fpid.close()
 
-historyPath = os.path.expanduser("~/.salome/pyhistory")
+    print("""
 
-def save_history(historyPath=historyPath):
-    import readline
-    readline.write_history_file(historyPath)
+ Sauvegarde du dictionnaire des process dans , %s
+ Pour tuer les process SALOME, executer : python killSalome.py depuis
+ une console, ou bien killSalome() depuis le present interpreteur,
+ s'il n'est pas ferm??.
 
-if os.path.exists(historyPath):
-    readline.read_history_file(historyPath)
+ runSalome, avec l'option --killall, commence par tuer les process restants
+ d'une execution pr??c??dente.
 
-atexit.register(save_history)
-del os, atexit, readline, rlcompleter, save_history, historyPath
-"""
-      f=open(os.path.expanduser("~/.salome/pystartup"),'w')
-      f.write(PYTHONSTARTUP)
-      f.close()
+ Pour lancer uniquement le GUI, executer startGUI() depuis le present interpreteur,
+ s'il n'est pas ferm??.
 
-   exec PYTHONSTARTUP in {}
-   
+ """ % filedict)
+
+    #
+    #  Impression arborescence Naming Service
+    #
+
+    if clt != None:
+        print()
+        print(" --- registered objects tree in Naming Service ---")
+        clt.showNS()
+        session=clt.waitNS("/Kernel/Session")
+        catalog=clt.waitNS("/Kernel/ModulCatalog")
+        import socket
+        container =  clt.waitNS("/Containers/" + socket.gethostname().split('.')[0] + "/FactoryServerPy")
+
+    if os.path.isfile("~/.salome/pystartup"):
+        f=open(os.path.expanduser("~/.salome/pystartup"),'w')
+        PYTHONSTARTUP=f.read()
+        f.close()
+    else:
+        PYTHONSTARTUP="""
+  # Add auto-completion and a stored history file of commands to your Python
+  # interactive interpreter. Requires Python 2.0+, readline. Autocomplete is
+  # bound to the TAB key by default (you can change it - see readline docs).
+  #
+  # Store the history in ~/.salome/pyhistory,
+  #
+  import atexit
+  import os
+  import readline
+  import rlcompleter
+  readline.parse_and_bind('tab: complete')
+
+  historyPath = os.path.expanduser("~/.salome/pyhistory")
+
+  def save_history(historyPath=historyPath):
+      import readline
+      readline.write_history_file(historyPath)
+
+  if os.path.exists(historyPath):
+      readline.read_history_file(historyPath)
+
+  atexit.register(save_history)
+  del os, atexit, readline, rlcompleter, save_history, historyPath
+  """
+        f=open(os.path.expanduser("~/.salome/pystartup"),'w')
+        f.write(PYTHONSTARTUP)
+        f.close()
+
+    exec(PYTHONSTARTUP, {})

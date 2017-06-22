@@ -21,19 +21,19 @@
 """
 import sys,os
 from qt import *
-import Tree
-import PanelManager
-import BoxManager
-import Icons
-import Items
-import adapt
-import Item
-import logview
+from . import Tree
+from . import PanelManager
+from . import BoxManager
+from . import Icons
+from . import Items
+from . import adapt
+from . import Item
+from . import logview
 import pilot
 import threading
 import time
-import CONNECTOR
-import catalog
+from . import CONNECTOR
+from . import catalog
 import traceback
 import glob
 
@@ -55,7 +55,7 @@ class Runner(threading.Thread):
   def run(self):
     try:
       self.executor.RunW(self.proc,0)
-    except ValueError,ex:
+    except ValueError as ex:
       #traceback.print_exc()
       QApplication.postEvent(self.parent, ErrorEvent('YACS execution error',str(ex)))
 
@@ -467,7 +467,7 @@ class Appli(QMainWindow):
 
 
 if __name__ == "__main__":
-  from Item import Item
+  from .Item import Item
   app = QApplication(sys.argv)
   t=Appli()
   t.objectBrowser.additem(Item("item1"))

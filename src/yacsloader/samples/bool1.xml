@@ -125,7 +125,7 @@
 
     <inline name="pyth5" >
       <script>
-        <code>print p1</code>
+        <code>print(p1)</code>
       </script>
       <inport name="p1" type="boolvec"/>
       <outport name="p1" type="boolvec"/>
@@ -146,7 +146,7 @@
 
     <inline name="pyth6" >
       <script>
-        <code>print p1</code>
+        <code>print(p1)</code>
       </script>
       <inport name="p1" type="boolvec"/>
       <outport name="p1" type="boolvec"/>

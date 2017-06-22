@@ -42,12 +42,12 @@
    <remote name="Node6">
       <script>
          <code><![CDATA[
-print "coucou, x=",x
-print "coucou, a=",a
-print "my_container=",my_container
+print("coucou, x=",x)
+print("coucou, a=",a)
+print("my_container=",my_container)
 y= x+" OK ca marche"+str(a)
 z=2*a+4.7
-print y,z
+print(y,z)
 ]]></code>
       </script>
       <load container="cont1"/>
@@ -58,8 +58,8 @@ print y,z
    </remote>
    <inline name="node2">
       <script><code><![CDATA[
-print "dans node2 p1=",p1
-print "dans node2 p2=",p2
+print("dans node2 p1=",p1)
+print("dans node2 p2=",p2)
 ]]></code></script>
       <inport name="p1" type="string"/>
       <inport name="p2" type="double"/>

@@ -95,9 +95,9 @@ def test():
   }
   display(G)
   I=invert(G)
-  print reachable(G,2)
-  print reachable(I,6)
-  print reachable(G,2) & reachable(I,6)
+  print(reachable(G,2))
+  print(reachable(I,6))
+  print(reachable(G,2) & reachable(I,6))
 
 if __name__ == "__main__":
   test()

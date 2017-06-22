@@ -83,7 +83,7 @@ for run in range(numberOfRun):
     runs[run].append(medFile)
     runs[run].append(meshName)
     pass
-print "There is(are) ",numberOfRun," runs of Fake Compo on process ",os.getpid()
+print("There is(are) ",numberOfRun," runs of Fake Compo on process ",os.getpid())
 ]]></code></script>
       <outport name="numberOfRun" type="int"/>
       <outport name="runs" type="seqpyobj"/>

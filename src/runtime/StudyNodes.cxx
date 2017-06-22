@@ -24,6 +24,7 @@
 #include "TypeCode.hxx"
 #include "SalomeProc.hxx"
 
+#include "Basics_Utils.hxx"
 #include "SALOME_NamingService.hxx"
 #include "SALOME_KernelServices.hxx"
 #include "SALOMEDS.hh"
@@ -225,7 +226,7 @@ void StudyOutNode::execute()
   // save in file if ref is given
   if(_ref != "")
     {
-	  KERNEL::getStudyServant()->SaveAs(_ref.c_str(), false, false);
+      KERNEL::getStudyServant()->SaveAs(Kernel_Utils::decode_s( _ref ), false, false);
     }
   DEBTRACE("+++++++ end StudyOutNode::execute +++++++++++" );
 }

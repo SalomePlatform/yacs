@@ -69,12 +69,12 @@ class TestSave(unittest.TestCase):
                 s.save(saveSchema2)
                 e.RunW(p,0)
                 e.saveState(dumpSchema2)
-            except ValueError, ex:
-                print "Value Error: ", ex
+            except ValueError as ex:
+                print("Value Error: ", ex)
                 pb = "problem on " + fileOrig + " : ValueError"
                 self.fail(pb)
-            except pilot.Exception,ex:
-                print ex.what()
+            except pilot.Exception as ex:
+                print(ex.what())
                 pb = "problem on " + fileOrig + " : " + ex.what()
                 self.fail(pb)
             except:

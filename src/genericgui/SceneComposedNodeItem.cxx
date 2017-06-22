@@ -482,7 +482,7 @@ bool SceneComposedNodeItem::hasExpandedChildren(bool recursively)
 
 void SceneComposedNodeItem::shrinkExpandRecursive(bool toExpand, bool fromHere, ShrinkMode theShrinkMode)
 {
-  DEBTRACE("SceneComposedNodeItem::shrinkExpandRecursive " << isExpanding << " " << fromHere << " " << isExpanded() << " " << _label.toStdString());
+  DEBTRACE("SceneComposedNodeItem::shrinkExpandRecursive " << toExpand << " " << fromHere << " " << isExpanded() << " " << _label.toStdString());
   
   bool toChangeShrinkState = false;
   switch (theShrinkMode) {

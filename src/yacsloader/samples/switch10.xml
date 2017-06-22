@@ -42,21 +42,21 @@
       <outport name="select" type="int"/>
    </inline>
    <inline name="n2">
-      <script><code><![CDATA[print p1]]></code></script>
+      <script><code><![CDATA[print(p1)]]></code></script>
       <inport name="p1" type="double"/>
       <outport name="p1" type="double"/>
    </inline>
    <switch name="b1">
       <default>
          <inline name="n2">
-            <script><code><![CDATA[print p1]]></code></script>
+            <script><code><![CDATA[print(p1)]]></code></script>
             <inport name="p1" type="double"/>
             <outport name="p1" type="double"/>
          </inline>
       </default>
       <case id="1">
          <inline name="n2">
-            <script><code><![CDATA[print p1]]></code></script>
+            <script><code><![CDATA[print(p1)]]></code></script>
             <inport name="p1" type="double"/>
             <outport name="p1" type="double"/>
          </inline>
@@ -73,7 +73,7 @@ condition=p1 < 40. ]]></code></script>
             </default>
             <case id="1">
                <inline name="n2">
-                  <script><code><![CDATA[print p1
+                  <script><code><![CDATA[print(p1)
 p1=p1+20
 condition=p1 < 40. ]]></code></script>
                   <inport name="p1" type="double"/>

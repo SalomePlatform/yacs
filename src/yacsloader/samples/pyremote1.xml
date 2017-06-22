@@ -43,9 +43,9 @@
       <function name="ff2">
          <code><![CDATA[
 def ff2(x,a):
-  print "coucou, x=",x
-  print "coucou, a=",a
-  print my_container
+  print("coucou, x=",x)
+  print("coucou, a=",a)
+  print(my_container)
   return x+" OK ca marche"+str(a),2*a+4.7
 ]]></code>
       </function>
@@ -57,8 +57,8 @@ def ff2(x,a):
    </remote>
    <inline name="node2">
       <script><code><![CDATA[
-print "dans node2 p1=",p1
-print "dans node2 p2=",p2
+print("dans node2 p1=",p1)
+print("dans node2 p2=",p2)
 ]]></code></script>
       <inport name="p1" type="string"/>
       <inport name="p2" type="double"/>

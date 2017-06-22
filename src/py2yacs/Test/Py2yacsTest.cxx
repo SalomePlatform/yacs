@@ -61,6 +61,10 @@ void verifyCorrectPycode(const char * code_py, const char * function_name,
   {
     CPPUNIT_FAIL(e.what());
   }
+  catch(std::exception& e)
+  {
+    CPPUNIT_FAIL(e.what());
+  }
   catch(...)
   {
     CPPUNIT_FAIL("Unknown exception");
@@ -102,6 +106,10 @@ void verifyWrongPycode(const char* code_py, const char* function_name,
     std::cerr << "===============================================" << std::endl;
     CPPUNIT_ASSERT(what.find(error_message) != std::string::npos);
   }
+  catch(std::exception& e)
+  {
+    CPPUNIT_FAIL(e.what());
+  }
 }
 
 static
@@ -124,6 +132,10 @@ void verifyWrongParser(const char* parser_module, const char* parser_function,
     std::cerr << what << std::endl;
     std::cerr << "===============================================" << std::endl;
     CPPUNIT_ASSERT(what.find(error_message) != std::string::npos);
+  }
+  catch(std::exception& e)
+  {
+    CPPUNIT_FAIL(e.what());
   }
 }
 
@@ -152,9 +164,9 @@ void Py2yacsTest::t2()
 void Py2yacsTest::t3()
 {
   const char * code_py = "def f1(a, b, c):\n"
-                         "  print a\n"
-                         "  print b\n"
-                         "  print c\n";
+                         "  print(a)\n"
+                         "  print(b)\n"
+                         "  print(c)\n";
   const char* input_ports[] = {"a", "b", "c"};
   const char** output_ports;
   verifyCorrectPycode(code_py, "f1", 3, input_ports, 0, output_ports);
@@ -163,7 +175,7 @@ void Py2yacsTest::t3()
 void Py2yacsTest::t4()
 {
   const char * code_py = "def f1():\n"
-                         "  print 'toto'\n"
+                         "  print('toto')\n"
                          "  return\n";
   const char* input_ports[] = {"a", "b", "c"};
   const char** output_ports;
@@ -213,7 +225,7 @@ void Py2yacsTest::unaccepted_statement2()
   const char * code_py = "def f(a):\n"
                          "  return a\n"
                          "if __name__ == '__main__':"
-                         "  print 'toto'\n";
+                         "  print('toto')\n";
   verifyWrongPycode(code_py, "f", "not accepted statement");
 }
 
@@ -237,7 +249,7 @@ void Py2yacsTest::syntaxError()
 {
   const char * code_py = "bla bla bla\n"
                          "  return f1(x)\n";
-  verifyWrongPycode(code_py, "f2", "SyntaxError");
+  verifyWrongPycode(code_py, "f2", "invalid syntax");
 }
 
 void Py2yacsTest::badFunctionName()
@@ -291,19 +303,19 @@ void Py2yacsTest::schemaExec()
 // Test the behaviour when there is an error in the python parser
 void Py2yacsTest::parserErrors()
 {
-  verifyWrongParser("bad_parsers", "p1", "argument");
-  verifyWrongParser("bad_parsers", "p2", "Attribute 'name' not found");
+  verifyWrongParser("bad_parsers", "p1", "0 positional arguments");
+  verifyWrongParser("bad_parsers", "p2", "'str' object has no attribute 'name'");
   verifyWrongParser("bad_parsers", "p3", "should be a python list");
-  verifyWrongParser("bad_parsers", "p4", "Traceback");
+  verifyWrongParser("bad_parsers", "p4", "unsupported operand type");
   verifyWrongParser("bad_parsers", "f", "Cannot find the parsing function");
   verifyWrongParser("err_py2yacs_invalid", "get_properties", "invalid syntax");
   verifyWrongParser("no_file", "f", "Failed to load");
-  verifyWrongParser("bad_parsers", "p5", " ");
-  verifyWrongParser("bad_parsers", "p6", " ");
-  verifyWrongParser("bad_parsers", "p7", " ");
+  verifyWrongParser("bad_parsers", "p5", "is not a string");
+  verifyWrongParser("bad_parsers", "p6", "is not a string");
+  verifyWrongParser("bad_parsers", "p7", "is not a string");
   verifyWrongParser("bad_parsers", "p8", "Attribute 'name' should be a string.");
-  verifyWrongParser("bad_parsers", "p9", " ");
-  verifyWrongParser("bad_parsers", "p10", " ");
+  verifyWrongParser("bad_parsers", "p9", "Not a python list");
+  verifyWrongParser("bad_parsers", "p10", "is not a string");
 }
 
 void Py2yacsTest::globalVerification()

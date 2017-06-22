@@ -31,7 +31,7 @@
     <inline name="node0" >
       <script>
         <code>p1="toto"</code>
-        <code>print p1</code>
+        <code>print(p1)</code>
       </script>
       <outport name="p1" type="string"/>
     </inline>
@@ -56,7 +56,7 @@
 
     <inline name="node3" >
       <script>
-        <code>print "node3:",p1</code>
+        <code>print("node3:",p1)</code>
       </script>
       <inport name="p1" type="file"/>
     </inline>

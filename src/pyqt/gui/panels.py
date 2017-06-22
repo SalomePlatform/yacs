@@ -19,8 +19,8 @@
 
 from qt import *
 import traceback
-import Editor
-import Item
+from . import Editor
+from . import Item
 
 class PanelScript(QVBox):
   def __init__(self,parent,item):

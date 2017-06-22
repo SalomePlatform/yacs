@@ -74,7 +74,7 @@ const std::list<FunctionProperties>& Py2yacs::getFunctionProperties()const
 static
 std::string copyList(PyObject *pyList, std::list<std::string>& cppList)
 {
-  std::string error;
+  std::string error="";
   if(!PyList_Check(pyList))
   {
     error = "Not a python list.\n";
@@ -82,11 +82,11 @@ std::string copyList(PyObject *pyList, std::list<std::string>& cppList)
   }
   else
   {
-    int n = PyList_Size(pyList);
-    for(int i=0; i<n; i++)
+    Py_ssize_t n = PyList_Size(pyList);
+    for(Py_ssize_t i=0; i<n; i++)
     {
       PyObject *elem = PyList_GetItem(pyList,i);
-      if(!PyString_Check(elem))
+      if(!PyUnicode_Check(elem))
       {
         std::stringstream message;
         message << "List element number " << i << " is not a string.\n";
@@ -95,8 +95,7 @@ std::string copyList(PyObject *pyList, std::list<std::string>& cppList)
       }
       else
       {
-        const char * portName = PyString_AsString(elem);
-        cppList.push_back(portName);
+        cppList.push_back(std::string(PyUnicode_AsUTF8(elem)));
       }
     }
   }
@@ -113,14 +112,14 @@ std::string getPyErrorText()
     PyObject *pystr, *module_name, *pyth_module, *pyth_func;
     PyErr_Fetch(&ptype, &pvalue, &ptraceback);
     pystr = PyObject_Str(pvalue);
-    result = PyString_AsString(pystr);
+    result = std::string(PyUnicode_AsUTF8(pystr));
     result += "\n";
     Py_DECREF(pystr);
     
     /* See if we can get a full traceback */
     if(ptraceback)
     {
-      module_name = PyString_FromString("traceback");
+      module_name = PyUnicode_FromString("traceback");
       pyth_module = PyImport_Import(module_name);
       Py_DECREF(module_name);
       if (pyth_module)
@@ -136,7 +135,7 @@ std::string getPyErrorText()
             for(int i=0; i<n; i++)
             {
               pystr = PyList_GetItem(pyList,i);
-              result += PyString_AsString(pystr);
+              result += std::string(PyUnicode_AsUTF8(pystr));
             }
             Py_DECREF(pyList);
           }
@@ -180,7 +179,7 @@ void Py2yacs::load(const std::string& python_code)
     
     // Py_Initialize();
     YACS::ENGINE::AutoGIL agil;
-    pValue = PyString_FromString(_python_parser_module.c_str());
+    pValue = PyUnicode_FromString(_python_parser_module.c_str());
     pModule = PyImport_Import(pValue);
     Py_DECREF(pValue);
 
@@ -198,7 +197,7 @@ void Py2yacs::load(const std::string& python_code)
       if (pFunc && PyCallable_Check(pFunc))
       {
         pArgs = PyTuple_New(1);
-        pValue = PyString_FromString(python_code.c_str());
+        pValue = PyUnicode_FromString(python_code.c_str());
         PyTuple_SetItem(pArgs, 0, pValue);
         
         pValue = PyObject_CallObject(pFunc, pArgs);
@@ -211,7 +210,7 @@ void Py2yacs::load(const std::string& python_code)
           {
             errorMessage += "Parsing function should return a tuple of two string lists.\n";
           }
-          int n = PyTuple_Size(pValue);
+          Py_ssize_t n = PyTuple_Size(pValue);
           if(n != 2)
           {
             errorMessage += "Parsing function should return two string lists.\n";
@@ -232,7 +231,7 @@ void Py2yacs::load(const std::string& python_code)
               
               if(pAttribute = checkAndGetAttribute(fpy, "name", errorMessage))
               {
-                if(!PyString_Check(pAttribute))
+                if(!PyUnicode_Check(pAttribute))
                 {
                   errorMessage += "Attribute 'name' should be a string.\n";
                   Py_DECREF(pAttribute);
@@ -241,7 +240,7 @@ void Py2yacs::load(const std::string& python_code)
                 {
                   _functions.push_back(FunctionProperties());
                   FunctionProperties& fcpp = _functions.back();
-                  fcpp._name=PyString_AsString(pAttribute);
+                  fcpp._name=std::string(PyUnicode_AsUTF8(pAttribute));
                   Py_DECREF(pAttribute);
                   
                   if(pAttribute = checkAndGetAttribute(fpy, "inputs", errorMessage))

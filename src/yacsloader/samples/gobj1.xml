@@ -55,7 +55,7 @@
       <script>
         <code>import SALOME_MED</code>
         <code>p1=p1._narrow(SALOME_MED.FIELD)</code>
-        <code>print p1</code>
+        <code>print(p1)</code>
       </script>
       <inport name="p1" type="FIELDDOUBLE"/>
       <outport name="p1" type="FIELDDOUBLE"/>
@@ -90,7 +90,7 @@
 
     <inline name="pyth0" >
       <script>
-        <code>print "MEDFIELD:",p1</code>
+        <code>print (MEDFIELD:",p1)</code>
         <code>p1.Register()</code>
       </script>
       <inport name="p1" type="FIELDDOUBLE"/>
@@ -99,7 +99,7 @@
 
     <inline name="pyth1" >
       <script>
-        <code>print "MEDFIELD:",p1</code>
+        <code>print("MEDFIELD:",p1)</code>
       </script>
       <inport name="p1" type="FIELDDOUBLE"/>
     </inline>

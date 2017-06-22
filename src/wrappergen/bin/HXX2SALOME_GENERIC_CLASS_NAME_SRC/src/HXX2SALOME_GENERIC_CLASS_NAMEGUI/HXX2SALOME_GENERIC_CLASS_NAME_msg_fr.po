@@ -43,34 +43,34 @@ msgid "HXX2SALOME_GENERIC_CLASS_NAMEGUI::INF_HXX2SALOME_GENERIC_CLASS_NAME_TEXT"
 msgstr "Ceci est un simple test"
 
 msgid "HXX2SALOME_GENERIC_CLASS_NAMEGUI::INF_HXX2SALOME_GENERIC_CLASS_NAME_CHECK"
-msgstr "Cochée"
+msgstr "CochÃ©e"
 
 msgid "HXX2SALOME_GENERIC_CLASS_NAMEGUI::INF_HXX2SALOME_GENERIC_CLASS_NAME_UNCHECK"
-msgstr "Décochée"
+msgstr "DÃ©cochÃ©e"
 
 msgid "HXX2SALOME_GENERIC_CLASS_NAMEGUI::RES_HXX2SALOME_GENERIC_CLASS_NAME_TITLE"
 msgstr "Dialogue example de HXX2SALOME_GENERIC_CLASS_NAME"
 
 msgid "HXX2SALOME_GENERIC_CLASS_NAMEGUI::RES_HXX2SALOME_GENERIC_CLASS_NAME_TEXT"
-msgstr "Les préférences sont : \n\tCase à cocher : %1\n\tEntier : %2\n\tEntier2 : %3\n\tDouble : %4\n\tTexte : %5"
+msgstr "Les prÃ©fÃ©rences sont : \n\tCase Ã  cocher : %1\n\tEntier : %2\n\tEntier2 : %3\n\tDouble : %4\n\tTexte : %5"
 
 msgid "TLT_MY_NEW_ITEM"
-msgstr "Un article de menu propre à HXX2SALOME_GENERIC_CLASS_NAME"
+msgstr "Un article de menu propre Ã  HXX2SALOME_GENERIC_CLASS_NAME"
 
 msgid "MEN_MY_NEW_ITEM"
 msgstr "Mon menu"
 
 msgid "STS_MY_NEW_ITEM"
-msgstr "Affiche une boîte de dialogue simple"
+msgstr "Affiche une boÃ®te de dialogue simple"
 
 msgid "TLT_HXX2SALOME_GENERIC_CLASS_NAME_ACTION"
-msgstr "Ouvre la boîte de dialogue de HXX2SALOME_GENERIC_CLASS_NAME"
+msgstr "Ouvre la boÃ®te de dialogue de HXX2SALOME_GENERIC_CLASS_NAME"
 
 msgid "MEN_HXX2SALOME_GENERIC_CLASS_NAME_ACTION"
-msgstr "Boîte de dialogue de HXX2SALOME_GENERIC_CLASS_NAME"
+msgstr "BoÃ®te de dialogue de HXX2SALOME_GENERIC_CLASS_NAME"
 
 msgid "STS_HXX2SALOME_GENERIC_CLASS_NAME_ACTION"
-msgstr "Ouvre la boîte de dialogue de HXX2SALOME_GENERIC_CLASS_NAME"
+msgstr "Ouvre la boÃ®te de dialogue de HXX2SALOME_GENERIC_CLASS_NAME"
 
 msgid "MEN_FILE"
 msgstr "&File"
@@ -89,10 +89,10 @@ msgstr "HXX2SALOME_GENERIC_CLASS_NAME"
 #-------------------------------------------------------------------------
 
 msgid "HXX2SALOME_GENERIC_CLASS_NAMEGUI::PREF_TAB_GENERAL"
-msgstr "Général"
+msgstr "GÃ©nÃ©ral"
 
 msgid "HXX2SALOME_GENERIC_CLASS_NAMEGUI::PREF_GROUP_DEFAULTS"
-msgstr "Valeurs par défaut"
+msgstr "Valeurs par dÃ©faut"
 
 msgid "HXX2SALOME_GENERIC_CLASS_NAMEGUI::PREF_DEFAULT_BOOL"
 msgstr "Cochez-moi"
@@ -101,19 +101,19 @@ msgid "HXX2SALOME_GENERIC_CLASS_NAMEGUI::PREF_DEFAULT_INTEGER"
 msgstr "Entrez un entier :"
 
 msgid "HXX2SALOME_GENERIC_CLASS_NAMEGUI::PREF_DEFAULT_SPININT"
-msgstr "Cliquez sur les flèches (entier) :"
+msgstr "Cliquez sur les flÃ¨ches (entier) :"
 
 msgid "HXX2SALOME_GENERIC_CLASS_NAMEGUI::PREF_DEFAULT_SPINDBL"
-msgstr "Cliquez sur les flèches (double) :"
+msgstr "Cliquez sur les flÃ¨ches (double) :"
 
 msgid "HXX2SALOME_GENERIC_CLASS_NAMEGUI::PREF_DEFAULT_SELECTOR"
 msgstr "Choisissez une option"
 
 msgid "HXX2SALOME_GENERIC_CLASS_NAMEGUI::PREF_LIST_TEXT_0"
-msgstr "Première option"
+msgstr "PremiÃ¨re option"
 
 msgid "HXX2SALOME_GENERIC_CLASS_NAMEGUI::PREF_LIST_TEXT_1"
 msgstr "Seconde option"
 
 msgid "HXX2SALOME_GENERIC_CLASS_NAMEGUI::PREF_LIST_TEXT_2"
-msgstr "Troisième option"
+msgstr "TroisiÃ¨me option"

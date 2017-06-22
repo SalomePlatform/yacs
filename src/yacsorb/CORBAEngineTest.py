@@ -40,7 +40,7 @@ while isRunning:
     time.sleep(0.5)
     state = procEx.getExecutorState()
     isRunning = (state < 304)
-    print "executorState: ", state
+    print("executorState: ", state)
     pass
 
 procEx.saveState("res.xml")
@@ -53,10 +53,10 @@ for name in names:
     i+=1
     pass
 
-print procEx.getOutPortValue(dico["poly_7"],"Pn")
-print procEx.getInPortValue(dico["poly_7"],"x")
-print procEx.getInPortValue(dico["poly_7"],"notAPort")
-print procEx.getInPortValue(dico["Legendre.loopIter"],"nsteps")
+print(procEx.getOutPortValue(dico["poly_7"],"Pn"))
+print(procEx.getInPortValue(dico["poly_7"],"x"))
+print(procEx.getInPortValue(dico["poly_7"],"notAPort"))
+print(procEx.getInPortValue(dico["Legendre.loopIter"],"nsteps"))
 
 # -----------------------------------------------------------------------------
 # --- schema with errors (echoSrv must be launched)
@@ -72,7 +72,7 @@ while isRunning:
     time.sleep(0.5)
     state = procEx.getExecutorState()
     isRunning = (state < 304)
-    print "executorState: ", state
+    print("executorState: ", state)
     pass
 
 procEx.saveState("res2.xml")
@@ -85,8 +85,8 @@ for name in names:
     i+=1
     pass
 
-print procEx.getErrorDetails(dico["c1"])
-print procEx.getErrorDetails(dico["node13"])
+print(procEx.getErrorDetails(dico["c1"]))
+print(procEx.getErrorDetails(dico["node13"]))
 
 # -----------------------------------------------------------------------------
 # --- schema with errors
@@ -102,7 +102,7 @@ while isRunning:
     time.sleep(0.5)
     state = procEx.getExecutorState()
     isRunning = (state < 304)
-    print "executorState: ", state
+    print("executorState: ", state)
     pass
 
 #procEx.resumeCurrentBreakPoint()
@@ -122,7 +122,7 @@ while isRunning:
     time.sleep(0.5)
     state = procEx.getExecutorState()
     isRunning = (state < 304)
-    print "executorState: ", state
+    print("executorState: ", state)
     pass
 
 procEx.saveState("partialExec.xml")
@@ -136,7 +136,7 @@ while isRunning:
     time.sleep(0.5)
     state = procEx.getExecutorState()
     isRunning = (state < 304)
-    print "executorState: ", state
+    print("executorState: ", state)
     pass
 
 procEx.saveState("finishExec.xml")

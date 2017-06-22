@@ -25,7 +25,7 @@
     <!-- service -->
 
     <inline name="node1" >
-        <script><code>print p1;p1=2*p1</code></script>
+        <script><code>print(p1);p1=2*p1</code></script>
         <inport name="p1" type="string"/>
         <outport name="p1" type="string"/>
     </inline>

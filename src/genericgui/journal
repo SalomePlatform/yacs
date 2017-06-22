@@ -23,12 +23,12 @@ x creation de liens  a la souris dans scene et arbre en drag and drop
 x sauvegarde schema en edition
 x import catalogues depuis schemas
 x insertion dans SALOME 5
-x boutons-actions zoom, panning, cadre zone à voir, reset vue, fit all
+x boutons-actions zoom, panning, cadre zone Ã  voir, reset vue, fit all
 x proc remplit automatiquement toute la vue principale (bouton fit all)
 x bouton save ou save as au lieu de export
 x Model/view table (ports)
 x affichage etat en edition
-x dessins des liens de contrôle
+x dessins des liens de contrÃ´le
 x gestion etude SALOME : object browser
 x design arbre (edition/execution)
 x contournement bug confirmOverwrite QFileDialog Qt 4.3.3 (corrige en 4.3.5)
@@ -84,7 +84,7 @@ x couleur differente des liens datastream
 
 - drag & drop de ports pour l'ordre dans le tableau, dans la scene
 - creation de liens par menu
-x distinguer les liens simples (sans contrôle)
+x distinguer les liens simples (sans contrÃ´le)
 - deplacement de noeud a la souris: pouvoir passer par dessus un bloc
   (pressed + touche...) transparence, finir le deplacement que s'il y a
   la place, ou pousser le bloc ?
@@ -106,7 +106,7 @@ x distinguer les liens simples (sans contrôle)
   - choix d'un port dans le panneau noeud -> arbre, vue
   - selection multiples (arbre, tableau vue) pour action groupee
     (deplacement scene, destruction...)
-- connexion automatique de ports avec des noeuds bord à bord
+- connexion automatique de ports avec des noeuds bord Ã  bord
   (regle de correspondance de noms ? respect de l'ordre ?)
 - dessiner les liens avec des ponts quand des liens se croisent !
 - 2eme vue avec schema complet et cadre de la vue principale
@@ -175,7 +175,7 @@ x passage en execution: arbre pas toujours cree la premiere fois
 x message incomprehensible lors de l'ajout d'un deuxieme noeud dans un forloop
 x libelle comboBox ajout de ports dans panneau edition: folklorique (newSchema_1)
 x fermeture schema non sauvegarde : dialogues de sauvegarde
-x lien nouvellement créé droit et très fin, pas toujours visible
+x lien nouvellement crÃ©Ã© droit et trÃ¨s fin, pas toujours visible
 x panneau edition function Node: controler nom de fonction saisie (validation)
 x panneau edition function Node: remonter le nom de fonction
 x remontee d'erreur en edition: le contenu de la log proc ne change pas, quand c'est en erreur
@@ -214,9 +214,9 @@ x destruction d'un lien, impact sur la disposition des noeuds
   dernier selectionne, idem pour la selection dans l'arbre
   (avec correction SchemaItem 1.8)
   lie au clearAndSelect dans SchemaItem::select (correction SchemaItem 1.8)
-- selection rubrique containers ou types: précédente selection reste dans canvas et edition
-- destruction component instance : mal repercuté (arbres, map proc...)
-- caractères accentues dans script python d'un noeud python, fichier xml mal chargé
+- selection rubrique containers ou types: prÃ©cÃ©dente selection reste dans canvas et edition
+- destruction component instance : mal repercutÃ© (arbres, map proc...)
+- caractÃ¨res accentues dans script python d'un noeud python, fichier xml mal chargÃ©
 
 - fermeture vue SALOME, object Browser pas mis a jour mais schema detruit...
 
@@ -289,20 +289,20 @@ Modes de representation du noeud
 
 - noeud elementaire
   -----------------
-  - developpé, edition   : entete + ports avec nom (valeurs = tooltip ou panneau)
+  - developpÃ©, edition   : entete + ports avec nom (valeurs = tooltip ou panneau)
   - reduit, edition      : entete + ports sans nom
   - collapsed, edition   : entete seul (que les control link ?)
   memes vues en execution (faut il des valeurs sur les ports ?)
 
-- noeud composé
+- noeud composÃ©
   -------------
-  - developpé, edition   : tout les internes de premier niveau visibles,
+  - developpÃ©, edition   : tout les internes de premier niveau visibles,
                            au moins sous forme reduite
-  - macro noeud, edition : un seul macro noeud, presentation du noeud élémentaire developpé
-                           certains ports internes cachés
-                           (enrichir description IHM avec notion port privé ? ) 
-  - reduit, edition      : un seul macro noeud, presentation du noeud élémentaire réduit
-  - collapsed, édition   : entete seul
+  - macro noeud, edition : un seul macro noeud, presentation du noeud Ã©lÃ©mentaire developpÃ©
+                           certains ports internes cachÃ©s
+                           (enrichir description IHM avec notion port privÃ© ? ) 
+  - reduit, edition      : un seul macro noeud, presentation du noeud Ã©lÃ©mentaire rÃ©duit
+  - collapsed, Ã©dition   : entete seul
   memes vues en execution 
 
 
@@ -316,4 +316,4 @@ puis print python.
 on peut ajouter 2 methodes dans le DataFlowPort :
  recup valeur      : string fetch()
  chargement valeur : void load(string)
-à dériver dans les ports any, python, corba
+Ã  dÃ©river dans les ports any, python, corba

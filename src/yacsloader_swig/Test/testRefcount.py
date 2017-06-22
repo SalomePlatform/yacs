@@ -31,14 +31,14 @@ class TestContainerRef(unittest.TestCase):
     """test delete following creation from class"""
     co=self.r.createContainer()
     self.assertEqual(co.getRefCnt(), 1)
-    self.assert_(co.thisown)
+    self.assertTrue(co.thisown)
     del co
 
   def test1(self):
     """test delete following creation from createContainer and delitem from containerMap"""
     co=self.p.createContainer("c2")
     del self.p.containerMap["c2"]
-    self.assert_(co.thisown)
+    self.assertTrue(co.thisown)
     self.assertEqual(co.getRefCnt(), 1)
     del co
 
@@ -49,7 +49,7 @@ class TestContainerRef(unittest.TestCase):
     co=self.p.createContainer("c2")
     self.p.containerMap["c2"]=co
     del self.p.containerMap["c2"]
-    self.assert_(co.thisown)
+    self.assertTrue(co.thisown)
     self.assertEqual(co.getRefCnt(), 1)
     del co
 
@@ -61,7 +61,7 @@ class TestContainerRef(unittest.TestCase):
     del self.p.containerMap["c9"]
     self.assertEqual(co.getName(), "c9")
     self.assertEqual(co.getRefCnt(), 1)
-    self.assert_(co.thisown)
+    self.assertTrue(co.thisown)
     del co
 
   def test4(self):
@@ -70,7 +70,7 @@ class TestContainerRef(unittest.TestCase):
     del self.p.containerMap["c10"]
     self.assertEqual(co.getName(), "c10")
     self.assertEqual(co.getRefCnt(), 1)
-    self.assert_(co.thisown)
+    self.assertTrue(co.thisown)
     del co
 
   def test5(self):
@@ -79,19 +79,19 @@ class TestContainerRef(unittest.TestCase):
     del self.p
     self.assertEqual(co.getName(), "c10")
     self.assertEqual(co.getRefCnt(), 1)
-    self.assert_(co.thisown)
+    self.assertTrue(co.thisown)
     del co
 
   def test6(self):
     """test ownership of container on getitem from containerMap"""
     co=self.p.createContainer("c8")
     self.assertEqual(co.getRefCnt(), 2)
-    self.assert_(co.thisown)
+    self.assertTrue(co.thisown)
     del co
     self.assertEqual(self.p.containerMap["c8"].getRefCnt(), 2) # +1 for getitem
     co=self.p.containerMap["c8"]
     self.assertEqual(co.getRefCnt(), 2)
-    self.assert_(co.thisown)
+    self.assertTrue(co.thisown)
     del co
     self.assertEqual(self.p.containerMap["c8"].getRefCnt(), 2) # +1 for getitem
     del self.p.containerMap["c8"]
@@ -121,22 +121,22 @@ class TestContainerRef(unittest.TestCase):
   def test9(self):
     """test method values"""
     self.p.createContainer("c8")
-    for co in self.p.containerMap.values():
-      self.assert_(co.thisown)
+    for co in list(self.p.containerMap.values()):
+      self.assertTrue(co.thisown)
       self.assertEqual(co.getRefCnt(), 2)
 
   def test10(self):
     """test method items"""
     self.p.createContainer("c8")
-    for k,co in self.p.containerMap.items():
-      self.assert_(co.thisown)
+    for k,co in list(self.p.containerMap.items()):
+      self.assertTrue(co.thisown)
       self.assertEqual(co.getRefCnt(), 2)
 
   def test11(self):
     """test method clear"""
     co=self.p.createContainer("c8")
     self.p.containerMap.clear()
-    self.assert_(co.thisown)
+    self.assertTrue(co.thisown)
     self.assertEqual(co.getRefCnt(), 1)
 
   def test12(self):
@@ -144,7 +144,7 @@ class TestContainerRef(unittest.TestCase):
     co=self.p.createContainer("c8")
     d={"c1":co}
     self.p.containerMap.update(d)
-    self.assert_(co.thisown)
+    self.assertTrue(co.thisown)
     self.assertEqual(co.getRefCnt(), 3)
 
 class TestTypeCodeRef(unittest.TestCase):
@@ -156,13 +156,13 @@ class TestTypeCodeRef(unittest.TestCase):
     """test delete following creation from createSequenceTc"""
     tc=pilot.TypeCode(pilot.Double)
     self.assertEqual(tc.getRefCnt(), 1)
-    self.assert_(tc.thisown)
+    self.assertTrue(tc.thisown)
 
   def test1(self):
     """test delete following creation from createInterfaceTc and delitem from typeMap"""
     tc=self.p.createInterfaceTc("","obj",[])
     del self.p.typeMap["obj"]
-    self.assert_(tc.thisown)
+    self.assertTrue(tc.thisown)
     self.assertEqual(tc.getRefCnt(), 1)
 
   def test2(self):
@@ -172,7 +172,7 @@ class TestTypeCodeRef(unittest.TestCase):
     tc=self.p.createInterfaceTc("","obj",[])
     self.p.typeMap["obj"]=tc
     del self.p.typeMap["obj"]
-    self.assert_(tc.thisown)
+    self.assertTrue(tc.thisown)
     self.assertEqual(tc.getRefCnt(), 1)
 
   def test3(self):
@@ -182,32 +182,32 @@ class TestTypeCodeRef(unittest.TestCase):
     self.assertEqual(tc.getRefCnt(), 2)
     del self.p.typeMap["obj"]
     self.assertEqual(tc.getRefCnt(), 1)
-    self.assert_(tc.thisown)
+    self.assertTrue(tc.thisown)
 
   def test4(self):
     """test delete from typeMap following creation from createInterfaceTc"""
     tc=self.p.createInterfaceTc("","obj",[])
     del self.p.typeMap["obj"]
     self.assertEqual(tc.getRefCnt(), 1)
-    self.assert_(tc.thisown)
+    self.assertTrue(tc.thisown)
 
   def test5(self):
     """test existence TypeCode following delete proc"""
     tc=self.p.createInterfaceTc("","obj",[])
     del self.p
     self.assertEqual(tc.getRefCnt(), 1)
-    self.assert_(tc.thisown)
+    self.assertTrue(tc.thisown)
 
   def test6(self):
     """test ownership of TypeCode on getitem from typeMap"""
     tc=self.p.createInterfaceTc("","obj",[])
     self.assertEqual(tc.getRefCnt(), 2)
-    self.assert_(tc.thisown)
+    self.assertTrue(tc.thisown)
     del tc
     self.assertEqual(self.p.typeMap["obj"].getRefCnt(), 2) # +1 for getitem
     tc=self.p.typeMap["obj"]
     self.assertEqual(tc.getRefCnt(), 2)
-    self.assert_(tc.thisown)
+    self.assertTrue(tc.thisown)
     del tc
     self.assertEqual(self.p.typeMap["obj"].getRefCnt(), 2) # +1 for getitem
     del self.p.typeMap["obj"]
@@ -237,24 +237,24 @@ class TestTypeCodeRef(unittest.TestCase):
   def test9(self):
     """test method values"""
     self.p.createInterfaceTc("","obj",[])
-    for tc in self.p.typeMap.values():
+    for tc in list(self.p.typeMap.values()):
       if tc.name()!="obj":continue
-      self.assert_(tc.thisown)
+      self.assertTrue(tc.thisown)
       self.assertEqual(tc.getRefCnt(), 2)
 
   def test10(self):
     """test method items"""
     self.p.createInterfaceTc("","obj",[])
-    for k,tc in self.p.typeMap.items():
+    for k,tc in list(self.p.typeMap.items()):
       if tc.name()!="obj":continue
-      self.assert_(tc.thisown)
+      self.assertTrue(tc.thisown)
       self.assertEqual(tc.getRefCnt(), 2)
 
   def test11(self):
     """test method clear"""
     tc=self.p.createInterfaceTc("","obj",[])
     self.p.typeMap.clear()
-    self.assert_(tc.thisown)
+    self.assertTrue(tc.thisown)
     self.assertEqual(tc.getRefCnt(), 1)
 
   def test12(self):
@@ -262,7 +262,7 @@ class TestTypeCodeRef(unittest.TestCase):
     tc=self.p.createInterfaceTc("","obj",[])
     d={"c1":tc}
     self.p.typeMap.update(d)
-    self.assert_(tc.thisown)
+    self.assertTrue(tc.thisown)
     self.assertEqual(tc.getRefCnt(), 3)
 
 if __name__ == '__main__':

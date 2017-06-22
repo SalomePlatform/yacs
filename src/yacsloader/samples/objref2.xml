@@ -43,8 +43,8 @@
 
     <inline name="pyth0" >
       <script>
-        <code>print "p1",p1</code>
-        <code>print "p2",p2</code>
+        <code>print("p1",p1)</code>
+        <code>print("p2",p2)</code>
         <code>p1=[p1,p2,p2,p1]</code>
       </script>
       <inport name="p1" type="Obj"/>

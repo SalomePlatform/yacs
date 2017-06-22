@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright (C) 2006-2016  CEA/DEN, EDF R&D
 #
 # This library is free software; you can redistribute it and/or
@@ -20,10 +20,6 @@
 
 """Doxygen XML to SWIG docstring converter.
 
-Usage:
-
-  doxy2swig.py [options] input.xml output.i
-
 Converts Doxygen generated XML files into a file containing docstrings
 that can be used by SWIG-1.3.x.  Note that you need to get SWIG
 version > 1.3.23 or use Robin Dunn's docstring patch to be able to use
@@ -33,6 +29,8 @@ input.xml is your doxygen generated XML file and output.i is where the
 output will be written (the file will be clobbered).
 
 """
+
+__usage__ = "doxy2swig.py [options] input.xml output.i"
 ######################################################################
 #
 # This code is implemented using Mark Pilgrim's code as a guideline:
@@ -53,20 +51,20 @@ import textwrap
 import sys
 import types
 import os.path
-import optparse
+import argparse
 
 
 def my_open_read(source):
     if hasattr(source, "read"):
         return source
     else:
-        return open(source)
+        return open(source, encoding='utf8')
 
 def my_open_write(dest):
     if hasattr(dest, "write"):
         return dest
     else:
-        return open(dest, 'w')
+        return open(dest, 'w', encoding='utf8')
 
 
 class Doxy2SWIG:    
@@ -168,7 +166,7 @@ class Doxy2SWIG:
 
     def add_text(self, value):
         """Adds text corresponding to `value` into `self.pieces`."""
-        if type(value) in (types.ListType, types.TupleType):
+        if type(value) in (list, tuple):
             self.pieces.extend(value)
         else:
             self.pieces.append(value)
@@ -228,17 +226,17 @@ class Doxy2SWIG:
         kind = node.attributes['kind'].value
         if kind in ('class', 'struct'):
             prot = node.attributes['prot'].value
-            if prot <> 'public':
+            if prot != 'public':
                 return
             names = ('compoundname', 'briefdescription',
                      'detaileddescription', 'includes')
             first = self.get_specific_nodes(node, names)
             for n in names:
-                if first.has_key(n):
+                if n in first:
                     self.parse(first[n])
             self.add_text(['";','\n'])
             for n in node.childNodes:
-                if n not in first.values():
+                if n not in list(first.values()):
                     self.parse(n)
         elif kind in ('file', 'namespace'):
             nodes = node.getElementsByTagName('sectiondef')
@@ -251,7 +249,7 @@ class Doxy2SWIG:
 
     def do_parameterlist(self, node):
         text='unknown'
-        for key, val in node.attributes.items():
+        for key, val in list(node.attributes.items()):
             if key == 'kind':
                 if val == 'param': text = 'Parameters'
                 elif val == 'exception': text = 'Exceptions'
@@ -298,7 +296,7 @@ class Doxy2SWIG:
             if name[:8] == 'operator': # Don't handle operators yet.
                 return
 
-            if not first.has_key('definition') or \
+            if 'definition' not in first or \
                    kind in ['variable', 'typedef']:
                 return
 
@@ -326,7 +324,7 @@ class Doxy2SWIG:
                 self.add_text(' %s::%s "\n%s'%(cname, name, defn))
 
             for n in node.childNodes:
-                if n not in first.values():
+                if n not in list(first.values()):
                     self.parse(n)
             self.add_text(['";', '\n'])
         
@@ -390,7 +388,7 @@ class Doxy2SWIG:
             if not os.path.exists(fname):
                 fname = os.path.join(self.my_dir,  fname)
             if not self.quiet:
-                print "parsing file: %s"%fname
+                print("parsing file: %s"%fname)
             p = Doxy2SWIG(fname, self.include_function_definition, self.quiet)
             p.generate()
             self.pieces.extend(self.clean_pieces(p.pieces))
@@ -445,24 +443,23 @@ def convert(input, output, include_function_definition=True, quiet=False):
     p.write(output)
 
 def main():
-    usage = __doc__
-    parser = optparse.OptionParser(usage)
-    parser.add_option("-n", '--no-function-definition',
-                      action='store_true',
-                      default=False,
-                      dest='func_def',
-                      help='do not include doxygen function definitions')
-    parser.add_option("-q", '--quiet',
-                      action='store_true',
-                      default=False,
-                      dest='quiet',
-                      help='be quiet and minimise output')
+    parser = argparse.ArgumentParser(description=__doc__, usage = __usage__)
+    parser.add_argument("-n", '--no-function-definition',
+                        action='store_true',
+                        default=False,
+                        dest='func_def',
+                        help='do not include doxygen function definitions')
+    parser.add_argument("-q", '--quiet',
+                        action='store_true',
+                        default=False,
+                        dest='quiet',
+                        help='be quiet and minimise output')
+    parser.add_argument('input')
+    parser.add_argument('ouput')
     
-    options, args = parser.parse_args()
-    if len(args) != 2:
-        parser.error("error: no input and output specified")
+    args = parser.parse_args()
 
-    convert(args[0], args[1], not options.func_def, options.quiet)
+    convert(args.input, args.output, not options.func_def, options.quiet)
     
 
 if __name__ == '__main__':
