@@ -88,9 +88,8 @@ class TestResume(unittest.TestCase):
 if __name__ == '__main__':
   import os
   U = os.getenv('USER')
-  f=open("/tmp/" + U + "/UnitTestsResult", 'a')
-  f.write("  --- TEST src/yacsloader: testResume.py\n")
-  suite = unittest.makeSuite(TestResume)
-  result=unittest.TextTestRunner(f, descriptions=1, verbosity=1).run(suite)
-  f.close()
+  with open("/tmp/" + U + "/UnitTestsResult", 'a') as f:
+      f.write("  --- TEST src/yacsloader: testResume.py\n")
+      suite = unittest.makeSuite(TestResume)
+      result=unittest.TextTestRunner(f, descriptions=1, verbosity=1).run(suite)
   sys.exit(not result.wasSuccessful())
