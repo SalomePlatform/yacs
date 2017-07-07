@@ -24,10 +24,13 @@
 
 #include <QApplication>
 
+#include "Python.h"
+
 int main(int argc, char *argv[])
 {
   QApplication app(argc,argv);
   //
+  Py_Initialize();
   YACSEvalSession session;
   session.launch();
   YDFXGUI mygui(&session);
