@@ -26,6 +26,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <list>
 
 #ifdef WIN32
 #define NOMINMAX
@@ -147,6 +148,8 @@ public:
   void setNbProcs(unsigned int nbProcs) { _nbOfProcs=nbProcs; }
   void setMaxDuration(const std::string& maxDuration) { _maxDuration=maxDuration; }
   std::string getMaxDuration() const { return _maxDuration; }
+  std::list<std::string>& getInFiles(){ return _in_files;}
+  const std::list<std::string>& getInFiles()const { return _in_files;}
   YACSEVALYFX_EXPORT void checkConsistency() const;
 private:
   bool _exclusiveness;
@@ -155,6 +158,7 @@ private:
   std::string _wcKey;
   std::string _maxDuration;
   unsigned int _nbOfProcs;
+  std::list<std::string> _in_files;
 };
 
 class YACSEvalListOfResources : public YACSEvalNonConstLocker

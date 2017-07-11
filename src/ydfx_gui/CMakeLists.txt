@@ -71,6 +71,7 @@ SET(_moc_HEADERS
   YDFXGUISeqInit.hxx
   YDFXGUIParametrizer.hxx
   YDFXGUIHostParametrizer.hxx
+  ResourceWidget.hxx
   )
 
 # sources / moc wrappings
@@ -87,6 +88,10 @@ SET(ydfxwidgets_HEADERS
   YDFXGUIPyThreadSaver.hxx
   YDFXGUISeqInit.hxx
   YDFXGUIWrap.hxx
+  ResourceWidget.hxx
+  AbstractResourceModel.hxx
+  YDFXResourceModel.hxx
+  SalomeResourceModel.hxx
   )
 
 SET(ydfxwidgets_SOURCES
@@ -99,6 +104,10 @@ SET(ydfxwidgets_SOURCES
   YDFXGUIPyThreadSaver.cxx
   YDFXGUISeqInit.cxx
   YDFXGUIWrap.cxx
+  YDFXResourceModel.cxx
+  ResourceWidget.cxx
+  SalomeResourceModel.cxx
+  AbstractResourceModel.cxx
   ${_moc_SOURCES}
   )
 

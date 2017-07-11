@@ -163,6 +163,7 @@ public:
   virtual void generateGraph() = 0;
   virtual bool go(const YACSEvalExecParams& params, YACSEvalSession *session) const = 0;
   virtual std::vector<YACSEvalSeqAny *> getResults() const = 0;
+  virtual std::string getErrors()const = 0;
   bool isLocked() const;
   int assignNbOfBranches();
   void resetGeneratedGraph();
@@ -186,6 +187,7 @@ public:
   void generateGraph();
   bool go(const YACSEvalExecParams& params, YACSEvalSession *session) const;
   std::vector<YACSEvalSeqAny *> getResults() const;
+  virtual std::string getErrors()const;
 };
 
 class YACSEvalYFXGraphGenCluster : public YACSEvalYFXGraphGen
@@ -195,6 +197,7 @@ public:
   void generateGraph();
   bool go(const YACSEvalExecParams& params, YACSEvalSession *session) const;
   std::vector<YACSEvalSeqAny *> getResults() const;
+  virtual std::string getErrors()const;
 private:
   std::string _locSchemaFile;
   std::string _jobName;

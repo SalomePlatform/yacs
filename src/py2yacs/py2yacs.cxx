@@ -380,5 +380,6 @@ YACS::ENGINE::Proc* Py2yacs::createProc(const std::string& python_function)const
     node->edAddOutputPort(*it, tc_double);
 
   node->setExecutionMode(YACS::ENGINE::InlineNode::REMOTE_STR);
+  node->setContainer(schema->containerMap["DefaultContainer"]);
   return schema;
 }
