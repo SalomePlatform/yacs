@@ -429,6 +429,11 @@ YACS::ENGINE::Proc *YACSEvalYFXRunOnlyPattern::getUndergroundGeneratedGraph() co
 
 std::string YACSEvalYFXRunOnlyPattern::getErrorDetailsInCaseOfFailure() const
 {
+  std::string generatorErrors = getGenerator()->getErrors();
+  if(generatorErrors.size() > 0)
+  {
+    return generatorErrors;
+  }
   std::string st(getStatusOfRunStr());//test if a run has occurred.
   if(st==ST_OK)
     throw YACS::Exception("YACSEvalYFXRunOnlyPattern::getErrorDetailsInCaseOfFailure : The execution of scheme has been carried out to the end without any problem !");
@@ -830,6 +835,11 @@ bool YACSEvalYFXGraphGenInteractive::go(const YACSEvalExecParams& params, YACSEv
   return getUndergroundGeneratedGraph()->getState()==YACS::DONE;
 }
 
+std::string YACSEvalYFXGraphGenInteractive::getErrors()const
+{
+  return "";
+}
+
 std::vector<YACSEvalSeqAny *> YACSEvalYFXGraphGenInteractive::getResults() const
 {
   if(getUndergroundGeneratedGraph()->getState()!=YACS::DONE)
@@ -959,6 +969,7 @@ void YACSEvalYFXGraphGenCluster::generateGraph()
 bool YACSEvalYFXGraphGenCluster::go(const YACSEvalExecParams& params, YACSEvalSession *session) const
 {
   YACS::ENGINE::AutoGIL agil;
+  _errors = "";
   getUndergroundGeneratedGraph()->saveSchema(_locSchemaFile);
   YACSEvalListOfResources *rss(getBoss()->getResourcesInternal());
   const YACSEvalParamsForCluster& cli(rss->getAddParamsForCluster());
@@ -985,7 +996,15 @@ bool YACSEvalYFXGraphGenCluster::go(const YACSEvalExecParams& params, YACSEvalSe
   jp.job_type=CORBA::string_dup("yacs_file");
   jp.job_file=CORBA::string_dup(_locSchemaFile.c_str());
   jp.env_file=CORBA::string_dup("");
-  jp.in_files.length(0);
+  jp.in_files.length(cli.getInFiles().size());
+  std::list<std::string>::const_iterator it;
+  int i;
+  for (it = cli.getInFiles().begin(), i=0 ;
+       it != cli.getInFiles().end();
+       it++, i++)
+  {
+    jp.in_files[i] = CORBA::string_dup((*it).c_str());
+  }
   jp.out_files.length(1);
   jp.out_files[0]=CORBA::string_dup(_jobName.c_str());
   jp.work_directory=CORBA::string_dup(cli.getRemoteWorkingDir().c_str());
@@ -1002,7 +1021,21 @@ bool YACSEvalYFXGraphGenCluster::go(const YACSEvalExecParams& params, YACSEvalSe
   jp.launcher_file=CORBA::string_dup("");
   jp.launcher_args=CORBA::string_dup("");
   _jobid=sl->createJob(jp);
-  sl->launchJob(_jobid);
+  try
+  {
+    sl->launchJob(_jobid);
+  }
+  catch (const SALOME::SALOME_Exception & ex)
+  {
+    _errors = ex.details.text.in();
+    return false;
+  }
+  catch (const CORBA::SystemException& ex)
+  {
+    _errors = "Receive CORBA SystemException.";
+    return false;
+  }
+
   bool ret(false);
   while(true)
     {
@@ -1062,6 +1095,11 @@ bool YACSEvalYFXGraphGenCluster::go(const YACSEvalExecParams& params, YACSEvalSe
     }
   //
   return ret;
+}
+
+std::string YACSEvalYFXGraphGenCluster::getErrors()const
+{
+  return _errors;
 }
 
 std::vector<YACSEvalSeqAny *> YACSEvalYFXGraphGenCluster::getResults() const

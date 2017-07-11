@@ -1,4 +1,4 @@
-// Copyright (C) 2016  CEA/DEN, EDF R&D
+// Copyright (C) 2016-2017  CEA/DEN, EDF R&D
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -16,25 +16,17 @@
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-// Author : Anthony Geay (EDF R&D)
+#ifndef _CONFIG_PY2YACSGUI_H_
+#define _CONFIG_PY2YACSGUI_H_
 
-#include "YACSEvalSession.hxx"
+#ifdef WIN32
+#  if defined py2yacsguilib_EXPORTS
+#    define PY2YACSGUILIB_EXPORT __declspec( dllexport )
+#  else
+#    define PY2YACSGUILIB_EXPORT __declspec( dllimport )
+#  endif
+#else
+#  define PY2YACSGUILIB_EXPORT
+#endif
 
-#include "YDFXGUIMain.hxx"
-#include <Python.h>
-
-#include <QApplication>
-
-#include "Python.h"
-
-int main(int argc, char *argv[])
-{
-  QApplication app(argc,argv);
-  //
-  Py_Initialize();
-  YACSEvalSession session;
-  session.launch();
-  YDFXGUI mygui(&session);
-  mygui.show();
-  return app.exec();
-}
+#endif

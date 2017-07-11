@@ -1,4 +1,4 @@
-// Copyright (C) 2016  CEA/DEN, EDF R&D
+// Copyright (C) 2016-2017  CEA/DEN, EDF R&D
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -16,25 +16,27 @@
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-// Author : Anthony Geay (EDF R&D)
-
-#include "YACSEvalSession.hxx"
-
-#include "YDFXGUIMain.hxx"
-#include <Python.h>
-
+#include "Py2YacsDialog.hxx"
 #include <QApplication>
+#include "RuntimeSALOME.hxx"
+#include "Proc.hxx"
 
-#include "Python.h"
-
+#include <iostream>
 int main(int argc, char *argv[])
 {
   QApplication app(argc,argv);
-  //
-  Py_Initialize();
-  YACSEvalSession session;
-  session.launch();
-  YDFXGUI mygui(&session);
-  mygui.show();
-  return app.exec();
+  YACS::ENGINE::RuntimeSALOME::setRuntime();
+  Py2YacsDialog mygui;
+  if(mygui.exec())
+  {
+    std::cout << "Accepted" << std::endl;
+    YACS::ENGINE::Proc* schema = mygui.getYacsSchema();
+    schema->saveSchema("yacs_schema.xml");
+    delete schema;
+  }
+  else
+  {
+    std::cout << "Not accepted" << std::endl;
+  }
+  return 0;
 }
