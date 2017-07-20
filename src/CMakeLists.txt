@@ -46,7 +46,7 @@ ENDIF(SALOME_YACS_USE_SWIG)
 # GUI
 ##
 IF(SALOME_BUILD_GUI)
-  SET(SUBDIRS_GUI ydfx_gui pyqt hmi salomewrap genericgui salomegui)
+  SET(SUBDIRS_GUI ydfx_gui pyqt hmi salomewrap genericgui salomegui py2yacsgui)
   IF(SALOME_YACS_USE_SWIG)
     LIST(APPEND SUBDIRS_GUI salomegui_swig)
   ENDIF()

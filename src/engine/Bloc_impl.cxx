@@ -86,6 +86,7 @@ void Bloc::fitToPlayGround(const PlayGround *pg)
   };
   YACS::BASES::AutoRefCnt<PartDefinition> pd(new AllPartDefinition(pg,1));
   std::map<ComposedNode *,YACS::BASES::AutoRefCnt<PartDefinition> > zeMap;
+  this->removeRecursivelyRedundantCL();
   this->partitionRegardingDPL(pd,zeMap);
   MyVisitor vis(this);
   this->accept(&vis);

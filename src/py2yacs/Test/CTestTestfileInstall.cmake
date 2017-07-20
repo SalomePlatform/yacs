@@ -20,7 +20,8 @@
 IF(NOT WIN32)
   SET(TEST_NAME ${COMPONENT_NAME}_Py2YacsTest)
   # No need of a salome session for this test
-  ADD_TEST(${TEST_NAME} TestPy2yacs)
+  ADD_TEST(${TEST_NAME} python ${SALOME_TEST_DRIVER} ${TIMEOUT} ./TestPy2yacs)
+  #ADD_TEST(${TEST_NAME} TestPy2yacs)
   SET_TESTS_PROPERTIES(${TEST_NAME} PROPERTIES
                                     LABELS "${COMPONENT_NAME}"
                       )
