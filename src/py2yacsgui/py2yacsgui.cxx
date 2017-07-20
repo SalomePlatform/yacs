@@ -16,9 +16,9 @@
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+#include "RuntimeSALOME.hxx"
 #include "Py2YacsDialog.hxx"
 #include <QApplication>
-#include "RuntimeSALOME.hxx"
 #include "Proc.hxx"
 
 #include <iostream>

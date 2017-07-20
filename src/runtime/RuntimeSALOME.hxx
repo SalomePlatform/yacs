@@ -19,6 +19,7 @@
 
 #ifndef _RUNTIMESALOME_HXX_
 #define _RUNTIMESALOME_HXX_
+#include <Python.h>
 
 #include "YACSRuntimeSALOMEExport.hxx"
 
@@ -31,7 +32,6 @@
 #undef _XOPEN_SOURCE
 #endif
 
-#include <Python.h>
 #include <omniORB4/CORBA.h>
 #include <omniORBpy.h>
 #include "Runtime.hxx"
