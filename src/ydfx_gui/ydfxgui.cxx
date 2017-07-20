@@ -17,15 +17,12 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 // Author : Anthony Geay (EDF R&D)
-
-#include "YACSEvalSession.hxx"
-
-#include "YDFXGUIMain.hxx"
 #include <Python.h>
 
-#include <QApplication>
+#include "YACSEvalSession.hxx"
+#include "YDFXGUIMain.hxx"
 
-#include "Python.h"
+#include <QApplication>
 
 int main(int argc, char *argv[])
 {
