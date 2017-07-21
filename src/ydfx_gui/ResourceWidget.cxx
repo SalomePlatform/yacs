@@ -1,13 +1,14 @@
 #include "ResourceWidget.hxx"
 
 ResourceWidget::ResourceWidget(AbstractResourceModel* model, QWidget* parent)
-: QWidget(parent),
+: QScrollArea(parent),
   _model(model),
   _clusterBox(0),
   _localdirEdit(0)
 {
+  QWidget* mainWidget = new QWidget();
   QVBoxLayout *mainLayout = new QVBoxLayout();
-  setLayout(mainLayout);
+  mainWidget->setLayout(mainLayout);
   QGroupBox *resourcesBox = new QGroupBox();
   resourcesBox->setTitle(tr("Launching parameters"));
   mainLayout->addWidget(resourcesBox);
@@ -41,6 +42,9 @@ ResourceWidget::ResourceWidget(AbstractResourceModel* model, QWidget* parent)
 
   _clusterBox->setVisible(!model->isMachineInteractive(
                                                     model->getWantedMachine()));
+  mainLayout->addStretch();
+  setWidget(mainWidget);
+  setWidgetResizable (true);
 }
 
 ResourceWidget::~ResourceWidget()
@@ -128,6 +132,11 @@ QWidget * ResourceWidget::createClusterWidgets()
   inputFilesBox->setLayout(inputFilesLayout);
   _inputFilesList = new QListWidget;
   _inputFilesList->setSelectionMode(QAbstractItemView::MultiSelection);
+  std::list<std::string>::const_iterator it;
+  for(it=_model->getInFiles().begin(); it!= _model->getInFiles().end(); it++)
+  {
+    _inputFilesList->addItem(it->c_str());
+  }
   QVBoxLayout *inputButtonsLayout = new QVBoxLayout;
   QPushButton *addInputFilesButton = new QPushButton(tr("+"));
   _removeInputFilesButton = new QPushButton(tr("-"));
