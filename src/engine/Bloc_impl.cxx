@@ -98,8 +98,6 @@ void Bloc::fitToPlayGround(const PlayGround *pg)
       int maxLev((*it)->getExecNode()->getMaxLevelOfParallelism());
       int a((*it2).second->getNumberOfCoresConsumed());
       int res(a/maxLev);
-      if(a%maxLev!=0)
-        res++;
       (*it)->edGetNbOfBranchesPort()->edInit(res);
     }
   for(std::set< HomogeneousPoolContainer * >::const_iterator it=vis._cont2.begin();it!=vis._cont2.end();it++)
