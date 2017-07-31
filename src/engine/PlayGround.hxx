@@ -54,8 +54,6 @@ namespace YACS
       std::vector<std::size_t> getWorkerIdsFullyFetchedBy(int nbCoresPerComp, const std::vector<bool>& coreFlags) const;
       static std::vector<int> BuildVectOfIdsFromVecBool(const std::vector<bool>& v);
       static std::vector<int> GetIdsMatching(const std::vector<bool>& bigArr, const std::vector<bool>& pat);
-      static std::vector<bool> FromUItoVB(unsigned int sz, unsigned int v);
-      static unsigned int FromVBtoUI(const std::vector<bool>& v);
     private:
       std::vector< std::vector<int> > splitIntoParts(const std::vector<int>& coreIds, const std::vector<int>& nbCoresConso, const std::vector<double>& weights) const;
       std::vector<int> takePlace(int maxNbOfCoresToAlloc, int nbCoresPerShot, std::vector<bool>& distributionOfCores, bool lastOne=false) const;

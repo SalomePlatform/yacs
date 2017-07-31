@@ -97,30 +97,6 @@ void PlayGround::checkCoherentInfo() const
     throw Exception("host names entries must be different each other !");
 }
 
-std::vector<bool> PlayGround::FromUItoVB(unsigned int sz, unsigned int v)
-{
-  std::vector<bool> ret(sz);
-  unsigned int p(1);
-  for(std::size_t i=0;i<sz;i++)
-    {
-      ret[i]=p&v;
-      p<<=1;
-    }
-  return ret;
-}
-
-unsigned int PlayGround::FromVBtoUI(const std::vector<bool>& v)
-{
-  std::size_t sz(v.size());
-  unsigned int ret(0);
-  for(std::size_t i=0;i<sz;i++)
-    {
-      if(v[i])
-        ret+=1u<<i;
-    }
-  return ret;
-}
-
 std::vector<int> PlayGround::GetIdsMatching(const std::vector<bool>& bigArr, const std::vector<bool>& pat)
 {
   std::vector<int> ret;
@@ -230,16 +206,10 @@ std::vector< YACS::BASES::AutoRefCnt<PartDefinition> > PlayGround::partition(con
       for(std::size_t j=0;j<szs;j++)
         zeArr[j*sz+i]=bs[j];
     }
-  std::set<unsigned int> ss;
+  std::vector< std::vector<int> > retIds(sz);
   for(std::size_t i=0;i<szs;i++)
     {
-      std::vector<bool> vb(zeArr.begin()+i*sz,zeArr.begin()+(i+1)*sz);
-      ss.insert(FromVBtoUI(vb));
-    }
-  std::vector< std::vector<int> > retIds(sz);
-  for(std::set<unsigned int>::const_iterator i=ss.begin();i!=ss.end();i++)
-    {
-      std::vector<bool> code(FromUItoVB(sz,*i));// for this configuration which parts are considered
+      std::vector<bool> code(zeArr.begin()+i*sz,zeArr.begin()+(i+1)*sz);
       std::vector<int> locIds(GetIdsMatching(zeArr,code));
       std::vector<int> partsIds(BuildVectOfIdsFromVecBool(code));
       if(partsIds.empty())
