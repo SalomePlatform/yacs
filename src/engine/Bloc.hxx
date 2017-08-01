@@ -66,7 +66,7 @@ namespace YACS
       void findAllNodesStartingFrom(Node *start, std::set<Node *>& result, std::map<Node *, std::set<Node *> >& accelStr, LinkInfo& info) const;
       virtual std::string typeName() { return "YACS__ENGINE__Bloc"; }
       int getMaxLevelOfParallelism() const;
-      double getWeightRegardingDPL() const;
+      void getWeightRegardingDPL(ComplexWeight *weight);
       void removeRecursivelyRedundantCL();
       void partitionRegardingDPL(const PartDefinition *pd, std::map<ComposedNode *, YACS::BASES::AutoRefCnt<PartDefinition> >& zeMap);
       void fitToPlayGround(const PlayGround *pg);

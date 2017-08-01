@@ -408,12 +408,15 @@ int Switch::getMaxLevelOfParallelism() const
   return ret;
 }
 
-double Switch::getWeightRegardingDPL() const
+void Switch::getWeightRegardingDPL(ComplexWeight *weight)
 {
-  double ret(0);
+  ComplexWeight localWeight;
   for(std::map< int , Node * >::const_iterator it=_mapOfNode.begin();it!=_mapOfNode.end();it++)
-    ret=std::max(ret,((*it).second)->getWeightRegardingDPL());
-  return ret;
+  {
+    ((*it).second)->getWeightRegardingDPL(&localWeight);
+    weight->max(localWeight);
+    localWeight.setToZero();
+  }
 }
 
 void Switch::partitionRegardingDPL(const PartDefinition *pd, std::map<ComposedNode *, YACS::BASES::AutoRefCnt<PartDefinition> >& zeMap)

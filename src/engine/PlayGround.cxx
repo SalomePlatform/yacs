@@ -29,6 +29,7 @@
 
 using namespace YACS::ENGINE;
 
+
 std::string PlayGround::printSelf() const
 {
   std::ostringstream oss;
@@ -136,24 +137,24 @@ void PlayGround::highlightOnIds(const std::vector<int>& coreIds, std::vector<boo
 /*! 
  * you must garantee coherence between PlayGround::deduceMachineFrom, PlayGround::getNumberOfWorkers, and PartDefinition::computeWorkerIdsCovered
  */
-std::vector<bool> PlayGround::getFetchedCores(int nbCoresPerWorker) const
-{
-  int nbCores(getNumberOfCoresAvailable());
-  std::vector<bool> ret(nbCores,false);
-  if(nbCoresPerWorker==1)
-    std::fill(ret.begin(),ret.end(),true);
-  else
-    {
-      std::size_t posBg(0);
-      for(std::vector< std::pair<std::string,int> >::const_iterator it=_data.begin();it!=_data.end();it++)
-        {
-          int nbElemsToPutOn(((*it).second/nbCoresPerWorker)*nbCoresPerWorker);
-          std::fill(ret.begin()+posBg,ret.begin()+posBg+nbElemsToPutOn,true);
-          posBg+=(*it).second;
-        }
-    }
-  return ret;
-}
+// std::vector<bool> PlayGround::getFetchedCores(int nbCoresPerWorker) const
+// {
+//   int nbCores(getNumberOfCoresAvailable());
+//   std::vector<bool> ret(nbCores,false);
+//   if(nbCoresPerWorker==1)
+//     std::fill(ret.begin(),ret.end(),true);
+//   else
+//     {
+//       std::size_t posBg(0);
+//       for(std::vector< std::pair<std::string,int> >::const_iterator it=_data.begin();it!=_data.end();it++)
+//         {
+//           int nbElemsToPutOn(((*it).second/nbCoresPerWorker)*nbCoresPerWorker);
+//           std::fill(ret.begin()+posBg,ret.begin()+posBg+nbElemsToPutOn,true);
+//           posBg+=(*it).second;
+//         }
+//     }
+//   return ret;
+//}
 /*!
  * follow getMaxNumberOfContainersCanBeHostedWithoutOverlap method
  */
@@ -175,9 +176,11 @@ std::vector<std::size_t> PlayGround::getWorkerIdsFullyFetchedBy(int nbCoresPerCo
   return ret;
 }
 
-std::vector< YACS::BASES::AutoRefCnt<PartDefinition> > PlayGround::partition(const std::vector< std::pair<const PartDefinition *,double> >& parts) const
+std::vector< YACS::BASES::AutoRefCnt<PartDefinition> > PlayGround::partition(const std::vector< std::pair<const PartDefinition *, const ComplexWeight *> >& parts, const std::vector< int>& nbCoresPerShot) const
 {
   std::size_t sz(parts.size()),szs(getNumberOfCoresAvailable());
+  if (sz!=nbCoresPerShot.size())
+    throw Exception("PlayGround::partition : incoherent vector size !");
   if(sz==0)
     return std::vector< YACS::BASES::AutoRefCnt<PartDefinition> >();
   if(sz==1)
@@ -193,35 +196,31 @@ std::vector< YACS::BASES::AutoRefCnt<PartDefinition> > PlayGround::partition(con
     throw Exception("PlayGround::partition : not implemented yet for more than 31 ! You need to pay for it :)");
   std::vector<bool> zeArr(szs*sz,false);
   std::size_t i(0);
-  for(std::vector< std::pair<const PartDefinition *,double> >::const_iterator it=parts.begin();it!=parts.end();it++,i++)
+  for(std::vector< std::pair<const PartDefinition *, const ComplexWeight *> >::const_iterator it=parts.begin();it!=parts.end();it++,i++)
     {
       const PartDefinition *pd((*it).first);
       if(!pd)
         throw Exception("Presence of null pointer as part def !");
       if(pd->getPlayGround()!=this)
         throw Exception("Presence of non homogeneous playground !");
-      if((*it).second<=0.)
-        throw Exception("Invalid weight !");
-      std::vector<bool> bs(pd->getCoresOn());
+      std::vector<bool> bs(pd->getCoresOn()); // tab of length nbCores, with True or False for each Core
       for(std::size_t j=0;j<szs;j++)
-        zeArr[j*sz+i]=bs[j];
+        zeArr[j*sz+i]=bs[j]; // remplis une table avec les valeurs de bs. La table est [nb part] * [nb cores]
     }
   std::vector< std::vector<int> > retIds(sz);
   for(std::size_t i=0;i<szs;i++)
     {
-      std::vector<bool> code(zeArr.begin()+i*sz,zeArr.begin()+(i+1)*sz);
-      std::vector<int> locIds(GetIdsMatching(zeArr,code));
-      std::vector<int> partsIds(BuildVectOfIdsFromVecBool(code));
+      std::vector<bool> code(zeArr.begin()+i*sz,zeArr.begin()+(i+1)*sz);// vecteur contenant le true/false d'un coeur pour ttes les partitions
+      std::vector<int> locIds(GetIdsMatching(zeArr,code)); // liste des coeurs qui peuvent correspondre au pattern code
+      std::vector<int> partsIds(BuildVectOfIdsFromVecBool(code));// pour chaque partition retourne l'id de la premiere partition à true
       if(partsIds.empty())
         continue;
-      std::vector<double> wg;
-      std::vector<int> nbCores2;
+      std::vector<std::pair <const ComplexWeight *, int> > wg;
       for(std::vector<int>::const_iterator it=partsIds.begin();it!=partsIds.end();it++)
         {
-          wg.push_back(parts[*it].second);
-          nbCores2.push_back(parts[*it].first->getNbCoresPerCompo());
+          wg.push_back(std::pair <const ComplexWeight *, int> (parts[*it].second, nbCoresPerShot[*it]));
         }
-      std::vector< std::vector<int> > ress(splitIntoParts(locIds,nbCores2,wg));
+      std::vector< std::vector<int> > ress(splitIntoParts(locIds,wg));
       std::size_t k(0);
       for(std::vector<int>::const_iterator it=partsIds.begin();it!=partsIds.end();it++,k++)
         {
@@ -234,46 +233,137 @@ std::vector< YACS::BASES::AutoRefCnt<PartDefinition> > PlayGround::partition(con
     {
       std::set<int> s(retIds[i].begin(),retIds[i].end());
       std::vector<int> v(s.begin(),s.end());
-      ret[i]=PartDefinition::BuildFrom(this,(parts[i].first)->getNbCoresPerCompo(),v);
+      ret[i]=PartDefinition::BuildFrom(this,v);
     }
   return ret;
 }
 
-std::vector<int> sortArr(const std::vector<int>& v)
+std::vector< std::vector<int> > PlayGround::splitIntoParts(const std::vector<int>& coreIds, const std::vector< std::pair <const ComplexWeight *, int> >& weights) const
 {
-  std::multimap<int,int> m;
-  int i(v.size()-1);
-  for(std::vector<int>::const_reverse_iterator it=v.rbegin();it!=v.rend();it++)
-    m.insert(std::pair<int,int>(*it,i--));
-  std::vector<int> ret(m.size());
-  i=0;
-  for(std::multimap<int,int>::const_reverse_iterator it=m.rbegin();it!=m.rend();it++)// reverse -> sort from biggest to the finest
-    ret[i++]=(*it).second;
-  return ret;
-}
-
-std::vector< std::vector<int> > PlayGround::splitIntoParts(const std::vector<int>& coreIds, const std::vector<int>& nbCoresConso, const std::vector<double>& weights) const
-{
-  double wgs(std::accumulate(weights.begin(),weights.end(),0.));
-  std::size_t sz(nbCoresConso.size());
-  if(sz!=weights.size())
-    throw Exception("PlayGround::splitIntoParts : internal error !");
+  std::size_t sz(weights.size());
   if(sz==0)
     return std::vector< std::vector<int> >();
-  int totalSpace(coreIds.size());
-  std::vector< std::vector<int> > ret(sz);
-  std::vector<int> fromBigToTiny(sortArr(nbCoresConso));// start to treat the coarse grain to finish with fine grain
+  std::vector< std::vector<int> > ret;
+  std::vector< std::vector<int> > disorderRet(sz);
   std::vector<bool> zeArr(getNumberOfCoresAvailable(),false);
   highlightOnIds(coreIds,zeArr);
   int nbOfCoresToSplit(coreIds.size());
-  std::size_t ii(fromBigToTiny.size());
-  for(std::vector<int>::const_iterator it=fromBigToTiny.begin();it!=fromBigToTiny.end();it++,ii--)
+  int totalSpace(coreIds.size());
+  int remainingSpace(totalSpace);
+  std::vector<int> nbOfCoresAllocated(sz);
+  std::vector<int> nbCoresPerShot(sz,-1);  
+  // first every other branchs take its minimal part of the cake
+  // and remove branch without valid weight
+  int i(0);
+  std::map<int,int> saveOrder;
+  const std::vector< std::pair <const ComplexWeight *, int> > sortedWeights(bigToTiny(weights, saveOrder));
+  for(std::vector<std::pair <const ComplexWeight *, int> >::const_iterator it=sortedWeights.begin();it!=sortedWeights.end();it++,i++)
     {
-      int maxNbOfCores((int)(totalSpace*weights[*it]/wgs));// now try to find in zeArr at most maxNbOfCores cores
-      ret[*it]=takePlace(maxNbOfCores,nbCoresConso[*it],zeArr,ii==1);
+      nbCoresPerShot[i]=(*it).second;
+      if ((*it).first->isUnsetLoopWeight())
+        {
+      	  nbOfCoresAllocated[i]=nbCoresPerShot[i]; // branch with only elementary nodes
+        }
+      else if (!(*it).first->hasValidLoopWeight())
+        {
+          nbOfCoresAllocated[i]=(int)((double)totalSpace/(double)(sz)); // branch with undefined weight
+        }
+      else
+        {
+          nbOfCoresAllocated[i]=nbCoresPerShot[i];
+        }
     }
+  remainingSpace-=std::accumulate(nbOfCoresAllocated.begin(), nbOfCoresAllocated.end(), 0);
+  //get critical path (between path with loopWeight)
+  int criticalPathRank=getCriticalPath(sortedWeights, nbOfCoresAllocated);
+  if (criticalPathRank!=-1)
+    {
+      // add cores to critical path while enough cores are availables
+	  while (remainingSpace >= nbCoresPerShot[criticalPathRank])
+	    {
+	      nbOfCoresAllocated[criticalPathRank]+=nbCoresPerShot[criticalPathRank];
+	      remainingSpace-=nbCoresPerShot[criticalPathRank];
+	      criticalPathRank=getCriticalPath(sortedWeights, nbOfCoresAllocated);
+	    }
+	  //fill other paths with remaining cores (if possible) (reuse fromBigToTiny here?)
+	  // and takePlace
+	  int coresToAdd;
+	  int j(0);
+	  for(std::vector<int>::iterator it=nbOfCoresAllocated.begin();it!=nbOfCoresAllocated.end();it++,j++)
+	    {
+	      coresToAdd=((int)(remainingSpace/nbCoresPerShot[j]))*nbCoresPerShot[j];
+	      *it+=coresToAdd;
+	      remainingSpace-=coresToAdd;
+	    }
+    }
+  int k(0);
+  for(std::vector<int>::iterator it=nbOfCoresAllocated.begin();it!=nbOfCoresAllocated.end();it++,k++)
+    {
+      disorderRet[k]=takePlace(*it,nbCoresPerShot[k],zeArr,k==(sz-1));
+    }   
+  ret=backToOriginalOrder(disorderRet, saveOrder);
   return ret;
 }
+
+std::vector< std::pair <const ComplexWeight *, int> > PlayGround::bigToTiny(const std::vector< std::pair <const ComplexWeight *, int> > &weights, std::map<int,int> &saveOrder) const
+{
+  int maxCoresPerShot(0), rankMax(0);
+  int i(0);
+  std::vector< std::pair <const ComplexWeight *, int> > ret;
+  std::size_t sz(weights.size());
+  while (ret.size()<sz)
+    {
+      for(std::vector<std::pair <const ComplexWeight *, int> >::const_iterator it=weights.begin();it!=weights.end();it++,i++)
+        {
+          if ((maxCoresPerShot<(*it).second) && (saveOrder.find(i)==saveOrder.end()))
+            {
+              maxCoresPerShot=(*it).second;
+              rankMax=i;
+            }
+        }
+      ret.push_back(std::pair <const ComplexWeight *, int>(weights[rankMax].first,weights[rankMax].second));
+      saveOrder[rankMax]=ret.size()-1;
+      maxCoresPerShot=0;
+      i=0;
+    }
+  return ret;	
+}
+
+std::vector< std::vector<int> > PlayGround::backToOriginalOrder(const std::vector< std::vector<int> > &disorderVec, const std::map<int,int> &saveOrder) const
+{
+  std::vector< std::vector<int> > ret;
+  std::size_t sz(disorderVec.size());
+  if (disorderVec.size()!=saveOrder.size())
+    throw Exception("PlayGround::backToOriginalOrder : incoherent vector size !");
+  for (int i=0; i<sz; i++)
+      ret.push_back(disorderVec[saveOrder.at(i)]);
+  return ret;
+}
+
+int PlayGround::getCriticalPath(const std::vector<std::pair <const ComplexWeight *, int > >& weights, const std::vector<int>& nbOfCoresAllocated) const
+{
+  double maxWeight(0.);
+  double pathWeight(0.);
+  int rankMaxPath(-1);
+  if ((weights.size()!=nbOfCoresAllocated.size()) || (weights.size()==0))
+    throw Exception("PlayGround::getCriticalPath : internal error !");
+  int i=0;
+  for(std::vector<std::pair <const ComplexWeight *, int> >::const_iterator it=weights.begin();it!=weights.end();it++,i++)
+    {
+      if (nbOfCoresAllocated[i]==0)
+        throw Exception("PlayGround::getCriticalPath : nbOfCoresAllocated is null! error !");
+      if (!(*it).first->isDefaultValue())
+        {
+  	      pathWeight=(*it).first->calculateTotalLength(nbOfCoresAllocated[i]);
+  	      if (pathWeight > maxWeight)
+  	        {
+  	          maxWeight=pathWeight;
+  	          rankMaxPath=i;
+  	        }
+        }	  
+    }
+  return rankMaxPath;
+} 
 
 std::vector<int> PlayGround::takePlace(int maxNbOfCoresToAlloc, int nbCoresPerShot, std::vector<bool>& distributionOfCores, bool lastOne) const
 {
@@ -378,12 +468,12 @@ PlayGround::~PlayGround()
 
 //////////////////////
 
-PartDefinition::PartDefinition(const PlayGround *pg, int nbOfCoresPerComp):_nbOfCoresPerComp(nbOfCoresPerComp)
+PartDefinition::PartDefinition(const PlayGround *pg)
 {
   _pg.takeRef(pg);
 }
 
-PartDefinition::PartDefinition(const PartDefinition& other):_pg(other._pg),_nbOfCoresPerComp(other._nbOfCoresPerComp)
+PartDefinition::PartDefinition(const PartDefinition& other):_pg(other._pg)
 {
 }
 
@@ -391,16 +481,16 @@ PartDefinition::~PartDefinition()
 {
 }
 
-std::vector< YACS::BASES::AutoRefCnt<PartDefinition> > PartDefinition::partition(const std::vector< double >& wgs) const
-{
-  std::size_t sz(wgs.size());
-  std::vector< std::pair<const PartDefinition *,double> > elts(sz);
-  for(std::size_t i=0;i<sz;i++)
-    elts[i]=std::pair<const PartDefinition *,double>(this,wgs[i]);
-  return getPlayGround()->partition(elts);
-}
+// std::vector< YACS::BASES::AutoRefCnt<PartDefinition> > PartDefinition::partition(const std::vector< const ComplexWeight *>& wgs) const
+// {
+//   std::size_t sz(wgs.size());
+//   std::vector< std::pair<const PartDefinition *, const ComplexWeight *> > elts(sz);
+//   for(std::size_t i=0;i<sz;i++)
+//     elts[i]=std::pair<const PartDefinition *, const ComplexWeight *>(this,wgs[i]);
+//   return getPlayGround()->partition(elts);
+// }
 
-YACS::BASES::AutoRefCnt<PartDefinition> PartDefinition::BuildFrom(const PlayGround *pg, int nbOfCoresPerComp, const std::vector<int>& coreIds)
+YACS::BASES::AutoRefCnt<PartDefinition> PartDefinition::BuildFrom(const PlayGround *pg, const std::vector<int>& coreIds)
 {
   int spaceSz(pg->getNumberOfCoresAvailable()),sz(coreIds.size());
   if(sz>spaceSz)
@@ -415,15 +505,15 @@ YACS::BASES::AutoRefCnt<PartDefinition> PartDefinition::BuildFrom(const PlayGrou
       throw Exception("PartDefinition::BuildFrom : error ! The content of core Ids is not OK 2 !");
   if(zeEnd-zeStart+1!=sz)
     {
-      YACS::BASES::AutoRefCnt<PartDefinition> pd(new NonContigPartDefinition(pg,nbOfCoresPerComp,coreIds));
+      YACS::BASES::AutoRefCnt<PartDefinition> pd(new NonContigPartDefinition(pg,coreIds));
       return pd;
     }
   if(sz==spaceSz)
     {
-      YACS::BASES::AutoRefCnt<PartDefinition> pd(new AllPartDefinition(pg,nbOfCoresPerComp));
+      YACS::BASES::AutoRefCnt<PartDefinition> pd(new AllPartDefinition(pg));
       return pd;
     }
-  YACS::BASES::AutoRefCnt<PartDefinition> pd(new ContigPartDefinition(pg,nbOfCoresPerComp,zeStart,zeEnd+1));
+  YACS::BASES::AutoRefCnt<PartDefinition> pd(new ContigPartDefinition(pg,zeStart,zeEnd+1));
   return pd;
 }
 
@@ -444,21 +534,21 @@ void PartDefinition::stashPart(int nbCoresStashed, double weightOfRemain, YACS::
       int n1(nbCoresAvailable-n0);
       if(n1<=0)
         {
-          pdStashed=PartDefinition::BuildFrom(getPlayGround(),1,ids);
-          pdRemain=PartDefinition::BuildFrom(getPlayGround(),1,ids);
+          pdStashed=PartDefinition::BuildFrom(getPlayGround(),ids);
+          pdRemain=PartDefinition::BuildFrom(getPlayGround(),ids);
         }
       else
         {
           std::vector<int> ids0(ids.begin(),ids.begin()+n0),ids1(ids.begin()+n0,ids.end());
-          pdStashed=PartDefinition::BuildFrom(getPlayGround(),1,ids0);
-          pdRemain=PartDefinition::BuildFrom(getPlayGround(),1,ids1);
+          pdStashed=PartDefinition::BuildFrom(getPlayGround(),ids0);
+          pdRemain=PartDefinition::BuildFrom(getPlayGround(),ids1);
         }
     }
   else
     {
       std::vector<int> ids0(ids.begin(),ids.begin()+nbCoresStashed),ids1(ids.begin()+nbCoresStashed,ids.end());
-      pdStashed=PartDefinition::BuildFrom(getPlayGround(),1,ids0);
-      pdRemain=PartDefinition::BuildFrom(getPlayGround(),1,ids1);
+      pdStashed=PartDefinition::BuildFrom(getPlayGround(),ids0);
+      pdRemain=PartDefinition::BuildFrom(getPlayGround(),ids1);
     }
 }
 
@@ -473,7 +563,7 @@ std::vector<std::size_t> PartDefinition::computeWorkerIdsCovered(int nbCoresPerC
 
 //////////////////////
 
-ContigPartDefinition::ContigPartDefinition(const PlayGround *pg, int nbOfCoresPerComp, int zeStart, int zeStop):PartDefinition(pg,nbOfCoresPerComp),_start(zeStart),_stop(zeStop)
+ContigPartDefinition::ContigPartDefinition(const PlayGround *pg, int zeStart, int zeStop):PartDefinition(pg),_start(zeStart),_stop(zeStop)
 {
   if(_start<0 || _stop<_start || _stop>getSpaceSize())
     throw Exception("ContigPartDefinition constructor : Invalid input values");
@@ -510,7 +600,7 @@ int ContigPartDefinition::getNumberOfCoresConsumed() const
 
 //////////////////////
 
-NonContigPartDefinition::NonContigPartDefinition(const PlayGround *pg, int nbOfCoresPerComp, const std::vector<int>& ids):PartDefinition(pg,nbOfCoresPerComp),_ids(ids)
+NonContigPartDefinition::NonContigPartDefinition(const PlayGround *pg, const std::vector<int>& ids):PartDefinition(pg),_ids(ids)
 {
   checkOKIds();
 }

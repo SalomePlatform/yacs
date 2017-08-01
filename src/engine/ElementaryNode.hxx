@@ -48,6 +48,7 @@ namespace YACS
       std::list<OutputPort *> _setOfOutputPort;
       std::list<InputDataStreamPort *> _setOfInputDataStreamPort;
       std::list<OutputDataStreamPort *> _setOfOutputDataStreamPort;
+      ComplexWeight _weight;
 
       // Management of multi property
       bool _createDatastreamPorts;
@@ -107,7 +108,9 @@ namespace YACS
       virtual void ensureLoading();
 
       int getMaxLevelOfParallelism() const { return 1; }
-      double getWeightRegardingDPL() const { return 0.; }
+      ComplexWeight *getWeight() { return &_weight; }
+      void setWeight(double elementaryWeight);     
+      void getWeightRegardingDPL(ComplexWeight *weight) { weight->addWeight(getWeight()); }
       void partitionRegardingDPL(const PartDefinition *pd, std::map<ComposedNode *, YACS::BASES::AutoRefCnt<PartDefinition> >& zeMap) { }
       
       //run part

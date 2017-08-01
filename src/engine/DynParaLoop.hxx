@@ -57,7 +57,8 @@ namespace YACS
       int _initializingCounter;
       int _unfinishedCounter;
       int _failedCounter;
-      double _weight;
+      ComplexWeight _weight;
+      double _loopWeight;
     protected:
       static const char NAME_OF_SPLITTED_SEQ_OUT[];
       static const char OLD_NAME_OF_SPLITTED_SEQ_OUT[];
@@ -98,9 +99,9 @@ namespace YACS
       Node *getChildByShortName(const std::string& name) const throw(Exception);
       Node *getChildByNameExec(const std::string& name, unsigned id) const throw(Exception);
       std::vector<Node *> getNodes() const { return _execNodes; } // need to use in GUI part for adding observers for clone nodes
-      double getWeight() const { return _weight; }
-      void setWeight(double newVal);
-      double getWeightRegardingDPL() const { return getWeight(); }
+      ComplexWeight * getWeight();
+      void setWeight(double loopWeight);
+      void getWeightRegardingDPL(ComplexWeight *weight) {weight->addWeight(getWeight());}
       bool isMultiplicitySpecified(unsigned& value) const;
       void forceMultiplicity(unsigned value);
       virtual void checkBasicConsistency() const throw(Exception);

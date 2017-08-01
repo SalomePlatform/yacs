@@ -320,7 +320,7 @@ EXCEPTION(YACS::ENGINE::ExecutorSwig::waitPause)
           return (long)self;
     }
 }
-
+%include <ComplexWeight.hxx>
 %include <ElementaryNode.hxx>
 %include <InlineNode.hxx>
 %include <ServiceNode.hxx>

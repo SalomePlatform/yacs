@@ -72,6 +72,7 @@ struct inlinetypeParser:public nodetypeParser<T>
       for (int i = 0; attr[i]; i += 2) 
       {
         if(std::string(attr[i]) == "name")this->name(attr[i+1]);
+        if(std::string(attr[i]) == "elementaryWeight")this->weight(atof(attr[i+1]));
         if(std::string(attr[i]) == "state")this->state(attr[i+1]);
       }
     }
@@ -81,6 +82,12 @@ struct inlinetypeParser:public nodetypeParser<T>
       _kind="";
       this->_state="";
       this->_container="";
+      this->_weight=-1.;
+    }
+  virtual void weight (const double& x)
+    {
+      DEBTRACE("elementary_weight: " << x )
+      _weight=x;
     }
   virtual void kind (const std::string& name)
     {
@@ -154,6 +161,7 @@ struct inlinetypeParser:public nodetypeParser<T>
       return this->_node;
     }
   std::string _kind;
+  double _weight;
 };
 
 template <class T> inlinetypeParser<T> inlinetypeParser<T>::inlineParser;
@@ -164,6 +172,7 @@ void inlinetypeParser<YACS::ENGINE::InlineNode*>::script (const myfunc& f)
   DEBTRACE( "inline_script: " << f._code )             
   _node=theRuntime->createScriptNode(_kind,_name);
   _node->setScript(f._code);
+  if(_weight>0)_node->setWeight(_weight);
 }
 
 template <>
@@ -174,6 +183,7 @@ void inlinetypeParser<YACS::ENGINE::InlineNode*>::function (const myfunc& f)
   fnode=theRuntime->createFuncNode(_kind,_name);
   fnode->setScript(f._code);
   fnode->setFname(f._name);
+  if(_weight>0)fnode->setWeight(_weight);
   _node=fnode;
 }
 

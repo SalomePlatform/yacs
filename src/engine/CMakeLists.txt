@@ -44,6 +44,7 @@ SET(YACSlibEngine_HEADERS
   AnyInputPort.hxx
   Bloc.hxx
   Catalog.hxx
+  ComplexWeight.hxx
   ComponentDefinition.hxx
   ComponentInstance.hxx
   ComposedNode.hxx
@@ -181,6 +182,7 @@ SET(YACSlibEngine_SOURCES
   ElementaryPoint.cxx
   SetOfPoints.cxx
   PlayGround.cxx
+  ComplexWeight.cxx
   )
 SET(YACSlibEngine_HEADERS ${YACSlibEngine_HEADERS} PARENT_SCOPE)  # Make it visible to src/engine_swig to handle dependencies
 
