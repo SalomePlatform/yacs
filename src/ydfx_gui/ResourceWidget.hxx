@@ -4,7 +4,7 @@
 #include <QtWidgets>
 #include "AbstractResourceModel.hxx"
 
-class YDFXWIDGETS_EXPORT ResourceWidget: public QWidget
+class YDFXWIDGETS_EXPORT ResourceWidget: public QScrollArea
 {
   Q_OBJECT
   public:
