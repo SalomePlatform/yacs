@@ -459,14 +459,6 @@ std::string YACSEvalYFXRunOnlyPattern::getErrorDetailsInCaseOfFailure() const
               oss << "NODE = " << nnc->getChildName(*it1) << std::endl;
               oss << "STATUS = " << nsm[st0] << std::endl;
               oss << "BRANCH ID = " << j << std::endl;
-              std::list<YACS::ENGINE::InputPort *> inps((*it1)->getSetOfInputPort());
-              for(std::list<YACS::ENGINE::InputPort *>::const_iterator it2=inps.begin();it2!=inps.end();it2++)
-                {
-                  std::string d((*it2)->getHumanRepr());
-                  if(d.size()>10000)
-                    d=d.substr(0,MAX_LGTH_OF_INP_DUMP);
-                  oss << "INPUT \"" << (*it2)->getName() << "\" = " << d << std::endl;
-                }
               oss << "DETAILS = " << std::endl;
               oss << (*it1)->getErrorDetails();
             }
