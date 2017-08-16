@@ -82,43 +82,13 @@ void Py2YacsModel::saveAs(const std::string& path)
 
 void Py2YacsModel::setScript(const std::string& texte)
 {
-  std::stringstream buffer;
   _script = texte;
   emit scriptChanged(_script.c_str());
   _functionName = "";
   try
   {
     _data.load(_script);
-    
-    // get the errors
-    buffer.clear();
-    const std::list<std::string>& globalErrors = _data.getGlobalErrors();
-    if(! globalErrors.empty())
-    {
-      buffer << "Global errors:" << std::endl;
-      std::list<std::string>::const_iterator it;
-      for(it=globalErrors.begin(); it!=globalErrors.end(); it++)
-      {
-        buffer << *it << std::endl;
-      }
-      buffer << "-----------------------------------------" << std::endl;
-    }
-    
-    std::list<FunctionProperties>::const_iterator it_fp;
-    const std::list<FunctionProperties>& functions = _data.getFunctionProperties();
-    for(it_fp=functions.begin();it_fp!=functions.end();it_fp++)
-    {
-      if(! it_fp->_errors.empty())
-      {
-        buffer << "Function " << it_fp->_name << " has errors:" << std::endl;
-        std::list<std::string>::const_iterator it;
-        buffer << "Errors :" ;
-        for(it=it_fp->_errors.begin();it!=it_fp->_errors.end();it++)
-          buffer << *it << std::endl;
-        buffer << "-----------------------------------------" << std::endl;
-      }
-    }
-    _lastError = buffer.str();
+    _lastError = _data.getAllErrors();
   }
   catch(Py2yacsException& e)
   {

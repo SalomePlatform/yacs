@@ -104,8 +104,28 @@ class PY2YACSLIB_EXPORT Py2yacs
      */
     YACS::ENGINE::Proc* createProc(const std::string& python_function)const;
     
+    /*!
+     * Syntax errors when parsing python and py2yacs global errors.
+     * \return a list of errors.
+     */
     const std::list<std::string>& getGlobalErrors() const;
+
     const std::list<FunctionProperties>& getFunctionProperties()const;
+
+    /*!
+     * Get a string containing global errors and errors specific to py2yacs for
+     * every function in python script.
+     * An empty string means there is no error.
+     */
+    std::string getAllErrors()const;
+
+    /*!
+     * Same as getAllErrors but only for one function.
+     * py2yacs errors for other functions are ignored.
+     * If the function name is not found, you get an error message in the
+     * returned string.
+     */
+    std::string getFunctionErrors(const std::string& functionName)const;
 
   private:
     std::string _python_parser_module;
