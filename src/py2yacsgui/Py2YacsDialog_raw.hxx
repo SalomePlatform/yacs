@@ -16,28 +16,49 @@
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-#ifndef PY2YACSDIALOG_HXX
-#define PY2YACSDIALOG_HXX
+#ifndef PY2YACSDIALOG_RAW_HXX
+#define PY2YACSDIALOG_RAW_HXX
 
 #include "config_py2yacsgui.hxx"
-#include <QtWidgets>
+#include "Py2YacsModel.hxx"
+#include <QDialog>
 
-class PyEditor_Window;
-class PY2YACSGUILIB_EXPORT Py2YacsDialog : public QDialog
+#ifdef HAS_PYEDITOR
+ class PyEditor_Editor;
+#else
+ class QTextEdit;
+#endif
+ class QComboBox;
+ class QPushButton;
+
+class PY2YACSGUILIB_EXPORT Py2YacsDialog_raw : public QDialog
 {
   Q_OBJECT
   public:
-    Py2YacsDialog( QWidget* parent=0);
+    Py2YacsDialog_raw( QWidget* parent=0);
+    YACS::ENGINE::Proc* getYacsSchema();
     QString getYacsFile();
-
   public slots:
+    virtual void onFunctionNamesChange(std::list<std::string> validFunctionNames);
+    virtual void onLoad();
     virtual void onExport();
-
+    virtual void checkModel();
+    virtual void invalidModel();
+    virtual void onApply();
+    virtual void onSave();
+    virtual void onSaveAs();
   private:
+    Py2YacsModel _model;
     QString _yacsFile;
-    PyEditor_Window *_pyEditorWindow;
-    QTextEdit * _errorMessages;
+#ifdef HAS_PYEDITOR
+    PyEditor_Editor *_pyEditor;
+#else
+    QTextEdit *_pyEditor;
+#endif
+    QComboBox *_functionChosen;
+    QPushButton *_saveButton;
+    QPushButton *_exportButton;
     QPushButton *_okButton;
 };
 
-#endif // PY2YACSDIALOG_HXX
+#endif // PY2YACSDIALOG_RAW_HXX

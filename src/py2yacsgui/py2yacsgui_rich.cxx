@@ -16,28 +16,29 @@
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-#ifndef PY2YACSDIALOG_HXX
-#define PY2YACSDIALOG_HXX
+#include "RuntimeSALOME.hxx"
+#include "Py2YacsDialog.hxx"
+#include <QApplication>
+#include "Proc.hxx"
+#include <PyEditor_StdSettings.h>
+#include <iostream>
 
-#include "config_py2yacsgui.hxx"
-#include <QtWidgets>
-
-class PyEditor_Window;
-class PY2YACSGUILIB_EXPORT Py2YacsDialog : public QDialog
+int main(int argc, char *argv[])
 {
-  Q_OBJECT
-  public:
-    Py2YacsDialog( QWidget* parent=0);
-    QString getYacsFile();
+  QApplication app(argc,argv);
+  app.setOrganizationName( "salome" );
+  app.setOrganizationDomain( "www.salome-platform.org" );
+  app.setApplicationName( "py2yacs" );
 
-  public slots:
-    virtual void onExport();
-
-  private:
-    QString _yacsFile;
-    PyEditor_Window *_pyEditorWindow;
-    QTextEdit * _errorMessages;
-    QPushButton *_okButton;
-};
-
-#endif // PY2YACSDIALOG_HXX
+  YACS::ENGINE::RuntimeSALOME::setRuntime();
+  Py2YacsDialog mygui;
+  if(mygui.exec())
+  {
+    std::cout << "Accepted:" << mygui.getYacsFile().toStdString() << std::endl;
+  }
+  else
+  {
+    std::cout << "Not accepted" << std::endl;
+  }
+  return 0;
+}

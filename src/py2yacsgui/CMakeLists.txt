@@ -49,6 +49,7 @@ SET(_link_LIBRARIES
 SET(_moc_HEADERS
   Py2YacsDialog.hxx
   Py2YacsModel.hxx
+  Py2YacsDialog_raw.hxx
   )
 
 # sources / moc wrappings
@@ -58,11 +59,13 @@ SET(py2yacsgui_HEADERS
   Py2YacsModel.hxx
   Py2YacsDialog.hxx
   config_py2yacsgui.hxx
+  Py2YacsDialog_raw.hxx
   )
 
 SET(py2yacsgui_SOURCES
   Py2YacsDialog.cxx
   Py2YacsModel.cxx
+  Py2YacsDialog_raw.cxx
   ${_moc_SOURCES}
   )
 
@@ -71,6 +74,10 @@ TARGET_LINK_LIBRARIES(py2yacsguilib ${_link_LIBRARIES})
 ADD_EXECUTABLE(py2yacsgui py2yacsgui.cxx)
 TARGET_LINK_LIBRARIES(py2yacsgui py2yacsguilib)
 
+ADD_EXECUTABLE(py2yacsgui_rich py2yacsgui_rich.cxx)
+TARGET_LINK_LIBRARIES(py2yacsgui_rich py2yacsguilib)
+
 INSTALL(TARGETS py2yacsguilib EXPORT ${PROJECT_NAME}TargetGroup DESTINATION ${SALOME_INSTALL_LIBS})
 INSTALL(TARGETS py2yacsgui DESTINATION ${SALOME_INSTALL_BINS})
+INSTALL(TARGETS py2yacsgui_rich DESTINATION ${SALOME_INSTALL_BINS})
 INSTALL(FILES ${py2yacsgui_HEADERS} DESTINATION ${SALOME_INSTALL_HEADERS})

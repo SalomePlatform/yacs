@@ -16,8 +16,9 @@
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "RuntimeSALOME.hxx"
-#include "Py2YacsDialog.hxx"
+#include "Py2YacsDialog_raw.hxx"
 #include <QApplication>
 #include "Proc.hxx"
 
@@ -26,7 +27,7 @@ int main(int argc, char *argv[])
 {
   QApplication app(argc,argv);
   YACS::ENGINE::RuntimeSALOME::setRuntime();
-  Py2YacsDialog mygui;
+  Py2YacsDialog_raw mygui;
   if(mygui.exec())
   {
     std::cout << "Accepted" << std::endl;
