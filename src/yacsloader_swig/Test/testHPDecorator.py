@@ -502,7 +502,7 @@ class TestHPDecortator(unittest.TestCase):
         n1_0_1sc.setContainer(hp4)
         w=pilot.ComplexWeight()
         b0.getWeightRegardingDPL(w)
-        assert(w.getElementaryWeight()==0.)
+        assert(w.getElementaryWeight()==-1.)
         assert(w.calculateTotalLength(4)==30.)
         assert(w.calculateTotalLength(8)==15.)
         pg.setData([("m0",120)])
