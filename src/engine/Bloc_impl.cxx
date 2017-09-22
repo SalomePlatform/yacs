@@ -84,11 +84,14 @@ void Bloc::fitToPlayGround(const PlayGround *pg)
       int _lev;
       int _max_lev;
   };
-  YACS::BASES::AutoRefCnt<PartDefinition> pd(new AllPartDefinition(pg,1));
+  YACS::BASES::AutoRefCnt<PartDefinition> pd(new AllPartDefinition(pg));
   std::map<ComposedNode *,YACS::BASES::AutoRefCnt<PartDefinition> > zeMap;
+  MyVisitor vis(this);
+  this->accept(&vis);
+  for(std::list<ForEachLoop *>::const_iterator it=vis._fes.begin();it!=vis._fes.end();it++)
+    (*it)->edGetNbOfBranchesPort()->edInit(1);
   this->removeRecursivelyRedundantCL();
   this->partitionRegardingDPL(pd,zeMap);
-  MyVisitor vis(this);
   this->accept(&vis);
   for(std::list<ForEachLoop *>::const_iterator it=vis._fes.begin();it!=vis._fes.end();it++)
     {
@@ -98,8 +101,6 @@ void Bloc::fitToPlayGround(const PlayGround *pg)
       int maxLev((*it)->getExecNode()->getMaxLevelOfParallelism());
       int a((*it2).second->getNumberOfCoresConsumed());
       int res(a/maxLev);
-      if(a%maxLev!=0)
-        res++;
       (*it)->edGetNbOfBranchesPort()->edInit(res);
     }
   for(std::set< HomogeneousPoolContainer * >::const_iterator it=vis._cont2.begin();it!=vis._cont2.end();it++)

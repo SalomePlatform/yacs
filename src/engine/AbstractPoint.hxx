@@ -67,7 +67,7 @@ namespace YACS
       virtual bool contains(Node *node) = 0;
       virtual int getNumberOfNodes() const = 0;
       virtual int getMaxLevelOfParallelism() const = 0;
-      virtual double getWeightRegardingDPL() const = 0;
+      virtual void getWeightRegardingDPL(ComplexWeight *weight) = 0;
       virtual void partitionRegardingDPL(const PartDefinition *pd, std::map<ComposedNode *, YACS::BASES::AutoRefCnt<PartDefinition> >& zeMap) const = 0;
       virtual std::string getRepr() const = 0;
       virtual ~AbstractPoint();

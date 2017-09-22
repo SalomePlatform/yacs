@@ -419,11 +419,10 @@ int Loop::getMaxLevelOfParallelism() const
   return _node->getMaxLevelOfParallelism();
 }
 
-double Loop::getWeightRegardingDPL() const
+void Loop::getWeightRegardingDPL(ComplexWeight *weight)
 {
-  if(!_node)
-    return 0.;
-  return _node->getWeightRegardingDPL();
+  if(_node)
+    _node->getWeightRegardingDPL(weight);
 }
 
 void Loop::partitionRegardingDPL(const PartDefinition *pd, std::map<ComposedNode *, YACS::BASES::AutoRefCnt<PartDefinition> >& zeMap)

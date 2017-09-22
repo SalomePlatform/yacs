@@ -16,9 +16,9 @@
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-
-%template()              std::pair< YACS::ENGINE::PartDefinition *, double>;
-%template(vecppdd)       std::vector< std::pair< YACS::ENGINE::PartDefinition *, double> >;
+%include <std_vector.i>
+%template()              std::pair< YACS::ENGINE::PartDefinition *, YACS::ENGINE::ComplexWeight *>;
+%template(vecppdd)       std::vector< std::pair< YACS::ENGINE::PartDefinition *, YACS::ENGINE::ComplexWeight *> >;
 
 %newobject YACS::ENGINE::PlayGround::copy;
 
@@ -55,7 +55,7 @@ namespace YACS
   namespace ENGINE
   {
     class PartDefinition;
-
+    
     class PlayGround : public RefCounter
     {
     public:
@@ -75,13 +75,13 @@ namespace YACS
              return self->printSelf();
            }
 
-           std::vector< YACS::BASES::AutoRefCnt<YACS::ENGINE::PartDefinition> > partition(const std::vector< std::pair< YACS::ENGINE::PartDefinition *,double> >& parts) const
+           std::vector< YACS::BASES::AutoRefCnt<YACS::ENGINE::PartDefinition> > partition(const std::vector< std::pair< YACS::ENGINE::PartDefinition *, YACS::ENGINE::ComplexWeight *> >& parts, const std::vector<int> &nbCoresPerShot) const
            {
              std::size_t sz(parts.size());
-             std::vector< std::pair< const YACS::ENGINE::PartDefinition *,double> > partsCpp(sz);
+             std::vector< std::pair< const YACS::ENGINE::PartDefinition *, const YACS::ENGINE::ComplexWeight *> > partsCpp(sz);
              for(std::size_t i=0;i<sz;i++)
-               partsCpp[i]=std::pair<const YACS::ENGINE::PartDefinition *,double >(parts[i].first,parts[i].second);
-             return self->partition(partsCpp);
+               partsCpp[i]=std::pair<const YACS::ENGINE::PartDefinition *, const YACS::ENGINE::ComplexWeight *>(parts[i].first, parts[i].second);
+             return self->partition(partsCpp, nbCoresPerShot);
            }
          }
     private:
@@ -102,7 +102,7 @@ namespace YACS
     class ContigPartDefinition : public PartDefinition
     {
     public:
-      ContigPartDefinition(const PlayGround *pg, int nbOfCoresPerComp, int zeStart, int zeStop);
+      ContigPartDefinition(const PlayGround *pg, int zeStart, int zeStop);
       int getStart() const;
       int getStop() const;
       %extend
@@ -119,7 +119,7 @@ namespace YACS
     class NonContigPartDefinition : public PartDefinition
     {
     public:
-      NonContigPartDefinition(const PlayGround *pg, int nbOfCoresPerComp, const std::vector<int>& ids);
+      NonContigPartDefinition(const PlayGround *pg, const std::vector<int>& ids);
       std::vector<int> getIDs() const;
       %extend
          {
@@ -135,7 +135,7 @@ namespace YACS
     class AllPartDefinition : public PartDefinition
     {
     public:
-      AllPartDefinition(const PlayGround *pg, int nbOfCoresPerComp);
+      AllPartDefinition(const PlayGround *pg);
       %extend
          {
            std::string __str__() const
