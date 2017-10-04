@@ -59,6 +59,7 @@
 #include "ComponentInstance.hxx"
 #include "DataNode.hxx"
 #include "PlayGround.hxx"
+#include "IteratorPy3.hxx"
   
 using namespace YACS::ENGINE;
 
@@ -106,12 +107,14 @@ using namespace YACS::ENGINE;
 %template()              std::pair<YACS::ENGINE::OutPort *,YACS::ENGINE::InPort *>;
 %template()              std::pair<YACS::ENGINE::InPort *,YACS::ENGINE::OutPort *>;
 %template()              std::pair< std::string, int >;
+%template()              Iterator<YACS::ENGINE::TypeCode *>;
 //%template(TCmap)         std::map<std::string, YACS::ENGINE::TypeCode *>;
 REFCOUNT_TEMPLATE(TCmap,YACS::ENGINE::TypeCode)
 %template(NODEmap)       std::map<std::string, YACS::ENGINE::Node *>;
 %template(INODEmap)      std::map<std::string, YACS::ENGINE::InlineNode *>;
 %template(SNODEmap)      std::map<std::string, YACS::ENGINE::ServiceNode *>;
 //%template(CONTAINmap)    std::map<std::string, YACS::ENGINE::Container *>;
+%template()              Iterator<YACS::ENGINE::Container * >;
 REFCOUNT_TEMPLATE(CONTAINmap,YACS::ENGINE::Container)
 %template(strvec)        std::vector<std::string>;
 %template(uivec)         std::vector<unsigned int>;
@@ -130,7 +133,7 @@ REFCOUNT_TEMPLATE(CONTAINmap,YACS::ENGINE::Container)
 %template(compomap)      std::map<std::string, YACS::ENGINE::ComponentDefinition *>;
 %template()              std::pair<std::string, std::string>;
 %template(propmap)       std::map<std::string, std::string>;
-
+%template()              Iterator<YACS::ENGINE::ComponentInstance *>;
 REFCOUNT_TEMPLATE(CompoInstmap,YACS::ENGINE::ComponentInstance)
 
 /*

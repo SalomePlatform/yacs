@@ -841,20 +841,6 @@ static void convertFromPyObjVectorOfObj(PyObject *pyLi, swig_type_info *ty, cons
  Objects returned by __getitem__ are declared new (%newobject) so that when destroyed they
  call decrRef (see feature("unref") for RefCounter).
 */
-/*
-%inline %{
-template <typename U> class StopIterator {};
-template <typename U> class Iterator {
-  public:
-    Iterator(std::map<std::string,U*>::iterator _cur, std::map<std::string,U*>::iterator _end) : cur(_cur), end(_end) {}
-    Iterator* __iter__()
-    {
-      return this;
-    }
-    template <typename U> std::map<std::string,U*>::iterator cur;
-    template <typename U> std::map<std::string,U*>::iterator end;
-  };
-%}
 
 %include "exception.i"
 %exception Iterator::next {
@@ -882,7 +868,7 @@ template <typename U> class Iterator {
     throw StopIterator();
   }
 }
-*/
+
 template<>
 class std::map<std::string,T*>
 {
@@ -931,12 +917,12 @@ public:
       }
       return keyList;
     }
-/*  Iterator __iter__()
+  Iterator<T> __iter__()
   {
     // return a constructed Iterator object
-    return Iterator($self->begin(), $self->end());
+    return typename Iterator($self->begin(), $self->end());
   }
-*/
+
   int __len__()
   {
       int pysize = self->size();
@@ -944,8 +930,9 @@ public:
   }
 }
 };
-
+%rename(__next__) Iterator::next;
 %newobject std::map<std::string,T* >::__getitem__;
+%newobject std::map<std::string,T* >::__iter__;
 %template()   std::pair<std::string, T* >;
 %template(tname)    std::map<std::string, T* >;
 %pythoncode{
