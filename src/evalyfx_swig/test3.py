@@ -24,7 +24,7 @@ import os,getpass
 CatalogResources="""<?xml version="1.0"?>
 <resources>
   <machine name="localhost" hostname="dsp0698184" type="single_machine" appliPath="" batchQueue="" userCommands="" protocol="ssh" iprotocol="ssh" workingDirectory="" canLaunchBatchJobs="false" canRunContainers="true" batch="none" mpi="no mpi" userName="" OS="" memInMB="0" CPUFreqMHz="0" nbOfNodes="1" nbOfProcPerNode="4"/>
-  <machine name="athos" hostname="athos" type="cluster" appliPath="/home/H87074/ATHOS_V771/appli_V7_7_1" batchQueue="" userCommands="" protocol="ssh" iprotocol="ssh" workingDirectory="" canLaunchBatchJobs="true" canRunContainers="false" batch="slurm" mpi="no mpi" userName="" OS="" memInMB="0" CPUFreqMHz="0" nbOfNodes="250" nbOfProcPerNode="28"/>
+  <machine name="athos" hostname="athos" type="cluster" appliPath="/home/H87074/ATHOS_V830/appli_V8_3_0" batchQueue="" userCommands="" protocol="ssh" iprotocol="ssh" workingDirectory="" canLaunchBatchJobs="true" canRunContainers="false" batch="slurm" mpi="no mpi" userName="" OS="" memInMB="0" CPUFreqMHz="0" nbOfNodes="250" nbOfProcPerNode="28"/>
 </resources>"""
 
 def buildScheme(fname):
@@ -43,7 +43,8 @@ def buildScheme(fname):
     p.edAddChild(n0)
     q=n0.edAddInputPort("q",td)
     ep=n0.edAddOutputPort("ep",td)
-    n0.setScript("ep=1./(4.-q)") # <- force division by 0
+    #n0.setScript("ep=1./(4.-q)") # <- force division by 0
+    n0.setScript("ep=2.*float(___idx___)")
     n0.setExecutionMode("remote")
     n0.setContainer(cont)
     p0.saveSchema(fname)
