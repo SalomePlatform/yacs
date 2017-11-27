@@ -37,6 +37,7 @@ namespace YACS
     class TypeCode;
     class ForEachLoop;
     class ComposedNode;
+    class InlineNode;
     class InputPyPort;
     class SequenceAny;
   }
@@ -155,6 +156,14 @@ private:
 
 class YACSEvalYFXGraphGen
 {
+public:
+  class CustomPatcher
+  {
+  public:
+    virtual ~CustomPatcher() { }
+    virtual void addOutputVar(const std::string& name) = 0;
+    virtual void assignOutput(YACS::ENGINE::InlineNode *node) = 0;
+  };
 protected:
   YACSEvalYFXGraphGen(YACSEvalYFXRunOnlyPattern *boss);
   YACSEvalYFXRunOnlyPattern *getBoss() const { return _boss; }
@@ -169,6 +178,8 @@ public:
   void resetGeneratedGraph();
   YACS::ENGINE::Proc *getUndergroundGeneratedGraph() const { return _generatedGraph; }
   YACS::ENGINE::ForEachLoop *getUndergroundForEach() const { return _FEInGeneratedGraph; }
+protected:
+  void generateGraphCommon(CustomPatcher& patcher);
 private:
   YACSEvalYFXRunOnlyPattern *_boss;
 protected:
@@ -178,6 +189,7 @@ public:
   static const char DFT_PROC_NAME[];
   static const char FIRST_FE_SUBNODE_NAME[];
   static const char GATHER_NODE_NAME[];
+  static const char HIDDEN_INDEX_VAR[];
 };
 
 class YACSEvalYFXGraphGenInteractive : public YACSEvalYFXGraphGen
@@ -193,7 +205,7 @@ public:
 class YACSEvalYFXGraphGenCluster : public YACSEvalYFXGraphGen
 {
 public:
-  YACSEvalYFXGraphGenCluster(YACSEvalYFXRunOnlyPattern *boss):YACSEvalYFXGraphGen(boss) { }
+  YACSEvalYFXGraphGenCluster(YACSEvalYFXRunOnlyPattern *boss):YACSEvalYFXGraphGen(boss),_jobid(0) { }
   void generateGraph();
   bool go(const YACSEvalExecParams& params, YACSEvalSession *session) const;
   std::vector<YACSEvalSeqAny *> getResults() const;
