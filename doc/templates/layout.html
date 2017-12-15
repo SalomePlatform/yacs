@@ -1,0 +1,11 @@
+{% extends "!layout.html" %}
+
+{%- block sidebarlogo %}
+{{ super() }}
+{%-
+include "searchbox.html"
+%}
+<p/>
+{%- endblock %}
+{%- block sidebarsearch %}
+{%- endblock %}

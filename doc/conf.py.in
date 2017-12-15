@@ -28,7 +28,7 @@ extensions = ['sphinx.ext.autodoc']
 #extensions = ['rst2pdf.pdfbuilder']
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = [os.path.join('@CMAKE_CURRENT_SOURCE_DIR@','_templates')]
+templates_path = [os.path.join('@CMAKE_CURRENT_SOURCE_DIR@','templates')]
 
 # The suffix of source filenames.
 source_suffix = '.rst'
