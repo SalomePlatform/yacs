@@ -24,6 +24,7 @@
 #include "InlineNode.hxx"
 #include "AutoGIL.hxx"
 #include "InputPort.hxx"
+#include "Container.hxx"
 
 Py2yacsException::Py2yacsException(const std::string& what)
 : std::exception(),
@@ -379,7 +380,9 @@ YACS::ENGINE::Proc* Py2yacs::createProc(const std::string& python_function)const
     node->edAddOutputPort(*it, tc_double);
 
   node->setExecutionMode(YACS::ENGINE::InlineNode::REMOTE_STR);
-  node->setContainer(schema->containerMap["DefaultContainer"]);
+  YACS::ENGINE::Container* cont=schema->createContainer("Py2YacsContainer");
+  node->setContainer(cont);
+  cont->decrRef();
   return schema;
 }
 

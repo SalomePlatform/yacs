@@ -79,9 +79,9 @@ int BagPoint::getMaxLevelOfParallelism() const
   return getUnique()->getMaxLevelOfParallelism();
 }
 
-double BagPoint::getWeightRegardingDPL() const
+void BagPoint::getWeightRegardingDPL(ComplexWeight *weight)
 {
-  return getUnique()->getWeightRegardingDPL();
+  getUnique()->getWeightRegardingDPL(weight);
 }
 
 void BagPoint::partitionRegardingDPL(const PartDefinition *pd, std::map<ComposedNode *, YACS::BASES::AutoRefCnt<PartDefinition> >& zeMap) const

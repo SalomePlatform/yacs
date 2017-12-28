@@ -134,7 +134,7 @@ void VisitorSaveSchema::visitForEachLoop(ForEachLoop *node)
     _out << " state=\"disabled\"";
   if (!nbranch->isEmpty())
     _out << " nbranch=\"" << nbranch->getIntValue() << "\"";
-  _out << " weight=\"" << node->getWeight() << "\"";
+  _out << " loopWeight=\"" << node->getWeight()->getSimpleLoopWeight() << "\"";
   if (node->edGetSamplePort())
     _out << " type=\"" << node->edGetSamplePort()->edGetType()->name() << "\"";
   _out << ">" << endl;
@@ -160,7 +160,7 @@ void VisitorSaveSchema::visitOptimizerLoop(OptimizerLoop *node)
     _out << " state=\"disabled\"";
   if (!nbranch->isEmpty())
     _out << " nbranch=\"" << nbranch->getIntValue() << "\"";
-  _out << " weight=\"" << node->getWeight() << "\"";
+  _out << " loopWeight=\"" << node->getWeight()->getSimpleLoopWeight() << "\"";
   _out << " lib=\"" << node->getAlgLib() << "\"";
   _out << " entry=\"" << node->getSymbol() << "\"";
   _out << ">" << endl;
@@ -227,7 +227,10 @@ void VisitorSaveSchema::visitInlineNode(InlineNode *node)
   if(node->getExecutionMode()==InlineNode::LOCAL_STR)
     _out << indent(depth) << "<inline name=\"" << node->getName() << "\"";
   else
-    _out << indent(depth) << "<remote name=\"" << node->getName() << "\"";
+    {
+      _out << indent(depth) << "<remote name=\"" << node->getName() << "\"";
+      _out << " elementaryWeight=\"" << node->getWeight()->getElementaryWeight() << "\"";
+    }
   if (node->getState() == YACS::DISABLED)
     _out << " state=\"disabled\">" << endl;
   else
@@ -264,7 +267,10 @@ void VisitorSaveSchema::visitInlineFuncNode(InlineFuncNode *node)
   if(node->getExecutionMode()==InlineNode::LOCAL_STR)
     _out << indent(depth) << "<inline name=\"" << node->getName() << "\"";
   else
-    _out << indent(depth) << "<remote name=\"" << node->getName() << "\"";
+    {
+      _out << indent(depth) << "<remote name=\"" << node->getName() << "\"";
+      _out << " elementaryWeight=\"" << node->getWeight()->getElementaryWeight() << "\"";
+    }
   if (node->getState() == YACS::DISABLED)
     _out << " state=\"disabled\">" << endl;
   else

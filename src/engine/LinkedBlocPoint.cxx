@@ -48,12 +48,15 @@ int LinkedBlocPoint::getMaxLevelOfParallelism() const
   return ret;
 }
 
-double LinkedBlocPoint::getWeightRegardingDPL() const
+void LinkedBlocPoint::getWeightRegardingDPL(ComplexWeight *weight)
 {
-  double ret(0.);
+  ComplexWeight localWeight;
   for(std::list<AbstractPoint *>::const_iterator it=_nodes.begin();it!=_nodes.end();it++)
-    ret=std::max(ret,(*it)->getWeightRegardingDPL());
-  return ret;
+  {
+    (*it)->getWeightRegardingDPL(&localWeight);
+    weight->addWeight(&localWeight);
+    localWeight.setToZero();
+  }
 }
 
 void LinkedBlocPoint::partitionRegardingDPL(const PartDefinition *pd, std::map<ComposedNode *, YACS::BASES::AutoRefCnt<PartDefinition> >& zeMap) const

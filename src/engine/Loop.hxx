@@ -173,7 +173,7 @@ namespace YACS
       std::list<InputPort *> getSetOfInputPort() const;
       int getNumberOfInputPorts() const;
       int getMaxLevelOfParallelism() const;
-      double getWeightRegardingDPL() const;
+      void getWeightRegardingDPL(ComplexWeight *weight);
       void partitionRegardingDPL(const PartDefinition *pd, std::map<ComposedNode *, YACS::BASES::AutoRefCnt<PartDefinition> >& zeMap);
       Node *getChildByShortName(const std::string& name) const throw(Exception);
       static TypeCode* MappingDF2DS(TypeCode* type) throw(Exception);

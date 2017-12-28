@@ -41,10 +41,12 @@ TARGET_LINK_LIBRARIES(test_py2yacs py2yacslib)
 
 # For salome test
 IF(NOT WIN32)
-  ADD_TEST(TestPy2yacs TestPy2yacs)
-  SET_TESTS_PROPERTIES(TestPy2yacs PROPERTIES
-                       ENVIRONMENT "PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR}:${CMAKE_CURRENT_SOURCE_DIR}/..:$ENV{PYTHONPATH}"
-                      )
+  # This test needs a running salome session
+  # TODO: Run the test in a salome session
+  #ADD_TEST(TestPy2yacs TestPy2yacs)
+  #SET_TESTS_PROPERTIES(TestPy2yacs PROPERTIES
+  #                     ENVIRONMENT "PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR}:${CMAKE_CURRENT_SOURCE_DIR}/..:$ENV{PYTHONPATH}"
+  #                    )
 
   SET(LOCAL_TEST_DIR ${SALOME_YACS_INSTALL_TEST}/py2yacs)
   SET(LOCAL_TEST_FILES

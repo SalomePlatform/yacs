@@ -23,15 +23,17 @@
 #include "YACSlibEngineExport.hxx"
 #include "RefCounter.hxx"
 #include "AutoRefCnt.hxx"
+#include "ComplexWeight.hxx"
 
 #include <vector>
 #include <string>
+#include <map>
 
 namespace YACS
 {
   namespace ENGINE
   {
-    class PartDefinition;
+    class PartDefinition;   
     
     class YACSLIBENGINE_EXPORT PlayGround : public RefCounter
     {
@@ -45,7 +47,7 @@ namespace YACS
       int getNumberOfCoresAvailable() const;
       int getMaxNumberOfContainersCanBeHostedWithoutOverlap(int nbCoresPerCont) const;
       std::vector<int> computeOffsets() const;
-      std::vector< YACS::BASES::AutoRefCnt<PartDefinition> > partition(const std::vector< std::pair<const PartDefinition *,double> >& parts) const;
+      std::vector< YACS::BASES::AutoRefCnt<PartDefinition> > partition(const std::vector< std::pair<const PartDefinition *, const ComplexWeight *> >& parts, const std::vector<int> &nbCoresPerShot) const;
       int fromWorkerIdToResId(int workerId, int nbProcPerNode) const;
       std::string deduceMachineFrom(int workerId, int nbProcPerNode) const;
       int getNumberOfWorkers(int nbCoresPerWorker) const;
@@ -54,10 +56,11 @@ namespace YACS
       std::vector<std::size_t> getWorkerIdsFullyFetchedBy(int nbCoresPerComp, const std::vector<bool>& coreFlags) const;
       static std::vector<int> BuildVectOfIdsFromVecBool(const std::vector<bool>& v);
       static std::vector<int> GetIdsMatching(const std::vector<bool>& bigArr, const std::vector<bool>& pat);
-      static std::vector<bool> FromUItoVB(unsigned int sz, unsigned int v);
-      static unsigned int FromVBtoUI(const std::vector<bool>& v);
     private:
-      std::vector< std::vector<int> > splitIntoParts(const std::vector<int>& coreIds, const std::vector<int>& nbCoresConso, const std::vector<double>& weights) const;
+      std::vector< std::pair <const ComplexWeight *, int> > bigToTiny(const std::vector< std::pair <const ComplexWeight *, int> > &weights, std::map<int,int> &saveOrder) const;
+	  std::vector< std::vector<int> > backToOriginalOrder(const std::vector< std::vector<int> > &disorderVec, const std::map<int,int> &saveOrder) const;
+	  int getCriticalPath(const std::vector<std::pair <const ComplexWeight *, int > >& weights, const std::vector<int>& maxNbOfCores) const;    
+      std::vector< std::vector<int> > splitIntoParts(const std::vector<int>& coreIds, const std::vector<std::pair <const ComplexWeight *, int> >& weights) const;
       std::vector<int> takePlace(int maxNbOfCoresToAlloc, int nbCoresPerShot, std::vector<bool>& distributionOfCores, bool lastOne=false) const;
     private:
       void checkCoherentInfo() const;
@@ -70,15 +73,13 @@ namespace YACS
     class YACSLIBENGINE_EXPORT PartDefinition : public RefCounter
     {
     protected:
-      PartDefinition(const PlayGround *pg, int nbOfCoresPerComp);
+      PartDefinition(const PlayGround *pg);
       PartDefinition(const PartDefinition& other);
       virtual ~PartDefinition();
     public:
-      std::vector< YACS::BASES::AutoRefCnt<PartDefinition> > partition(const std::vector< double >& wgs) const;
-      static YACS::BASES::AutoRefCnt<PartDefinition> BuildFrom(const PlayGround *pg, int nbOfCoresPerComp, const std::vector<int>& coreIds);
+      //std::vector< YACS::BASES::AutoRefCnt<PartDefinition> > partition(const std::vector< const ComplexWeight *>& wgs) const;
+      static YACS::BASES::AutoRefCnt<PartDefinition> BuildFrom(const PlayGround *pg, const std::vector<int>& coreIds);
       const PlayGround *getPlayGround() const { return _pg; }
-      int getNbCoresPerCompo() const { return _nbOfCoresPerComp; }
-      void setNbCoresPerCompo(int newNbCores) { _nbOfCoresPerComp=newNbCores; }
       int getSpaceSize() const { return _pg->getNumberOfCoresAvailable(); }
       void stashPart(int nbCoresStashed, double weightOfRemain, YACS::BASES::AutoRefCnt<PartDefinition>& pdStashed, YACS::BASES::AutoRefCnt<PartDefinition>& pdRemain) const;
       std::vector<std::size_t> computeWorkerIdsCovered(int nbCoresPerComp) const;
@@ -88,13 +89,12 @@ namespace YACS
       virtual int getNumberOfCoresConsumed() const = 0;
     private:
       YACS::BASES::AutoConstRefCnt<PlayGround> _pg;
-      int _nbOfCoresPerComp;
     };
 
     class YACSLIBENGINE_EXPORT ContigPartDefinition : public PartDefinition
     {
     public:
-      ContigPartDefinition(const PlayGround *pg, int nbOfCoresPerComp, int zeStart, int zeStop);
+      ContigPartDefinition(const PlayGround *pg, int zeStart, int zeStop);
       ContigPartDefinition(const ContigPartDefinition& other);
       std::string printSelf() const;
       std::vector<bool> getCoresOn() const;
@@ -112,7 +112,7 @@ namespace YACS
     class YACSLIBENGINE_EXPORT NonContigPartDefinition : public PartDefinition
     {
     public:
-      NonContigPartDefinition(const PlayGround *pg, int nbOfCoresPerComp, const std::vector<int>& ids);
+      NonContigPartDefinition(const PlayGround *pg, const std::vector<int>& ids);
       NonContigPartDefinition(const ContigPartDefinition& other);
       std::string printSelf() const;
       std::vector<bool> getCoresOn() const;
@@ -129,7 +129,7 @@ namespace YACS
     class AllPartDefinition : public PartDefinition
     {
     public:
-      AllPartDefinition(const PlayGround *pg, int nbOfCoresPerComp):PartDefinition(pg,nbOfCoresPerComp) { }
+      AllPartDefinition(const PlayGround *pg):PartDefinition(pg) { }
       AllPartDefinition(const AllPartDefinition& other);
       std::string printSelf() const;
       std::vector<bool> getCoresOn() const;

@@ -87,9 +87,9 @@ int SetOfPoints::getMaxLevelOfParallelism() const
   return _bp->getMaxLevelOfParallelism();
 }
 
-double SetOfPoints::getWeightRegardingDPL() const
+void SetOfPoints::getWeightRegardingDPL(ComplexWeight *weight)
 {
-  return _bp->getWeightRegardingDPL();
+  _bp->getWeightRegardingDPL(weight);
 }
 
 void SetOfPoints::partitionRegardingDPL(const PartDefinition *pd, std::map<ComposedNode *, YACS::BASES::AutoRefCnt<PartDefinition> >& zeMap) const

@@ -54,48 +54,39 @@ int ForkBlocPoint::getMaxLevelOfParallelism() const
   return ret;
 }
 
-double ForkBlocPoint::getWeightRegardingDPL() const
+void ForkBlocPoint::getWeightRegardingDPL(ComplexWeight *weight)
 {
-  double ret(0.);
+  ComplexWeight localWeight;
   for(std::list<AbstractPoint *>::const_iterator it=_nodes.begin();it!=_nodes.end();it++)
-    ret+=(*it)->getWeightRegardingDPL();
-  return ret;
+  {
+    (*it)->getWeightRegardingDPL(&localWeight);
+    weight->addWeight(&localWeight);
+    localWeight.setToZero();
+  }
 }
 
 void ForkBlocPoint::partitionRegardingDPL(const PartDefinition *pd, std::map<ComposedNode *, YACS::BASES::AutoRefCnt<PartDefinition> >& zeMap) const
 {
-  std::vector< std::pair<const PartDefinition *,double> > parts,parts2;
-  std::vector<std::size_t> v,v2;
+  std::vector< std::pair<const PartDefinition *, const ComplexWeight *> > parts;
+  std::vector< int> nbCoresPerShot;
+  std::vector<std::size_t> v;
+  std::vector<ComplexWeight> nodesWeight(_nodes.size());
   std::size_t ii(0);
   for(std::list<AbstractPoint *>::const_iterator it=_nodes.begin();it!=_nodes.end();it++,ii++)
     {
-      double w((*it)->getWeightRegardingDPL());
-      if(w!=0.)
-        {
-          parts.push_back(std::pair<const PartDefinition *,double >(pd,w));
-          v.push_back(ii);
-        }
-      else
-        {
-          parts2.push_back(std::pair<const PartDefinition *,double >(pd,1.));
-          v2.push_back(ii);
-        }
+      ComplexWeight *w=&nodesWeight[ii];
+      (*it)->getWeightRegardingDPL(w);
+      parts.push_back(std::pair<const PartDefinition *, const ComplexWeight *>(pd,w));
+      nbCoresPerShot.push_back((*it)->getMaxLevelOfParallelism());
+      v.push_back(ii);
     }
   std::vector<AbstractPoint *> nodes2(_nodes.begin(),_nodes.end());
   if(!parts.empty())
     {
       const PlayGround *pg(pd->getPlayGround());
-      std::vector< YACS::BASES::AutoRefCnt<PartDefinition> > pds(pg->partition(parts));
+      std::vector< YACS::BASES::AutoRefCnt<PartDefinition> > pds(pg->partition(parts,nbCoresPerShot));
       ii=0;
       for(std::vector<std::size_t>::const_iterator iter=v.begin();iter!=v.end();iter++,ii++)
-        nodes2[*iter]->partitionRegardingDPL(pds[ii],zeMap);
-    }
-  if(!parts2.empty())
-    {
-      const PlayGround *pg(pd->getPlayGround());
-      std::vector< YACS::BASES::AutoRefCnt<PartDefinition> > pds(pg->partition(parts2));
-      ii=0;
-      for(std::vector<std::size_t>::const_iterator iter=v2.begin();iter!=v2.end();iter++,ii++)
         nodes2[*iter]->partitionRegardingDPL(pds[ii],zeMap);
     }
 }

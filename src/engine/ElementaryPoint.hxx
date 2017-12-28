@@ -43,7 +43,7 @@ namespace YACS
       Node *getLastNode();
       int getNumberOfNodes() const;
       int getMaxLevelOfParallelism() const;
-      double getWeightRegardingDPL() const;
+      void getWeightRegardingDPL(ComplexWeight *weight);
       void partitionRegardingDPL(const PartDefinition *pd, std::map<ComposedNode *, YACS::BASES::AutoRefCnt<PartDefinition> >& zeMap) const;
       std::string getRepr() const;
       virtual ~ElementaryPoint();

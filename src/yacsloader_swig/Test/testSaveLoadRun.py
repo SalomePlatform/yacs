@@ -1609,6 +1609,7 @@ import time
 time.sleep(2)
 o2=2*i1
 """)
+    n10.setWeight(4.)
     i1=n10.edAddInputPort("i1",ti)
     o2=n10.edAddOutputPort("o2",ti)
     p.edAddChild(n1)
@@ -1628,7 +1629,8 @@ o2=2*i1
     #
     l=loader.YACSLoader()
     p=l.load(fname)
-    self.assertEqual(p.getChildByName("n1").getWeight(),3.0)
+    self.assertEqual(p.getChildByName("n1").getWeight().getSimpleLoopWeight(),3.0)
+    self.assertEqual(p.getChildByName("n1").getChildByName("n10").getWeight().getElementaryWeight(),4.0)
     pass
 
   pass

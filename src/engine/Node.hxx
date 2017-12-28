@@ -175,7 +175,7 @@ namespace YACS
       virtual const Proc *getProc() const;
       virtual void accept(Visitor *visitor) = 0;
       virtual int getMaxLevelOfParallelism() const = 0;
-      virtual double getWeightRegardingDPL() const = 0;
+      virtual void getWeightRegardingDPL(ComplexWeight *weight) = 0;
       virtual void partitionRegardingDPL(const PartDefinition *pd, std::map<ComposedNode *, YACS::BASES::AutoRefCnt<PartDefinition> >& zeMap) = 0;
       std::string getQualifiedName() const;
       int getNumId();

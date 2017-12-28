@@ -47,11 +47,13 @@ using namespace std;
 ElementaryNode::ElementaryNode(const std::string& name):
   Node(name),
   _createDatastreamPorts(false),
-  _multi_port_node(false)
+  _multi_port_node(false),
+  _weight()
 {
+  _weight.setDefaultElementary();
 }
 
-ElementaryNode::ElementaryNode(const ElementaryNode& other, ComposedNode *father):Node(other,father)
+ElementaryNode::ElementaryNode(const ElementaryNode& other, ComposedNode *father):Node(other,father), _weight(other._weight)
 {
   _createDatastreamPorts = other._createDatastreamPorts;
   _multi_port_node = other._multi_port_node;
@@ -890,5 +892,12 @@ void ElementaryNode::getCoupledNodes(std::set<Task*>& coupledSet)
           node->getCoupledNodes(coupledSet);
         }
     }
+}
+
+void ElementaryNode::setWeight(double elementaryWeight)
+{
+  if(elementaryWeight<=0.)
+    throw Exception("ElementaryNode::setWeight : invalid input value !");
+  _weight.setElementaryWeight(elementaryWeight);
 }
 

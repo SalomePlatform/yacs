@@ -44,8 +44,9 @@ const char DynParaLoop::NAME_OF_NUMBER_OF_BRANCHES[]="nbBranches";
 DynParaLoop::DynParaLoop(const std::string& name, TypeCode *typeOfDataSplitted)
   : ComposedNode(name),_node(0),_initNode(0),_finalizeNode(0),_nbOfEltConsumed(0),
     _nbOfBranches(NAME_OF_NUMBER_OF_BRANCHES,this,Runtime::_tc_int),
-    _splittedPort(NAME_OF_SPLITTED_SEQ_OUT,this,typeOfDataSplitted),_initializingCounter(0),_unfinishedCounter(0),_failedCounter(0),_weight(1.)
+    _splittedPort(NAME_OF_SPLITTED_SEQ_OUT,this,typeOfDataSplitted),_initializingCounter(0),_unfinishedCounter(0),_failedCounter(0),_weight(), _loopWeight(0)
 {
+  _weight.setDefaultLoop();
 }
 
 DynParaLoop::~DynParaLoop()
@@ -58,7 +59,7 @@ DynParaLoop::~DynParaLoop()
 DynParaLoop::DynParaLoop(const DynParaLoop& other, ComposedNode *father, bool editionOnly)
   : ComposedNode(other,father), _nbOfBranches(other._nbOfBranches,this),
     _splittedPort(other._splittedPort,this), _node(0), _initNode(0), _finalizeNode(0),
-    _nbOfEltConsumed(0),_initializingCounter(0),_unfinishedCounter(0),_failedCounter(0),_weight(1.)
+    _nbOfEltConsumed(0),_initializingCounter(0),_unfinishedCounter(0),_failedCounter(0),_weight(other._weight), _loopWeight(other._loopWeight)
 {
   if(other._node)
     _node=other._node->clone(this,editionOnly);
@@ -423,11 +424,18 @@ DynParaLoop::TypeOfNode DynParaLoop::getIdentityOfNotifyerNode(const Node *node,
       return FINALIZE_NODE;
 }
 
-void DynParaLoop::setWeight(double newVal)
+void DynParaLoop::setWeight(double loopWeight)
 {
-  if(newVal<=0.)
+  if(loopWeight<=0.)
     throw Exception("DynParaLoop::setWeight : invalid input value !");
-  _weight=newVal;
+  _loopWeight=loopWeight;
+}
+
+ComplexWeight* DynParaLoop::getWeight()
+{
+  if (_loopWeight>0.)
+    _weight.setLoopWeight(_loopWeight, _node->getMaxLevelOfParallelism()); // not done in setWeight because _node can be null at that time
+  return &_weight;	
 }
 
 bool DynParaLoop::isMultiplicitySpecified(unsigned& value) const
