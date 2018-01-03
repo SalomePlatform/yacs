@@ -18,14 +18,16 @@
 //
 // Author: Nicolas GEIMER (EDF)
 
-#ifndef ITERATORPY3_HXX_
-#define ITERATORPY3_HXX_
+#ifndef __ITERATORPY3_HXX__
+#define __ITERATORPY3_HXX__
 
-template <typename U> class StopIterator {};
-template <typename U> class Iterator {
+template <typename U> class StopIteratorPy3 {};
+
+template <typename U> class IteratorPy3 {
     public:
-        Iterator( typename std::map<std::string,U*>::iterator _cur, typename std::map<std::string,U*>::iterator _end) : cur(_cur), end(_end) {}
-        Iterator* __iter__()
+        IteratorPy3( typename std::map<std::string,U*>::iterator _cur, typename std::map<std::string,U*>::iterator _end) : cur(_cur), end(_end) {}
+        ~IteratorPy3() {}
+        IteratorPy3* __iter__()
         {
             return this;
         }
@@ -33,5 +35,5 @@ template <typename U> class Iterator {
         typename std::map<std::string,U*>::iterator end;
 };
 
-#endif /* ITERATORPY3_HXX */
+#endif /* __ITERATORPY3_HXX__ */
 

@@ -106,7 +106,8 @@ ENDFOREACH()
 
 SET(SWIGINCLUDES ${ENGINEINCL}  
     "${PROJECT_SOURCE_DIR}/src/bases/yacsconfig.h" 
-    "ExecutorSwig.hxx")
+    "ExecutorSwig.hxx"
+    "IteratorPy3.hxx")
 
 SET(SWIG_MODULE_pilot_EXTRA_DEPS engtypemaps.i ${SWIGINCLUDES})
 SWIG_ADD_MODULE(pilot python pilot.i ExecutorSwig.cxx)

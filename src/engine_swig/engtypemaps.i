@@ -62,6 +62,7 @@ catch (const CORBA::SystemException& ex) { \
 #include "OutputDataStreamPort.hxx"
 #include "OptimizerLoop.hxx"
 #include "HomogeneousPoolContainer.hxx"
+#include "IteratorPy3.hxx"
 
 #include <sstream>
 
@@ -251,6 +252,8 @@ static void convertFromPyObjVectorOfObj(PyObject *pyLi, swig_type_info *ty, cons
 
 %}
 
+// ----------------------------------------------------------------------------
+
 #if SWIG_VERSION >= 0x010329
 %template()        std::list<int>;
 %template()        std::list<std::string>;
@@ -306,6 +309,8 @@ static void convertFromPyObjVectorOfObj(PyObject *pyLi, swig_type_info *ty, cons
 }
 #endif
 #endif
+
+// ----------------------------------------------------------------------------
 
 #ifdef SWIGPYTHON
 
@@ -652,6 +657,8 @@ static void convertFromPyObjVectorOfObj(PyObject *pyLi, swig_type_info *ty, cons
 
 #endif
 
+// ----------------------------------------------------------------------------
+
 /*
  * Exception section
  */
@@ -773,6 +780,8 @@ static void convertFromPyObjVectorOfObj(PyObject *pyLi, swig_type_info *ty, cons
  * End of Exception section
  */
 
+// ----------------------------------------------------------------------------
+
 /*
  * Ownership section
  */
@@ -803,6 +812,8 @@ static void convertFromPyObjVectorOfObj(PyObject *pyLi, swig_type_info *ty, cons
  * End of Reference counting section
  */
 
+// ----------------------------------------------------------------------------
+
 /*
 %wrapper %{
   namespace swig {
@@ -830,11 +841,18 @@ static void convertFromPyObjVectorOfObj(PyObject *pyLi, swig_type_info *ty, cons
 %}
 */
 
-%define REFCOUNT_TEMPLATE(tname, T...)
+// ----------------------------------------------------------------------------
+
+%include "IteratorPy3.hxx"
+%include "exception.i"
+
+%define REFCOUNT_TEMPLATE(tname, T)
 /*
  This macro is a special wrapping for map with value type which derives from RefCounter.
  To overload standard SWIG wrapping we define a full specialization of std::map
- with %extend for 4 basic methods : getitem, setitem, delitem and keys.
+ with %extend for 5 basic methods : getitem, setitem, delitem, keys and iter.
+ We also provide an iterator and %extend with the __next__ method : required in python 3.
+ (see https://docs.python.org/3/library/stdtypes.html#iterator-types)
  Then we complete the interface by deriving the shadow wrapper from
  the python mixin class (UserDict.DictMixin / collections.MutableMapping with Python 3).
  Do not forget to declare the new shadow class to SWIG with tname_swigregister(tname).
@@ -842,30 +860,34 @@ static void convertFromPyObjVectorOfObj(PyObject *pyLi, swig_type_info *ty, cons
  call decrRef (see feature("unref") for RefCounter).
 */
 
-%include "exception.i"
-%exception Iterator::next {
+%exception IteratorPy3<T>::__next__
+{
   try
   {
     $action  // calls %extend function next() below
   }
-  catch (StopIterator)
+  catch (StopIteratorPy3<T>)
   {
     PyErr_SetString(PyExc_StopIteration, "End of iterator");
     return NULL;
   }
 }
 
-%extend Iterator
+%extend IteratorPy3<T>
 {
-  std::map<std::string,U*>& next()
+//  std::pair<const std::string,T*>& __next__()
+  std::string __next__()
   {
     if ($self->cur != $self->end)
     {
       // dereference the iterator and return reference to the object,
       // after that it increments the iterator
-      return *$self->cur++;
+      //return *self->cur++;
+      std::string key= self->cur->first;
+      *self->cur++;
+      return key;
     }
-    throw StopIterator();
+    throw StopIteratorPy3<T>();
   }
 }
 
@@ -901,28 +923,30 @@ public:
   void __delitem__(std::string name)
     {
       std::map<std::string, T* >::iterator i = self->find(name);
-      if (i != self->end()){
+      if (i != self->end())
+      {
         i->second->decrRef();
         self->erase(i);
       }
       else
         throw std::out_of_range("key not found");
     }
-  PyObject* keys() {
+  PyObject* keys()
+    {
       int pysize = self->size();
       PyObject* keyList = PyList_New(pysize);
       std::map<std::string, T* >::const_iterator i = self->begin();
-      for (int j = 0; j < pysize; ++i, ++j) {
+      for (int j = 0; j < pysize; ++i, ++j)
+      {
         PyList_SET_ITEM(keyList, j, PyUnicode_FromString(i->first.c_str()));
       }
       return keyList;
     }
-  Iterator<T> __iter__()
+  IteratorPy3<T> __iter__()
   {
-    // return a constructed Iterator object
-    return typename Iterator($self->begin(), $self->end());
+    // return a constructed IteratorPy3 object
+    return IteratorPy3<T>($self->begin(), $self->end());
   }
-
   int __len__()
   {
       int pysize = self->size();
@@ -930,12 +954,13 @@ public:
   }
 }
 };
-%rename(__next__) Iterator::next;
 %newobject std::map<std::string,T* >::__getitem__;
 %newobject std::map<std::string,T* >::__iter__;
-%template()   std::pair<std::string, T* >;
-%template(tname)    std::map<std::string, T* >;
-%pythoncode{
+%template(tname##it)  IteratorPy3<T >;
+%template()           std::pair<std::string, T* >;
+%template(tname)      std::map<std::string, T* >;
+%pythoncode
+{
 from collections import MutableMapping    
 class tname(tname,MutableMapping):pass
 tname##_swigregister(tname)
