@@ -90,6 +90,8 @@ void Bloc::fitToPlayGround(const PlayGround *pg)
   this->accept(&vis);
   for(std::list<ForEachLoop *>::const_iterator it=vis._fes.begin();it!=vis._fes.end();it++)
     (*it)->edGetNbOfBranchesPort()->edInit(1);
+  if (this->getMaxLevelOfParallelism() > pg->getNumberOfCoresAvailable())
+    throw YACS::Exception("Bloc::fitToPlayGround : Not enough cores available to run the calculation !");
   this->removeRecursivelyRedundantCL();
   this->partitionRegardingDPL(pd,zeMap);
   this->accept(&vis);

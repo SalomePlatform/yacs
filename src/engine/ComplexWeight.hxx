@@ -52,7 +52,7 @@ namespace YACS
       ComplexWeight& addWeight(const ComplexWeight *other);
     protected:
       bool _bootWeight;
-      // _loopWeight: vect<pair(weight,nbcorePerIteration)>, for first element of vector: nbcorePerIteration<0 -> unset, nbcorePerIteration==0 -> no loopweight
+      // _loopWeight: vect<pair(weight,nbcorePerIteration)>, for first element of vector: nbcorePerIteration<0 -> unset, nbcorePerIteration==0 -> no loopweight (means no loop inside)
       std::vector<std::pair<double,int> > _loopWeight; 
       double _elementaryWeight;
     private:

@@ -266,7 +266,7 @@ std::vector< std::vector<int> > PlayGround::splitIntoParts(const std::vector<int
         }
       else if (!(*it).first->hasValidLoopWeight())
         {
-          nbOfCoresAllocated[i]=(int)((double)totalSpace/(double)(sz)); // branch with undefined weight
+          nbOfCoresAllocated[i]=std::max((int)((double)totalSpace/(double)(sz)), nbCoresPerShot[i]); // branch with undefined weight, takes his part proportionnally to the number of branchs
         }
       else
         {
