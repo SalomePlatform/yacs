@@ -24,6 +24,7 @@
 #include "InlineNode.hxx"
 #include "AutoGIL.hxx"
 #include "InputPort.hxx"
+#include "Container.hxx"
 
 Py2yacsException::Py2yacsException(const std::string& what)
 : std::exception(),
@@ -380,6 +381,80 @@ YACS::ENGINE::Proc* Py2yacs::createProc(const std::string& python_function)const
     node->edAddOutputPort(*it, tc_double);
 
   node->setExecutionMode(YACS::ENGINE::InlineNode::REMOTE_STR);
-  node->setContainer(schema->containerMap["DefaultContainer"]);
+  YACS::ENGINE::Container* cont=schema->createContainer("Py2YacsContainer");
+  node->setContainer(cont);
+  cont->decrRef();
   return schema;
+}
+
+std::string Py2yacs::getAllErrors()const
+{
+  std::stringstream buffer;
+  buffer.clear();
+  if(! _global_errors.empty())
+  {
+    buffer << "Global errors:" << std::endl;
+    std::list<std::string>::const_iterator it;
+    for(it=_global_errors.begin(); it!=_global_errors.end(); it++)
+    {
+      buffer << *it << std::endl;
+    }
+    buffer << "-----------------------------------------" << std::endl;
+  }
+
+  std::list<FunctionProperties>::const_iterator it_fp;
+  for(it_fp=_functions.begin();it_fp!=_functions.end();it_fp++)
+  {
+    if(! it_fp->_errors.empty())
+    {
+      buffer << "Function " << it_fp->_name << " has errors:" << std::endl;
+      std::list<std::string>::const_iterator it;
+      buffer << "Errors :" ;
+      for(it=it_fp->_errors.begin();it!=it_fp->_errors.end();it++)
+        buffer << *it << std::endl;
+      buffer << "-----------------------------------------" << std::endl;
+    }
+  }
+  return buffer.str();
+}
+
+std::string Py2yacs::getFunctionErrors(const std::string& functionName)const
+{
+  std::stringstream buffer;
+  buffer.clear();
+  if(! _global_errors.empty())
+  {
+    buffer << "Global errors:" << std::endl;
+    std::list<std::string>::const_iterator it;
+    for(it=_global_errors.begin(); it!=_global_errors.end(); it++)
+    {
+      buffer << *it << std::endl;
+    }
+    buffer << "-----------------------------------------" << std::endl;
+  }
+
+  bool nameFound = false;
+  std::list<FunctionProperties>::const_iterator it_fp;
+  for(it_fp=_functions.begin(); it_fp!=_functions.end() && !nameFound; it_fp++)
+  {
+    if(it_fp->_name == functionName)
+    {
+      nameFound = true;
+      if(! it_fp->_errors.empty())
+      {
+        buffer << "Function " << it_fp->_name << " has errors:" << std::endl;
+        std::list<std::string>::const_iterator it;
+        buffer << "Errors :" ;
+        for(it=it_fp->_errors.begin();it!=it_fp->_errors.end();it++)
+          buffer << *it << std::endl;
+        buffer << "-----------------------------------------" << std::endl;
+      }
+    }
+  }
+
+  if(!nameFound)
+  {
+    buffer << "Function " << functionName << " not found." << std::endl;
+  }
+  return buffer.str();
 }

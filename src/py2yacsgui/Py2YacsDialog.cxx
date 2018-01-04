@@ -16,209 +16,100 @@
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-#include <QtWidgets>
-#include <QSettings>
-#ifdef HAS_PYEDITOR
-#include <PyEditor_Editor.h>
-#endif
 
 #include "Py2YacsDialog.hxx"
+#include <PyEditor_Window.h>
+#include <PyEditor_Widget.h>
+#include <py2yacs.hxx>
 
 Py2YacsDialog::Py2YacsDialog( QWidget* parent)
-: QDialog(parent)
+: QDialog(parent),
+  _yacsFile(),
+  _pyEditorWindow(0),
+  _errorMessages(0),
+  _okButton(0)
 {
-  QHBoxLayout *fileLayout = new QHBoxLayout;
-  QPushButton *loadButton = new QPushButton(tr("&Load"));
-  _saveButton = new QPushButton(tr("&Save"));
-  QPushButton *saveAsButton = new QPushButton(tr("Save &as ..."));
-  fileLayout->addWidget(loadButton);
-  fileLayout->addWidget(_saveButton);
-  fileLayout->addWidget(saveAsButton);
+  QVBoxLayout *mainLayout = new QVBoxLayout;
+  _pyEditorWindow = new PyEditor_Window;
 
-#ifdef HAS_PYEDITOR
-  _pyEditor = new PyEditor_Editor(this);
-#else
-  _pyEditor = new QTextEdit(this);
-#endif
-
-  QPushButton * applyButton = new QPushButton(tr("A&pply"));
-  QTextEdit *errorMessages = new QTextEdit(this);
-  errorMessages->setReadOnly(true);
+  _errorMessages = new QTextEdit(this);
+  _errorMessages->setReadOnly(true);
+  _errorMessages->hide();
+  QSplitter * splitterW = new QSplitter(Qt::Vertical);
+  splitterW->addWidget(_pyEditorWindow);
+  splitterW->addWidget(_errorMessages);
+  mainLayout->addWidget(splitterW);
   
-  QHBoxLayout *exportLayout = new QHBoxLayout;
-  _functionChosen = new QComboBox(this);
-  _exportButton = new QPushButton(tr("E&xport to YACS schema..."));
-  exportLayout->addWidget(new QLabel(tr("Function to run:")));
-  exportLayout->addWidget(_functionChosen);
-
   QHBoxLayout *validationLayout = new QHBoxLayout;
-  _okButton = new QPushButton(tr("Save YACS schema and &quit"));
+  _okButton = new QPushButton(tr("py -> &YACS"));
   QPushButton * cancelButton = new QPushButton(tr("&Cancel"));
   validationLayout->addWidget(_okButton);
   validationLayout->addWidget(cancelButton);
-  
-  QGroupBox *editWidget = new QGroupBox(tr("Python script:"));
-  QVBoxLayout *editLayout = new QVBoxLayout;
-  editLayout->addLayout(fileLayout);
-  editLayout->addWidget(_pyEditor);
-  editLayout->addWidget(applyButton);
-  editLayout->addLayout(exportLayout);
-  editWidget->setLayout(editLayout);
-  
-  QGroupBox *messageWidget = new QGroupBox(tr("Messages:"));
-  QVBoxLayout *messageLayout = new QVBoxLayout;
-  messageLayout->addWidget(errorMessages);
-  messageWidget->setLayout(messageLayout);
-  
-  QSplitter * splitterW = new QSplitter(Qt::Vertical);
-  splitterW->addWidget(editWidget);
-  splitterW->addWidget(messageWidget);
-
-  QVBoxLayout *mainLayout = new QVBoxLayout;
-  mainLayout->addWidget(splitterW);
   mainLayout->addLayout(validationLayout);
+
   setLayout(mainLayout);
   setWindowTitle(tr("Python to YACS schema editor"));
-  
-  invalidModel();
-  _saveButton->setEnabled(false);
-  connect(_pyEditor, SIGNAL(textChanged()), this, SLOT(invalidModel()));
-  connect(applyButton,SIGNAL(clicked()),this, SLOT(onApply()));
-  
-  connect(&_model, SIGNAL(scriptChanged(const QString&)),
-          _pyEditor, SLOT(setText(const QString&)));
-  connect(&_model, SIGNAL(errorChanged(const QString&)),
-          errorMessages, SLOT(setText(const QString&)));
-  connect(&_model, SIGNAL(functionsChanged(std::list<std::string>)),
-          this, SLOT(onFunctionNamesChange(std::list<std::string>)));
-  connect(_functionChosen,SIGNAL(currentIndexChanged(const QString &)),
-          &_model, SLOT(setFunctionName(const QString&)));
-  connect(loadButton,SIGNAL(clicked()),this, SLOT(onLoad()));
-  connect(_saveButton,SIGNAL(clicked()),this, SLOT(onSave()));
-  connect(saveAsButton,SIGNAL(clicked()),this, SLOT(onSaveAs()));
-  connect(_exportButton,SIGNAL(clicked()),this, SLOT(onExport()));
+
   connect(cancelButton,SIGNAL(clicked()),this, SLOT(reject()));
   connect(_okButton,SIGNAL(clicked()),this, SLOT(onExport()));
-}
 
-void Py2YacsDialog::onFunctionNamesChange(std::list<std::string> validFunctionNames)
-{
-  int new_index = 0;
-  int count = 0;
-  QString lastChoice = _functionChosen->currentText();
-  _functionChosen->clear();
-  std::list<std::string>::const_iterator it;
-  for(it=validFunctionNames.begin(); it!=validFunctionNames.end(); it++)
-  {
-    _functionChosen->addItem(it->c_str());
-    if(lastChoice == it->c_str())
-      new_index = count;
-    count++;
-  }
-  _functionChosen->setCurrentIndex(new_index);
-}
-
-void Py2YacsDialog::onLoad()
-{
-  QSettings settings;
-  QString currentDir = settings.value("currentDir").toString();
-  if (currentDir.isEmpty())
-    currentDir = QDir::homePath();
-  QString fileName = QFileDialog::getOpenFileName(this, tr("Python script to import..."),
-                     currentDir,
-                     tr("Python script (*.py);;"));
-
-  if (!fileName.isEmpty())
-  {
-    QFile file(fileName);
-    settings.setValue("currentDir", QFileInfo(fileName).absolutePath());
-    
-    _model.loadFile(fileName.toStdString());
-    _saveButton->setEnabled(_model.savePossible());
-    checkModel();
-  }
+  // PyEditor_Window has a button "exit".
+  // Trigger "cancel" when the editor is closed.
+  _pyEditorWindow->setAttribute(Qt::WA_DeleteOnClose);
+  connect(_pyEditorWindow,SIGNAL(destroyed()),this, SLOT(reject()));
 }
 
 void Py2YacsDialog::onExport()
 {
-  QSettings settings;
-  QString currentDir = settings.value("currentDir").toString();
-  if (currentDir.isEmpty())
-    currentDir = QDir::homePath();
-  QString fileName = QFileDialog::getSaveFileName(this,
+  PyEditor_Widget* pyEdit = dynamic_cast<PyEditor_Widget*>
+                                             (_pyEditorWindow->centralWidget());
+  if(!pyEdit)
+  {
+    reject();
+    return;
+  }
+
+  Py2yacs converter;
+  std::string text = pyEdit->text().toStdString();
+  try
+  {
+    converter.load(text);
+    // _exec -> default name for OPENTURNS functions
+    std::string errors = converter.getFunctionErrors("_exec");
+    if(errors.empty())
+    {
+      QSettings settings;
+      QString currentDir = settings.value("currentDir").toString();
+      if (currentDir.isEmpty())
+        currentDir = QDir::homePath();
+      QString fileName = QFileDialog::getSaveFileName(this,
                                   tr("Save to YACS schema..."),
                                   currentDir,
                                   QString("%1 (*.xml)" ).arg( tr("xml files")));
-  if (!fileName.isEmpty())
-  {
-    if (!fileName.endsWith(".xml"))
-      fileName += ".xml";
-    QFile file(fileName);
-    settings.setValue("currentDir", QFileInfo(fileName).absolutePath());
-    
-    if(_model.exportToXml(fileName.toStdString()))
+      if (!fileName.isEmpty())
+      {
+        if (!fileName.endsWith(".xml"))
+          fileName += ".xml";
+        QFile file(fileName);
+        settings.setValue("currentDir", QFileInfo(fileName).absolutePath());
+        converter.save(fileName.toStdString(), "_exec");
+        _yacsFile = fileName;
+        accept();
+      }
+    }
+    else
     {
-      _yacsFile = fileName;
-      accept();
+      _errorMessages->show();
+      _errorMessages->setText(errors.c_str());
     }
   }
-}
-
-void Py2YacsDialog::onApply()
-{
-  _model.setScript(_pyEditor->toPlainText().toStdString());
-  checkModel();
-}
-
-void Py2YacsDialog::invalidModel()
-{
-  _okButton->setEnabled(false);
-  _exportButton->setEnabled(false);
-  _functionChosen->setEnabled(false);
-}
-
-void Py2YacsDialog::checkModel()
-{
-  bool modelState = _model.schemaAvailable();
-  _okButton->setEnabled(modelState);
-  _exportButton->setEnabled(modelState);
-  _functionChosen->setEnabled(modelState);
-}
-
-void Py2YacsDialog::onSave()
-{
-  _model.setScript(_pyEditor->toPlainText().toStdString());
-  _model.save();
-  checkModel();
-}
-
-void Py2YacsDialog::onSaveAs()
-{
-  QSettings settings;
-  QString currentDir = settings.value("currentDir").toString();
-  if (currentDir.isEmpty())
-    currentDir = QDir::homePath();
-  QString fileName = QFileDialog::getSaveFileName(this,
-                                  tr("Save to python file..."),
-                                  currentDir,
-                                  QString("%1 (*.py)" ).arg( tr("python files")));
-  if (!fileName.isEmpty())
+  catch(Py2yacsException& e)
   {
-    if (!fileName.endsWith(".py"))
-      fileName += ".py";
-    QFile file(fileName);
-    settings.setValue("currentDir", QFileInfo(fileName).absolutePath());
-    
-    _model.setScript(_pyEditor->toPlainText().toStdString());
-    _model.saveAs(fileName.toStdString());
-    _saveButton->setEnabled(_model.savePossible());
-    checkModel();
+    const char * error = e.what();
+    _errorMessages->show();
+    _errorMessages->setText(QString(error));
+    return;
   }
-}
-
-YACS::ENGINE::Proc* Py2YacsDialog::getYacsSchema()
-{
-  return _model.getProc();
 }
 
 QString Py2YacsDialog::getYacsFile()
