@@ -1576,7 +1576,7 @@ o4=i3
     #
     self.assertEqual(q.getChildByName("n1").getState(),pilot.DONE)
     self.assertEqual(q.getState(),pilot.DONE)
-    self.assertEqual(q.getChildByName("n2").getOutputPort("o4").getPyObj(),[0L,2L,10L,15L,20L,25L])
+    self.assertEqual(q.getChildByName("n2").getOutputPort("o4").getPyObj(),[0,2,10,15,20,25])
     pass
 
   def test23(self):
