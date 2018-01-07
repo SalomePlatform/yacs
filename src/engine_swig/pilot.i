@@ -513,7 +513,7 @@ EXCEPTION(YACS::ENGINE::ExecutorSwig::waitPause)
     // param 2
     PyObject *ret2Py(PyList_New(ret2.size()));
     for(std::size_t i=0;i<ret2.size();i++)
-      PyList_SetItem(ret2Py,i,PyBytes_FromString(ret2[i].c_str()));
+      PyList_SetItem(ret2Py,i,PyUnicode_FromString(ret2[i].c_str()));
     PyTuple_SetItem(ret,2,ret2Py);
     return ret;
   }
