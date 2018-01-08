@@ -100,7 +100,7 @@ class TestHPDecortator(unittest.TestCase):
         assert(fyto.getContainerType()=="HPContainerShared")
         pd=fyto.getPD()
         assert(isinstance(pd,pilot.AllPartDefinition))
-        assert(list(fyto.getIDS())==range(8))
+        assert(list(fyto.getIDS())==list(range(8)))
         #############################
         #  Change weight of ForEach #
         #############################
@@ -129,7 +129,7 @@ class TestHPDecortator(unittest.TestCase):
         assert(fyto.getContainerType()=="HPContainerShared")
         pd=fyto.getPD()
         assert(isinstance(pd,pilot.AllPartDefinition))
-        assert(list(fyto.getIDS())==range(8))
+        assert(list(fyto.getIDS())==list(range(8)))
         pass
 
     def test1(self):
@@ -217,13 +217,13 @@ class TestHPDecortator(unittest.TestCase):
         assert(fyto.getContainerType()=="HPContainerShared")
         pd=fyto.getPD()
         assert(isinstance(pd,pilot.AllPartDefinition))
-        assert(list(fyto.getIDS())==range(8))
+        assert(list(fyto.getIDS())==list(range(8)))
         fyto=pilot.ForTestOmlyHPContCls()
         n1_2.getContainer().forYourTestsOnly(fyto)
         assert(fyto.getContainerType()=="HPContainerShared")
         pd=fyto.getPD()
         assert(isinstance(pd,pilot.AllPartDefinition))
-        assert(list(fyto.getIDS())==range(8))
+        assert(list(fyto.getIDS())==list(range(8)))
         pass
 
     @unittest.skip("requires 2 machines in catalog")
