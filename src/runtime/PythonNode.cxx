@@ -736,7 +736,7 @@ void PythonNode::applyDPLScope(ComposedNode *gfn)
       {
         const std::pair<std::string,int>& p(ret[i]);
         PyObject *elt(PyTuple_New(2));
-        PyTuple_SetItem(elt,0,PyBytes_FromString(p.first.c_str()));
+        PyTuple_SetItem(elt,0,PyUnicode_FromString(p.first.c_str()));
         PyTuple_SetItem(elt,1,PyLong_FromLong(p.second));
         PyList_SetItem(ob,i,elt);
       }
