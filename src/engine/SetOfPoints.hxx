@@ -47,7 +47,7 @@ namespace YACS
       AbstractPoint *findPointWithNode(Node *node);
       const std::list<AbstractPoint *>& getListOfPoints() const;
       int getMaxLevelOfParallelism() const;
-      double getWeightRegardingDPL() const;
+      void getWeightRegardingDPL(ComplexWeight *weight);
       void partitionRegardingDPL(const PartDefinition *pd, std::map<ComposedNode *, YACS::BASES::AutoRefCnt<PartDefinition> >& zeMap) const;
       AbstractPoint *getUniqueAndReleaseIt() const;
     private:

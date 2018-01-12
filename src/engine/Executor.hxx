@@ -95,7 +95,7 @@ namespace YACS
 #endif
     public:
       Executor();
-      ~Executor();
+      virtual ~Executor();
       void RunA(Scheduler *graph,int debug=0, bool fromScratch=true);
       void RunW(Scheduler *graph,int debug=0, bool fromScratch=true) { RunB(graph, debug, fromScratch); }
       void RunB(Scheduler *graph,int debug=0, bool fromScratch=true);
@@ -120,6 +120,8 @@ namespace YACS
       void setStopOnError(bool dumpRequested=false, std::string xmlFile="");
       void unsetStopOnError();
       void waitPause();
+      bool suspendASAP();
+      void resume(bool suspended);
       static int _maxThreads;
       static size_t _threadStackSize;
       YACS::BASES::Mutex& getTheMutexForSchedulerUpdate() { return _mutexForSchedulerUpdate; }

@@ -75,7 +75,7 @@ using YACS::BASES::Semaphore;
 int Executor::_maxThreads(1000);
 size_t Executor::_threadStackSize(262144); // Default thread stack size is 256 kB == 2**18 because threads launched by YACS are lightweight
 
-Executor::Executor():_nbOfConcurrentThreads(0), _semForMaxThreads(_maxThreads),_keepGoingOnFail(false),_DPLScopeSensitive(false)
+Executor::Executor():_mainSched(NULL),_isWaitingEventsFromRunningTasks(false),_nbOfConcurrentThreads(0), _semForMaxThreads(_maxThreads),_keepGoingOnFail(false),_DPLScopeSensitive(false)
 {
   _root=0;
   _toContinue = true;
@@ -87,6 +87,8 @@ Executor::Executor():_nbOfConcurrentThreads(0), _semForMaxThreads(_maxThreads),_
   _executorState = YACS::NOTYETINITIALIZED;
   _execMode = YACS::CONTINUE;
   _semThreadCnt = _maxThreads;
+  _numberOfRunningTasks = 0;
+  _numberOfEndedTasks = 0;
   DEBTRACE("Executor initialized with max threads = " << _maxThreads);
 }
 
@@ -632,6 +634,36 @@ void Executor::waitPause()
       }
   } // --- End of critical section
   DEBTRACE("---");
+}
+
+/*!
+ * This method can be called at any time simultaneously during a RunB call.
+ * This method will wait until the executor is locked in a consistent state of a running graph.
+ *
+ * This method is expected to be called in association with resume method.
+ * The returned parameter is expected to be transfered to resume method.
+ */
+bool Executor::suspendASAP()
+{
+  // no AutoLocker here. It's not a bug.
+  _mutexForSchedulerUpdate.lock();
+  if(!_toContinue && _executorState==YACS::FINISHED)
+    {// execution is finished
+      _mutexForSchedulerUpdate.unLock();
+      return false;// the executor is no more running
+    }
+  //general case. Leave method with locker in locked status
+  return true;
+}
+
+/*!
+ * This method is expected to be called in association with suspendASAP method.
+ * Expected to be called just after suspendASAP with output of resume as input parameter
+ */
+void Executor::resume(bool suspended)
+{
+  if(suspended)
+    _mutexForSchedulerUpdate.unLock();
 }
 
 //! stops the execution as soon as possible 

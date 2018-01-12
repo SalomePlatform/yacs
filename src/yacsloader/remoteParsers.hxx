@@ -61,6 +61,7 @@ struct remotetypeParser:public inlinetypeParser<T>
       fnode->setScript(f._code);
       fnode->setFname(f._name);
       fnode->setExecutionMode("remote");
+      if (this->_weight>0)fnode->setWeight(this->_weight);
       this->_node=fnode;
     }
 
@@ -71,6 +72,7 @@ struct remotetypeParser:public inlinetypeParser<T>
       node=theRuntime->createScriptNode(this->_kind,this->_name);
       node->setScript(f._code);
       node->setExecutionMode("remote");
+      if (this->_weight>0)node->setWeight(this->_weight);
       this->_node=node;
     }
 

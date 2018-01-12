@@ -116,7 +116,7 @@ namespace YACS
       void writeDot(std::ostream &os) const;
       int getNumberOfInputPorts() const;
       int getMaxLevelOfParallelism() const;
-      double getWeightRegardingDPL() const;
+      void getWeightRegardingDPL(ComplexWeight *weight);
       void partitionRegardingDPL(const PartDefinition *pd, std::map<ComposedNode *, YACS::BASES::AutoRefCnt<PartDefinition> >& zeMap);
       void edRemoveChild(Node *node) throw(Exception);
       std::list<InputPort *> getSetOfInputPort() const;

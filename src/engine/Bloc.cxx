@@ -473,11 +473,11 @@ std::list< AbstractPoint * > Bloc::analyzeParallelism() const
   return pts;
 }
 
-double Bloc::getWeightRegardingDPL() const
+void Bloc::getWeightRegardingDPL(ComplexWeight *weight)
 {
   std::list< AbstractPoint * > pts(analyzeParallelism());
   ForkBlocPoint fbp(pts,NULL);
-  return fbp.getWeightRegardingDPL();
+  fbp.getWeightRegardingDPL(weight);
 }
 
 void Bloc::removeRecursivelyRedundantCL()
