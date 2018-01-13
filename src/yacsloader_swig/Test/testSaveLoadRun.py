@@ -1250,7 +1250,7 @@ for i in i8:
       ex = pilot.ExecutorSwig()
       self.assertEqual(p.getState(),pilot.READY)
       ex.RunW(p,0)
-      self.assertEqual(res.get(),6)
+      self.assertEqual(res.getPyObj(),6)
       self.assertEqual(p.getState(),pilot.DONE)
     pass
 
