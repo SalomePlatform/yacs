@@ -2301,8 +2301,14 @@ namespace YACS
     {
       PyObject *s;
       PyGILState_STATE gstate = PyGILState_Ensure(); 
-      //s=PyObject_Repr(ob);
-      s=PyObject_ASCII(ob);
+      // TODO: separate treatment for string (maybe with bad encoding?) and other types of PyObject ?
+      // Do we need str() or repr() and what are the possible causes of failure of str() ?
+      // not clear, needs more analysis.
+      s=PyObject_Str(ob);
+      if (s == NULL) // for instance string with bad encoding, non utf-8
+      {
+    	s=PyObject_ASCII(ob); // escape non ASCII characters and like repr(), which is not the same as str()...
+      }
       Py_ssize_t size;
       char* characters=PyUnicode_AsUTF8AndSize(s, &size);
       std::string ss( characters, size);
