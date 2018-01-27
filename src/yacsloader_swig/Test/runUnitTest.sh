@@ -22,6 +22,9 @@
 ../yacsloader/echoSrv &
 pidecho=$!
 
+# give some time for echoSrv to start...
+sleep 3
+
 export TESTCOMPONENT_ROOT_DIR=`pwd`/../runtime
 
 python -m unittest discover
