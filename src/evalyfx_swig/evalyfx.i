@@ -393,6 +393,7 @@ public:
   YACSEvalSession();
   ~YACSEvalSession();
   void launch();
+  void launchUsingCurrentSession();
   bool isLaunched() const;
   bool isAttached() const;
   bool isAlreadyPyThreadSaved() const;
