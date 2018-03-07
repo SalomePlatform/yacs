@@ -911,7 +911,7 @@ void YACSEvalYFXGraphGenCluster::generateGraph()
     void addOutputVar(const std::string& name) { n2Script<< name << ", "; }
     void assignOutput(YACS::ENGINE::InlineNode *node) {
       n2Script << "]\nwith open(\"" << _jobName << "\",\"w\") as f:" << std::endl;
-      n2Script << "  f.write(str(zeRes))" << std::endl;
+      n2Script << "  f.write(repr(zeRes))" << std::endl;
       node->setScript(n2Script.str());
     }
   private:
