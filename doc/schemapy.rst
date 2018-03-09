@@ -256,6 +256,9 @@ and to assign a container (see :ref:`py_container` to define a container) to the
   n.setExecutionMode("remote")
   n.setContainer(cont1)
 
+The default option for the execution mode is **local** where the node will run
+on the same container as the scheme executor.
+
 .. _pyfunc:
 
 Python function node
@@ -280,6 +283,9 @@ and to assign a container (see :ref:`py_container` to define a container) to the
 
   n2.setExecutionMode("remote")
   n2.setContainer(cont1)
+
+The default option for the execution mode is **local** where the node will run
+on the same container as the scheme executor.
 
 .. _pyservice:
 
@@ -605,19 +611,15 @@ is defined by the class async in the python module myalgo2.py::
 
 Definition of containers
 ''''''''''''''''''''''''''''
-A container is defined using the runtime createContainer method and it is then given a name using its setName method.  
-The next step is to assign constraints to it by adding properties.  
-The following is an example creation of a container named “A”::
 
-  c1=r.createContainer()
-  c1.setName("A")
+This example shows how to add a container to a scheme::
+
+  c1=p.createContainer("MyContainer")
 
 A property is added to a container using its setProperty method that uses 2 arguments (character strings).  
 The first is the property name.  The second is its value.  
-The following is an example of this container “A” with constraints::
+The following is an example of how to set constraints on the container::
 
-  c1=r.createContainer()
-  c1.setName("A")
   c1.setProperty("container_name","FactoryServer")
   c1.setProperty("hostname","localhost")
   c1.setProperty("mem_mb","1000")
@@ -626,9 +628,16 @@ Once the containers have been defined, SALOME components can be placed on this c
 of a SALOME service node is to obtain the component instance of this service node using the getComponent method for this node.  
 The previously defined container is then assigned to this component instance using the setContainer method of the component instance.
 
-If it is required to place the SALOME service defined above (node “node3”) on container “A”, we will write::
+If it is required to place the SALOME service defined above (node “node3”) on
+“MyContainer”, we will write::
 
   n3.getComponent().setContainer(c1)
+
+It is also possible to place python nodes on containers, but the code is a
+little different (see :ref:`pyscript`)::
+
+  n1.setExecutionMode("remote")
+  n1.setContainer(c1)
 
 Since SALOME v7.5, there is a new type of container:
 *Homogeneous Pool of SALOME containers* (HP container).
