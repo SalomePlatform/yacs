@@ -10,7 +10,7 @@ SalomeResourceModel::SalomeResourceModel()
   _nbProcs(1),
   _hours(0),
   _minutes(5),
-  _wcKey("P11U50:CARBONES"),
+  _wcKey("P11U5:CARBONES"),
   _localDirectory("/tmp"),
   _remoteDirectory("/tmp"),
   _parallelizeStatus(true),
