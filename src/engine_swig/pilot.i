@@ -59,6 +59,7 @@
 #include "ComponentInstance.hxx"
 #include "DataNode.hxx"
 #include "PlayGround.hxx"
+#include "SetOfPoints.hxx"
   
 using namespace YACS::ENGINE;
 
@@ -447,3 +448,19 @@ EXCEPTION(YACS::ENGINE::ExecutorSwig::waitPause)
     self->assignPassedResults(passedIds,passedOutputsCpp,nameOfOutputs);
   }
 }
+
+namespace YACS
+{
+  namespace ENGINE
+  {
+    class SetOfPoints
+    {
+    public:
+      SetOfPoints(const std::list<Node *>& nodes);
+      ~SetOfPoints();
+      void simplify();
+      std::string getRepr() const;
+    };
+  }
+}
+

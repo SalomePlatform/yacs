@@ -478,6 +478,28 @@ static void convertFromPyObjVectorOfObj(PyObject *pyLi, swig_type_info *ty, cons
     }
 }
 
+%typemap(in) const std::list<YACS::ENGINE::Node *>& 
+{
+  if(!PyList_Check($input))
+    {
+      PyErr_SetString(PyExc_TypeError,"not a list");
+      return NULL;
+    }
+  $1=new std::list<YACS::ENGINE::Node *>;
+  int size(PyList_Size($input));
+  for(int i=0;i<size;i++)
+    {
+      PyObject *o=PyList_GetItem($input,i);
+      YACS::ENGINE::Node *temp(nullptr);
+      if((SWIG_ConvertPtr(o,(void **)&temp, $descriptor(YACS::ENGINE::Node*),0)) == -1)
+        {
+          PyErr_SetString(PyExc_TypeError,"not a YACS::ENGINE::TypeCode*");
+          return nullptr;
+        }
+      $1->push_back(temp);
+    }
+}
+
 %typemap(out) YACS::ENGINE::Node*
 {
   $result=convertNode($1,$owner);
@@ -654,6 +676,22 @@ static void convertFromPyObjVectorOfObj(PyObject *pyLi, swig_type_info *ty, cons
   for (it = $1.begin(); it != $1.end(); ++it, ++i) {
     PyTuple_SetItem($result,i,convertPort(*it));
   }
+}
+
+%typemap(out) std::vector< std::list<YACS::ENGINE::Node *> >
+{
+  std::vector< std::list<YACS::ENGINE::Node *> >::const_iterator it;
+  $result = PyList_New($1.size());
+  int i(0);
+  for (it = $1.begin(); it != $1.end(); ++it, ++i)
+    {
+      const std::list<YACS::ENGINE::Node *>& elt(*it);
+      PyObject *tmp(PyList_New(elt.size()));
+      int j(0);
+      for (auto it2=elt.begin() ; it2!= elt.end() ; ++it2, ++j)
+        PyList_SetItem(tmp,j,convertNode(*it2));
+      PyList_SetItem($result,i,tmp);
+    }
 }
 
 #endif
