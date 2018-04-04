@@ -101,3 +101,8 @@ AbstractPoint *SetOfPoints::getUniqueAndReleaseIt() const
 {
   return _bp->getUniqueAndReleaseIt();
 }
+
+void SetOfPoints::accept(PointVisitor *pv)
+{
+  _bp->accept(pv);
+}

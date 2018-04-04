@@ -22,6 +22,7 @@
 
 #include "YACSlibEngineExport.hxx"
 #include "PlayGround.hxx"
+#include "PointVisitor.hxx"
 #include "AutoRefCnt.hxx"
 
 #include <map>
@@ -50,6 +51,7 @@ namespace YACS
       void getWeightRegardingDPL(ComplexWeight *weight);
       void partitionRegardingDPL(const PartDefinition *pd, std::map<ComposedNode *, YACS::BASES::AutoRefCnt<PartDefinition> >& zeMap) const;
       AbstractPoint *getUniqueAndReleaseIt() const;
+      void accept(PointVisitor *pv);
     private:
       BagPoint *_bp;
     };

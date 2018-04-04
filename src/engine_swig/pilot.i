@@ -60,6 +60,10 @@
 #include "DataNode.hxx"
 #include "PlayGround.hxx"
 #include "SetOfPoints.hxx"
+#include "PointVisitor.hxx"
+#include "ForkBlocPoint.hxx"
+#include "LinkedBlocPoint.hxx"
+#include "ElementaryPoint.hxx"
   
 using namespace YACS::ENGINE;
 
@@ -453,6 +457,48 @@ namespace YACS
 {
   namespace ENGINE
   {
+    class AbstractPoint
+    {
+    protected:
+      virtual ~AbstractPoint();
+      AbstractPoint();
+      AbstractPoint(const AbstractPoint&);
+    };
+
+    class ElementaryPoint : public AbstractPoint
+    {
+    public:
+      Node *getFirstNode();
+    private:
+      ~ElementaryPoint();
+      ElementaryPoint();
+      ElementaryPoint(const ElementaryPoint&);
+    };
+
+    class BlocPoint : public AbstractPoint
+    {
+    protected:
+      ~BlocPoint();
+      BlocPoint();
+      BlocPoint(const BlocPoint&);
+    };
+
+    class LinkedBlocPoint : public BlocPoint
+    {
+    private:
+      ~LinkedBlocPoint();
+      LinkedBlocPoint();
+      LinkedBlocPoint(const LinkedBlocPoint&);
+    };
+
+    class ForkBlocPoint : public BlocPoint
+    {
+    private:
+      ~ForkBlocPoint();
+      ForkBlocPoint();
+      ForkBlocPoint(const ForkBlocPoint&);
+    };
+    
     class SetOfPoints
     {
     public:
@@ -460,6 +506,63 @@ namespace YACS
       ~SetOfPoints();
       void simplify();
       std::string getRepr() const;
+      %extend
+      {
+      void accept(PyObject *pv)
+      {
+        class MyPointVisitor : public YACS::ENGINE::PointVisitor
+        {
+        public:
+          MyPointVisitor(PyObject *py):_py(py) { }
+          void beginForkBlocPoint(ForkBlocPoint *pt)
+          {
+            PyObject *ptPy(SWIG_NewPointerObj((void*)pt,SWIGTYPE_p_YACS__ENGINE__ForkBlocPoint,0));
+            PyObject *meth(PyString_FromString("beginForkBlocPoint"));
+            PyObject *ret(PyObject_CallMethodObjArgs(_py,meth,ptPy,nullptr));
+            Py_XDECREF(ret); Py_XDECREF(meth); Py_XDECREF(ptPy);
+          }
+          void endForkBlocPoint(ForkBlocPoint *pt)
+          {
+            PyObject *ptPy(SWIG_NewPointerObj((void*)pt,SWIGTYPE_p_YACS__ENGINE__ForkBlocPoint,0));
+            PyObject *meth(PyString_FromString("endForkBlocPoint"));
+            PyObject *ret(PyObject_CallMethodObjArgs(_py,meth,ptPy,nullptr));
+            Py_XDECREF(ret); Py_XDECREF(meth); Py_XDECREF(ptPy);
+          }
+          void beginLinkedBlocPoint(LinkedBlocPoint *pt)
+          {
+            PyObject *ptPy(SWIG_NewPointerObj((void*)pt,SWIGTYPE_p_YACS__ENGINE__LinkedBlocPoint,0));
+            PyObject *meth(PyString_FromString("beginLinkedBlocPoint"));
+            PyObject *ret(PyObject_CallMethodObjArgs(_py,meth,ptPy,nullptr));
+            Py_XDECREF(ret); Py_XDECREF(meth); Py_XDECREF(ptPy);
+          }
+          void endLinkedBlocPoint(LinkedBlocPoint *pt)
+          {
+            PyObject *ptPy(SWIG_NewPointerObj((void*)pt,SWIGTYPE_p_YACS__ENGINE__LinkedBlocPoint,0));
+            PyObject *meth(PyString_FromString("endLinkedBlocPoint"));
+            PyObject *ret(PyObject_CallMethodObjArgs(_py,meth,ptPy,nullptr));
+            Py_XDECREF(ret); Py_XDECREF(meth); Py_XDECREF(ptPy);
+          }
+          void beginElementaryPoint(ElementaryPoint *pt)
+          {
+            PyObject *ptPy(SWIG_NewPointerObj((void*)pt,SWIGTYPE_p_YACS__ENGINE__ElementaryPoint,0));//$descriptor(YACS::ENGINE::ElementaryPoint *)
+            PyObject *meth(PyString_FromString("beginElementaryPoint"));
+            PyObject *ret(PyObject_CallMethodObjArgs(_py,meth,ptPy,nullptr));
+            Py_XDECREF(ret); Py_XDECREF(meth); Py_XDECREF(ptPy);
+          }
+          void endElementaryPoint(ElementaryPoint *pt)
+          {
+            PyObject *ptPy(SWIG_NewPointerObj((void*)pt,SWIGTYPE_p_YACS__ENGINE__ElementaryPoint,0));
+            PyObject *meth(PyString_FromString("endElementaryPoint"));
+            PyObject *ret(PyObject_CallMethodObjArgs(_py,meth,ptPy,nullptr));
+            Py_XDECREF(ret); Py_XDECREF(meth); Py_XDECREF(ptPy);
+          }
+        private:
+          PyObject *_py;
+        };
+        MyPointVisitor mpv(pv);
+        self->accept(&mpv);
+        }
+      }
     };
   }
 }

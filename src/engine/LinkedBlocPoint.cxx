@@ -18,6 +18,7 @@
 //
 
 #include "LinkedBlocPoint.hxx"
+#include "PointVisitor.hxx"
 #include "Exception.hxx"
 
 using namespace YACS::ENGINE;
@@ -77,6 +78,14 @@ std::string LinkedBlocPoint::getRepr() const
     }
   ret+=")";
   return ret;
+}
+
+void LinkedBlocPoint::accept(PointVisitor *pv)
+{
+  pv->beginLinkedBlocPoint(this);
+  for(auto it:_nodes)
+    it->accept(pv);
+  pv->endLinkedBlocPoint(this);
 }
 
 LinkedBlocPoint::~LinkedBlocPoint()

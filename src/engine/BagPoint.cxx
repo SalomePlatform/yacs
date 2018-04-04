@@ -64,6 +64,16 @@ AbstractPoint *BagPoint::getUniqueAndReleaseIt()
   return ret;
 }
 
+void BagPoint::accept(PointVisitor *pv)
+{
+  if(_nodes.size()!=1)
+    throw YACS::Exception("BagPoint::accept : simplification has failed !");
+  AbstractPoint *ret(*_nodes.begin());
+  if(!ret)
+    throw YACS::Exception("BagPoint::accept : Ooops !");
+  ret->accept(pv);
+}
+
 Node *BagPoint::getFirstNode()
 {
   return getUnique()->getFirstNode();

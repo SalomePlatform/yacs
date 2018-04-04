@@ -41,6 +41,7 @@ namespace YACS
       void partitionRegardingDPL(const PartDefinition *pd, std::map<ComposedNode *, YACS::BASES::AutoRefCnt<PartDefinition> >& zeMap) const;
       std::string getRepr() const;
       AbstractPoint *getUniqueAndReleaseIt();
+      void accept(PointVisitor *pv) override;
     public:
       int size() const { return (int)_nodes.size(); }
       void replaceInMe(BlocPoint *aSet);

@@ -18,6 +18,7 @@
 //
 
 #include "ElementaryPoint.hxx"
+#include "PointVisitor.hxx"
 #include "Node.hxx"
 
 using namespace YACS::ENGINE;
@@ -72,4 +73,10 @@ void ElementaryPoint::partitionRegardingDPL(const PartDefinition *pd, std::map<C
 std::string ElementaryPoint::getRepr() const
 {
   return _node->getName();
+}
+
+void ElementaryPoint::accept(PointVisitor *pv)
+{
+  pv->beginElementaryPoint(this);
+  pv->endElementaryPoint(this);
 }

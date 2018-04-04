@@ -39,6 +39,7 @@ namespace YACS
     class BlocPoint;
     class ComposedNode;
     class ForkBlocPoint;
+    class PointVisitor;
     class LinkedBlocPoint;
     
     class YACSLIBENGINE_EXPORT AbstractPoint
@@ -70,6 +71,7 @@ namespace YACS
       virtual void getWeightRegardingDPL(ComplexWeight *weight) = 0;
       virtual void partitionRegardingDPL(const PartDefinition *pd, std::map<ComposedNode *, YACS::BASES::AutoRefCnt<PartDefinition> >& zeMap) const = 0;
       virtual std::string getRepr() const = 0;
+      virtual void accept(PointVisitor *pv) = 0;
       virtual ~AbstractPoint();
     public:
       static bool IsGatherB4Ext(Node *node);

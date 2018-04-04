@@ -18,6 +18,7 @@
 //
 
 #include "ForkBlocPoint.hxx"
+#include "PointVisitor.hxx"
 #include "Exception.hxx"
 
 #include <algorithm>
@@ -108,4 +109,12 @@ std::string ForkBlocPoint::getRepr() const
     }
   ret+="]";
   return ret;
+}
+
+void ForkBlocPoint::accept(PointVisitor *pv)
+{
+  pv->beginForkBlocPoint(this);
+  for(auto it:_nodes)
+    it->accept(pv);
+  pv->endForkBlocPoint(this);
 }

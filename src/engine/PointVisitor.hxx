@@ -17,31 +17,27 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-#ifndef __FORKBLOCPOINT_HXX__
-#define __BLOKBLOCPOINT_HXX__
+#pragma once
 
 #include "YACSlibEngineExport.hxx"
-#include "BlocPoint.hxx"
 
 namespace YACS
 {
   namespace ENGINE
   {
-    class YACSLIBENGINE_EXPORT ForkBlocPoint : public BlocPoint
+    class ElementaryPoint;
+    class LinkedBlocPoint;
+    class ForkBlocPoint;
+    
+    class YACSLIBENGINE_EXPORT PointVisitor
     {
     public:
-      ForkBlocPoint(const std::list<AbstractPoint *>& nodes, AbstractPoint *father);
-      Node *getFirstNode();
-      Node *getLastNode();
-      int getMaxLevelOfParallelism() const;
-      void getWeightRegardingDPL(ComplexWeight *weight);
-      void partitionRegardingDPL(const PartDefinition *pd, std::map<ComposedNode *, YACS::BASES::AutoRefCnt<PartDefinition> >& zeMap) const;
-      std::string getRepr() const;
-      void accept(PointVisitor *pv) override;
-      virtual ~ForkBlocPoint();
+      virtual void beginForkBlocPoint(ForkBlocPoint *pt) = 0;
+      virtual void endForkBlocPoint(ForkBlocPoint *pt) = 0;
+      virtual void beginLinkedBlocPoint(LinkedBlocPoint *pt) = 0;
+      virtual void endLinkedBlocPoint(LinkedBlocPoint *pt) = 0;
+      virtual void beginElementaryPoint(ElementaryPoint *pt) = 0;
+      virtual void endElementaryPoint(ElementaryPoint *pt) = 0;
     };
   }
 }
-
-
-#endif

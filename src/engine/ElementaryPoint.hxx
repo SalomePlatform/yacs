@@ -46,6 +46,7 @@ namespace YACS
       void getWeightRegardingDPL(ComplexWeight *weight);
       void partitionRegardingDPL(const PartDefinition *pd, std::map<ComposedNode *, YACS::BASES::AutoRefCnt<PartDefinition> >& zeMap) const;
       std::string getRepr() const;
+      void accept(PointVisitor *pv) override;
       virtual ~ElementaryPoint();
     };
   }
