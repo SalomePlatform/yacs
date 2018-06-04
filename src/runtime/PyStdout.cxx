@@ -53,7 +53,7 @@ PyStdOut_write(PyStdOut *self, PyObject *args)
 {
   char *c;
   int l;
-  if (!PyArg_ParseTuple(args, "t#:write",&c, &l))
+  if (!PyArg_ParseTuple(args, "s#:write",&c, &l))
     return NULL;
 
   //std::cerr << c ;
