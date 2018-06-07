@@ -78,10 +78,10 @@
   if (!omnipy)
   {
     PyErr_SetString(PyExc_ImportError,(char*)"Cannot import _omnipy");
-    return;
+    return NULL;
   }
   PyObject* pyapi = PyObject_GetAttrString(omnipy, (char*)"API");
-  api = (omniORBPYAPI*)PyCObject_AsVoidPtr(pyapi);
+  api = (omniORBpyAPI*)PyCapsule_GetPointer(pyapi,"_omnipy.API");
   Py_DECREF(pyapi);
 %}
 

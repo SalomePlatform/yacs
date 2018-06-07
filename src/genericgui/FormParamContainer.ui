@@ -72,7 +72,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QComboBox" name="cb_resource">
+         <widget class="ComboBox" name="cb_resource">
           <property name="toolTip">
            <string>name of the resource hosting container when manually set</string>
           </property>
@@ -120,6 +120,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ComboBox</class>
+   <extends>QComboBox</extends>
+   <header>FormComponent.hxx</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

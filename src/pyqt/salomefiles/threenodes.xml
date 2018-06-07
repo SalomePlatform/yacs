@@ -47,10 +47,6 @@
        <inParameter-type>string</inParameter-type>
        <inParameter-name>CreateHypothesis__anHyp</inParameter-name>
       </inParameter>
-      <inParameter>
-       <inParameter-type>long</inParameter-type>
-       <inParameter-name>CreateHypothesis__studyId</inParameter-name>
-      </inParameter>
      </inParameter-list>
      <outParameter-list>
       <outParameter>
@@ -124,10 +120,6 @@
       <inParameter>
        <inParameter-type>string</inParameter-type>
        <inParameter-name>anHyp</inParameter-name>
-      </inParameter>
-      <inParameter>
-       <inParameter-type>long</inParameter-type>
-       <inParameter-name>studyId</inParameter-name>
       </inParameter>
      </inParameter-list>
      <outParameter-list>
@@ -248,9 +240,7 @@
    </data>
    <data>
     <fromnode-name>aNewDataFlow_1</fromnode-name>
-    <fromserviceparameter-name>CreateHypothesis__studyId</fromserviceparameter-name>
     <tonode-name>CreateHypothesis</tonode-name>
-    <toserviceparameter-name>studyId</toserviceparameter-name>
     <data-value>
      <value-type>3</value-type>
      <value>1</value>

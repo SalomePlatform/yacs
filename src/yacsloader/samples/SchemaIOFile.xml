@@ -20,7 +20,6 @@
 
 -->
 <proc name="proc">
-   <property name="DefaultStudyID" value="1"/>
    <type name="bool" kind="bool"/>
    <type name="double" kind="double"/>
    <type name="string" kind="string"/>

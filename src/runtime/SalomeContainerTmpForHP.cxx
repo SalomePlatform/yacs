@@ -41,7 +41,7 @@ CORBA::Object_ptr SalomeContainerTmpForHP::loadComponent(Task *askingNode)
     YACS::BASES::AutoLocker<Container> alck(this);//To be sure
     std::string compoName(inst->getCompoName());
     Engines::Container_var container(_launchModeType->getContainer(askingNode));
-    objComponent=container->find_component_instance(compoName.c_str(),0);
+    objComponent=container->find_component_instance(compoName.c_str());
     if(CORBA::is_nil(objComponent))
       {
         char *reason;

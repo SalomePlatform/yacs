@@ -72,7 +72,7 @@ void DistributedPythonNode::load()
         _errorDetails=msg.str();
         throw Exception(msg.str());
       }
-    const char picklizeScript[]="import cPickle\ndef pickleForDistPyth2009(*args,**kws):\n  return cPickle.dumps((args,kws),-1)\n\ndef unPickleForDistPyth2009(st):\n  args=cPickle.loads(st)\n  return args\n";
+    const char picklizeScript[]="import pickle\ndef pickleForDistPyth2009(*args,**kws):\n  return pickle.dumps((args,kws),-1)\n\ndef unPickleForDistPyth2009(st):\n  args=pickle.loads(st)\n  return args\n";
     PyObject *res=PyRun_String(picklizeScript,Py_file_input,_context,_context);
     if(res == NULL)
       {
@@ -180,11 +180,12 @@ void DistributedPythonNode::execute()
         PyTuple_SetItem(args,pos,ob);
       }
     PyObject *serializationInput=PyObject_CallObject(_pyfuncSer,args);
-    std::string serializationInputC=PyString_AsString(serializationInput);
+    Py_ssize_t len = PyBytes_Size(serializationInput);
+    char* serializationInputC = PyBytes_AsString(serializationInput);
+    //int ret = PyBytes_AsStringAndSize(serializationInput, &serializationInputC, &len);
     serializationInputCorba=new Engines::pickledArgs;
-    int len=serializationInputC.length();
-    serializationInputCorba->length(serializationInputC.length());
-    for(int i=0;i<serializationInputC.length();i++)
+    serializationInputCorba->length(len+1);
+    for(int i=0;i<len+1;i++)
       (*serializationInputCorba)[i]=serializationInputC[i];
     Py_DECREF(serializationInput);
   }
@@ -208,15 +209,25 @@ void DistributedPythonNode::execute()
   resultCorbaC[resultCorba->length()]='\0';
   for(int i=0;i<resultCorba->length();i++)
     resultCorbaC[i]=(*resultCorba)[i];
+  int lenResCorba=resultCorba->length();
   delete resultCorba;
   {
     AutoGIL agil;
     args = PyTuple_New(1);
-    PyObject* resultPython=PyString_FromString(resultCorbaC);
+    //PyObject* resultPython=PyBytes_FromString(resultCorbaC);
+    PyObject* resultPython=PyBytes_FromStringAndSize(resultCorbaC,lenResCorba);
     delete [] resultCorbaC;
     PyTuple_SetItem(args,0,resultPython);
     PyObject *finalResult=PyObject_CallObject(_pyfuncUnser,args);
     DEBTRACE( "-----------------DistributedPythonNode::outputs-----------------" );
+    if(finalResult == NULL)
+      {
+        std::stringstream msg;
+        msg << "Conversion with pickle of output ports failed !";
+        msg << " : " << __FILE__ << ":" << __LINE__;
+        _errorDetails=msg.str();
+        throw YACS::ENGINE::ConversionException(msg.str());
+      }
     int nres=1;
     if(finalResult == Py_None)
       nres=0;
@@ -237,7 +248,7 @@ void DistributedPythonNode::execute()
           {
             OutputPyPort *p=(OutputPyPort *)*iter;
             DEBTRACE( "port name: " << p->getName() );
-            DEBTRACE( "port kind: " << p->edGetType()->kind() );
+            DEBTRACE( "port kind: " << p->typeName() );
             DEBTRACE( "port pos : " << pos );
             if(PyTuple_Check(finalResult))ob=PyTuple_GetItem(finalResult,pos) ;
             else ob=finalResult;

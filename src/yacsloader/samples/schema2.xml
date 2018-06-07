@@ -57,27 +57,27 @@
 
     <inline name="node1" >
         <script>
-            <code>print p1</code>
+            <code>print(p1)</code>
         </script>
         <inport name="p1" type="int"/>
     </inline>
     <inline name="node11" >
         <script>
-            <code>print p1</code>
+            <code>print(p1)</code>
         </script>
         <inport name="p1" type="string"/>
     </inline>
     <inline name="node12" >
         <script>
-            <code>print p1</code>
-            <code>print "coucou"</code>
+            <code>print(p1)</code>
+            <code>print("coucou")</code>
         </script>
         <inport name="p1" type="dblevec"/>
     </inline>
     <inline name="node13" >
         <script>
-            <code><![CDATA[print p1]]></code>
-            <code><![CDATA[print "coucou"]]> </code>
+            <code><![CDATA[print(p1)]]></code>
+            <code><![CDATA[print("coucou")]]> </code>
         </script>
         <inport name="p1" type="dblevecvec"/>
         <outport name="p1" type="dblevecvec"/>
@@ -115,10 +115,10 @@
         <script>
            <code>import eo</code>
            <code>obj=obj._narrow(eo.Echo)</code>
-           <code>print p1</code>
-           <code>print obj</code>
+           <code>print(p1)</code>
+           <code>print(obj)</code>
            <code>p2=obj.echoC(p1)</code>
-           <code>print p2</code>
+           <code>print(p2)</code>
         </script>
         <inport name="p1" type="C"/>
         <inport name="obj" type="Echo"/>
@@ -126,14 +126,14 @@
     </inline>
     <inline name="node34" >
         <script>
-        <code>print p1;p2=p1</code>
+        <code>print(p1);p2=p1</code>
         </script>
         <inport name="p1" type="C"/>
         <outport name="p2" type="C"/>
     </inline>
     <inline name="node35" >
         <script>
-        <code>print p1;p2=p1</code>
+        <code>print(p1);p2=p1</code>
         </script>
         <inport name="p1" type="C"/>
         <outport name="p2" type="C"/>
@@ -146,10 +146,7 @@
         <code>orb = CORBA.ORB_init([], CORBA.ORB_ID)</code>
         <code>lcc = LifeCycleCORBA(orb)</code>
         <code>naming_service = SALOME_NamingServicePy_i(orb)</code>
-        <code>StudyManager = naming_service.Resolve('myStudyManager')</code>
         <code>aVisu = lcc.FindOrLoadComponent("FactoryServer","VISU")</code>
-        <code>aStudy = StudyManager.GetStudyByID(1)</code>
-        <code>aVisu.SetCurrentStudy(aStudy)</code>
         <code>aViewManager=aVisu.GetViewManager()</code>
         <code>aView=aViewManager.Create3DView()</code>
         <code>medFile = os.getenv('DATA_DIR') + '/MedFiles/' + "TimeStamps.med" </code>
@@ -251,11 +248,6 @@
         <inport name="box" type="GEOM_Object"/>
         <outport name="box" type="GEOM_Object"/>
     </service>
-    <service name="node51" >
-        <component>GEOM_Superv</component>
-        <method>SetStudyID</method>
-        <inport name="id" type="int"/>
-    </service>
     <service name="node52" >
         <component>PYHELLO</component>
         <method>makeBanner</method>
@@ -322,8 +314,6 @@
     <control> <fromnode>node5</fromnode> <tonode>node62</tonode> </control>
     <control> <fromnode>node5</fromnode> <tonode>node63</tonode> </control>
     <control> <fromnode>node13</fromnode> <tonode>node14</tonode> </control>
-    <control> <fromnode>node44</fromnode> <tonode>node51</tonode> </control>
-    <control> <fromnode>node51</fromnode> <tonode>node49</tonode> </control>
     <control> <fromnode>node49</fromnode> <tonode>node50</tonode> </control>
     <control> <fromnode>node36</fromnode> <tonode>node37</tonode> </control>
     <!-- datalinks -->
@@ -385,7 +375,6 @@
 <parameter><tonode>node37</tonode><toport>p4</toport><value><string>vitesse</string></value></parameter>
 <parameter><tonode>node37</tonode><toport>p5</toport><value><double>0.</double></value></parameter>
 <parameter><tonode>node52</tonode><toport>nom</toport><value><string>toto</string></value></parameter>
-<parameter><tonode>node51</tonode><toport>id</toport><value><int>1</int></value></parameter>
 <parameter><tonode>node49</tonode> <toport>x1</toport><value><double>0</double></value></parameter>
 <parameter><tonode>node49</tonode> <toport>y1</toport><value><double>0</double></value></parameter>
 <parameter><tonode>node49</tonode> <toport>z1</toport><value><double>0</double></value></parameter>

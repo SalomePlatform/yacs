@@ -31,7 +31,7 @@ if not os.path.exists(os.path.join(dirALaCon0,dirAlaCon1)):
     os.chdir("..")
 # GO !
 dn=os.path.dirname(__file__)
-p=subprocess.Popen(["python","PMMLBasicsTest.py"],cwd=dn,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+p=subprocess.Popen(["python3","PMMLBasicsTest.py"],cwd=dn,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 a,b=p.communicate()
 ret=p.returncode
 # Clean up the wonderful first part stuf

@@ -29,9 +29,9 @@
             <code>def f(p1):</code>
             <code>  global a</code>
             <code>  p1= p1+10.</code>
-            <code>  print "a=",a</code>
+            <code>  print("a=",a)</code>
             <code>  a=a+p1</code>
-            <code>  print "a=",a</code>
+            <code>  print("a=",a)</code>
             <code>  return p1</code>
         </function>
         <inport name="p1" type="double"/>

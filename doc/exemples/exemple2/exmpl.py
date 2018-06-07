@@ -10,8 +10,8 @@ for i in range(5):
 C = compo.compo()
     
 z = C.addvec(x, y)
-print 'x = ', x
-print 'y = ', y
-print 'z = ', z
-print C.prdscl(x,y)
+print('x = ', x)
+print('y = ', y)
+print('z = ', z)
+print(C.prdscl(x,y))
 

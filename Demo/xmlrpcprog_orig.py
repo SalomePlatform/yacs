@@ -18,7 +18,7 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-import xmlrpclib,sys
+import xmlrpc.client,sys
 
 data="""
 <methodCall>
@@ -31,14 +31,14 @@ data="""
 </methodCall>
 """
 def echo(args):
-  print args
+  print(args)
   return 96785439
 
 f=open("input")
 data=f.read()
 f.close()
 
-params, method = xmlrpclib.loads(data)
+params, method = xmlrpc.client.loads(data)
 
 try:
    call=eval(method)
@@ -46,11 +46,11 @@ try:
    response = (response,)
 except:
    # report exception back to server
-   response = xmlrpclib.dumps( xmlrpclib.Fault(1, "%s:%s" % sys.exc_info()[:2]))
+   response = xmlrpc.client.dumps( xmlrpc.client.Fault(1, "%s:%s" % sys.exc_info()[:2]))
 else:
-   response = xmlrpclib.dumps( response, methodresponse=1)
+   response = xmlrpc.client.dumps( response, methodresponse=1)
 
-print response
+print(response)
 f=open("output",'w')
 f.write(response)
 f.close()

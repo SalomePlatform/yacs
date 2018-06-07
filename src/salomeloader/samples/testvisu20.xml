@@ -112,26 +112,21 @@
       <PyFunc><![CDATA[    lcc = LifeCycleCORBA(orb)                     ]]></PyFunc>
       <PyFunc><![CDATA[    # --- create a naming service instance              ]]></PyFunc>
       <PyFunc><![CDATA[    naming_service = SALOME_NamingServicePy_i(orb)    ]]></PyFunc>
-      <PyFunc><![CDATA[    # --- get Study Manager reference                     ]]></PyFunc>
-      <PyFunc><![CDATA[    obj = naming_service.Resolve('myStudyManager')    ]]></PyFunc>
-      <PyFunc><![CDATA[    StudyManager = obj._narrow(SALOMEDS.StudyManager)    ]]></PyFunc>
       <PyFunc><![CDATA[    # --- load visu component                          ]]></PyFunc>
       <PyFunc><![CDATA[    aVisu = lcc.FindOrLoadComponent("FactoryServer","VISU")       ]]></PyFunc>
-      <PyFunc><![CDATA[    aStudy = StudyManager.GetStudyByID(1)      ]]></PyFunc>
-      <PyFunc><![CDATA[    aVisu.SetCurrentStudy(aStudy)      ]]></PyFunc>
-      <PyFunc><![CDATA[    print "InitDisplay --> aVisu ", aVisu         ]]></PyFunc>
+      <PyFunc><![CDATA[    print("InitDisplay --> aVisu ", aVisu)         ]]></PyFunc>
       <PyFunc><![CDATA[    time.sleep(2)         ]]></PyFunc>
       <PyFunc><![CDATA[    aViewManager=aVisu.GetViewManager()         ]]></PyFunc>
-      <PyFunc><![CDATA[    print "InitDisplay --> aViewManager ", aViewManager         ]]></PyFunc>
+      <PyFunc><![CDATA[    print("InitDisplay --> aViewManager ", aViewManager)         ]]></PyFunc>
       <PyFunc><![CDATA[    #time.sleep(2)         ]]></PyFunc>
       <PyFunc><![CDATA[    #aView=aViewManager.GetCurrentView()         ]]></PyFunc>
       <PyFunc><![CDATA[    aView=aViewManager.Create3DView()         ]]></PyFunc>
-      <PyFunc><![CDATA[    print "InitDisplay --> aView ", aView         ]]></PyFunc>
+      <PyFunc><![CDATA[    print("InitDisplay --> aView ", aView)         ]]></PyFunc>
       <PyFunc><![CDATA[    #time.sleep(2)         ]]></PyFunc>
       <PyFunc><![CDATA[    medFile = "TimeStamps.med"       ]]></PyFunc>
       <PyFunc><![CDATA[    medFile = os.getenv('DATA_DIR') + '/MedFiles/' + medFile       ]]></PyFunc>
       <PyFunc><![CDATA[    myResult = aVisu.ImportFile(medFile)       ]]></PyFunc>
-      <PyFunc><![CDATA[    print "InitDisplay --> myResult ", myResult         ]]></PyFunc>
+      <PyFunc><![CDATA[    print("InitDisplay --> myResult ", myResult)         ]]></PyFunc>
       <PyFunc><![CDATA[    return aVisu,aView,myResult       ]]></PyFunc>
       </PyFunction>    </PyFunction-list>
     <creation-date>8/4/2005 - 14:3:47</creation-date>
@@ -203,7 +198,7 @@
       <PyFunc><![CDATA[        index = min      ]]></PyFunc>
       <PyFunc><![CDATA[    else :     ]]></PyFunc>
       <PyFunc><![CDATA[        index = max  ]]></PyFunc>
-      <PyFunc><![CDATA[    print "---- Init ",index,min,max,aVisu,aView,myResult,x1 ]]></PyFunc>
+      <PyFunc><![CDATA[    print("---- Init ",index,min,max,aVisu,aView,myResult,x1) ]]></PyFunc>
       <PyFunc><![CDATA[    aView.Register() ]]></PyFunc>
       <PyFunc><![CDATA[    myResult.Register() ]]></PyFunc>
       <PyFunc><![CDATA[    return index,min,max,aVisu,aView,myResult,x1  ]]></PyFunc>     </PyFunction>
@@ -214,7 +209,7 @@
       <PyFunc><![CDATA[        DoLoop = 1       ]]></PyFunc>
       <PyFunc><![CDATA[    else :       ]]></PyFunc>
       <PyFunc><![CDATA[        DoLoop = 0       ]]></PyFunc>
-      <PyFunc><![CDATA[    print "---- More",index,min,max,aVisu,aView,myResult,x1 ]]></PyFunc>
+      <PyFunc><![CDATA[    print("---- More",index,min,max,aVisu,aView,myResult,x1) ]]></PyFunc>
       <PyFunc><![CDATA[    aView.Register() ]]></PyFunc>
       <PyFunc><![CDATA[    myResult.Register() ]]></PyFunc>
       <PyFunc><![CDATA[    return DoLoop,index,min,max,aVisu,aView,myResult,x1   ]]></PyFunc>     </PyFunction>
@@ -223,7 +218,7 @@
       <PyFunc><![CDATA[def Next(index,min,max,aVisu,aView,myResult,x1):   ]]></PyFunc>
       <PyFunc><![CDATA[    index = index + 1 ]]></PyFunc>
       <PyFunc><![CDATA[    x1=x1+1.0 ]]></PyFunc>
-      <PyFunc><![CDATA[    print "---- Next",index,min,max,aVisu,aView,myResult,x1   ]]></PyFunc>
+      <PyFunc><![CDATA[    print("---- Next",index,min,max,aVisu,aView,myResult,x1)   ]]></PyFunc>
       <PyFunc><![CDATA[    aView.Register() ]]></PyFunc>
       <PyFunc><![CDATA[    myResult.Register() ]]></PyFunc>
       <PyFunc><![CDATA[    return index,min,max,aVisu,aView,myResult,x1   ]]></PyFunc>     </PyFunction>    </PyFunction-list>
@@ -336,24 +331,24 @@
       <PyFunc><![CDATA[import os                               ]]></PyFunc>
       <PyFunc><![CDATA[import time                               ]]></PyFunc>
       <PyFunc><![CDATA[def DisplayVitesse(index,aVisu,aView,aResult,x1):                          ]]></PyFunc>
-      <PyFunc><![CDATA[    print "----- Display 1 index = ", index,aVisu,aView,aResult,x1                    ]]></PyFunc>
+      <PyFunc><![CDATA[    print("----- Display 1 index = ", index,aVisu,aView,aResult,x1)                    ]]></PyFunc>
       <PyFunc><![CDATA[    aMeshName ="dom"                               ]]></PyFunc>
       <PyFunc><![CDATA[    myFieldName = "vitesse"                     ]]></PyFunc>
       <PyFunc><![CDATA[    anEntity = VISU.NODE                               ]]></PyFunc>
       <PyFunc><![CDATA[    aMesh = aVisu.MeshOnEntity(aResult, aMeshName, anEntity)     ]]></PyFunc>
-      <PyFunc><![CDATA[    print "----- Display 2 ", aMesh                 ]]></PyFunc>
+      <PyFunc><![CDATA[    print("----- Display 2 ", aMesh)                 ]]></PyFunc>
       <PyFunc><![CDATA[    x1=int(x1)                 ]]></PyFunc>
       <PyFunc><![CDATA[    aScalarMap=aVisu.ScalarMapOnField(aResult,aMeshName,anEntity,myFieldName,x1)  ]]></PyFunc>
-      <PyFunc><![CDATA[    print "----- Display 4"                         ]]></PyFunc>
+      <PyFunc><![CDATA[    print("----- Display 4")                         ]]></PyFunc>
       <PyFunc><![CDATA[    if aScalarMap is not None:                               ]]></PyFunc>
       <PyFunc><![CDATA[        aScalarMap.SetScaling(VISU.LINEAR)                               ]]></PyFunc>
       <PyFunc><![CDATA[    else:                               ]]></PyFunc>
-      <PyFunc><![CDATA[        print "Null scalar map is created"                               ]]></PyFunc>
-      <PyFunc><![CDATA[    print "----- Display 5"           ]]></PyFunc>
+      <PyFunc><![CDATA[        print("Null scalar map is created")                               ]]></PyFunc>
+      <PyFunc><![CDATA[    print("----- Display 5")           ]]></PyFunc>
       <PyFunc><![CDATA[    aView.DisplayOnly(aScalarMap)                               ]]></PyFunc>
       <PyFunc><![CDATA[    aView.FitAll()                               ]]></PyFunc>
       <PyFunc><![CDATA[    aView.Update()                              ]]></PyFunc>
-      <PyFunc><![CDATA[    print "----- Display 6"                         ]]></PyFunc>
+      <PyFunc><![CDATA[    print("----- Display 6")                         ]]></PyFunc>
       <PyFunc><![CDATA[    theResult=aResult                           ]]></PyFunc>
       <PyFunc><![CDATA[    #time.sleep(2)                   ]]></PyFunc>
       <PyFunc><![CDATA[    theResult.Register() ]]></PyFunc>

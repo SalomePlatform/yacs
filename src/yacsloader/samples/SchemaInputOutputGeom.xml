@@ -39,7 +39,6 @@
       <property name="workingdir" value=""/>
    </container>
    <datanode name="StudyInNode0" kind="study">
-      <property name="StudyID" value="1"/>
       <parameter name="a" type="GEOM_Object" ref="/Geometry/Box_1"/>
       <parameter name="b" type="GEOM_Object" ref="/Geometry/Sphere_1"/>
    </datanode>
@@ -61,19 +60,11 @@ y=b
       <outport name="return" type="GEOM_Object"/>
    </service>
    <outnode name="StudyOutNode0" kind="study">
-      <property name="StudyID" value="1"/>
       <parameter name="a" type="GEOM_Object" ref="/Geometry/YacsFuse"/>
    </outnode>
-   <service name="SalomeNode1">
-      <node>SalomeNode0</node>
-      <method>SetStudyID</method>
-      <inport name="theStudyID" type="Int"/>
-   </service>
    <control> <fromnode>StudyInNode0</fromnode> <tonode>PyScript0</tonode> </control>
-   <control> <fromnode>StudyInNode0</fromnode> <tonode>SalomeNode1</tonode> </control>
    <control> <fromnode>PyScript0</fromnode> <tonode>SalomeNode0</tonode> </control>
    <control> <fromnode>SalomeNode0</fromnode> <tonode>StudyOutNode0</tonode> </control>
-   <control> <fromnode>SalomeNode1</fromnode> <tonode>SalomeNode0</tonode> </control>
    <datalink control="false">
       <fromnode>StudyInNode0</fromnode> <fromport>a</fromport>
       <tonode>PyScript0</tonode> <toport>a</toport>
@@ -94,8 +85,4 @@ y=b
       <fromnode>SalomeNode0</fromnode> <fromport>return</fromport>
       <tonode>StudyOutNode0</tonode> <toport>a</toport>
    </datalink>
-   <parameter>
-      <tonode>SalomeNode1</tonode><toport>theStudyID</toport>
-      <value><int>1</int></value>
-   </parameter>
 </proc>

@@ -158,8 +158,8 @@
       <PyFunc><![CDATA[    index = min        ]]></PyFunc>
       <PyFunc><![CDATA[  else :        ]]></PyFunc>
       <PyFunc><![CDATA[    index = max        ]]></PyFunc>
-      <PyFunc><![CDATA[  print "Init :" ]]></PyFunc>
-      <PyFunc><![CDATA[  print index,min,max,couronne,Rcouronne,Rsphere       ]]></PyFunc>
+      <PyFunc><![CDATA[  print("Init :") ]]></PyFunc>
+      <PyFunc><![CDATA[  print(index,min,max,couronne,Rcouronne,Rsphere)       ]]></PyFunc>
       <PyFunc><![CDATA[  couronne.Register() ]]></PyFunc>
       <PyFunc><![CDATA[  return index,min,max,couronne,Rcouronne,Rsphere    ]]></PyFunc>
       <PyFunc><![CDATA[?]]></PyFunc>
@@ -170,8 +170,8 @@
       <PyFunc><![CDATA[  OutLoop = 0       ]]></PyFunc>
       <PyFunc><![CDATA[  if max > index :        ]]></PyFunc>
       <PyFunc><![CDATA[    OutLoop = 1       ]]></PyFunc>
-      <PyFunc><![CDATA[  print "More :" ]]></PyFunc>
-      <PyFunc><![CDATA[  print OutLoop,index,min,max,couronne,Rcouronne,Rsphere       ]]></PyFunc>
+      <PyFunc><![CDATA[  print("More :") ]]></PyFunc>
+      <PyFunc><![CDATA[  print(OutLoop,index,min,max,couronne,Rcouronne,Rsphere)       ]]></PyFunc>
       <PyFunc><![CDATA[  couronne.Register() ]]></PyFunc>
       <PyFunc><![CDATA[  return OutLoop,index,min,max,couronne,Rcouronne,Rsphere        ]]></PyFunc>
       <PyFunc><![CDATA[?]]></PyFunc>
@@ -180,8 +180,8 @@
       <FuncName>Next</FuncName>
       <PyFunc><![CDATA[def Next(index,min,max,couronne,Rcouronne,Rsphere):         ]]></PyFunc>
       <PyFunc><![CDATA[  index = index + 1   ]]></PyFunc>
-      <PyFunc><![CDATA[  print "Next :"       ]]></PyFunc>
-      <PyFunc><![CDATA[  print index,min,max,couronne,Rcouronne,Rsphere        ]]></PyFunc>
+      <PyFunc><![CDATA[  print("Next :")       ]]></PyFunc>
+      <PyFunc><![CDATA[  print(index,min,max,couronne,Rcouronne,Rsphere)        ]]></PyFunc>
       <PyFunc><![CDATA[  couronne.Register() ]]></PyFunc>
       <PyFunc><![CDATA[  return index,min,max,couronne,Rcouronne,Rsphere        ]]></PyFunc>
       <PyFunc><![CDATA[?]]></PyFunc>

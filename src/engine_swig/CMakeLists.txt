@@ -31,6 +31,7 @@ ENDIF()
 INCLUDE_DIRECTORIES(
   ${PTHREAD_INCLUDE_DIR}
   ${OMNIORB_INCLUDE_DIR}
+  ${OMNIORBPY_INCLUDE_DIR}
   ${PYTHON_INCLUDE_DIRS}
   ${PROJECT_BINARY_DIR}/idl
   ${PROJECT_BINARY_DIR}
@@ -105,7 +106,8 @@ ENDFOREACH()
 
 SET(SWIGINCLUDES ${ENGINEINCL}  
     "${PROJECT_SOURCE_DIR}/src/bases/yacsconfig.h" 
-    "ExecutorSwig.hxx")
+    "ExecutorSwig.hxx"
+    "IteratorPy3.hxx")
 
 SET(SWIG_MODULE_pilot_EXTRA_DEPS engtypemaps.i ${SWIGINCLUDES})
 SWIG_ADD_MODULE(pilot python pilot.i ExecutorSwig.cxx)

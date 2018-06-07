@@ -19,9 +19,9 @@
 
 from qt import *
 
-import Item
-import CONNECTOR
-import Items
+from . import Item
+from . import CONNECTOR
+from . import Items
 
 class Obj(Item.Item):
   def __init__(self,root=None):
@@ -124,7 +124,7 @@ class ItemCompo(Item.Item):
 
   def getChildren(self):
     sublist=[]
-    for service in self.compo._serviceMap.values():
+    for service in list(self.compo._serviceMap.values()):
       itemservice=ItemService(service,self.root)
       sublist.append(itemservice)
     return sublist
@@ -197,7 +197,7 @@ class TypesItem(Item.Item):
 
   def getChildren(self):
     sublist=[]
-    for name,typ in self.typeMap.items():
+    for name,typ in list(self.typeMap.items()):
       itemtype=ItemType(typ,self.root,name)
       sublist.append(itemtype)
     return sublist
@@ -218,7 +218,7 @@ class ComponentsItem(Item.Item):
 
   def getChildren(self):
     sublist=[]
-    for compo in self.compoMap.values():
+    for compo in list(self.compoMap.values()):
       itemcompo=ItemCompo(compo,self.root)
       sublist.append(itemcompo)
     return sublist
@@ -239,7 +239,7 @@ class NodesItem(Item.Item):
 
   def getChildren(self):
     sublist=[]
-    for node in self.nodesMap.values():
+    for node in list(self.nodesMap.values()):
       itemnode=ItemNode(node,self.root)
       sublist.append(itemnode)
     return sublist
@@ -260,7 +260,7 @@ class ComposedNodesItem(Item.Item):
 
   def getChildren(self):
     sublist=[]
-    for node in self.composedMap.values():
+    for node in list(self.composedMap.values()):
       itemnode=ItemComposedNode(node,self.root)
       sublist.append(itemnode)
     return sublist

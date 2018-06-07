@@ -969,19 +969,15 @@ bool GenericGui::closeContext(QWidget *view, bool onExit)
           break;
         }
     }
-  int studyId = _wrapper->activeStudyId();
-  if (context->getStudyId() == studyId)
+  _wrapper->deleteSchema(view);
+  DEBTRACE("delete context");
+  if (GuiExecutor* exec = context->getGuiExecutor())
     {
-      _wrapper->deleteSchema(view);
-      DEBTRACE("delete context");
-      if (GuiExecutor* exec = context->getGuiExecutor())
-        {
-          exec->closeContext();
-        }
-      delete context;
-      _mapViewContext.erase(view);
-      switchContext(newView, onExit);
+      exec->closeContext();
     }
+  delete context;
+  _mapViewContext.erase(view);
+  switchContext(newView, onExit);
   return true;
 }
 
@@ -1093,11 +1089,7 @@ void GenericGui::createContext(YACS::ENGINE::Proc* proc,
   GraphicsView* gView = new GraphicsView(viewWindow);
   gView->setScene(scene);
   gView->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
-  int studyId = _wrapper->AssociateViewToWindow(gView, viewWindow);
-  context->setStudyId(studyId);
-  std::ostringstream value;
-  value << studyId;
-  proc->setProperty("DefaultStudyID",value.str());
+  _wrapper->AssociateViewToWindow(gView, viewWindow);
   context->setScene(scene);
   context->setView(gView);
   context->setWindow(viewWindow);
@@ -2589,7 +2581,6 @@ void GenericGui::onShowRedo()
 void GenericGui::onCleanOnExit()
 {
   DEBTRACE("GenericGui::onCleanOnExit");
-  int studyId = _wrapper->activeStudyId();
   map<QWidget*, YACS::HMI::QtGuiContext*> mapViewContextCopy = _mapViewContext;
   map<QWidget*, YACS::HMI::QtGuiContext*>::iterator it = mapViewContextCopy.begin();
   for (; it != mapViewContextCopy.end(); ++it)

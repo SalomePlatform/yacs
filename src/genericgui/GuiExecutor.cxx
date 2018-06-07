@@ -92,7 +92,7 @@ void GuiExecutor::startResumeDataflow(bool initialize)
       SALOME_NamingService namingService(orb);
       SALOME_LifeCycleCORBA lcc(&namingService);
       ostringstream containerName;
-      containerName << "localhost/YACSContainer" << QtGuiContext::getQtCurrent()->getStudyId();
+      containerName << "localhost/YACSContainer";
       Engines::EngineComponent_var comp = lcc.FindOrLoad_Component(containerName.str().c_str(), "YACS" );
       _engineRef =YACS_ORB::YACS_Gen::_narrow(comp);
       YASSERT(!CORBA::is_nil(_engineRef));

@@ -780,19 +780,17 @@ The result file will be copied into the local file myfile::
 StudyIn node
 ++++++++++++++
 A StudyIn node is defined using the runtime createInDataNode method.  It uses two arguments, the first of which must be “study” 
-and the second the node name.  The associated study is specified by adding the “StudyID” property to the node using 
-its setProperty method.  Node data are defined by adding output data ports using the edAddOutputPOrt method, transferring 
+and the second the node name.  Node data are defined by adding output data ports using the edAddOutputPOrt method, transferring 
 the name of the data and its type as arguments.  The data is initialised with the reference in the study, using the setData method 
 for the port thus created, transferring a character string to it containing either the SALOME Entry or the path in the study 
 tree structure.
 
 The following is an example of the StudyIn node that defines 2 GEOM_Object type data (a and b).  The study is assumed to be 
-loaded into memory by SALOME as StudyID 1.  Data a is referenced by one SALOME Entry.  Data b is referenced by a path in the 
+loaded into memory by SALOME.  Data a is referenced by one SALOME Entry.  Data b is referenced by a path in the 
 study tree structure::
 
   n=r.createInDataNode("study","study1")
   p.edAddChild(n)
-  n.setProperty("StudyID","1")
   pout=n.edAddOutputPort('a',tgeom)
   pout.setData("0:1:1:1")
   pout=n.edAddOutputPort('b',tgeom)
@@ -803,21 +801,19 @@ study tree structure::
 StudyOut node
 ++++++++++++++
 A StudyOut node is defined using the runtime createOutDataNode method.  It uses two arguments, the first of 
-which must be “study” and the second the node name.  The associated study is specified by adding 
-the “StudyID” property to the node using its setProperty method.  The name of the file in which the study will be 
+which must be “study” and the second the node name. The name of the file in which the study will be 
 saved is specified using the node SetRef method with the file name as an argument.  
 The node results are defined by adding input data ports to it using the edAddInputPort method, transferring the data name 
 and type as arguments.  The setData method for the port is used to associate the entry into the study to the result, transferring 
 a character string to it that contains either the SALOME Entry or the path in the study tree structure.
 
 The following contains an example of the StudyOut node that defines two GEOM_Object type results (a and b).  
-The studyId of the study used is 1.  Result a is referenced by a SALOME Entry.  The result b is referenced by a path.  
+Result a is referenced by a SALOME Entry.  The result b is referenced by a path.  
 The complete study is saved in the study1.hdf file at the end of the calculation::
 
   n=r.createOutDataNode("study","study2")
   n.setRef("study1.hdf")
   p.edAddChild(n)
-  n.setProperty("StudyID","1")
   pout=n.edAddInputPort('a',tgeom)
   pout.setData("0:1:2:1")
   pout=n.edAddInputPort('b',tgeom)

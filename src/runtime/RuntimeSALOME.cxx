@@ -293,14 +293,26 @@ void RuntimeSALOME::init(long flags, int argc, char* argv[])
           Py_InitializeEx(0); // do not install signal handlers
 #endif
           if (argc > 0 && argv != NULL)
-            PySys_SetArgv(argc, argv);
+            {
+              wchar_t **changed_argv = new wchar_t*[argc];
+              for (int i = 0; i < argc; i++)
+              {
+                changed_argv[i] = Py_DecodeLocale(argv[i], NULL);
+              }
+              PySys_SetArgv(argc, changed_argv);
+            } 
           else
             {
               int pyArgc = 1;
               char* pyArgv[1];
               char defaultName[] = "SALOME_YACS_RUNTIME";
+              wchar_t **changed_pyArgv = new wchar_t*[pyArgc];
               pyArgv[0] = defaultName;
-              PySys_SetArgv(pyArgc, pyArgv);
+              for (int i = 0; i < pyArgc; i++)
+              {
+                changed_pyArgv[i] = Py_DecodeLocale(pyArgv[i], NULL);
+              }
+              PySys_SetArgv(pyArgc, changed_pyArgv);
             }
           PyEval_InitThreads(); /* Create (and acquire) the interpreter lock (for threads)*/
           PyEval_SaveThread(); /* Release the thread state */
@@ -318,7 +330,7 @@ void RuntimeSALOME::init(long flags, int argc, char* argv[])
   
       if (PyDict_GetItemString(globals, "__builtins__") == NULL) 
         {
-          PyObject *bimod = PyImport_ImportModule("__builtin__");
+          PyObject *bimod = PyImport_ImportModule("builtins");
           if (bimod == NULL || PyDict_SetItemString(globals, "__builtins__", bimod) != 0)
             Py_FatalError("can't add __builtins__ to __main__");
           Py_DECREF(bimod);
@@ -342,7 +354,7 @@ void RuntimeSALOME::init(long flags, int argc, char* argv[])
             {
               goto out;
             }
-          _api = (omniORBpyAPI*)PyCObject_AsVoidPtr(pyapi);
+          _api = (omniORBpyAPI*)PyCapsule_GetPointer(pyapi,"_omnipy.API");
           Py_DECREF(pyapi);
 
           res=PyRun_String("\n"
@@ -352,7 +364,7 @@ void RuntimeSALOME::init(long flags, int argc, char* argv[])
                            "from omniORB import CORBA\n"
                            "from omniORB import any\n"
                            "orb = CORBA.ORB_init([], CORBA.ORB_ID)\n"
-                           "#print sys.getrefcount(orb)\n"
+                           "#print(sys.getrefcount(orb))\n"
                            "try:\n"
                            "  import SALOME\n"
                            "except:\n"

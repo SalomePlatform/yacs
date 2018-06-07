@@ -38,7 +38,6 @@
                 <component-author>P. RASCLE</component-author>
                 <component-version>@SALOMEYACS_VERSION@</component-version>
                 <component-comment>EDF - RD</component-comment>
-                <component-multistudy>1</component-multistudy>
                 <component-icone>ModuleYacs.png</component-icone>
                 <constraint>'linux' ~ OS</constraint>
 	

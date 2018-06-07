@@ -388,5 +388,5 @@ BEGIN {
 #
 #
 END {
-# CNC peut être mis dans le template directement printf "\nprivate:\n    std::auto_ptr<%s> cppImpl_;\n",class_name >> hxx_file
+# CNC peut Ãªtre mis dans le template directement printf "\nprivate:\n    std::auto_ptr<%s> cppImpl_;\n",class_name >> hxx_file
 }

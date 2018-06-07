@@ -20,7 +20,6 @@
 
 -->
 <proc name="newSchema_1">
-   <property name="DefaultStudyID" value="1"/>
    <type name="string" kind="string"/>
    <struct name="Engines/dataref">
       <member name="ref" type="string"/>
@@ -47,10 +46,10 @@
             <code><![CDATA[import time
 
 def f(i5):
-    print my_container
-    print "nouvelle branche avec ", i5
-    for n in xrange(15):
-      print time.time()
+    print(my_container)
+    print("nouvelle branche avec ", i5)
+    for n in range(15):
+      print(time.time())
       time.sleep(1)
     
 ]]></code>

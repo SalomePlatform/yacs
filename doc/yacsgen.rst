@@ -1308,10 +1308,10 @@ Here is an excerpt from pygui1 example that shows how to add a method named crea
 
   compodefs=r"""
   class A:
-    def createObject( self, study, name ):
+    def createObject( self, name ):
       "Create object.  "
-      builder = study.NewBuilder()
-      father = study.FindComponent( "pycompos" )
+      builder = salome.myStudy.NewBuilder()
+      father = salome.myStudy.FindComponent( "pycompos" )
       if father is None:
         father = builder.NewComponent( "pycompos" )
       attr = builder.FindOrCreateAttribute( father, "AttributeName" )
@@ -1342,20 +1342,15 @@ fragment that will be included in the component class to effectively redefine th
 Here is an excerpt from cppgui1 example that shows how to redefine the DumpPython method in a C++ component::
 
   compomethods=r"""
-  Engines::TMPFile* DumpPython(CORBA::Object_ptr theStudy, CORBA::Boolean isPublished,
+  Engines::TMPFile* DumpPython(CORBA::Boolean isPublished,
                                CORBA::Boolean& isValidScript)
   {
-    SALOMEDS::Study_var aStudy = SALOMEDS::Study::_narrow(theStudy);
-    if(CORBA::is_nil(aStudy))
-      return new Engines::TMPFile(0);
-    SALOMEDS::SObject_var aSO = aStudy->FindComponent("cppcompos");
+    SALOMEDS::SObject_var aSO = KERNEL::getStudy()->FindComponent("cppcompos");
     if(CORBA::is_nil(aSO))
        return new Engines::TMPFile(0);
     std::string Script = "import cppcompos_ORB\n";
     Script += "import salome\n";
     Script += "compo = salome.lcc.FindOrLoadComponent('FactoryServer','cppcompos')\n";
-    Script += "def RebuildData(theStudy):\n";
-    Script += "  compo.SetCurrentStudy(theStudy)\n";
     const char* aScript=Script.c_str();
     char* aBuffer = new char[strlen(aScript)+1];
     strcpy(aBuffer, aScript);
@@ -1400,10 +1395,10 @@ implementation from SALOME KERNEL) and an extra method (createObject) to a pytho
       SALOME_DriverPy.SALOME_DriverPy_i.__init__(self,"pycompos")
       return
 
-    def createObject( self, study, name ):
+    def createObject( self, name ):
       "Create object.  "
-      builder = study.NewBuilder()
-      father = study.FindComponent( "pycompos" )
+      builder = salome.myStudy.NewBuilder()
+      father = salome.myStudy.FindComponent( "pycompos" )
       if father is None:
         father = builder.NewComponent( "pycompos" )
         attr = builder.FindOrCreateAttribute( father, "AttributeName" )
@@ -1434,7 +1429,7 @@ one file (myinterface.idl) that contains the definition of interface Idl_A::
 
   interface Idl_A : SALOMEDS::Driver
   {
-    void createObject(in SALOMEDS::Study theStudy, in string name) raises (SALOME::SALOME_Exception);
+    void createObject(in string name) raises (SALOME::SALOME_Exception);
   };
 
 In this simple case, it is also possible to include directly the content of the file with the *interfacedefs* parameter.

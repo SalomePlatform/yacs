@@ -72,7 +72,7 @@ void SalomePythonNode::load()
   cerr << "---------------SalomePythonNode::load function---------------" << endl;
   list<OutputPort *>::iterator iter;
   string value2Export=((SalomePythonComponent*)_component)->getStringValueToExportInInterp(this);
-  PyObject* ob=PyString_FromString(value2Export.c_str());
+  PyObject* ob=PyBytes_FromString(value2Export.c_str());
   PyDict_SetItemString(_context,PLACEMENT_VAR_NAME_IN_INTERP,ob);
   for(iter = _setOfOutputPort.begin(); iter != _setOfOutputPort.end(); iter++)
     {

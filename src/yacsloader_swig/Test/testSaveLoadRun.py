@@ -50,13 +50,13 @@ def ff(nb,dbg):
     
     ref=datetime.datetime.now()
     t=0. ; pas=1./float(nb)
-    for i in xrange(nb):
-        for j in xrange(nb):
+    for i in range(nb):
+        for j in range(nb):
             x=j*pas
             t+=1.+cos(1.*(x*3.14159))
             pass
         pass
-    print "coucou from script0-%i  -> %s"%(dbg,str(datetime.datetime.now()-ref))
+    print("coucou from script0-%i  -> %s"%(dbg,str(datetime.datetime.now()-ref)))
     return t
 """
     script1="""
@@ -64,14 +64,14 @@ from math import cos
 import datetime
 ref=datetime.datetime.now()
 o2=0. ; pas=1./float(i1)
-for i in xrange(i1):
-  for j in xrange(i1):
+for i in range(i1):
+  for j in range(i1):
     x=j*pas
     o2+=1.+cos(1.*(x*3.14159))
     pass
-print "coucou from script1-%i  -> %s"%(dbg,str(datetime.datetime.now()-ref))
+print("coucou from script1-%i  -> %s"%(dbg,str(datetime.datetime.now()-ref)))
 """
-    for i in xrange(nbOfNodes):
+    for i in range(nbOfNodes):
       node0=self.r.createFuncNode("DistPython","node%i"%(i))
       p.edAddChild(node0)
       node0.setFname("ff")
@@ -109,17 +109,17 @@ print "coucou from script1-%i  -> %s"%(dbg,str(datetime.datetime.now()-ref))
     st=datetime.datetime.now()
     # 1st exec
     ex.RunW(p,0)
-    print "Time spend of test0 to run 1st %s"%(str(datetime.datetime.now()-st))
+    print("Time spend of test0 to run 1st %s"%(str(datetime.datetime.now()-st)))
     self.assertEqual(p.getState(),pilot.DONE)
     # 2nd exec using the same already launched remote python interpreters
     st=datetime.datetime.now()
     ex.RunW(p,0)
-    print "Time spend of test0 to run 2nd %s"%(str(datetime.datetime.now()-st))
+    print("Time spend of test0 to run 2nd %s"%(str(datetime.datetime.now()-st)))
     self.assertEqual(p.getState(),pilot.DONE)
     # 3rd exec using the same already launched remote python interpreters
     st=datetime.datetime.now()
     ex.RunW(p,0)
-    print "Time spend of test0 to run 3rd %s"%(str(datetime.datetime.now()-st))
+    print("Time spend of test0 to run 3rd %s"%(str(datetime.datetime.now()-st)))
     self.assertEqual(p.getState(),pilot.DONE)
     pass
 
@@ -144,13 +144,13 @@ def ff(nb,dbg):
     
     ref=datetime.datetime.now()
     t=0. ; pas=1./float(nb)
-    for i in xrange(nb):
-        for j in xrange(nb):
+    for i in range(nb):
+        for j in range(nb):
             x=j*pas
             t+=1.+cos(1.*(x*3.14159))
             pass
         pass
-    print "coucou from script0-%i  -> %s"%(dbg,str(datetime.datetime.now()-ref))
+    print("coucou from script0-%i  -> %s"%(dbg,str(datetime.datetime.now()-ref)))
     return t
 """
     # here in script1 aa is refered ! aa will exist thanks to HPCont Init Script
@@ -159,16 +159,16 @@ from math import cos
 import datetime
 ref=datetime.datetime.now()
 o2=0. ; pas=1./float(i1)
-for i in xrange(i1):
-  for j in xrange(i1):
+for i in range(i1):
+  for j in range(i1):
     x=j*pas
     o2+=1.+cos(1.*(x*3.14159))
     pass
-print "coucou %lf from script1-%i  -> %s"%(aa,dbg,str(datetime.datetime.now()-ref))
+print("coucou %lf from script1-%i  -> %s"%(aa,dbg,str(datetime.datetime.now()-ref)))
 aa+=1.
 """
     #
-    for i in xrange(nbOfNodes):
+    for i in range(nbOfNodes):
       nodeMiddle=self.r.createFuncNode("Salome","node%i_1"%(i)) # PyFuncNode remote
       p.edAddChild(nodeMiddle)
       nodeMiddle.setFname("ff")
@@ -198,17 +198,17 @@ aa+=1.
     self.assertEqual(p.getState(),pilot.READY)
     st=datetime.datetime.now()
     ex.RunW(p,0)
-    print "Time spend of test1 to 1st run %s"%(str(datetime.datetime.now()-st))
+    print("Time spend of test1 to 1st run %s"%(str(datetime.datetime.now()-st)))
     self.assertEqual(p.getState(),pilot.DONE)
     # 2nd exec
     st=datetime.datetime.now()
     ex.RunW(p,0)
-    print "Time spend of test1 to 2nd run %s"%(str(datetime.datetime.now()-st))
+    print("Time spend of test1 to 2nd run %s"%(str(datetime.datetime.now()-st)))
     self.assertEqual(p.getState(),pilot.DONE)
     # 3rd exec
     st=datetime.datetime.now()
     ex.RunW(p,0)
-    print "Time spend of test1 to 3rd run %s"%(str(datetime.datetime.now()-st))
+    print("Time spend of test1 to 3rd run %s"%(str(datetime.datetime.now()-st)))
     self.assertEqual(p.getState(),pilot.DONE)
     pass
 
@@ -216,19 +216,19 @@ aa+=1.
     """ Test on HP Containers in foreach context."""
     script0="""def ff():
     global aa
-    print "%%lf - %%s"%%(aa,str(my_container))
+    print("%%lf - %%s"%%(aa,str(my_container)))
     return 16*[%i],0
 """
     script1="""from math import cos
 import datetime
 ref=datetime.datetime.now()
 o2=0. ; pas=1./float(i1)
-for i in xrange(i1):
-  for j in xrange(i1):
+for i in range(i1):
+  for j in range(i1):
     x=j*pas
     o2+=1.+cos(1.*(x*3.14159))
     pass
-print "coucou %lf from script  -> %s"%(aa,str(datetime.datetime.now()-ref))
+print("coucou %lf from script  -> %s"%(aa,str(datetime.datetime.now()-ref)))
 aa+=1.
 o3=0
 """
@@ -292,19 +292,19 @@ o3=0
     self.assertEqual(p.getState(),pilot.READY)
     st=datetime.datetime.now()
     ex.RunW(p,0)
-    print "Time spend of test2 to 1st run %s"%(str(datetime.datetime.now()-st))
+    print("Time spend of test2 to 1st run %s"%(str(datetime.datetime.now()-st)))
     self.assertEqual(p.getState(),pilot.DONE)
     self.assertAlmostEqual(refExpected,o9.getPyObj(),5)
     # 2nd exec
     st=datetime.datetime.now()
     ex.RunW(p,0)
-    print "Time spend of test2 to 2nd run %s"%(str(datetime.datetime.now()-st))
+    print("Time spend of test2 to 2nd run %s"%(str(datetime.datetime.now()-st)))
     self.assertEqual(p.getState(),pilot.DONE)
     self.assertAlmostEqual(refExpected,o9.getPyObj(),5)
     # 3rd exec
     st=datetime.datetime.now()
     ex.RunW(p,0)
-    print "Time spend of test2 to 3rd run %s"%(str(datetime.datetime.now()-st))
+    print("Time spend of test2 to 3rd run %s"%(str(datetime.datetime.now()-st)))
     self.assertEqual(p.getState(),pilot.DONE)
     self.assertAlmostEqual(refExpected,o9.getPyObj(),5)
     pass
@@ -313,19 +313,19 @@ o3=0
     """ Test that focuses on parallel load of containers."""
     script0="""def ff():
     global aa
-    print "%%lf - %%s"%%(aa,str(my_container))
+    print("%%lf - %%s"%%(aa,str(my_container)))
     return 100*[%i],0
 """
     script1="""from math import cos
 import datetime
 ref=datetime.datetime.now()
 o2=0. ; pas=1./float(i1)
-for i in xrange(i1):
-  for j in xrange(i1):
+for i in range(i1):
+  for j in range(i1):
     x=j*pas
     o2+=1.+cos(1.*(x*3.14159))
     pass
-print "coucou %lf from script  -> %s"%(aa,str(datetime.datetime.now()-ref))
+print("coucou %lf from script  -> %s"%(aa,str(datetime.datetime.now()-ref)))
 aa+=1.
 o3=0
 """
@@ -389,19 +389,19 @@ o3=0
     self.assertEqual(p.getState(),pilot.READY)
     st=datetime.datetime.now()
     ex.RunW(p,0)
-    print "Time spend of test3 to 1st run %s"%(str(datetime.datetime.now()-st))
+    print("Time spend of test3 to 1st run %s"%(str(datetime.datetime.now()-st)))
     self.assertEqual(p.getState(),pilot.DONE)
     self.assertAlmostEqual(refExpected,o9.getPyObj(),5)
     # 2nd exec
     st=datetime.datetime.now()
     ex.RunW(p,0)
-    print "Time spend of test3 to 2nd run %s"%(str(datetime.datetime.now()-st))
+    print("Time spend of test3 to 2nd run %s"%(str(datetime.datetime.now()-st)))
     self.assertEqual(p.getState(),pilot.DONE)
     self.assertAlmostEqual(refExpected,o9.getPyObj(),5)
     # 3rd exec
     st=datetime.datetime.now()
     ex.RunW(p,0)
-    print "Time spend of test3 to 3rd run %s"%(str(datetime.datetime.now()-st))
+    print("Time spend of test3 to 3rd run %s"%(str(datetime.datetime.now()-st)))
     self.assertEqual(p.getState(),pilot.DONE)
     self.assertAlmostEqual(refExpected,o9.getPyObj(),5)
     pass
@@ -412,9 +412,9 @@ o3=0
     script1="""nb=7
 ii=0
 o1=nb*[None]
-for i in xrange(nb):
+for i in range(nb):
     tmp=(i+10)*[None]
-    for j in xrange(i+10):
+    for j in range(i+10):
         tmp[j]=ii
         ii+=1
         pass
@@ -497,9 +497,9 @@ for i in xrange(nb):
     script1="""nb=7
 ii=0
 o1=nb*[None]
-for i in xrange(nb):
+for i in range(nb):
     tmp=(i+10)*[None]
-    for j in xrange(i+10):
+    for j in range(i+10):
         tmp[j]=ii
         ii+=1
         pass
@@ -620,8 +620,8 @@ for i in xrange(nb):
     self.assertEqual(n1.getState(),pilot.DONE)
     n1.edGetSeqOfSamplesPort().getPyObj()
     a,b,c=n1.getPassedResults(ex)
-    self.assertEqual(a,range(6))
-    self.assertEqual([elt.getPyObj() for elt in b],[[6L, 12L, 16L, 18L, -4L, 10L]])
+    self.assertEqual(a,list(range(6)))
+    self.assertEqual([elt.getPyObj() for elt in b],[[6, 12, 16, 18, -4, 10]])
     self.assertEqual(c,['n10_o2_interceptor'])
     pass
 
@@ -680,8 +680,8 @@ else:
     self.assertEqual(n1.getState(),pilot.FAILED)
     n1.edGetSeqOfSamplesPort().getPyObj()
     a,b,c=n1.getPassedResults(ex)
-    self.assertEqual(a,range(3))
-    self.assertEqual([elt.getPyObj() for elt in b],[[6L,12L,16L]])
+    self.assertEqual(a,list(range(3)))
+    self.assertEqual([elt.getPyObj() for elt in b],[[6,12,16]])
     self.assertEqual(c,['n10_o2_interceptor'])
     pass
 
@@ -745,7 +745,7 @@ else:
     n1.edGetSeqOfSamplesPort().getPyObj()
     a,b,c=n1.getPassedResults(ex)
     self.assertEqual(a,[0,1,2,4,5])
-    self.assertEqual([elt.getPyObj() for elt in b],[[6L,12L,16L,-4L,10L]])
+    self.assertEqual([elt.getPyObj() for elt in b],[[6,12,16,-4,10]])
     self.assertEqual(c,['n10_o2_interceptor'])
     
     p.getChildByName("n1").getChildByName("n10").setScript("""
@@ -767,7 +767,7 @@ else:
     n1.edGetSeqOfSamplesPort().getPyObj()
     a,b,c=n1.getPassedResults(ex)
     self.assertEqual(a,[1,2,3,4,5])
-    self.assertEqual([elt.getPyObj() for elt in b],[[12L,16L,18L,-4L,10L]])
+    self.assertEqual([elt.getPyObj() for elt in b],[[12,16,18,-4,10]])
     self.assertEqual(c,['n10_o2_interceptor'])
     pass
 
@@ -833,7 +833,7 @@ else:
     n1.edGetSeqOfSamplesPort().getPyObj()
     a,b,c=n1.getPassedResults(ex)
     self.assertEqual(a,[0,1,2,4,5])
-    self.assertEqual([elt.getPyObj() for elt in b],[[6L,12L,16L,-4L,10L]])
+    self.assertEqual([elt.getPyObj() for elt in b],[[6,12,16,-4,10]])
     self.assertEqual(c,['n10_o2_interceptor'])
     
     p.getChildByName("n1").getChildByName("n10").setScript("""
@@ -851,7 +851,7 @@ o2=7*i1
     #
     self.assertEqual(n1.getState(),pilot.DONE)
     self.assertEqual(p.getState(),pilot.DONE)
-    self.assertEqual(p.getChildByName("n2").getOutputPort("o4").getPyObj(),[6L,12L,16L,63L,-4L,10L])
+    self.assertEqual(p.getChildByName("n2").getOutputPort("o4").getPyObj(),[6,12,16,63,-4,10])
     pass
 
   def test10(self):
@@ -915,7 +915,7 @@ else:
     n1.edGetSeqOfSamplesPort().getPyObj()
     a,b,c=n1.getPassedResults(ex)
     self.assertEqual(a,[1,3,5,7,9,11])
-    self.assertEqual([elt.getPyObj() for elt in b],[[12L,36L,60L,84L,108L,132L]])
+    self.assertEqual([elt.getPyObj() for elt in b],[[12,36,60,84,108,132]])
     self.assertEqual(c,['n10_o2_interceptor'])
     
     p.getChildByName("n1").getChildByName("n10").setScript("""
@@ -937,7 +937,7 @@ else:
     #
     self.assertEqual(n1.getState(),pilot.DONE)
     self.assertEqual(p.getState(),pilot.DONE)
-    self.assertEqual(p.getChildByName("n2").getOutputPort("o4").getPyObj(),[0L,12L,30L,36L,60L,60L,90L,84L,120L,108L,150L,132L])
+    self.assertEqual(p.getChildByName("n2").getOutputPort("o4").getPyObj(),[0,12,30,36,60,60,90,84,120,108,150,132])
     pass
 
   pass
@@ -1006,7 +1006,7 @@ else:
     a,b,c=n1.getPassedResults(ex)
 
     self.assertEqual(a,[0,2,4,6,8,10])
-    self.assertEqual([elt.getPyObj() for elt in b],[[0L,4L,8L,12L,16L,20L]])
+    self.assertEqual([elt.getPyObj() for elt in b],[[0,4,8,12,16,20]])
     
     p.getChildByName("n0").setScript("o0=[ 3*elt for elt in range(12) ]")
     p.getChildByName("n1").getChildByName("n10").setScript("""
@@ -1029,7 +1029,7 @@ else:
     #
     self.assertEqual(n1.getState(),pilot.DONE)
     self.assertEqual(p.getState(),pilot.DONE)
-    self.assertEqual(p.getChildByName("n2").getOutputPort("o4").getPyObj(),[0L,5L,4L,15L,8L,25L,12L,35L,16L,45L,20L,55L])
+    self.assertEqual(p.getChildByName("n2").getOutputPort("o4").getPyObj(),[0,5,4,15,8,25,12,35,16,45,20,55])
     pass
   
   def test12(self):
@@ -1122,14 +1122,14 @@ for i in i8:
     #
     node0=self.r.createForEachLoop("ForEachLoop_int0",ti)
     p.edAddChild(node0)
-    node0.edGetSeqOfSamplesPort().edInitPy(range(4))
+    node0.edGetSeqOfSamplesPort().edInitPy(list(range(4)))
     node0.edGetNbOfBranchesPort().edInitInt(2)
     #
     node00=self.r.createBloc("Bloc0")
     node0.edAddChild(node00)
     node000_0=self.r.createForEachLoop("ForEachLoop_int1",ti)
     node00.edAddChild(node000_0)
-    node000_0.edGetSeqOfSamplesPort().edInitPy(range(4))
+    node000_0.edGetSeqOfSamplesPort().edInitPy(list(range(4)))
     node000_0.edGetNbOfBranchesPort().edInitInt(3)
     #
     node0000=self.r.createBloc("Bloc1")
@@ -1157,7 +1157,7 @@ for i in i8:
     node00.edAddChild(node000_1)
     i7=node000_1.edAddInputPort("i7",ti2)
     i5=node000_1.edAddInputPort("i5",ti2)
-    node000_1.setScript("for i in i7:\n    print i\nprint \"separation\"\nfor i in i5:\n    print i")
+    node000_1.setScript("for i in i7:\n    print(i)\nprint(\"separation\")\nfor i in i5:\n    print(i)")
     node000_1.setContainer(cont)
     node000_1.setExecutionMode("remote")
     p.edAddLink(o5,i7)
@@ -1191,7 +1191,7 @@ for i in i8:
     #
     n00.edAddLink(n000.edGetSamplePort(),i0)
     #
-    n000.edGetSeqOfSamplesPort().edInitPy(range(10))
+    n000.edGetSeqOfSamplesPort().edInitPy(list(range(10)))
     n000.edGetNbOfBranchesPort().edInitInt(2)
     #
     n01=r.createScriptNode("Salome","test23/check") ; n0bis.edAddChild(n01)
@@ -1223,7 +1223,7 @@ for i in i8:
     #
     nb=4
     outs=[]
-    for i in xrange(nb):
+    for i in range(nb):
       node=self.r.createScriptNode("Salome","node%d"%i)
       node.setExecutionMode("remote")
       node.setContainer(cont)
@@ -1237,7 +1237,7 @@ for i in i8:
     res=node.edAddOutputPort("res",ti)
     p.edAddChild(node)
     l=[]
-    for i in xrange(nb):
+    for i in range(nb):
       elt="i%d"%i
       inp=node.edAddInputPort(elt,ti) ; l.append(elt)
       p.edAddChild(node)
@@ -1245,12 +1245,12 @@ for i in i8:
     node.setScript("res="+"+".join(l))
     p.edAddCFLink(b,node)
     #
-    for i in xrange(10):
+    for i in range(10):
       p.init()
       ex = pilot.ExecutorSwig()
       self.assertEqual(p.getState(),pilot.READY)
       ex.RunW(p,0)
-      self.assertEqual(res.get(),6)
+      self.assertEqual(res.getPyObj(),6)
       self.assertEqual(p.getState(),pilot.DONE)
     pass
 
@@ -1264,7 +1264,7 @@ for i in i8:
     
     n00=self.r.createScriptNode("Salome","n00") ; n0.edAddChild(n00)
     o0=n00.edAddOutputPort("o0",tp2)
-    n00.setScript("o0=[[i+1] for i in xrange(8)]")
+    n00.setScript("o0=[[i+1] for i in range(8)]")
     n01=self.r.createScriptNode("Salome","n01") ; n0.edAddChild(n01)
     i1=n01.edAddInputPort("i1",tp)
     n01.setScript("assert(i1==[[1], [2], [3], [4], [5], [6], [7], [8]])")
@@ -1288,7 +1288,7 @@ for i in i8:
     
     n00=self.r.createScriptNode("Salome","n00") ; n0.edAddChild(n00)
     o0=n00.edAddOutputPort("o0",tp2)
-    n00.setScript("o0=[[i+1] for i in xrange(8)]")
+    n00.setScript("o0=[[i+1] for i in range(8)]")
     n01=self.r.createScriptNode("Salome","n01") ; n0.edAddChild(n01)
     i1=n01.edAddInputPort("i1",tp)
     n01.setScript("assert(i1==[[1], [2], [3], [4], [5], [6], [7], [8]])")
@@ -1524,7 +1524,7 @@ o2=2*i1
     self.assertEqual(p.getState(),pilot.DONE)
     self.assertEqual(n1.getState(),pilot.DONE)
     self.assertEqual(a,[0,1])
-    self.assertEqual([elt.getPyObj() for elt in b],[[0L,2L]])
+    self.assertEqual([elt.getPyObj() for elt in b],[[0,2]])
     #
     p.getChildByName("n0").setScript("o0=[ 3*elt for elt in range(6) ]")
     p.getChildByName("n1").getChildByName("n10").setScript("""
@@ -1543,7 +1543,7 @@ o2=5*i1
     #
     self.assertEqual(n1.getState(),pilot.DONE)
     self.assertEqual(p.getState(),pilot.DONE)
-    self.assertEqual(p.getChildByName("n2").getOutputPort("o4").getPyObj(),[0L,2L,10L,15L,20L,25L])
+    self.assertEqual(p.getChildByName("n2").getOutputPort("o4").getPyObj(),[0,2,10,15,20,25])
     pass
   pass
 
@@ -1561,11 +1561,11 @@ o2=5*i1
     q.getChildByName("n1").getChildByName("n10").setScript("""
 import time
 time.sleep(0.1)
-print "execution n10:", i1
+print("execution n10:", i1)
 o2=5*i1
 """)
     q.getChildByName("n2").setScript("""
-print "execution n2:", i3
+print("execution n2:", i3)
 o4=i3
 """)
     loader.loadState(q, xmlStateFileName)
@@ -1576,7 +1576,7 @@ o4=i3
     #
     self.assertEqual(q.getChildByName("n1").getState(),pilot.DONE)
     self.assertEqual(q.getState(),pilot.DONE)
-    self.assertEqual(q.getChildByName("n2").getOutputPort("o4").getPyObj(),[0L,2L,10L,15L,20L,25L])
+    self.assertEqual(q.getChildByName("n2").getOutputPort("o4").getPyObj(),[0,2,10,15,20,25])
     pass
 
   def test23(self):
@@ -1638,9 +1638,8 @@ o2=2*i1
 if __name__ == '__main__':
   import os,sys
   U = os.getenv('USER')
-  f=open("/tmp/" + U + "/UnitTestsResult", 'a')
-  f.write("  --- TEST src/yacsloader: testSaveLoadRun.py\n")
-  suite = unittest.makeSuite(TestSaveLoadRun)
-  result=unittest.TextTestRunner(f, descriptions=1, verbosity=1).run(suite)
-  f.close()
+  with open("/tmp/" + U + "/UnitTestsResult", 'a') as f:
+      f.write("  --- TEST src/yacsloader: testSaveLoadRun.py\n")
+      suite = unittest.makeSuite(TestSaveLoadRun)
+      result=unittest.TextTestRunner(f, descriptions=1, verbosity=1).run(suite)
   sys.exit(not result.wasSuccessful())

@@ -77,10 +77,10 @@ using namespace YACS::ENGINE;
   if (!omnipy)
   {
     PyErr_SetString(PyExc_ImportError,(char*)"Cannot import _omnipy");
-    return;
+    return NULL;
   }
   PyObject* pyapi = PyObject_GetAttrString(omnipy, (char*)"API");
-  api = (omniORBPYAPI*)PyCObject_AsVoidPtr(pyapi);
+  api = (omniORBpyAPI*)PyCapsule_GetPointer(pyapi,"_omnipy.API");
   Py_DECREF(pyapi);
 #endif
 %}
@@ -111,12 +111,14 @@ using namespace YACS::ENGINE;
 %template()              std::pair<YACS::ENGINE::OutPort *,YACS::ENGINE::InPort *>;
 %template()              std::pair<YACS::ENGINE::InPort *,YACS::ENGINE::OutPort *>;
 %template()              std::pair< std::string, int >;
+%template(ItPy3TC)       IteratorPy3<YACS::ENGINE::TypeCode *>;
 //%template(TCmap)         std::map<std::string, YACS::ENGINE::TypeCode *>;
 REFCOUNT_TEMPLATE(TCmap,YACS::ENGINE::TypeCode)
 %template(NODEmap)       std::map<std::string, YACS::ENGINE::Node *>;
 %template(INODEmap)      std::map<std::string, YACS::ENGINE::InlineNode *>;
 %template(SNODEmap)      std::map<std::string, YACS::ENGINE::ServiceNode *>;
 //%template(CONTAINmap)    std::map<std::string, YACS::ENGINE::Container *>;
+%template(ItPy3Cont)     IteratorPy3<YACS::ENGINE::Container * >;
 REFCOUNT_TEMPLATE(CONTAINmap,YACS::ENGINE::Container)
 %template(strvec)        std::vector<std::string>;
 %template(uivec)         std::vector<unsigned int>;
@@ -135,8 +137,10 @@ REFCOUNT_TEMPLATE(CONTAINmap,YACS::ENGINE::Container)
 %template(compomap)      std::map<std::string, YACS::ENGINE::ComponentDefinition *>;
 %template()              std::pair<std::string, std::string>;
 %template(propmap)       std::map<std::string, std::string>;
-
+%template(ItPy3Comp)     IteratorPy3<YACS::ENGINE::ComponentInstance *>;
 REFCOUNT_TEMPLATE(CompoInstmap,YACS::ENGINE::ComponentInstance)
+
+%include "exception.i"
 
 /*
  * End of Template section
@@ -246,13 +250,50 @@ EXCEPTION(YACS::ENGINE::ExecutorSwig::waitPause)
 %include <Port.hxx>
 %extend YACS::ENGINE::Port
 {
-  int __cmp__(Port* other)
+  /* __cmp__ does not exist in Python 3 */
+  int  __lt__(Port* other)
     {
       if(self==other)
         return 0;
       else 
         return 1;
     }
+  int  __gt__(Port* other)
+    {
+      if(self==other)
+        return 0;
+      else 
+        return 1;
+    }
+  int __ne__(Port* other)
+    {
+      if(self==other)
+        return 0;
+      else 
+        return 1;
+    }
+  int __eq__(Port* other)
+    {
+      if(self==other)
+        return 0;
+      else 
+        return 1;
+    }
+  int __le__(Port* other)
+    {
+      if(self==other)
+        return 0;
+      else 
+        return 1;
+    }
+  int __ge__(Port* other)
+    {
+      if(self==other)
+        return 0;
+      else 
+        return 1;
+    }
+  
   long ptr()
     {
       return (long)self;
@@ -313,13 +354,50 @@ EXCEPTION(YACS::ENGINE::ExecutorSwig::waitPause)
 %include <Node.hxx>
 %extend YACS::ENGINE::Node 
 {
-  int __cmp__(Node* other)
+  /* __cmp__ does not exist in Python 3 */
+  int  __lt__(Node* other)
     {
       if(self==other)
         return 0;
       else 
         return 1;
     }
+  int  __gt__(Node* other)
+    {
+      if(self==other)
+        return 0;
+      else 
+        return 1;
+    }
+  int __ne__(Node* other)
+    {
+      if(self==other)
+        return 0;
+      else 
+        return 1;
+    }
+  int __eq__(Node* other)
+    {
+      if(self==other)
+        return 0;
+      else 
+        return 1;
+    }
+  int __le__(Node* other)
+    {
+      if(self==other)
+        return 0;
+      else 
+        return 1;
+    }
+  int __ge__(Node* other)
+    {
+      if(self==other)
+        return 0;
+      else 
+        return 1;
+    }
+
   long ptr()
     {
           return (long)self;
@@ -430,7 +508,7 @@ EXCEPTION(YACS::ENGINE::ExecutorSwig::waitPause)
     // param 0
     PyObject *ret0Py(PyList_New(ret0.size()));
     for(std::size_t i=0;i<ret0.size();i++)
-      PyList_SetItem(ret0Py,i,PyInt_FromLong(ret0[i]));
+      PyList_SetItem(ret0Py,i,PyLong_FromLong(ret0[i]));
     PyTuple_SetItem(ret,0,ret0Py);
     // param 1
     PyObject *ret1Py(PyList_New(ret1.size()));
@@ -440,7 +518,7 @@ EXCEPTION(YACS::ENGINE::ExecutorSwig::waitPause)
     // param 2
     PyObject *ret2Py(PyList_New(ret2.size()));
     for(std::size_t i=0;i<ret2.size();i++)
-      PyList_SetItem(ret2Py,i,PyString_FromString(ret2[i].c_str()));
+      PyList_SetItem(ret2Py,i,PyUnicode_FromString(ret2[i].c_str()));
     PyTuple_SetItem(ret,2,ret2Py);
     return ret;
   }

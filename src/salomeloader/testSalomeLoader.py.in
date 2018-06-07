@@ -72,10 +72,9 @@ class TestSalomeLoader(unittest.TestCase):
     p.saveSchema("tata.xml")
 
 U = os.getenv('USER')
-f=open("/tmp/" + U + "/UnitTestsResult", 'a')
-f.write("  --- TEST src/salomeloader: testSalomeLoader.py\n")
-suite = unittest.makeSuite(TestSalomeLoader)
-result=unittest.TextTestRunner(f, descriptions=1, verbosity=1).run(suite)
-f.close()
+with open("/tmp/" + U + "/UnitTestsResult", 'a') as f:
+  f.write("  --- TEST src/salomeloader: testSalomeLoader.py\n")
+  suite = unittest.makeSuite(TestSalomeLoader)
+  result=unittest.TextTestRunner(f, descriptions=1, verbosity=1).run(suite)
 sys.exit(not result.wasSuccessful())
 

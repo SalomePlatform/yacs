@@ -34,7 +34,7 @@ obj         = orb.resolve_initial_references("NameService")
 rootContext = obj._narrow(CosNaming.NamingContext)
 
 if rootContext is None:
-    print "Failed to narrow the root naming context"
+    print("Failed to narrow the root naming context")
     sys.exit(1)
 
 # Resolve the name "test.my_context/Echo.Object"
@@ -44,22 +44,22 @@ name = [CosNaming.NameComponent("test", "my_context"),
 try:
     obj = rootContext.resolve(name)
 
-except CosNaming.NamingContext.NotFound, ex:
-    print "Name not found"
+except CosNaming.NamingContext.NotFound as ex:
+    print("Name not found")
     sys.exit(1)
 
 # Narrow the object to an eo::Echo
 echo = obj._narrow(eo.Echo)
 
 if echo is None:
-    print "Object reference is not an eo::Echo"
+    print("Object reference is not an eo::Echo")
     sys.exit(1)
 
 # Invoke the echoString operation
 message = "Hello from Python"
 result  = echo.echoString(message)
 
-print "I said '%s'. The object said '%s'." % (message,result)
+print("I said '%s'. The object said '%s'." % (message,result))
 
 """
   struct S1
@@ -80,32 +80,32 @@ s1=eo.S1(x=1,y=2,s="aa",b=True,vd=[1,2])
 s2=eo.S2(s1)
 
 r=echo.echoStruct(s2)
-print r
+print(r)
 
 s3=eo.S3(x=1,y=2,s="aa",b=True,ob=None)
 r=echo.echoStruct2(s3)
-print r
+print(r)
 
 ob=echo.createObj(3)
-print ob
+print(ob)
 oc=echo.createC()
-print oc
+print(oc)
 
 s3=eo.S3(x=1,y=2,s="aa",b=True,ob=ob)
 r=echo.echoStruct2(s3)
-print r
+print(r)
 
 s3=eo.S3(x=1,y=2,s="aa",b=True,ob=oc)
 r=echo.echoStruct2(s3)
-print r
+print(r)
 
 r=echo.echoObjectVec([ob,ob])
-print r
+print(r)
 
 r=echo.echoObjectVec([oc,oc])
-print r
+print(r)
 
 r=echo.echoObjectVec([ob,oc])
-print r
+print(r)
 
 #echo.shutdown()

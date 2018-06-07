@@ -22,8 +22,8 @@ import omniORB
 from omniORB import CORBA
 import CosNaming
 
-import Item
-import CONNECTOR
+from . import Item
+from . import CONNECTOR
 
 class Sessions(Item.Item):
   def __init__(self,port):

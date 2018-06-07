@@ -24,15 +24,15 @@
 
 import os
 from qt import QPixmap
-from imagesxpm import dico_xpm
+from .imagesxpm import dico_xpm
 
 dico_images={}
 
 def get_image(name):
-  if dico_images.has_key(name):
+  if name in dico_images:
     return dico_images[name]
   else :
-    if dico_xpm.has_key(name):
+    if name in dico_xpm:
       image=QPixmap(dico_xpm[name])
     else:
       fic_image = os.path.join(os.path.dirname(__file__),"icons",name)

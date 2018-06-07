@@ -43,7 +43,7 @@
 #include <unistd.h>
 #endif
 
-//#define _DEVDEBUG_
+#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
 using namespace YACS::ENGINE;
@@ -146,6 +146,7 @@ void YACSPMMLBasicsTest1::testYACSdriverLinearRegression()
         YACS::ENGINE::Node* node = p->nodeMap[string("PyGetRes")];
         YACS::ENGINE::OutputPort* outputPort = node->getOutputPort(string("res")); 
         string str =  outputPort->getAsString(); 
+        DEBTRACE("str = " << str);
         CPPUNIT_ASSERT_EQUAL(str, string("True")); 
         delete p;         
     }  
@@ -164,6 +165,7 @@ void YACSPMMLBasicsTest1::testYACSdriverNeuralNetwork()
         YACS::ENGINE::Node* node = p->nodeMap[string("PyGetRes")];
         YACS::ENGINE::OutputPort* outputPort = node->getOutputPort(string("res")); 
         string str =  outputPort->getAsString(); 
+        DEBTRACE("str = " << str);
         CPPUNIT_ASSERT_EQUAL(str, string("True")); 
         delete p;    
     }
@@ -182,6 +184,7 @@ void YACSPMMLBasicsTest1::testYACSdriver_LRANN()
         YACS::ENGINE::Node* node = p->nodeMap[string("PyGetRes")];
         YACS::ENGINE::OutputPort* outputPort = node->getOutputPort(string("res")); 
         string str =  outputPort->getAsString(); 
+        DEBTRACE("str = " << str);
         CPPUNIT_ASSERT_EQUAL(str, string("True")); 
         delete p;   
     }
@@ -200,6 +203,7 @@ void YACSPMMLBasicsTest1::testYACSdriver_PmmlDoesNotExist()
         YACS::ENGINE::Node* node = p->nodeMap[string("PyGetRes")];
         YACS::ENGINE::OutputPort* outputPort = node->getOutputPort(string("res"));        
         string str =  outputPort->getAsString(); 
+        DEBTRACE("str = " << str);
         CPPUNIT_ASSERT_EQUAL(str, string("None")); 
         delete p;     
     }

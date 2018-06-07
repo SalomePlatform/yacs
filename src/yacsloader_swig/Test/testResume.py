@@ -39,7 +39,7 @@ class TestResume(unittest.TestCase):
         # --- stop execution after breakpoint
         time.sleep(1)
 
-        print "================= Start of PARTIALEXEC ==================="
+        print("================= Start of PARTIALEXEC ===================")
         brp=['b1.b2.node1']
         self.e.setListOfBreakPoints(brp)
         self.e.setExecMode(2) # YACS::STOPBEFORENODES
@@ -55,14 +55,14 @@ class TestResume(unittest.TestCase):
         #self.e.displayDot(self.p)
         self.assertEqual(101, self.p.getChildByName('b1.b2.node1').getEffectiveState())
         self.assertEqual(106, self.p.getChildByName('b1.node1').getEffectiveState())
-        print "================= reach BREAKPOINT PARTIAL EXEC =========="
+        print("================= reach BREAKPOINT PARTIAL EXEC ==========")
         pass
 
     def test2_ExecFromLoadState(self):
         # --- reload state from previous partial execution then exec
         time.sleep(1)
 
-        print "================= Start of EXECLOADEDSTATE ==============="
+        print("================= Start of EXECLOADEDSTATE ===============")
         sp = loader.stateParser()
         sl = loader.stateLoader(sp,self.p)
         sl.parse('dumpPartialBloc2.xml')
@@ -81,16 +81,15 @@ class TestResume(unittest.TestCase):
         self.assertEqual(106, self.p.getChildByName('b1.b2.node1').getEffectiveState())
         self.assertEqual(106, self.p.getChildByName('b1.b2.node2').getEffectiveState())
         self.assertEqual(106, self.p.getChildByName('b1.b2.loop1.node1').getEffectiveState())
-        print "================= End of EXECLOADEDSTATE ================="
+        print("================= End of EXECLOADEDSTATE =================")
                           
     pass
 
 if __name__ == '__main__':
   import os
   U = os.getenv('USER')
-  f=open("/tmp/" + U + "/UnitTestsResult", 'a')
-  f.write("  --- TEST src/yacsloader: testResume.py\n")
-  suite = unittest.makeSuite(TestResume)
-  result=unittest.TextTestRunner(f, descriptions=1, verbosity=1).run(suite)
-  f.close()
+  with open("/tmp/" + U + "/UnitTestsResult", 'a') as f:
+      f.write("  --- TEST src/yacsloader: testResume.py\n")
+      suite = unittest.makeSuite(TestResume)
+      result=unittest.TextTestRunner(f, descriptions=1, verbosity=1).run(suite)
   sys.exit(not result.wasSuccessful())

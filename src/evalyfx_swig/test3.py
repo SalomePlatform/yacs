@@ -69,5 +69,5 @@ cp=rss.getAddParamsForCluster() ; cp.setRemoteWorkingDir(os.path.join("/scratch"
 cp.setWCKey("P11U5:CARBONES") ; cp.setNbProcs(5) ; cp.setMaxDuration("00:05")
 assert(not rss.isInteractive())
 a,b=efx.run(session)
-print("************",a,b)
-print efx.getResults()
+print(("************",a,b))
+print(efx.getResults())

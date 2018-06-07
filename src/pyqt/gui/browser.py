@@ -18,8 +18,8 @@
 #
 
 from qt import *
-import Tree
-from BoxManager import BoxManager
+from . import Tree
+from .BoxManager import BoxManager
 
 class Browser(QVBox):
   def __init__(self,parent,appli):

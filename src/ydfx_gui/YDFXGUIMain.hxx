@@ -29,8 +29,6 @@
 #include <QThread>
 #include <QMutex>
 
-#include "Python.h"
-
 class YACSEvalSession;
 class YACSEvalYFXWrap;
 class YDFXGUIAllPorts;

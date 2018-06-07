@@ -26,21 +26,21 @@
     <switch name="b1" select="3" >
       <case id="1">
         <inline name="n2" >
-          <script><code>print p1</code></script>
+          <script><code>print(p1)</code></script>
           <inport name="p1" type="double"/>
           <outport name="p1" type="double"/>
         </inline>
       </case>
       <case id="3">
         <inline name="n2" >
-          <script><code>print p1</code></script>
+          <script><code>print(p1)</code></script>
           <inport name="p1" type="double"/>
           <outport name="p1" type="double"/>
         </inline>
       </case>
       <default>
         <inline name="n2" >
-          <script><code>print p1</code></script>
+          <script><code>print(p1)</code></script>
           <inport name="p1" type="double"/>
           <outport name="p1" type="double"/>
         </inline>

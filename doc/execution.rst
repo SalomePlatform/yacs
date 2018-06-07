@@ -64,7 +64,7 @@ informed by the system about all problems detected by this operation.
 
 
 If a preliminary check is successfully done, schema run is created and then the user can start its execution in the chosen mode. Schema run 
-is exported to an XML file and passed to YACS CORBA engine and executed there. YACS CORBA engine is also given a study ID.
+is exported to an XML file and passed to YACS CORBA engine and executed there.
 
 For visual representation of execution state the following means are provided by YACS module.
 

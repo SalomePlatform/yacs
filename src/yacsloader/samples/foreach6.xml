@@ -46,14 +46,14 @@
 
     <inline name="node1" >
       <script>
-        <code>print p1</code>
+        <code>print(p1)</code>
       </script>
       <inport name="p1" type="intvecvec"/>
       <outport name="p1" type="intvecvec"/>
     </inline>
     <inline name="node3" >
       <script>
-        <code>print p1</code>
+        <code>print(p1)</code>
       </script>
       <inport name="p1" type="intvecvec"/>
     </inline>

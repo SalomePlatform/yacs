@@ -305,7 +305,7 @@ void YDFXGUIInputPortValueEditor::setText(const QString& text)
     {
       if(wasKO)
         {
-          emit statusChanged();
+          Q_EMIT statusChanged();
           disconnect(this,SIGNAL(changeLook()),this,SLOT(applyModificationOfLook()));
         }
     }
@@ -414,7 +414,7 @@ bool YDFXGUIInputPortValueEditor::toggleRandom()
   bool oldOK(isOK());
   bool oldStatus(_inp->isRandomVar());
   _inp->declareRandomnessStatus(!oldStatus);
-  emit statusChanged(); // always emit because this even if newOK and oldOK are the same the upon status can changed !
+  Q_EMIT statusChanged(); // always Q_EMIT because this even if newOK and oldOK are the same the upon status can changed !
   updateGeometry();
   update();
   return _inp->isRandomVar();
@@ -563,7 +563,7 @@ void InputLabel::paintIfNotOn(QPaintEvent *event)
 
 void InputLabel::pressOccured()
 {
-  emit randomnessStatusChanged();
+  Q_EMIT randomnessStatusChanged();
 }
 
 std::vector<ColoredString> InputLabel::textForEmulatedPushButton() const
@@ -651,7 +651,7 @@ void OutputLabel::pressOccured()
 {
   bool oldStatus(_outp->isQOfInterest());
   _outp->setQOfInterestStatus(!oldStatus);
-  emit clicked();
+  Q_EMIT clicked();
 }
 
 std::vector<ColoredString> OutputLabel::textForEmulatedPushButton() const
@@ -719,7 +719,7 @@ void YDFXGUIGatherPorts::somebodyChangedStatus()
       update();
       setWasOKStatus(newStatus);
     }
-  emit theGlobalStatusChanged(newStatus);// emit signal always because of input ports and sequences definitions.
+  Q_EMIT theGlobalStatusChanged(newStatus);// Q_EMIT signal always because of input ports and sequences definitions.
 }
 
 //////////////////
@@ -820,7 +820,7 @@ void YDFXGUIInputPortsSelector::timerEvent(QTimerEvent *e)
           YDFXGUIInputPortValueEditor *childc(qobject_cast<YDFXGUIInputPortValueEditor *>(child));
           if(childc)
             {
-              emit childc->changeLook();
+              Q_EMIT childc->changeLook();
             }
         }
     }
@@ -977,10 +977,10 @@ void YDFXGUIAllPorts::somethingChangedInPorts(bool status)
   bool step1(_in->isOK() && _out->isOK());
   if(!step1)
     {
-      emit sequencesCanBeDefinedSignal(false);
-      emit canBeExecutedSignal(false);
+      Q_EMIT sequencesCanBeDefinedSignal(false);
+      Q_EMIT canBeExecutedSignal(false);
       return ;
     }
-  emit sequencesCanBeDefinedSignal(true);
-  emit canBeExecutedSignal(_in->areSeqWellDefined());
+  Q_EMIT sequencesCanBeDefinedSignal(true);
+  Q_EMIT canBeExecutedSignal(_in->areSeqWellDefined());
 }

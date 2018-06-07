@@ -56,7 +56,7 @@ void parser::SetUserDataAndPush(parser* pp)
 {
   XML_SetUserData(saxContext,pp);
   _stackParser.push(pp);
-  DEBTRACE("parser::SetUserDataAndPush, stack size: " << sp.size());
+  DEBTRACE("parser::SetUserDataAndPush, stack size: " << pp->_level);
 }
 
 void parser::onEnd(const XML_Char *el, parser* child)

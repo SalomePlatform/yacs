@@ -19,15 +19,15 @@
 
 # -*- coding: iso-8859-15 -*-
 #
-"""Ce module permet de créer des vues sous forme d'arbre
-   Ces vues sont construites à partir des informations
-   fournies par un modèle
+"""Ce module permet de crÃ©er des vues sous forme d'arbre
+   Ces vues sont construites Ã  partir des informations
+   fournies par un modÃ¨le
 """
 
 import sys
 from qt import *
-import Icons
-import CONNECTOR
+from . import Icons
+from . import CONNECTOR
 
 class Tree(QListView):
   """Tree(parent=None)
@@ -156,7 +156,7 @@ class Node(QListViewItem):
        
 
 if __name__ == "__main__":
-  from Item import Item
+  from .Item import Item
   app = QApplication(sys.argv)
   t=Tree()
   t.additem(Item("item1"))

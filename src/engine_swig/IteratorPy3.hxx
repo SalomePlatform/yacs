@@ -1,4 +1,4 @@
-// Copyright (C) 2016  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2017  CEA/DEN, EDF R&D
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -16,26 +16,24 @@
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-// Author : Anthony Geay (EDF R&D)
+// Author: Nicolas GEIMER (EDF)
 
-#ifndef __YDFXGUIPYTHREADSAVER_HXX__
-#define __YDFXGUIPYTHREADSAVER_HXX__
+#ifndef __ITERATORPY3_HXX__
+#define __ITERATORPY3_HXX__
 
-#include "Python.h"
+template <typename U> class StopIteratorPy3 {};
 
-#include "ydfxwidgetsExport.hxx"
-
-
-class QThread;
-
-class YDFXGUIPyThreadSaver
-{
-public:
-  YDFXWIDGETS_EXPORT static void SetDefault(QThread *th);
-  YDFXWIDGETS_EXPORT static void SaveContext(QThread *th);
-private:
-  static PyThreadState *_save;
-  static QThread *_cppThread;
+template <typename U> class IteratorPy3 {
+    public:
+        IteratorPy3( typename std::map<std::string,U*>::iterator _cur, typename std::map<std::string,U*>::iterator _end) : cur(_cur), end(_end) {}
+        ~IteratorPy3() {}
+        IteratorPy3* __iter__()
+        {
+            return this;
+        }
+        typename std::map<std::string,U*>::iterator cur;
+        typename std::map<std::string,U*>::iterator end;
 };
 
-#endif
+#endif /* __ITERATORPY3_HXX__ */
+

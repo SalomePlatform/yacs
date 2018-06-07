@@ -18,7 +18,7 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-import xmlrpclib,sys
+import xmlrpc.client,sys
 
 data="""
 <methodCall>
@@ -31,13 +31,12 @@ data="""
 </methodCall>
 """
 def echo(args):
-  print args
+  print(args)
   return args
 
-f=open("input")
-data=f.read()
-f.close()
-print data
+with open("input",'r') as f:
+  data=f.read()
+print(data)
 
 class Objref:
   """Wrapper for objrefs """
@@ -45,10 +44,32 @@ class Objref:
     self.data=data
   def __str__(self):
     return self.data or ""
-  def __cmp__(self, other):
+
+# __cmp__ is not defined in Python 3 : strict ordering
+  def __le__(self, other):
     if isinstance(other, Binary):
       other = other.data
-    return cmp(self.data, other)
+    return self.data <= other
+  def __lt__(self, other):
+    if isinstance(other, Binary):
+      other = other.data
+    return self.data < other
+  def __ge__(self, other):
+    if isinstance(other, Binary):
+      other = other.data
+    return self.data >= other
+  def __gt__(self, other):
+    if isinstance(other, Binary):
+      other = other.data
+    return self.data > other
+  def __eq__(self, other):
+    if isinstance(other, Binary):
+      other = other.data
+    return self.data == other
+  def __ne__(self, other):
+    if isinstance(other, Binary):
+      other = other.data
+    return self.data != other
 
   def decode(self, data):
     self.data = data
@@ -58,28 +79,27 @@ class Objref:
     out.write(self.data or "")
     out.write("</objref></value>\n")
 
-xmlrpclib.WRAPPERS=xmlrpclib.WRAPPERS+(Objref,)
+xmlrpc.client.WRAPPERS=xmlrpc.client.WRAPPERS+(Objref,)
 
 def end_objref(self,data):
   self.append(Objref(data))
   self._value=0
 
-xmlrpclib.Unmarshaller.end_objref=end_objref
-xmlrpclib.Unmarshaller.dispatch["objref"]=end_objref
+xmlrpc.client.Unmarshaller.end_objref=end_objref
+xmlrpc.client.Unmarshaller.dispatch["objref"]=end_objref
 
-params, method = xmlrpclib.loads(data)
+params, method = xmlrpc.client.loads(data)
 
 try:
-   call=eval(method)
-   response=call(params)
-   response = (response,)
+  call=eval(method)
+  response=call(params)
+  response = (response,)
 except:
-   # report exception back to server
-   response = xmlrpclib.dumps( xmlrpclib.Fault(1, "%s:%s" % sys.exc_info()[:2]))
+  # report exception back to server
+  response = xmlrpc.client.dumps( xmlrpc.client.Fault(1, "%s:%s" % sys.exc_info()[:2]))
 else:
-   response = xmlrpclib.dumps( response, methodresponse=1)
+  response = xmlrpc.client.dumps( response, methodresponse=1)
 
-print response
-f=open("output",'w')
-f.write(response)
-f.close()
+print(response)
+with open("output",'w') as f:
+  f.write(response)

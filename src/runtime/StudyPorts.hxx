@@ -42,7 +42,7 @@ namespace YACS
       virtual std::string getPyObj();
       virtual std::string getAsString();
       virtual std::string typeName() {return "YACS__ENGINE__OutputStudyPort";}
-      virtual void getDataFromStudy(SALOMEDS::Study_var myStudy);
+      virtual void getDataFromStudy();
     protected:
       std::string _storeData;
     };
@@ -61,7 +61,7 @@ namespace YACS
       virtual std::string getPyObj();
       virtual std::string getAsString();
       virtual std::string typeName() {return "YACS__ENGINE__InputStudyPort";}
-      virtual void putDataInStudy(SALOMEDS::Study_var myStudy,SALOMEDS::StudyBuilder_var aBuilder);
+      virtual void putDataInStudy(SALOMEDS::StudyBuilder_var aBuilder);
     protected:
       std::string _storeData;
     };

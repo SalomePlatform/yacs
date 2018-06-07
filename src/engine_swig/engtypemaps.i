@@ -32,27 +32,8 @@
 #ifdef OMNIORB
 #include <omniORB4/CORBA.h>
 
-//--- from omniORBpy.h (not present on Debian Sarge packages)
-struct omniORBPYAPI
-{
-  PyObject* (*cxxObjRefToPyObjRef)(const CORBA::Object_ptr cxx_obj,
-           CORBA::Boolean hold_lock);
-  // Convert a C++ object reference to a Python object reference.
-  // If <hold_lock> is true, caller holds the Python interpreter lock.
-
-  CORBA::Object_ptr (*pyObjRefToCxxObjRef)(PyObject* py_obj,
-             CORBA::Boolean hold_lock);
-  // Convert a Python object reference to a C++ object reference.
-  // Raises BAD_PARAM if the Python object is not an object reference.
-  // If <hold_lock> is true, caller holds the Python interpreter lock.
-
-  PyObject* (*handleCxxSystemException)(const CORBA::SystemException& ex);
-  // Sets the Python exception state to reflect the given C++ system
-  // exception. Always returns NULL. The caller must hold the Python
-  // interpreter lock.
-};
-
-omniORBPYAPI* api;
+#include <omniORBpy.h>
+omniORBpyAPI* api=0;
 
 #define OMNIPY_CATCH_AND_HANDLE_SYSTEM_EXCEPTIONS \
 catch (const CORBA::SystemException& ex) { \
@@ -81,6 +62,7 @@ catch (const CORBA::SystemException& ex) { \
 #include "OutputDataStreamPort.hxx"
 #include "OptimizerLoop.hxx"
 #include "HomogeneousPoolContainer.hxx"
+#include "IteratorPy3.hxx"
 
 #include <sstream>
 
@@ -270,6 +252,8 @@ static void convertFromPyObjVectorOfObj(PyObject *pyLi, swig_type_info *ty, cons
 
 %}
 
+// ----------------------------------------------------------------------------
+
 #if SWIG_VERSION >= 0x010329
 %template()        std::list<int>;
 %template()        std::list<std::string>;
@@ -293,7 +277,7 @@ static void convertFromPyObjVectorOfObj(PyObject *pyLi, swig_type_info *ty, cons
 
   $result = PyList_New($1.size());
   for (i=0, iL=$1.begin(); iL!=$1.end(); i++, iL++)
-    PyList_SetItem($result,i,PyString_FromString((*iL).c_str())); 
+    PyList_SetItem($result,i,PyUnicode_FromString((*iL).c_str())); 
 }
 
 %typemap(in) std::list<std::string>
@@ -308,8 +292,8 @@ static void convertFromPyObjVectorOfObj(PyObject *pyLi, swig_type_info *ty, cons
       for (i = 0; i < size; i++)
         {
           PyObject *o = PyList_GetItem($input,i);
-          if (PyString_Check(o))
-            $1.push_back(std::string(PyString_AsString(PyList_GetItem($input,i))));
+          if (PyUnicode_Check(o))
+            $1.push_back(std::string(PyUnicode_AsUTF8(PyList_GetItem($input,i))));
           else
             {
               PyErr_SetString(PyExc_TypeError,"list must contain strings");
@@ -326,6 +310,8 @@ static void convertFromPyObjVectorOfObj(PyObject *pyLi, swig_type_info *ty, cons
 #endif
 #endif
 
+// ----------------------------------------------------------------------------
+
 #ifdef SWIGPYTHON
 
 %typecheck(SWIG_TYPECHECK_POINTER) YACS::ENGINE::Any*
@@ -333,11 +319,13 @@ static void convertFromPyObjVectorOfObj(PyObject *pyLi, swig_type_info *ty, cons
   void *ptr;
   if (SWIG_ConvertPtr($input, (void **) &ptr, $1_descriptor, 0) == 0) 
     $1 = 1;
-  else if (PyInt_Check($input))
+  else if (PyLong_Check($input))
     $1 = 1;
   else if(PyFloat_Check($input))
     $1 = 1;
-  else if (PyString_Check($input))
+  else if (PyUnicode_Check($input))
+    $1 = 1;
+  else if (PyBytes_Check($input))
     $1 = 1;
   else 
     $1 = 0;
@@ -350,10 +338,10 @@ static void convertFromPyObjVectorOfObj(PyObject *pyLi, swig_type_info *ty, cons
       // It is an Any : it is converted by SWIG_ConvertPtr $input -> $1
       is_new_object=0;
     }
-  else if (PyInt_Check($input))
+  else if (PyLong_Check($input))
     {
       // It is an Int
-      $1=YACS::ENGINE::AtomAny::New((int)PyInt_AsLong($input));
+      $1=YACS::ENGINE::AtomAny::New((int)PyLong_AsLong($input));
       is_new_object=1;
     }
   else if(PyFloat_Check($input))
@@ -362,10 +350,16 @@ static void convertFromPyObjVectorOfObj(PyObject *pyLi, swig_type_info *ty, cons
       $1=YACS::ENGINE::AtomAny::New(PyFloat_AsDouble($input));
       is_new_object=1;
     }
-  else if(PyString_Check($input))
+  else if(PyUnicode_Check($input))
     {
-      // It is a Float
-      $1=YACS::ENGINE::AtomAny::New(PyString_AsString($input));
+      // It is a Unicode
+      $1=YACS::ENGINE::AtomAny::New(PyUnicode_AsUTF8($input));
+      is_new_object=1;
+    }
+  else if(PyBytes_Check($input))
+    {
+      // It is a Bytes
+      $1=YACS::ENGINE::AtomAny::New(PyBytes_AsString($input));
       is_new_object=1;
     }
   else
@@ -385,17 +379,22 @@ static void convertFromPyObjVectorOfObj(PyObject *pyLi, swig_type_info *ty, cons
   else if (PyInt_Check($1))
     {
       // It is an Int
-      $result=YACS::ENGINE::AtomAny::New((int)PyInt_AsLong($1));
+      $result=YACS::ENGINE::AtomAny::New((int)PyLong_AsLong($1));
     }
   else if(PyFloat_Check($1))
     {
       // It is a Float
       $result=YACS::ENGINE::AtomAny::New(PyFloat_AsDouble($1));
     }
-  else if(PyString_Check($1))
+  else if(PyUnicode_Check($1))
     {
-      // It is a String
-      $result=YACS::ENGINE::AtomAny::New(PyString_AsString($1));
+      // It is a Unicode
+      $result=YACS::ENGINE::AtomAny::New(PyUnicode_AsUTF8($1));
+    }
+  else if(PyBytes_Check($1))
+    {
+      // It is a Bytes
+      $result=YACS::ENGINE::AtomAny::New(PyBytes_AsString($1));
     }
   else
     {
@@ -696,6 +695,8 @@ static void convertFromPyObjVectorOfObj(PyObject *pyLi, swig_type_info *ty, cons
 
 #endif
 
+// ----------------------------------------------------------------------------
+
 /*
  * Exception section
  */
@@ -817,6 +818,8 @@ static void convertFromPyObjVectorOfObj(PyObject *pyLi, swig_type_info *ty, cons
  * End of Exception section
  */
 
+// ----------------------------------------------------------------------------
+
 /*
  * Ownership section
  */
@@ -847,6 +850,8 @@ static void convertFromPyObjVectorOfObj(PyObject *pyLi, swig_type_info *ty, cons
  * End of Reference counting section
  */
 
+// ----------------------------------------------------------------------------
+
 /*
 %wrapper %{
   namespace swig {
@@ -874,17 +879,56 @@ static void convertFromPyObjVectorOfObj(PyObject *pyLi, swig_type_info *ty, cons
 %}
 */
 
-%define REFCOUNT_TEMPLATE(tname, T...)
+// ----------------------------------------------------------------------------
+
+%include "IteratorPy3.hxx"
+%include "exception.i"
+
+%define REFCOUNT_TEMPLATE(tname, T)
 /*
  This macro is a special wrapping for map with value type which derives from RefCounter.
  To overload standard SWIG wrapping we define a full specialization of std::map
- with %extend for 4 basic methods : getitem, setitem, delitem and keys.
+ with %extend for 5 basic methods : getitem, setitem, delitem, keys and iter.
+ We also provide an iterator and %extend with the __next__ method : required in python 3.
+ (see https://docs.python.org/3/library/stdtypes.html#iterator-types)
  Then we complete the interface by deriving the shadow wrapper from
- the python mixin class (UserDict.DictMixin).
+ the python mixin class (UserDict.DictMixin / collections.MutableMapping with Python 3).
  Do not forget to declare the new shadow class to SWIG with tname_swigregister(tname).
  Objects returned by __getitem__ are declared new (%newobject) so that when destroyed they
  call decrRef (see feature("unref") for RefCounter).
 */
+
+%exception IteratorPy3<T>::__next__
+{
+  try
+  {
+    $action  // calls %extend function next() below
+  }
+  catch (StopIteratorPy3<T>)
+  {
+    PyErr_SetString(PyExc_StopIteration, "End of iterator");
+    return NULL;
+  }
+}
+
+%extend IteratorPy3<T>
+{
+//  std::pair<const std::string,T*>& __next__()
+  std::string __next__()
+  {
+    if ($self->cur != $self->end)
+    {
+      // dereference the iterator and return reference to the object,
+      // after that it increments the iterator
+      //return *self->cur++;
+      std::string key= self->cur->first;
+      *self->cur++;
+      return key;
+    }
+    throw StopIteratorPy3<T>();
+  }
+}
+
 template<>
 class std::map<std::string,T*>
 {
@@ -917,31 +961,46 @@ public:
   void __delitem__(std::string name)
     {
       std::map<std::string, T* >::iterator i = self->find(name);
-      if (i != self->end()){
+      if (i != self->end())
+      {
         i->second->decrRef();
         self->erase(i);
       }
       else
         throw std::out_of_range("key not found");
     }
-  PyObject* keys() {
+  PyObject* keys()
+    {
       int pysize = self->size();
       PyObject* keyList = PyList_New(pysize);
       std::map<std::string, T* >::const_iterator i = self->begin();
-      for (int j = 0; j < pysize; ++i, ++j) {
-        PyList_SET_ITEM(keyList, j, PyString_FromString(i->first.c_str()));
+      for (int j = 0; j < pysize; ++i, ++j)
+      {
+        PyList_SET_ITEM(keyList, j, PyUnicode_FromString(i->first.c_str()));
       }
       return keyList;
     }
+  IteratorPy3<T> __iter__()
+  {
+    // return a constructed IteratorPy3 object
+    return IteratorPy3<T>($self->begin(), $self->end());
+  }
+  int __len__()
+  {
+      int pysize = self->size();
+      return pysize;
+  }
 }
 };
-
 %newobject std::map<std::string,T* >::__getitem__;
-%template()   std::pair<std::string, T* >;
-%template(tname)    std::map<std::string, T* >;
-%pythoncode{
-from UserDict import DictMixin
-class tname(tname,DictMixin):pass
+%newobject std::map<std::string,T* >::__iter__;
+%template(tname##it)  IteratorPy3<T >;
+%template()           std::pair<std::string, T* >;
+%template(tname)      std::map<std::string, T* >;
+%pythoncode
+{
+from collections import MutableMapping    
+class tname(tname,MutableMapping):pass
 tname##_swigregister(tname)
 }
 %enddef

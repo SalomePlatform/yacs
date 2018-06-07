@@ -20,8 +20,8 @@
 #include <iostream>
 #include <fstream>
 
-#include "ListJobs_GUI.hxx"
 #include "RuntimeSALOME.hxx"
+#include "ListJobs_GUI.hxx"
 #include "GenericGui.hxx"
 #include "QtGuiContext.hxx"
 #include "YACSGuiLoader.hxx"

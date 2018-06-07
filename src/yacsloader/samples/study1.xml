@@ -29,7 +29,6 @@
 
     <!--nodes -->
     <datanode name="s" kind="study" >
-      <property name="StudyID" value="1" />
       <parameter name="b" type="GEOM/GEOM_Object" ref="0:1:2:2"/>
       <parameter name="c" type="bool" ref="/Geometry/Box_1"/>
     </datanode>
@@ -38,14 +37,13 @@
       <script>
         <code>import GEOM</code>
         <code>p1=p1._narrow(GEOM.GEOM_Object)</code>
-        <code>print p1</code>
+        <code>print(p1)</code>
       </script>
       <inport name="p1" type="GEOM/GEOM_Object"/>
       <outport name="p1" type="GEOM/GEOM_Object"/>
     </inline>
 
     <outnode name="os" kind="study" ref="stud1.hdf" >
-      <property name="StudyID" value="3" />
       <parameter name="b" type="GEOM/GEOM_Object" ref="/Save/x"/>
       <!--       <parameter name="c" type="GEOM/GEOM_Object" ref="/Geometry/Box_2"/> 
       <parameter name="b" type="GEOM/GEOM_Object" ref="0:1:1:6"/>

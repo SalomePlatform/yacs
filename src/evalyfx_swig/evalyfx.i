@@ -46,7 +46,7 @@ static void convertPyToIntArr(PyObject *pyLi, std::vector<int>& arr)
           PyObject *o=PyList_GetItem(pyLi,i);
           if(PyInt_Check(o))
             {
-              int val=(int)PyInt_AS_LONG(o);
+              int val=(int)PyLong_AS_LONG(o);
               arr[i]=val;
             }
           else
@@ -60,9 +60,9 @@ static void convertPyToIntArr(PyObject *pyLi, std::vector<int>& arr)
       for(int i=0;i<size;i++)
         {
           PyObject *o=PyTuple_GetItem(pyLi,i);
-          if(PyInt_Check(o))
+          if(PyLong_Check(o))
             {
-              int val=(int)PyInt_AS_LONG(o);
+              int val=(int)PyLong_AS_LONG(o);
               arr[i]=val;
             }
           else
@@ -80,7 +80,7 @@ static PyObject *convertToPyToInt(const std::vector<unsigned int>& arr)
   std::size_t sz(arr.size());
   PyObject *ret(PyList_New(sz));
   for(std::size_t i=0;i<sz;i++)
-    PyList_SetItem(ret,i,PyInt_FromLong(arr[i]));
+    PyList_SetItem(ret,i,PyLong_FromLong(arr[i]));
   return ret;
 }
 
@@ -148,7 +148,7 @@ static PyObject *convertVectOfSeqAny(const std::vector<YACSEvalSeqAny *>& retCpp
           std::size_t sz2(zeArr->size());
           PyObject *ret2(PyList_New(sz2));
           for(std::size_t i2=0;i2<sz2;i2++)
-            PyList_SetItem(ret2,i2,PyInt_FromLong((*zeArr)[i2]));
+            PyList_SetItem(ret2,i2,PyLong_FromLong((*zeArr)[i2]));
           PyList_SetItem(ret,i,ret2);
         }
       else
@@ -249,7 +249,7 @@ public:
            }
          else if(PyInt_Check(parameter))
            {
-             YACSEvalAnyInt tmp((int)PyInt_AsLong(parameter));
+             YACSEvalAnyInt tmp((int)PyLong_AsLong(parameter));
              self->setDefaultValue(&tmp);
            }
          else
@@ -508,7 +508,7 @@ public:
          PyObject *ret0Py(ret0?Py_True:Py_False);
          Py_XINCREF(ret0Py);
          PyTuple_SetItem(ret,0,ret0Py);
-         PyTuple_SetItem(ret,1,PyInt_FromLong(ret1));
+         PyTuple_SetItem(ret,1,PyLong_FromLong(ret1));
          return ret;
        }
      }

@@ -18,8 +18,8 @@
 #
 
 from qt import *
-import browser_session
-import browser_catalog
+from . import browser_session
+from . import browser_catalog
 import pilot
 
 class CatalogTool(QMainWindow):
@@ -74,10 +74,10 @@ class CatalogTool(QMainWindow):
       return
     filename = str(fn)
     cata=pilot.getRuntime().loadCatalog("proc",filename)
-    print cata
-    print cata._nodeMap
-    for name,node in cata._nodeMap.items():
-      print name,node
+    print(cata)
+    print(cata._nodeMap)
+    for name,node in list(cata._nodeMap.items()):
+      print(name,node)
     self.register(cata,filename)
 
   def register(self,cata,name):

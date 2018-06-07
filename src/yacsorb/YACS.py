@@ -100,9 +100,9 @@ class proc_i(YACS_ORB__POA.ProcExec):
         return self.p.getIds()
 
     def runProc(self,debug, isPyThread, fromscratch):
-      print "**************************Begin schema execution %s**************************" % self.xmlFile
+      print("**************************Begin schema execution %s**************************" % self.xmlFile)
       self.e.RunPy(self.p,debug, isPyThread, fromscratch)
-      print "**************************End schema execution %s****************************" % self.xmlFile
+      print("**************************End schema execution %s****************************" % self.xmlFile)
 
     def Run(self):
         if self.run1 is not None:
@@ -132,17 +132,17 @@ class proc_i(YACS_ORB__POA.ProcExec):
             sp = loader.stateParser()
             sl = loader.stateLoader(sp,self.p)
             sl.parse(xmlFile)
-          except IOError, ex:
-            print "IO Error: ", ex
+          except IOError as ex:
+            print("IO Error: ", ex)
             return
-          except ValueError,ex:
-            print "Caught ValueError Exception:",ex
+          except ValueError as ex:
+            print("Caught ValueError Exception:",ex)
             return
-          except pilot.Exception,ex:
-            print ex.what()
+          except pilot.Exception as ex:
+            print(ex.what())
             return
           except:
-            print "Unknown exception!"
+            print("Unknown exception!")
             return
 
         if self.run1 is None:
@@ -240,7 +240,7 @@ class YACS(YACS_ORB__POA.YACS_Gen,
     """
     def __init__ ( self, orb, poa, contID, containerName, instanceName,
                    interfaceName ):
-        print "YACS.__init__: ", containerName, ';', instanceName
+        print("YACS.__init__: ", containerName, ';', instanceName)
         SALOME_ComponentPy.SALOME_ComponentPy_i.__init__(self, orb, poa, contID,
                                                          containerName, instanceName,
                                                          interfaceName, False)
@@ -283,18 +283,18 @@ class YACS(YACS_ORB__POA.YACS_Gen,
             procExec_i = proc_i(xmlFile)
             logger=procExec_i.p.getLogger("parser")
             if not logger.isEmpty():
-              print "The imported file has errors :"
-              print logger.getStr()
+              print("The imported file has errors :")
+              print(logger.getStr())
               sys.stdout.flush()
               return None
-        except IOError, ex:
-            print >> sys.stderr ,"IO Error: ", ex
+        except IOError as ex:
+            print("IO Error: ", ex, file=sys.stderr)
             return None
-        except ValueError,ex:
-            print >> sys.stderr ,"Caught ValueError Exception:",ex
+        except ValueError as ex:
+            print("Caught ValueError Exception:",ex, file=sys.stderr)
             return None
-        except pilot.Exception,ex:
-            print >> sys.stderr ,ex.what()
+        except pilot.Exception as ex:
+            print(ex.what(), file=sys.stderr)
             return None
         except:
             traceback.print_exc()

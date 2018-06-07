@@ -49,7 +49,6 @@ QtGuiContext::QtGuiContext(GenericGui *gmain) : GuiContext()
   _selectedSubject = 0;
   _isEdition = true;
   _isLoadingPresentation = false;
-  _studyId = 0;
   _fileName = QString();
   _mapOfSchemaItem.clear();
   _mapOfSceneItem.clear();

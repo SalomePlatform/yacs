@@ -26,7 +26,7 @@
 <inline name="node_0_0" >
 <script><code>
 c=a+b
-print c
+print(c)
 </code></script>
 <inport name="a" type="int"/>
 <inport name="b" type="int"/>
@@ -43,7 +43,7 @@ print c
 <inline name="node_3_0" >
 <script><code>
 c=a+b/0
-print c
+print(c)
 </code></script>
 <inport name="a" type="int"/>
 <inport name="b" type="int"/>

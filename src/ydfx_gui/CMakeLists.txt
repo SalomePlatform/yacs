@@ -29,11 +29,15 @@ INCLUDE_DIRECTORIES(
   ${PROJECT_SOURCE_DIR}/src/runtime
   ${PROJECT_SOURCE_DIR}/src/yacsloader
   ${PROJECT_SOURCE_DIR}/src/evalyfx
+  ${OMNIORB_INCLUDE_DIR}
+  ${OMNIORB_ROOT_DIR}/include/omniORB4/internal
+  ${OMNIORBPY_INCLUDE_DIR}
   )
 
 # additional preprocessor / compiler flags
 ADD_DEFINITIONS(
   ${QT_DEFINITIONS}
+  ${OMNIORB_DEFINITIONS}
   ${PYTHON_DEFINITIONS})
 
 IF(SALOME_YACS_USE_KERNEL)

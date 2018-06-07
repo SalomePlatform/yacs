@@ -51,7 +51,7 @@
         <inline name="node2" >
                 <function name="f">
                     <code>def f(s1):</code>
-                    <code>  print s1 </code>
+                    <code>  print(s1) </code>
                     <code>  return s1 </code>
                 </function>
                 <inport name="s1" type="dblevec"/>
@@ -61,7 +61,7 @@
             <inline name="node1" >
                 <function name="f">
                     <code>def f(p1):</code>
-                    <code>  print p1;p1=2*p1 </code>
+                    <code>  print(p1);p1=2*p1 </code>
                     <code>  return p1 </code>
                 </function>
                 <inport name="p1" type="string"/>

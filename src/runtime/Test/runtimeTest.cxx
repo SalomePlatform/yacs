@@ -365,16 +365,16 @@ void RuntimeTest::createPythonNodesWithScript()
     string s = ss.str();
     ElementaryNode* node = _myRuntime->createScriptNode("",s);
     _nodeMap[s] = node;
-    ((InlineNode*) node)->setScript("print 'node 13'\n"
+    ((InlineNode*) node)->setScript("print('node 13')\n"
                                      "import eo\n"
-                                     "print ob\n"
+                                     "print(ob)\n"
                                      "o=ob._narrow(eo.Obj)\n"
-                                     "print o\n"
-                                     "print o.echoLong(13)\n"
+                                     "print(o)\n"
+                                     "print(o.echoLong(13))\n"
                                      "a=dble+1\n"
                                      "dble=2*a\n"
-                                     "print lng\n"
-                                     "print '++++++++',s,'+++++++++++++'\n"
+                                     "print(lng)\n"
+                                     "print('++++++++',s,'+++++++++++++')\n"
                                      "ob=o\n"
                                      "seqstr=['aaa','bbb']\n"
                                      "seqobj=[o,o,o,o]\n"
@@ -413,12 +413,12 @@ void RuntimeTest::createPythonNodesWithScript()
     string s = ss.str();
     ElementaryNode* node = _myRuntime->createScriptNode("",s);
     _nodeMap[s] = node;
-    ((InlineNode*) node)->setScript("print li\n"
-                                     "print 'lili=',lili\n"
-                                     "print 'lstr=',lstr\n"
-                                     "print 'lobj=',lobj\n"
-                                     "print 'llobj=',llobj\n"
-                                     "print 'objc=',objc\n"
+    ((InlineNode*) node)->setScript("print(li)\n"
+                                     "print('lili=',lili)\n"
+                                     "print('lstr=',lstr)\n"
+                                     "print('lobj=',lobj)\n"
+                                     "print('llobj=',llobj)\n"
+                                     "print('objc=',objc)\n"
                                      "li=2*li\n"
                                      );
     InputPort  *i1  = node->edAddInputPort("li",    _tc_seqdble);
@@ -447,12 +447,12 @@ void RuntimeTest::createPythonNodesWithScript()
     string s = ss.str();
     ElementaryNode* node = _myRuntime->createScriptNode("",s);
     _nodeMap[s] = node;
-    ((InlineNode*) node)->setScript("print li\n"
+    ((InlineNode*) node)->setScript("print(li)\n"
                                      "li=[2*e for e in li]\n"
-                                     "print 'obj=',obj\n"
-                                     "print li\n"
-                                     "print lngvec\n"
-                                     "print dblevec\n"
+                                     "print('obj=',obj)\n"
+                                     "print(li)\n"
+                                     "print(lngvec)\n"
+                                     "print(dblevec)\n"
                                      );
     InputPort  *i1  = node->edAddInputPort("li",      _tc_seqdble);
     InputPort  *i2  = node->edAddInputPort("obj",     _tc_obj);
@@ -1155,7 +1155,6 @@ void RuntimeTest::manualExecuteNoThread()
   ((ElementaryNode*)_nodeMap["Node_10"])->load();
   ((ElementaryNode*)_nodeMap["Node_10"])->execute();
   //  CPPUNIT_ASSERT_DOUBLES_EQUAL(10.51, (ElementaryNode*)_nodeMap["Node_10"])
-
   DEBTRACE(" --- execution Python Node_11" );
   ((ElementaryNode*)_nodeMap["Node_11"])->load();
   ((ElementaryNode*)_nodeMap["Node_11"])->execute();
@@ -1240,6 +1239,7 @@ void RuntimeTest::manualExecuteNoThread()
   ((ElementaryNode*)_nodeMap["Node_15"])->load();
   ((ElementaryNode*)_nodeMap["Node_15"])->execute();
 
+  std::cerr << __LINE__ << std::endl;
   DEBTRACE(" --- execution XML Node_36" );
   ((ElementaryNode*)_nodeMap["Node_36"])->load();
   ((ElementaryNode*)_nodeMap["Node_36"])->execute();

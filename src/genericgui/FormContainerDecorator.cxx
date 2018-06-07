@@ -179,6 +179,6 @@ void FormContainerDecorator::checkAndRepareTypeIfNecessary(YACS::ENGINE::Contain
 void FormContainerDecorator::connectForTyp()
 {
   connect(_typ->cb_resource,SIGNAL(mousePressed()),this,SLOT(onResMousePressed()));
-  connect(_typ->cb_resource,SIGNAL(activated(int)),this,SLOT(onResActivated));
-  connect(tb_container,SIGNAL(toggled(bool)),this,SLOT(onContToggled()));
+  connect(_typ->cb_resource,SIGNAL(activated(int)),this,SLOT(onResActivated(int)));
+  connect(tb_container,SIGNAL(toggled(bool)),this,SLOT(onContToggled(bool)));
 }

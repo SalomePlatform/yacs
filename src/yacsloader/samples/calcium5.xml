@@ -20,7 +20,6 @@
 
 -->
 <proc name="proc">
-   <property name="DefaultStudyID" value="1"/>
    <objref name="CALCIUM_integer" id="IDL:CALCIUM_integer:1.0"/>
    <type name="string" kind="string"/>
    <struct name="Engines/dataref">

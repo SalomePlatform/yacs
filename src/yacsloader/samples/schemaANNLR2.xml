@@ -1,6 +1,5 @@
 <?xml version='1.0' encoding='iso-8859-1' ?>
 <proc name="newSchema_1">
-   <property name="DefaultStudyID" value="1"/>
    <type name="string" kind="string"/>
    <struct name="Engines/dataref">
       <member name="ref" type="string"/>
@@ -67,10 +66,10 @@ msg += "ANN : ref = %f , out = %f, err = %f \n"%(refOutputANN, outputANN, errANN
 if errLR > epsilon or errANN > epsilon: 
     msg   += "KO valid with eps %f at pattern #%i: \n"%(epsilon, i) ;
     ret = False;
-    print msg;
+    print(msg);
     pass
 
-print "+++ OK " , i , " +++", ret
+print("+++ OK " , i , " +++", ret)
 ]]></code></script>
             <inport name="i" type="int"/>
             <inport name="refOutputsLR" type="pyobj"/>
@@ -100,7 +99,7 @@ pmmlObj.SetCurrentModel( modelname , eval(pmmltype) );
 myFunc = "pyFunc";
 myHeader = "Function processed in YACCS";
 myCode = pmmlObj.ExportPyStr(myFunc, myHeader);
-exec myCode;
+exec(myCode);
 ]]></code></script>
       <inport name="filename" type="string"/>
       <inport name="modelname" type="string"/>
@@ -116,7 +115,7 @@ pmmlObj.SetCurrentModel( modelname , eval(pmmltype) );
 myFunc = "pyFunc";
 myHeader = "Function processed in YACCS";
 myCode = pmmlObj.ExportPyStr(myFunc, myHeader);
-exec myCode;
+exec(myCode);
 ]]></code></script>
       <inport name="filename" type="string"/>
       <inport name="modelname" type="string"/>
@@ -402,7 +401,7 @@ refOutputs_LR = [
    <inline name="PyBuildLoopIndex0">
       <function name="make_indexes">
          <code><![CDATA[def make_indexes(inVal, outVal_LR, outVal_ANN) :
-    print "In make_indexes" ;
+    print("In make_indexes") ;
 
     if ( len(inVal) != len(outVal_LR) ) :
         msg = "len(inVal) (%i) != len(outVal_LR) (%i). "%( len(inVal), len(outVal_LR) ) ;
@@ -437,8 +436,8 @@ filepath = resourcesDir + filename;
       <outport name="filepath" type="string"/>
    </inline>
    <inline name="PyGetRes">
-      <script><code><![CDATA[print "retVec ";
-print retVec;
+      <script><code><![CDATA[print("retVec ");
+print(retVec);
 res = "True";
 for ret in retVec:
     if not ret:

@@ -20,7 +20,6 @@
 
 -->
 <proc name="newSchema_1">
-   <property name="DefaultStudyID" value="1"/>
    <type name="string" kind="string"/>
    <struct name="Engines/dataref">
       <member name="ref" type="string"/>
@@ -47,9 +46,9 @@
          <code><![CDATA[import time
 
 def f():
-    print my_container
-    for n in xrange(15):
-      print time.time()
+    print(my_container)
+    for n in range(15):
+      print(time.time())
       time.sleep(1)
     
 ]]></code>
@@ -60,9 +59,9 @@ def f():
       <function name="f">
          <code><![CDATA[import time
 def f():
-    print my_container
-    for n in xrange(15):
-      print time.time()
+    print(my_container)
+    for n in range(15):
+      print(time.time())
       time.sleep(1)
 ]]></code>
       </function>
