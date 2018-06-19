@@ -41,9 +41,7 @@ class FunctionProperties:
 
 class v(ast.NodeVisitor):
   def visit_Module(self, node):
-    #print(type(node).__name__, ":")
     accepted_tokens = ["Import", "ImportFrom", "FunctionDef", "ClassDef"]
-    #print "module body:"
     self.global_errors=[]
     for e in node.body:
       type_name = type(e).__name__
@@ -51,8 +49,6 @@ class v(ast.NodeVisitor):
         error="py2yacs error at line %s: not accepted statement '%s'." % (
                e.lineno, type_name)
         self.global_errors.append(error)
-      #print(type_name)
-    #print("------------------------------------------------------------------")
     self.functions=[]
     self.lastfn=""
     self.infunc=False
@@ -60,7 +56,6 @@ class v(ast.NodeVisitor):
     self.generic_visit(node)
     pass
   def visit_FunctionDef(self, node):
-    #print(type(node).__name__, ":", node.name)
     if not self.infunc:
       self.lastfn = FunctionProperties(node.name)
       self.functions.append(self.lastfn)
@@ -71,12 +66,20 @@ class v(ast.NodeVisitor):
       self.lastfn = None
       self.infunc=False
     pass
-  def visit_arg(self, node):
-    #print(type(node).__name__, ":", node.arg)
-    self.lastfn.inputs.append(node.arg)
+  def visit_arguments(self, node):
+    self.inargs=True
+    self.generic_visit(node)
+    self.inargs=False
+    pass
+  def visit_Name(self, node):
+    if self.inargs :
+      self.lastname=node.id
+      self.generic_visit(node)
+    pass
+  def visit_Param(self, node):
+    self.lastfn.inputs.append(self.lastname)
     pass
   def visit_Return(self, node):
-    #print(type(node).__name__, ":", node.value)
     if self.lastfn.outputs is not None :
       error="py2yacs error at line %s: multiple returns." % node.lineno
       self.lastfn.errors.append(error)
@@ -119,28 +122,29 @@ class v(ast.NodeVisitor):
 
 class vtest(ast.NodeVisitor):
   def generic_visit(self, node):
-    #print type(node).__name__
     ast.NodeVisitor.generic_visit(self, node)
 
 def create_yacs_schema(text, fn_name, fn_args, fn_returns, file_name):
   import pilot
   import SALOMERuntime
-  #import loader
   SALOMERuntime.RuntimeSALOME_setRuntime()
   runtime = pilot.getRuntime()
   schema = runtime.createProc("schema")
-  node = runtime.createFuncNode("", "default_name")
+  node = runtime.createScriptNode("", "default_name")
   schema.edAddChild(node)
   fncall = "\n%s=%s(%s)\n"%(",".join(fn_returns),
                             fn_name,
                             ",".join(fn_args))
   node.setScript(text+fncall)
-  node.setFname(fn_name)
   td=schema.getTypeCode("double")
   for p in fn_args:
-    node.edAddInputPort(p, td)
+    newport = node.edAddInputPort(p, td)
+    newport.edInit(0.0)
   for p in fn_returns:
     node.edAddOutputPort(p, td)
+  myContainer=schema.createContainer("Py2YacsContainer")
+  node.setExecutionMode(pilot.InlineNode.REMOTE_STR)
+  node.setContainer(myContainer)
   schema.saveSchema(file_name)
 
 def get_properties(text_file):
@@ -148,6 +152,28 @@ def get_properties(text_file):
   w=v()
   w.visit(bt)
   return w.functions, w.global_errors
+
+def main(python_path, yacs_path, function_name="_exec"):
+  with open(python_path, 'r') as f:
+    text_file = f.read()
+  fn_name = function_name
+  functions,errors = get_properties(text_file)
+  error_string = ""
+  if len(errors) > 0:
+    error_string += "global errors:\n"
+    error_string += errors
+  fn_properties = next((f for f in functions if f.name == fn_name), None)
+  if fn_properties is not None :
+    if not fn_properties.errors :
+      create_yacs_schema(text_file, fn_name,
+                         fn_properties.inputs, fn_properties.outputs,
+                         yacs_path)
+    else:
+      error_string += fn_properties.errors
+  else:
+    error_string += "Function not found:"
+    error_string += fn_name
+  return error_string
 
 if __name__ == '__main__':
   import argparse
@@ -160,29 +186,6 @@ if __name__ == '__main__':
         help='Name of the function to call in the yacs node (_exec by default)',
         default='_exec')
   args = parser.parse_args()
-  with open(args.file, 'r') as f:
-    text_file = f.read()
-  #bt=ast.parse(text_file)
-  #w=vtest()
-  #w=v()
-  #w.visit(bt)
-  #print "global errors:", w.global_errors
-  #for f in w.functions:
-  #  print f
-  
-  fn_name = args.def_name
-  functions,errors = get_properties(text_file)
-  print("global errors:", errors)
-  for f in functions:
-    print(f)
-  
-  fn_properties = next((f for f in functions if f.name == fn_name), None)
-  if fn_properties is not None :
-    if not fn_properties.errors :
-      create_yacs_schema(text_file, fn_name,
-                       fn_properties.inputs, fn_properties.outputs,
-                       args.output)
-    else:
-      print("\n".join(fn_properties.errors))
-  else:
-    print("Function not found:", fn_name)
+  erreurs = main(args.file, args.output, args.def_name)
+  if erreurs:
+    print(erreurs)
