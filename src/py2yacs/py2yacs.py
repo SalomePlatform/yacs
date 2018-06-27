@@ -66,18 +66,8 @@ class v(ast.NodeVisitor):
       self.lastfn = None
       self.infunc=False
     pass
-  def visit_arguments(self, node):
-    self.inargs=True
-    self.generic_visit(node)
-    self.inargs=False
-    pass
-  def visit_Name(self, node):
-    if self.inargs :
-      self.lastname=node.id
-      self.generic_visit(node)
-    pass
-  def visit_Param(self, node):
-    self.lastfn.inputs.append(self.lastname)
+  def visit_arg(self, node):
+    self.lastfn.inputs.append(node.arg)
     pass
   def visit_Return(self, node):
     if self.lastfn.outputs is not None :
@@ -161,7 +151,8 @@ def main(python_path, yacs_path, function_name="_exec"):
   error_string = ""
   if len(errors) > 0:
     error_string += "global errors:\n"
-    error_string += errors
+    error_string += '\n'.join(errors)
+    return error_string
   fn_properties = next((f for f in functions if f.name == fn_name), None)
   if fn_properties is not None :
     if not fn_properties.errors :
@@ -169,7 +160,7 @@ def main(python_path, yacs_path, function_name="_exec"):
                          fn_properties.inputs, fn_properties.outputs,
                          yacs_path)
     else:
-      error_string += fn_properties.errors
+      error_string += '\n'.join(fn_properties.errors)
   else:
     error_string += "Function not found:"
     error_string += fn_name
@@ -187,5 +178,9 @@ if __name__ == '__main__':
         default='_exec')
   args = parser.parse_args()
   erreurs = main(args.file, args.output, args.def_name)
-  if erreurs:
+  import sys
+  if len(erreurs) > 0:
     print(erreurs)
+    sys.exit(1)
+  else:
+    sys.exit(0)
