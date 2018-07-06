@@ -861,3 +861,14 @@ void YacsLoaderTest::pyremotes()
   CPPUNIT_ASSERT(ret == 0);
   CPPUNIT_ASSERT(p->getEffectiveState() == YACS::DONE );
 }
+
+void YacsLoaderTest::nonepyobj()
+{
+  Proc *p = 0;
+  int ret;
+  ret = driverTest(p, "samples/nonepyobj.xml");
+  CPPUNIT_ASSERT(ret == 0);
+  CPPUNIT_ASSERT(p->getEffectiveState() == YACS::DONE );
+  CPPUNIT_ASSERT_EQUAL(p->getOutputPort("n2.r")->getAsString(), std::string("True"));
+  delete p;
+}

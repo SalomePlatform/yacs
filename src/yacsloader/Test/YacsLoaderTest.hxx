@@ -71,6 +71,7 @@ namespace YACS
     CPPUNIT_TEST(datanodes);
     CPPUNIT_TEST(optimizers);
     CPPUNIT_TEST(pyremotes);
+    CPPUNIT_TEST(nonepyobj);
     CPPUNIT_TEST_SUITE_END();
       
   public:
@@ -120,6 +121,7 @@ namespace YACS
     void datanodes();
     void optimizers();
     void pyremotes();
+    void nonepyobj();
      
   protected:
       

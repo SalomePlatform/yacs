@@ -97,6 +97,7 @@ namespace YACS
     protected:
       PyObject* _data;
       PyObject* _initData;
+      bool _isEmpty;
     };
 
     class YACSRUNTIMESALOME_EXPORT OutputPyPort : public OutputPort

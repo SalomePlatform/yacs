@@ -106,7 +106,12 @@ void registerPyObj(PyObject* data)
 }
 
 InputPyPort::InputPyPort(const std::string& name, Node *node, TypeCode * type)
-  : InputPort(name, node, type), DataPort(name, node, type), Port(node), _data(Py_None),_initData(Py_None)
+  : InputPort(name, node, type)
+  , DataPort(name, node, type)
+  , Port(node)
+  , _data(Py_None)
+  ,_initData(Py_None)
+  ,_isEmpty(true)
 {
   Py_INCREF(_data);
   Py_INCREF(_initData);
@@ -129,6 +134,7 @@ InputPyPort::InputPyPort(const InputPyPort& other, Node *newHelder):InputPort(ot
   Py_INCREF(_initData);
   _data=other._data;
   Py_INCREF(_data);
+  _isEmpty=other._isEmpty;
 }
 
 bool InputPyPort::edIsManuallyInitialized() const
@@ -144,6 +150,7 @@ void InputPyPort::edRemoveManInit()
   Py_XDECREF(_data);
   _data=Py_None;
   Py_INCREF(_data);
+  _isEmpty=true;
   InputPort::edRemoveManInit();
 }
 
@@ -161,6 +168,7 @@ void InputPyPort::put(PyObject *data) throw(ConversionException)
   _stringRef="";
   Py_INCREF(_data); 
   registerPyObj(_data);
+  _isEmpty=false;
   DEBTRACE( "_data refcnt: " << _data->ob_refcnt );
 }
 
@@ -207,7 +215,7 @@ std::string InputPyPort::getHumanRepr()
 
 bool InputPyPort::isEmpty()
 {
-  return _data == Py_None;
+  return _isEmpty;
 }
 
 //! Save the current data value for further reinitialization of the port
@@ -235,7 +243,8 @@ void InputPyPort::exRestoreInit()
   if(!_initData)return;
   Py_XDECREF(_data); 
   _data=_initData;
-  Py_INCREF(_data); 
+  Py_INCREF(_data);
+  _isEmpty = false;
   DEBTRACE( "_initData.ob refcnt: " << _initData->ob_refcnt );
   DEBTRACE( "_data.ob refcnt: " << _data->ob_refcnt );
 }
