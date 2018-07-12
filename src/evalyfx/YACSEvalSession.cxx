@@ -27,6 +27,7 @@
 #include <Python.h>
 
 #include <sstream>
+#include <cstdlib>
 
 const char YACSEvalSession::KERNEL_ROOT_DIR[]="KERNEL_ROOT_DIR";
 
@@ -134,17 +135,7 @@ std::string YACSEvalSession::GetPathToAdd()
 
 std::string YACSEvalSession::GetConfigAndPort(int& port)
 {
-  YACS::ENGINE::AutoPyRef osPy(PyImport_ImportModule(const_cast<char *>("os")));//new
-  YACS::ENGINE::AutoPyRef environPy(PyObject_GetAttrString(osPy,const_cast<char *>("environ")));//new
-  //
-  YACS::ENGINE::AutoPyRef corbaConfigStr(PyBytes_FromString(const_cast<char *>(CORBA_CONFIG_ENV_VAR_NAME)));//new
-  YACS::ENGINE::AutoPyRef corbaConfigFileNamePy(PyObject_GetItem(environPy,corbaConfigStr));//new
-  std::string ret(PyBytes_AsString(corbaConfigFileNamePy));
-  //
-  YACS::ENGINE::AutoPyRef nsPortStr(PyBytes_FromString(const_cast<char *>(NSPORT_VAR_NAME)));//new
-  YACS::ENGINE::AutoPyRef nsPortValuePy(PyObject_GetItem(environPy,nsPortStr));//new
-  std::string portStr(PyBytes_AsString(nsPortValuePy));
-  std::istringstream iss(portStr);
+  std::istringstream iss(std::getenv(NSPORT_VAR_NAME));
   iss >> port;
-  return ret;
+  return std::getenv(CORBA_CONFIG_ENV_VAR_NAME);
 }
