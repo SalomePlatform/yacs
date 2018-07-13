@@ -944,7 +944,7 @@ bool YACSEvalYFXGraphGenCluster::go(const YACSEvalExecParams& params, YACSEvalSe
   rr.nb_proc=rss->getNumberOfProcsDeclared();// <- important
   rr.mem_mb=1024;
   rr.cpu_clock=1000;
-  rr.nb_node=1;// useless only nb_proc used.
+  rr.nb_node=0;// the number of nodes is not explicitly set
   rr.nb_proc_per_node=1;// useless only nb_proc used.
   rr.policy=CORBA::string_dup("cycl");
   rr.resList.length(0);
