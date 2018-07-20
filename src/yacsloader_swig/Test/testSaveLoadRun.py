@@ -1633,7 +1633,128 @@ o2=2*i1
     self.assertEqual(p.getChildByName("n1").getChildByName("n10").getWeight().getElementaryWeight(),4.0)
     pass
 
-  pass
+  def test24(self):
+    """ Non regression test EDF17470"""
+    SALOMERuntime.RuntimeSALOME.setRuntime()
+    r=SALOMERuntime.getSALOMERuntime()
+    p=r.createProc("prTest2")
+    #
+    cont1=p.createContainer("cont1","Salome")
+    cont1.setProperty("name","localhost")
+    cont1.setProperty("hostname","localhost")
+    cont1.setProperty("type","multi")
+    cont1.setProperty("container_name","container1@")
+    #
+    cont2=p.createContainer("cont2","Salome")
+    cont2.setProperty("name","localhost")
+    cont2.setProperty("hostname","localhost")
+    cont2.setProperty("type","multi")
+    cont2.setProperty("container_name","container2@")
+    #
+    td=p.createType("double","double")
+    ti=p.createType("int","int")
+    ts=p.createType("string","string")
+    n0=r.createScriptNode("","n0")
+    n0.setScript("""import SalomeSDSClt
+import SALOME
+import salome
+import unittest
+import pickle
+import gc
+import time
+
+def obj2Str(obj):
+  return pickle.dumps(obj,pickle.HIGHEST_PROTOCOL)
+def str2Obj(strr):
+  return pickle.loads(strr)
+
+
+salome.salome_init()
+scopeName="Scope1"
+varName="a"
+dsm=salome.naming_service.Resolve("/DataServerManager")
+dsm.cleanScopesInNS()
+if scopeName in dsm.listScopes():
+  dsm.removeDataScope(scopeName)
+dss,isCreated=dsm.giveADataScopeTransactionCalled(scopeName)
+#
+t0=dss.createRdExtVarTransac(varName,obj2Str({"ab":[4,5,6]}))
+dss.atomicApply([t0])
+""")
+    n0_sn=n0.edAddOutputPort("scopeName",ts)
+    n0_vn=n0.edAddOutputPort("varName",ts)
+    #
+    n1=r.createScriptNode("","n1")
+    n1_sn=n1.edAddInputPort("scopeName",ts)
+    n1_vn=n1.edAddInputPort("varName",ts)
+    n1.setScript("""import SalomeSDSClt
+import SALOME
+import salome
+import unittest
+import pickle
+import gc
+import time
+
+
+def obj2Str(obj):
+  return pickle.dumps(obj,pickle.HIGHEST_PROTOCOL)
+def str2Obj(strr):
+  return pickle.loads(strr)
+
+salome.salome_init()
+dsm=salome.naming_service.Resolve("/DataServerManager")
+dss,isCreated=dsm.giveADataScopeTransactionCalled(scopeName)
+assert(not isCreated)
+
+t1=dss.addMultiKeyValueSession(varName)
+# lecture 'ef'
+wk2=dss.waitForKeyInVar(varName,obj2Str("ef"))
+wk2.waitFor()
+assert(str2Obj(dss.waitForMonoThrRev(wk2))==[11,12])""")
+    n1.setContainer(cont1)
+    #
+    n2=r.createScriptNode("","n2")
+    n2_sn=n2.edAddInputPort("scopeName",ts)
+    n2_vn=n2.edAddInputPort("varName",ts)
+    n2.setScript("""import SalomeSDSClt
+import SALOME
+import salome
+import unittest
+import pickle
+import gc
+import time
+
+
+def obj2Str(obj):
+  return pickle.dumps(obj,pickle.HIGHEST_PROTOCOL)
+def str2Obj(strr):
+  return pickle.loads(strr)
+
+salome.salome_init()
+dsm=salome.naming_service.Resolve("/DataServerManager")
+dss,isCreated=dsm.giveADataScopeTransactionCalled(scopeName)
+assert(not isCreated)
+time.sleep(3.)
+t1=dss.addMultiKeyValueSession(varName)
+t1.addKeyValueInVarErrorIfAlreadyExistingNow(obj2Str("cd"),obj2Str([7,8,9,10]))
+t1.addKeyValueInVarErrorIfAlreadyExistingNow(obj2Str("ef"),obj2Str([11,12]))
+""")
+    n2.setContainer(cont2)
+    #
+    p.edAddChild(n0)
+    p.edAddChild(n1)
+    p.edAddChild(n2)
+    p.edAddCFLink(n0,n1)
+    p.edAddCFLink(n0,n2)
+    p.edAddLink(n0_sn,n1_sn)
+    p.edAddLink(n0_vn,n1_vn)
+    p.edAddLink(n0_sn,n2_sn)
+    p.edAddLink(n0_vn,n2_vn)
+    #
+    ex=pilot.ExecutorSwig()
+    ex.RunW(p,0)
+    self.assertEqual(p.getState(),pilot.DONE)
+    pass
 
 if __name__ == '__main__':
   import os,sys
