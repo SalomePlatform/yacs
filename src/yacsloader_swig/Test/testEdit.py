@@ -67,7 +67,7 @@ class TestEdit(unittest.TestCase):
         inport=n.getInputPort("p1");
         retex=None
         try:
-            inport.edInitXML("<value><intt>5</int></value>")
+            inport.edInitXML("<value><int>5</int></value>")
         except ValueError as ex:
             print("Value Error: ", ex)
             retex=ex
