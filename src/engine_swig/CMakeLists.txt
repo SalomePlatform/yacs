@@ -110,14 +110,23 @@ SET(SWIGINCLUDES ${ENGINEINCL}
     "IteratorPy3.hxx")
 
 SET(SWIG_MODULE_pilot_EXTRA_DEPS engtypemaps.i ${SWIGINCLUDES})
-SWIG_ADD_MODULE(pilot python pilot.i ExecutorSwig.cxx)
+IF(${CMAKE_VERSION} VERSION_LESS "3.8.0") 
+  SWIG_ADD_MODULE(pilot python pilot.i ExecutorSwig.cxx)
+ELSE()
+  SWIG_ADD_LIBRARY(pilot LANGUAGE python SOURCES pilot.i ExecutorSwig.cxx)
+ENDIF()
 SWIG_CHECK_GENERATION(pilot)
 
 SET(SWIG_MODULE_pypilot_EXTRA_DEPS pilot.i engtypemaps.i _pilot ${SWIGINCLUDES})
-SWIG_ADD_MODULE(pypilot python pypilot.i)
+IF(${CMAKE_VERSION} VERSION_LESS "3.8.0") 
+  SWIG_ADD_MODULE(pypilot python pypilot.i)
+ELSE()
+  SWIG_ADD_LIBRARY(pypilot LANGUAGE python SOURCES pypilot.i)
+ENDIF()
 
 SWIG_LINK_LIBRARIES(pilot   "${_link_LIBRARIES}")
 SWIG_LINK_LIBRARIES(pypilot "${_link_LIBRARIES}")
+
 IF(WIN32)
   SET_TARGET_PROPERTIES(_pilot   PROPERTIES DEBUG_OUTPUT_NAME _pilot_d)
   SET_TARGET_PROPERTIES(_pypilot PROPERTIES DEBUG_OUTPUT_NAME _pypilot_d)

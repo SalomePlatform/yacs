@@ -17,11 +17,16 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
+
 #include "ComplexWeight.hxx"
 
 #include "Exception.hxx"
 
 using namespace YACS::ENGINE;
+
+#ifdef WIN32
+#include <algorithm>
+#endif
 
 ComplexWeight::ComplexWeight()
 {
@@ -104,7 +109,7 @@ void ComplexWeight::max(ComplexWeight &other)
     _loopWeight=other._loopWeight;  
 }
 
-ComplexWeight& ComplexWeight::addWeight(const ComplexWeight *other)
+void ComplexWeight::addWeight(const ComplexWeight *other)
 {
   bool found;
   if ((!_bootWeight) && ((other->isUnsetLoopWeight() && this->isDefaultValueLoop()) || (this->isUnsetLoopWeight() && other->isDefaultValueLoop())))

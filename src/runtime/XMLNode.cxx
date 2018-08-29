@@ -98,7 +98,11 @@ void XmlNode::execute()
   {
     YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&MUTEX);
 #ifdef WIN32
-    char mdir [512+1];
+#ifdef UNICODE
+wchar_t mdir[512 + 1];
+#else
+	char mdir[512 + 1];
+#endif
     GetTempPath(MAX_PATH+1, mdir);
     CreateDirectory(mdir, NULL);
 #else

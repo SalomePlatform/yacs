@@ -21,6 +21,11 @@
 #include "PointVisitor.hxx"
 #include "Exception.hxx"
 
+#ifdef WIN32
+#include <algorithm>
+#endif
+
+
 using namespace YACS::ENGINE;
 
 LinkedBlocPoint::LinkedBlocPoint(const std::list<AbstractPoint *>& nodes, AbstractPoint *father):BlocPoint(nodes,father)

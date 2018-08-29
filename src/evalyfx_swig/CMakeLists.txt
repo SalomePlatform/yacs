@@ -52,7 +52,11 @@ SET(_link_LIBRARIES
 
 SET(_swig_SCRIPTS ${CMAKE_CURRENT_BINARY_DIR}/evalyfx.py)
 
-SWIG_ADD_MODULE(evalyfx python evalyfx.i)
+IF(${CMAKE_VERSION} VERSION_LESS "3.8.0") 
+  SWIG_ADD_MODULE(evalyfx python evalyfx.i)
+ELSE()
+  SWIG_ADD_LIBRARY(evalyfx LANGUAGE python SOURCES evalyfx.i)
+ENDIF()
 
 SWIG_LINK_LIBRARIES(evalyfx ${_link_LIBRARIES})
 SWIG_CHECK_GENERATION(evalyfx)

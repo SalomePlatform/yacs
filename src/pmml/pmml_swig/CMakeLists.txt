@@ -47,7 +47,13 @@ SET (SWIG_MODULE_PMML_EXTRA_DEPS ${PMML_SWIG_DPYS_FILES}
 # Enusre proper dependencies mechanism for CMake since SWIG generates files 
 # whose names are built from the SWIG *module* name, and not .i file name:
 SET_SOURCE_FILES_PROPERTIES(PMMLsalome.i PROPERTIES SWIG_MODULE_NAME PMML)
-SWIG_ADD_MODULE(PMML python PMMLsalome.i)
+
+IF(${CMAKE_VERSION} VERSION_LESS "3.8.0") 
+  SWIG_ADD_MODULE(PMML python PMMLsalome.i)
+ELSE()
+  SWIG_ADD_LIBRARY(PMML LANGUAGE python SOURCES PMMLsalome.i)
+ENDIF()
+
 SWIG_LINK_LIBRARIES(PMML ${PYTHON_LIBRARIES} ${PLATFORM_LIBS} pmmlLib)
 SWIG_CHECK_GENERATION(PMML)
 # _ABR_ Ensure dependency mechanism on all SWIG files and headers

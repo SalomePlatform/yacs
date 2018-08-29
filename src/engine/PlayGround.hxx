@@ -126,7 +126,7 @@ namespace YACS
       std::vector<int> _ids;
     };
       
-    class AllPartDefinition : public PartDefinition
+    class YACSLIBENGINE_EXPORT AllPartDefinition : public PartDefinition
     {
     public:
       AllPartDefinition(const PlayGround *pg):PartDefinition(pg) { }
@@ -139,7 +139,7 @@ namespace YACS
       ~AllPartDefinition() { }
     };
 
-    class ForTestOmlyHPContCls
+    class YACSLIBENGINE_EXPORT ForTestOmlyHPContCls
     {
     public:
 

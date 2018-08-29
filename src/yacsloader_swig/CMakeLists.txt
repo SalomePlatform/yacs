@@ -89,7 +89,12 @@ SET(SWIG_MODULE_loader_EXTRA_DEPS
     ${PROJECT_SOURCE_DIR}/src/engine_swig/pilot.i 
     ${PROJECT_SOURCE_DIR}/src/engine_swig/engtypemaps.i  
     ${SWIGINCLUDES})
-SWIG_ADD_MODULE(loader python loader.i)
+
+IF(${CMAKE_VERSION} VERSION_LESS "3.8.0")   
+  SWIG_ADD_MODULE(loader python loader.i)
+ELSE()
+  SWIG_ADD_LIBRARY(loader LANGUAGE python SOURCES loader.i)
+ENDIF()
 
 SWIG_LINK_LIBRARIES(loader ${_link_LIBRARIES})
 SWIG_CHECK_GENERATION(loader)

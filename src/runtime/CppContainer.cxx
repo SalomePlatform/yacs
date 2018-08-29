@@ -339,7 +339,15 @@ LocalLibrary  LocalContainer::loadComponentLibrary(const std::string & aCompName
     
 #if defined( WIN32 )
   HMODULE handle;
-  handle = dlopen( impl_name.c_str() ) ;
+#if defined(UNICODE)
+  size_t length = strlen(impl_name.c_str()) + sizeof(char);
+  wchar_t* aPath = new wchar_t[length + 1];
+  memset(aPath, '\0', length);
+  mbstowcs(aPath, impl_name.c_str(), length);
+#else
+  const char* aPath = fullLibName.c_str();
+#endif
+  handle = dlopen( aPath ) ;
 #else
   void* handle;
   handle = dlopen( impl_name.c_str() , RTLD_LAZY ) ;

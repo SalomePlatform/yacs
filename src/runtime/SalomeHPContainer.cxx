@@ -256,7 +256,7 @@ std::string SalomeHPContainer::getDiscreminantStrOfThis(const Task *askingNode) 
   return tmpCont->getDiscreminantStrOfThis(askingNode);
 }
 
-void SalomeHPContainer::start(const Task *askingNode) throw(Exception)
+void SalomeHPContainer::start(const Task *askingNode) throw(YACS::Exception)
 {
   startInternal(askingNode,_sct,_componentNames);
 }
@@ -344,7 +344,7 @@ std::string SalomeHPContainerShared::getDiscreminantStrOfThis(const Task *asking
   return getTheBoss()->getDiscreminantStrOfThis(askingNode);
 }
 
-void SalomeHPContainerShared::start(const Task *askingNode) throw(Exception)
+void SalomeHPContainerShared::start(const Task *askingNode) throw(YACS::Exception)
 {
   SalomeContainerToolsSpreadOverTheResDecorator sct(&getTheBoss()->getContainerInfo(),_pd->getPlayGround(),_launchModeType,askingNode);
   startInternal(askingNode,sct,getTheBoss()->getComponentNames());

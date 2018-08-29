@@ -139,7 +139,7 @@ std::string YDFXResourceModel::getWantedMachine()const
       wantedMachine = fittingMachines[0];
     }
   }
-  
+  return wantedMachine;
 }
 
 void YDFXResourceModel::setWantedMachine(const std::string& v)

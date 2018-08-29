@@ -32,6 +32,10 @@
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
+#ifdef WIN32
+#include <functional>
+#endif
+
 using namespace YACS::ENGINE;
 using namespace std;
 

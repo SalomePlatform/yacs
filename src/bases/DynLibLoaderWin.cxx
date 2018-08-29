@@ -86,7 +86,16 @@ bool DynLibLoaderWin::load()
 {
   std::string fullLibName(_libName);
   fullLibName+=_extForDynLib;
-  _handleOnLoadedLib=LoadLibrary(fullLibName.c_str());
+#if defined(UNICODE) && defined(WIN32)
+  size_t length = strlen(fullLibName.c_str()) + sizeof(char);
+  wchar_t* aPath = new wchar_t[length + 1];
+  memset(aPath, '\0', length);
+  mbstowcs(aPath, fullLibName.c_str(), length);
+#else
+  const char* aPath = fullLibName.c_str();
+#endif
+
+  _handleOnLoadedLib=LoadLibrary(aPath);
   return _handleOnLoadedLib != NULL;
 }
 

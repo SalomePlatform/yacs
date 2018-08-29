@@ -20,13 +20,22 @@
 #ifndef __COMPLEXWEIGHT_HXX__
 #define __COMPLEXWEIGHT_HXX__
 
+#include "YACSlibEngineExport.hxx"
+
 #include <vector>
+
+#ifdef WIN32
+#ifdef max
+#undef max
+#endif
+#endif
+
 
 namespace YACS
 {
   namespace ENGINE
   {
-    class ComplexWeight
+    class YACSLIBENGINE_EXPORT ComplexWeight
     {
     public:
       ComplexWeight();
@@ -49,7 +58,7 @@ namespace YACS
       void setToZero() {_bootWeight=true; unsetElementary(); unsetLoop(); }
       int getNbCoresConsoLoopMax() const;
       void max(ComplexWeight &other);
-      ComplexWeight& addWeight(const ComplexWeight *other);
+      void addWeight(const ComplexWeight *other);
     protected:
       bool _bootWeight;
       // _loopWeight: vect<pair(weight,nbcorePerIteration)>, for first element of vector: nbcorePerIteration<0 -> unset, nbcorePerIteration==0 -> no loopweight (means no loop inside)
