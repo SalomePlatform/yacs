@@ -45,6 +45,7 @@ IF(NOT WIN32)
     optim_plugin.py
     testValidationChecks.py
     testProgress.py
+    testExecForEachGeoMesh.py
    )
   INSTALL(FILES ${LOCAL_TEST_FILES}
         DESTINATION ${LOCAL_TEST_DIR})

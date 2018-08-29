@@ -1,0 +1,104 @@
+<?xml version='1.0' encoding='iso-8859-1' ?>
+<proc name="paramStudy">
+   <type name="string" kind="string"/>
+   <struct name="Engines/dataref">
+      <member name="ref" type="string"/>
+   </struct>
+   <type name="bool" kind="bool"/>
+   <sequence name="boolvec" content="bool"/>
+   <type name="double" kind="double"/>
+   <sequence name="dblevec" content="double"/>
+   <objref name="file" id="file"/>
+   <type name="int" kind="int"/>
+   <sequence name="intvec" content="int"/>
+   <struct name="stringpair">
+      <member name="name" type="string"/>
+      <member name="value" type="string"/>
+   </struct>
+   <sequence name="propvec" content="stringpair"/>
+   <objref name="pyobj" id="python:obj:1.0"/>
+   <sequence name="seqboolvec" content="boolvec"/>
+   <sequence name="seqdblevec" content="dblevec"/>
+   <sequence name="seqintvec" content="intvec"/>
+   <sequence name="seqpyobj" content="pyobj"/>
+   <sequence name="stringvec" content="string"/>
+   <sequence name="seqstringvec" content="stringvec"/>
+   <container name="DefaultContainer">
+      <property name="container_kind" value="Salome"/>
+      <property name="attached_on_cloning" value="0"/>
+      <property name="container_name" value="FactoryServer"/>
+      <property name="name" value="localhost"/>
+   </container>
+   <container name="container5">
+      <property name="container_kind" value="Salome"/>
+      <property name="attached_on_cloning" value="0"/>
+   </container>
+   <foreach name="ForEachLoop_dblevec0" nbranch="1" loopWeight="-1" type="dblevec">
+      <remote name="GeomMesh" elementaryWeight="-1">
+         <script><code><![CDATA[import sys
+#import os
+#direc= os.environ["SMESH_ROOT_DIR"]
+#sys.path.append(direc + "/share/doc/salome/examples/SMESH")
+#sys.path.append("/home/B27118/projets/casUtilisateurs/maillagesParallellesCluster/Demo")
+from YACS_geomesh0 import genere2
+res = genere2(r0h0, my_container, direc)
+]]></code></script>
+         <load container="container5"/>
+         <inport name="r0h0" type="dblevec"/>
+         <inport name="direc" type="string"/>
+         <outport name="res" type="double"/>
+      </remote>
+   </foreach>
+   <inline name="PyScript6">
+      <script><code><![CDATA[import tempfile
+nbEssais = 50
+incr=5./nbEssais
+inputSample = [[x*incr+5.0, 40.-4*x*incr] for  x in range(nbEssais+1)]
+nbranch=4
+direc=tempfile.mkdtemp()
+]]></code></script>
+      <load container="DefaultContainer"/>
+      <outport name="inputSample" type="seqdblevec"/>
+      <outport name="nbranch" type="int"/>
+      <outport name="direc" type="string"/>
+   </inline>
+   <inline name="PyScript0">
+      <script><code><![CDATA[deltamax = max(res)
+print("maximum delta:" , deltamax)
+]]></code></script>
+      <load container="DefaultContainer"/>
+      <inport name="res" type="dblevec"/>
+      <outport name="deltamax" type="double"/>
+   </inline>
+   <control> <fromnode>ForEachLoop_dblevec0</fromnode> <tonode>PyScript0</tonode> </control>
+   <control> <fromnode>PyScript6</fromnode> <tonode>ForEachLoop_dblevec0</tonode> </control>
+   <datalink control="false">
+      <fromnode>ForEachLoop_dblevec0</fromnode> <fromport>evalSamples</fromport>
+      <tonode>ForEachLoop_dblevec0.GeomMesh</tonode> <toport>r0h0</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>PyScript6</fromnode> <fromport>inputSample</fromport>
+      <tonode>ForEachLoop_dblevec0</tonode> <toport>SmplsCollection</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>PyScript6</fromnode> <fromport>nbranch</fromport>
+      <tonode>ForEachLoop_dblevec0</tonode> <toport>nbBranches</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>PyScript6</fromnode> <fromport>direc</fromport>
+      <tonode>ForEachLoop_dblevec0.GeomMesh</tonode> <toport>direc</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>ForEachLoop_dblevec0.GeomMesh</fromnode> <fromport>res</fromport>
+      <tonode>PyScript0</tonode> <toport>res</toport>
+   </datalink>
+   <parameter>
+      <tonode>ForEachLoop_dblevec0</tonode><toport>nbBranches</toport>
+      <value><int>1</int></value>
+   </parameter>
+   <presentation name="PyScript6" x="4" y="56.25" width="158" height="117" expanded="1" expx="4" expy="56.25" expWidth="158" expHeight="117" shownState="0"/>
+   <presentation name="PyScript0" x="427.75" y="94.25" width="158" height="63" expanded="1" expx="427.75" expy="94.25" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="ForEachLoop_dblevec0.GeomMesh" x="34" y="99" width="158" height="90" expanded="1" expx="34" expy="99" expWidth="158" expHeight="90" shownState="0"/>
+   <presentation name="ForEachLoop_dblevec0" x="211.75" y="36.75" width="196" height="193" expanded="1" expx="211.75" expy="36.75" expWidth="196" expHeight="193" shownState="0"/>
+   <presentation name="__ROOT__" x="0" y="0" width="589.75" height="233.75" expanded="1" expx="0" expy="0" expWidth="589.75" expHeight="233.75" shownState="0"/>
+</proc>

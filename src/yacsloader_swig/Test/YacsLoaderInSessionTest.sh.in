@@ -102,7 +102,14 @@ if [ $ret8 -gt 0 ]; then
   exit $ret8
 fi
 
-let ret=$ret0+$ret1+$ret2+$ret3+$ret4+$ret5+$ret6+$ret7+$ret8
+python  @CMAKE_CURRENT_SOURCE_DIR@/testExecForEachGeoMesh.py
+ret9=$?
+if [ $ret9 -gt 0 ]; then
+  echo "exec status testExec : " $ret0
+  exit $ret9
+fi
+
+let ret=$ret0+$ret1+$ret2+$ret3+$ret4+$ret5+$ret6+$ret7+$ret8+$ret9
 
 # --- return unit tests status
 
