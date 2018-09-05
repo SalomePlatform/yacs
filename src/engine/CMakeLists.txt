@@ -108,6 +108,7 @@ SET(YACSlibEngine_HEADERS
   ElementaryPoint.hxx
   SetOfPoints.hxx
   PlayGround.hxx
+  ObserverAsPlugin.hxx
   )
 
 # --- sources ---
@@ -183,6 +184,7 @@ SET(YACSlibEngine_SOURCES
   SetOfPoints.cxx
   PlayGround.cxx
   ComplexWeight.cxx
+  ObserverAsPlugin.cxx
   )
 SET(YACSlibEngine_HEADERS ${YACSlibEngine_HEADERS} PARENT_SCOPE)  # Make it visible to src/engine_swig to handle dependencies
 

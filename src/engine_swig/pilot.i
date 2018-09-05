@@ -64,6 +64,7 @@
 #include "ForkBlocPoint.hxx"
 #include "LinkedBlocPoint.hxx"
 #include "ElementaryPoint.hxx"
+#include "ObserverAsPlugin.hxx"
   
 using namespace YACS::ENGINE;
 
@@ -645,3 +646,17 @@ namespace YACS
   }
 }
 
+%rename(LoadObserversPluginIfAny) LoadObserversPluginIfAnySwig;
+%rename(UnLoadObserversPluginIfAny) UnLoadObserversPluginIfAnySwig;
+                                  
+%inline{
+  void LoadObserversPluginIfAnySwig(YACS::ENGINE::ComposedNode *rootNode, YACS::ENGINE::ExecutorSwig *executor)
+  {
+    YACS::ENGINE::LoadObserversPluginIfAny(rootNode,executor);
+  }
+
+  void UnLoadObserversPluginIfAnySwig()
+  {
+    YACS::ENGINE::UnLoadObserversPluginIfAny();
+  }
+}
