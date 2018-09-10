@@ -19,6 +19,8 @@
 
 #pragma once
 
+#include "YACSlibEngineExport.hxx"
+
 namespace YACS
 {
   namespace ENGINE
@@ -26,7 +28,7 @@ namespace YACS
     class ComposedNode;
     class Executor;
     
-    void LoadObserversPluginIfAny(ComposedNode *rootNode, Executor *executor);
-    void UnLoadObserversPluginIfAny();
+    void YACSLIBENGINE_EXPORT LoadObserversPluginIfAny(ComposedNode *rootNode, Executor *executor);
+    void YACSLIBENGINE_EXPORT UnLoadObserversPluginIfAny();
   }
 }
