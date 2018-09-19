@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright (C) 2018  CEA/DEN, EDF R&D
 #
 # This library is free software; you can redistribute it and/or
