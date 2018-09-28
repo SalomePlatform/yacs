@@ -899,11 +899,34 @@ void YACSEvalYFXGraphGenCluster::generateGraph()
   //
   YACS::ENGINE::AutoPyRef func(YACS::ENGINE::evalPy(EFXGenFileName,EFXGenContent));
   YACS::ENGINE::AutoPyRef val(YACS::ENGINE::evalFuncPyWithNoParams(func));
-  _locSchemaFile=PyBytes_AsString(val);
+  _locSchemaFile="";
+  if (PyUnicode_Check(val))
+  {
+    PyObject * temp_bytes = PyUnicode_AsEncodedString(val, "UTF-8", "strict"); // Owned reference
+    if (temp_bytes != NULL)
+    {
+      _locSchemaFile = PyBytes_AS_STRING(temp_bytes); // Borrowed pointer
+      Py_DECREF(temp_bytes);
+    }
+  }
+  if(_locSchemaFile == "")
+    throw YACS::Exception("YACSEvalYFXGraphGenCluster::generateGraph: python call error. ");
+
   func=YACS::ENGINE::evalPy(EFXGenFileName,EFXGenContent2);
   val=YACS::ENGINE::evalFuncPyWithNoParams(func);
-  _jobName=PyBytes_AsString(val);
-  //
+  _jobName="";
+  if (PyUnicode_Check(val))
+  {
+    PyObject * temp_bytes = PyUnicode_AsEncodedString(val, "UTF-8", "strict"); // Owned reference
+    if (temp_bytes != NULL)
+    {
+      _jobName = PyBytes_AS_STRING(temp_bytes); // Borrowed pointer
+      Py_DECREF(temp_bytes);
+    }
+  }
+  if(_jobName == "")
+    throw YACS::Exception("YACSEvalYFXGraphGenCluster::generateGraph: python call error. ");
+
   class ClusterPatcher : public YACSEvalYFXGraphGen::CustomPatcher
   {
   public:
@@ -1012,7 +1035,7 @@ bool YACSEvalYFXGraphGenCluster::go(const YACSEvalExecParams& params, YACSEvalSe
     {
       std::ostringstream oss; oss << "import os" << std::endl << "p=os.path.join(\"" << cli.getLocalWorkingDir() << "\",\"" << _jobName  << "\")" << std::endl;
       oss << "if not os.path.exists(p):\n  return None\n";
-      oss << "f=file(p,\"r\")" << std::endl;
+      oss << "f=open(p,\"r\")" << std::endl;
       oss << "return eval(f.read())";
       std::string zeInput(oss.str());
       YACS::ENGINE::AutoPyRef func(YACS::ENGINE::evalPy("fetch",zeInput));

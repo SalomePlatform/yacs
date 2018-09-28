@@ -151,9 +151,6 @@ PyObject *evalPy(const std::string& funcName, const std::string& strToEval)
       i0=i2!=std::string::npos?i2+1:std::string::npos;
     }
   std::string zeCodeStr(oss0.str());
-  std::ostringstream stream;
-  stream << "/tmp/PythonNode_";
-  stream << getpid();
   AutoPyRef context(PyDict_New());
   PyDict_SetItemString( context, "__builtins__", PyEval_GetBuiltins() );
   AutoPyRef code(Py_CompileString(zeCodeStr.c_str(), "kkkk", Py_file_input));
