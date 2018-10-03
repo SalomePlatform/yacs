@@ -899,32 +899,16 @@ void YACSEvalYFXGraphGenCluster::generateGraph()
   //
   YACS::ENGINE::AutoPyRef func(YACS::ENGINE::evalPy(EFXGenFileName,EFXGenContent));
   YACS::ENGINE::AutoPyRef val(YACS::ENGINE::evalFuncPyWithNoParams(func));
-  _locSchemaFile="";
   if (PyUnicode_Check(val))
-  {
-    PyObject * temp_bytes = PyUnicode_AsEncodedString(val, "UTF-8", "strict"); // Owned reference
-    if (temp_bytes != NULL)
-    {
-      _locSchemaFile = PyBytes_AS_STRING(temp_bytes); // Borrowed pointer
-      Py_DECREF(temp_bytes);
-    }
-  }
-  if(_locSchemaFile == "")
+    _locSchemaFile = PyUnicode_AsUTF8(val);
+  else
     throw YACS::Exception("YACSEvalYFXGraphGenCluster::generateGraph: python call error. ");
 
   func=YACS::ENGINE::evalPy(EFXGenFileName,EFXGenContent2);
   val=YACS::ENGINE::evalFuncPyWithNoParams(func);
-  _jobName="";
   if (PyUnicode_Check(val))
-  {
-    PyObject * temp_bytes = PyUnicode_AsEncodedString(val, "UTF-8", "strict"); // Owned reference
-    if (temp_bytes != NULL)
-    {
-      _jobName = PyBytes_AS_STRING(temp_bytes); // Borrowed pointer
-      Py_DECREF(temp_bytes);
-    }
-  }
-  if(_jobName == "")
+    _jobName = PyUnicode_AsUTF8(val);
+  else
     throw YACS::Exception("YACSEvalYFXGraphGenCluster::generateGraph: python call error. ");
 
   class ClusterPatcher : public YACSEvalYFXGraphGen::CustomPatcher
