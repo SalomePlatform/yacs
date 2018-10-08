@@ -31,12 +31,22 @@ using namespace std;
 // forbidden value int=-269488145 double=-1.54947e+231 bool=239
 const char SeqAlloc::DFT_CHAR_VAR=-17;//0xEF
 
-StringOnHeap::StringOnHeap(const char *val):_dealloc(0),_str(strdup(val))
+StringOnHeap::StringOnHeap(const char *val):_str(strdup(val)),_len(strlen(val)),_dealloc(0)
 {
 }
 
-StringOnHeap::StringOnHeap(const std::string& val):_dealloc(0),_str(strdup(val.c_str()))
+StringOnHeap::StringOnHeap(const char *val, std::size_t len):_dealloc(0),_len(len)
 {
+  _str=(char *)malloc(len+1);
+  std::copy(val,val+len,_str);
+  _str[len]='\0';
+}
+
+StringOnHeap::StringOnHeap(const std::string& val):_dealloc(0),_len(val.size()),_str(nullptr)
+{
+  _str=(char *)malloc(val.size()+1);
+  std::copy(val.cbegin(),val.cend(),_str);
+  _str[val.size()]='\0';
 }
 
 /*! 
@@ -46,7 +56,7 @@ StringOnHeap::StringOnHeap(const std::string& val):_dealloc(0),_str(strdup(val.c
  * \param deAlloc : pointer on function to deallocate val after
  *                  last use.
  */
-StringOnHeap::StringOnHeap(char *val, Deallocator deAlloc):_dealloc(deAlloc)
+StringOnHeap::StringOnHeap(char *val, Deallocator deAlloc):_len(0),_dealloc(deAlloc)
 {
   if(deAlloc)
     _str=val;
@@ -61,7 +71,10 @@ bool StringOnHeap::operator ==(const StringOnHeap& other) const
 
 StringOnHeap *StringOnHeap::deepCopy() const
 {
-  return new StringOnHeap(_str);
+  if(_len==0)
+    return new StringOnHeap(_str);
+  else
+    return new StringOnHeap(_str,_len);
 }
 
 StringOnHeap::~StringOnHeap()
@@ -222,7 +235,24 @@ double AtomAny::getDoubleValue() const throw(YACS::Exception)
 std::string AtomAny::getStringValue() const throw(YACS::Exception)
 {
   if(_type->isA(Runtime::_tc_string))
-    return string(_value._s->cStr());
+    {
+      std::size_t sz(_value._s->size());
+      if(sz==0)
+        return string(_value._s->cStr());
+      else
+        return string(_value._s->cStr(),sz);
+    }
+  else
+    throw Exception("Value is not a string");
+}
+
+const char *AtomAny::getBytesValue(std::size_t& len) const
+{
+  if(_type->isA(Runtime::_tc_string))
+    {
+      len=_value._s->size();
+      return _value._s->cStr();
+    }
   else
     throw Exception("Value is not a string");
 }

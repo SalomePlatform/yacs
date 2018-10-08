@@ -49,14 +49,17 @@ namespace YACS
       friend class ArrayAny;
     private:
       StringOnHeap(const char *val);
+      StringOnHeap(const char *val, std::size_t len);
       StringOnHeap(const std::string& val);
       StringOnHeap(char *val, Deallocator deAlloc);
       bool operator ==(const StringOnHeap& other) const;
       StringOnHeap *deepCopy() const;
       const char *cStr() const { return _str; }
+      std::size_t size() const { return _len; }
       ~StringOnHeap();
     private:
       char *_str;
+      std::size_t _len;
       Deallocator _dealloc;
     };
 
@@ -122,6 +125,7 @@ namespace YACS
       bool getBoolValue() const throw(Exception);
       double getDoubleValue() const throw(Exception);
       std::string getStringValue() const throw(Exception);
+      const char *getBytesValue(std::size_t& len) const;
     protected:
       void putMyReprAtPlace(char *data) const;
       static void putReprAtPlace(char *data, const char *src, const TypeCode *type, bool deepCpy);

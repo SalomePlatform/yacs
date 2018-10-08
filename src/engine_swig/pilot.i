@@ -446,6 +446,18 @@ EXCEPTION(YACS::ENGINE::ExecutorSwig::waitPause)
     return self->getValue();
   }
 }
+%extend YACS::ENGINE::Any
+{
+  PyObject *getBytes()
+  {
+    YACS::ENGINE::AtomAny *self2(dynamic_cast<YACS::ENGINE::AtomAny *>(self));
+    if(!self2)
+      throw YACS::Exception("getBytes : self is not an AtomAny !");
+    std::size_t len(0);
+    const char *pt(self2->getBytesValue(len));
+    return PyBytes_FromStringAndSize(pt,len);
+  }
+}
 
 %extend YACS::ENGINE::AnyInputPort
 {
