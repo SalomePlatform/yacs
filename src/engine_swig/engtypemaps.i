@@ -394,7 +394,10 @@ static void convertFromPyObjVectorOfObj(PyObject *pyLi, swig_type_info *ty, cons
   else if(PyBytes_Check($1))
     {
       // It is a Bytes
-      $result=YACS::ENGINE::AtomAny::New(PyBytes_AsString($1));
+      Py_ssize_t len(0);
+      char *pt(nullptr);
+      PyBytes_AsStringAndSize($1,&pt,&len);
+      $result=YACS::ENGINE::AtomAny::New(std::string(pt,len));
     }
   else
     {
