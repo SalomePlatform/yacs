@@ -26,7 +26,7 @@
 pidecho=$!
 echo $pidecho > "/tmp/YACSTEST_PidEcho"
 
-python @CMAKE_SOURCE_DIR@/src/yacsloader/Test/waitContainers.py
+python3 @CMAKE_SOURCE_DIR@/src/yacsloader/Test/waitContainers.py
 
 # --- launch unit tests
 
@@ -39,63 +39,63 @@ export PYTHONPATH=@CMAKE_BINARY_DIR@/src/engine_swig:$PYTHONPATH
 export PYTHONPATH=@CMAKE_CURRENT_SOURCE_DIR@:$PYTHONPATH
 export PYTHONPATH=@CMAKE_SOURCE_DIR@/src/yacsloader/Test:$PYTHONPATH
 
-python  @CMAKE_CURRENT_SOURCE_DIR@/testExec.py
+python3  @CMAKE_CURRENT_SOURCE_DIR@/testExec.py
 ret0=$?
 if [ $ret0 -gt 0 ]; then
   echo "exec status testExec : " $ret0
   exit $ret0
 fi
 
-python  @CMAKE_CURRENT_SOURCE_DIR@/testResume.py
+python3  @CMAKE_CURRENT_SOURCE_DIR@/testResume.py
 ret1=$?
 if [ $ret1 -gt 0 ]; then
   echo "exec status testResume : " $ret1
   exit $ret1
 fi
 
-python  @CMAKE_CURRENT_SOURCE_DIR@/testLoader.py
+python3  @CMAKE_CURRENT_SOURCE_DIR@/testLoader.py
 ret2=$?
 if [ $ret2 -gt 0 ]; then
   echo "exec status testLoader : " $ret2
   exit $ret2
 fi
 
-python  @CMAKE_CURRENT_SOURCE_DIR@/testEdit.py
+python3  @CMAKE_CURRENT_SOURCE_DIR@/testEdit.py
 ret3=$?
 if [ $ret3 -gt 0 ]; then
   echo "exec status testEdit : " $ret3
   exit $ret3
 fi
 
-python  @CMAKE_CURRENT_SOURCE_DIR@/testSave.py
+python3  @CMAKE_CURRENT_SOURCE_DIR@/testSave.py
 ret4=$?
 if [ $ret4 -gt 0 ]; then
   echo "exec status testSave : " $ret4
   exit $ret4
 fi
 
-python  @CMAKE_CURRENT_SOURCE_DIR@/testRefcount.py
+python3  @CMAKE_CURRENT_SOURCE_DIR@/testRefcount.py
 ret5=$?
 if [ $ret5 -gt 0 ]; then
   echo "exec status testRefcount : " $ret5
   exit $ret5
 fi
 
-python  @CMAKE_CURRENT_SOURCE_DIR@/testSaveLoadRun.py
+python3  @CMAKE_CURRENT_SOURCE_DIR@/testSaveLoadRun.py
 ret6=$?
 if [ $ret6 -gt 0 ]; then
   echo "exec status testSaveLoadRun : " $ret6
   exit $ret6
 fi
 
-python  @CMAKE_CURRENT_SOURCE_DIR@/testProgress.py
+python3  @CMAKE_CURRENT_SOURCE_DIR@/testProgress.py
 ret7=$?
 if [ $ret7 -gt 0 ]; then
   echo "exec status testProgress : " $ret7
   exit $ret7
 fi
 
-python  @CMAKE_CURRENT_SOURCE_DIR@/testHPDecorator.py
+python3  @CMAKE_CURRENT_SOURCE_DIR@/testHPDecorator.py
 ret8=$?
 if [ $ret8 -gt 0 ]; then
   echo "exec status testHPDecorator : " $ret8

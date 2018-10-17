@@ -27,7 +27,7 @@ sleep 3
 
 export TESTCOMPONENT_ROOT_DIR=`pwd`/../runtime
 
-python -m unittest discover
+python3 -m unittest discover
 ret=$?
 echo "exec status salome_test_driver " $ret
 
