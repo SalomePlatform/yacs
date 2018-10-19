@@ -49,7 +49,7 @@ EOF
   # --- launch in background a SALOME session (servers)
 
   ln -fs @CMAKE_SOURCE_DIR@/src/yacsloader/samples .
-  ./salome > log1 2>&1 &
+  ./salome start -t > log1 2>&1 &
 
   # --- wait a little to let the background process define
   #     the CORBA naming service port and host
