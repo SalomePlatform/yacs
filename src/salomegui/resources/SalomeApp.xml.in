@@ -31,8 +31,8 @@
     <parameter name="YACS" value="%YACS_ROOT_DIR%/share/salome/resources/yacs"/>
   </section>
   <section name="yacs_help">
-    <parameter name="User's Guide/YACS module" value="%YACS_ROOT_DIR%/share/doc/salome/gui/YACS/index.html"/>
-    <parameter name="Developer's Guide/YACS module" value="%YACS_ROOT_DIR%/share/doc/salome/tui/YACS/index.html"/>
+    <parameter name="User's Guide/YACS module" value="%YACS_ROOT_DIR%/share/doc/salome/gui/YACS/index.html;;http://docs.salome-platform.org/latest/gui/YACS/index.html"/>
+    <parameter name="Developer's Guide/YACS module" value="%YACS_ROOT_DIR%/share/doc/salome/tui/YACS/index.html;;http://docs.salome-platform.org/latest/tui/YACS/index.html"/>
   </section>
   <section name="YACS" >
     <!-- Module preferences -->
