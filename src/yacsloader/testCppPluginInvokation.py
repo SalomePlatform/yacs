@@ -49,10 +49,24 @@ o2=node2.edAddOutputPort("o2",ti)
 node1.edAddChild(node2)
 p.edAddLink(node1.edGetSamplePort(),i1)
 
+p.saveSchema("thomas.xml")
+
 ex=pilot.ExecutorSwig()
 assert(p.getState()==pilot.READY)
 pilot.LoadObserversPluginIfAny(p,ex)
 ex.RunW(p,0)
 assert(p.getState()==pilot.DONE)
 pilot.UnLoadObserversPluginIfAny()
+
+
+for i in range(100):
+    print(30*"*"+" %d"%i)
+    l=loader.YACSLoader()
+    p=l.load("thomas.xml")
+    ex=pilot.ExecutorSwig()
+    assert(p.getState()==pilot.READY)
+    pilot.LoadObserversPluginIfAny(p,ex)
+    ex.RunW(p,0)
+    assert(p.getState()==pilot.DONE)
+    pilot.UnLoadObserversPluginIfAny()
 

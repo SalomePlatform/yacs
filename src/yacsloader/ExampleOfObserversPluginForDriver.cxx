@@ -61,10 +61,13 @@ class PluginObserverKeeper
 {
 public:
   ~PluginObserverKeeper() { clean(); }
-  void clean() { for(std::vector<YACS::ENGINE::Observer *>::iterator it=_observers.begin();it!=_observers.end();it++) delete *it; _observers.clear(); }
-  void registerObserver(YACS::ENGINE::Observer *newObs) { _observers.push_back(newObs); }
+  void clean() { for(std::vector<YACS::ENGINE::Observer *>::iterator it=_observers.begin();it!=_observers.end();it++) { delete *it; _disp->removeObserver(*it,_nc,_what); }  _observers.clear(); }
+  void registerObserver(YACS::ENGINE::Observer *newObs, YACS::ENGINE::ForEachLoop *nc, const std::string& what, YACS::ENGINE::Dispatcher *disp) { _what=what; _nc=nc; _disp=disp; _observers.push_back(newObs); std::cerr << "register @@@@@@@@@@@ " << _observers.size() << std::endl; }
 private:
+  std::string _what;
+  YACS::ENGINE::ForEachLoop *_nc = nullptr;
   std::vector<YACS::ENGINE::Observer *> _observers;
+  YACS::ENGINE::Dispatcher *_disp = nullptr;
 };
 
 PluginObserverKeeper pok;
@@ -80,13 +83,13 @@ extern "C"
     if(!nc)
       throw YACS::Exception("Expect to have a ForEach node called ForEachLoop_pyobj1 !");
     PluginObserver *myCustomObsever(new PluginObserver(nc));
-    pok.registerObserver(myCustomObsever);
-    disp->addObserver(myCustomObsever,nc,"progress_ok");
+    constexpr char WHAT[]="progress_ok";
+    pok.registerObserver(myCustomObsever,nc,WHAT,disp);
+    disp->addObserver(myCustomObsever,nc,WHAT);
   }
   
   void CleanUpObservers()
   {// Customize here !
-    pok.clean();
   }
 }
 
