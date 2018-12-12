@@ -79,15 +79,10 @@ public:
   {
     if(_isToSave)
       {
-        PyThreadState *save(PyThreadState_Swap(NULL));// safe call of PyEval_SaveThread()
-        if(save)
-          {
-            _save=save;
-            PyEval_ReleaseLock();
-          }
+        _save = PyEval_SaveThread();
       }
   }
-  ~MyAutoThreadSaver() { if(_isToSave) if(_save) { PyEval_AcquireLock(); PyThreadState_Swap(_save); /*safe call of PyEval_RestoreThread*/ } }
+  ~MyAutoThreadSaver() { if(_isToSave) PyEval_RestoreThread(_save); }
 private:
   bool _isToSave;
   PyThreadState *_save;
