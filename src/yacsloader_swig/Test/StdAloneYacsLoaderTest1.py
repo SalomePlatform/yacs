@@ -275,6 +275,123 @@ def sum(i):
     self.assertEqual(p.getState(),pilot.DONE)
     self.assertEqual(p.getChildByName("n3").getInputPort("i8").getPyObj(),[[0,0,0,0,0,0],[1,1,1,1,1,1],[2,2,2,2,2,2],[3,3,3,3,3,3],[4,4,4,4,4,4],[5,5,5,5,5,5],[6,6,6,6,6,6],[7,7,7,7,7,7],[8,8,8,8,8,8],[9,9,9,9,9,9]])
     pass
+
+  def test7(self):
+    """EDF17413 : Python3 porting. Py3 Pickeling generates more often byte(0) into the bytes. This reveals an incorrect management of Python Bytes -> Any String that leads to truncated bytes."""
+    async_algo_script="""import SALOMERuntime
+
+class myalgosync(SALOMERuntime.OptimizerAlgSync):
+  def __init__(self):
+    SALOMERuntime.OptimizerAlgSync.__init__(self, None)
+    r=SALOMERuntime.getSALOMERuntime()
+    self.tin=r.getTypeCode("double")
+    self.tout=r.getTypeCode("int")
+    self.tAlgoInit=r.getTypeCode("pyobj")
+    self.tAlgoResult=r.getTypeCode("pyobj")
+
+  def setPool(self,pool):
+    print("Algo setPool")
+
+  def getTCForIn(self):
+    return self.tin
+
+  def getTCForOut(self):
+    return self.tout
+
+  def getTCForAlgoInit(self):
+    return self.tAlgoInit
+
+  def getTCForAlgoResult(self):
+    return self.tAlgoResult
+
+  def initialize(self,input):
+    print ("Algo initialize")
+
+  def start(self):
+    print ("Algo start")
+
+  def takeDecision(self):
+    print ("Algo takeDecision")
+
+  def finish(self):
+    print ("Algo finish")
+
+  def getAlgoResult(self):
+    print("Algo getAlgoResult : on charge un objet complet obtenu en pickle 9.2 avant tuyau")
+    import pickle
+    import numpy as np
+    resu = np.array(range(1),dtype=np.int32)
+    ob=pickle.dumps(resu,protocol=0)
+    assert(bytes([0]) in ob) # test is here presence of 0 in the pickelization
+    return ob"""
+
+    entree_script="""Study = "toto"
+print("Entree", Study)"""
+
+    pyscript0_script="""entier = 42
+print("PyScript0",entier)
+"""
+
+    sortie_script="""import numpy as np
+assert(isinstance(resultats,np.ndarray))
+"""
+
+    nbWorkers=1
+    fname="test7.xml"
+
+    SALOMERuntime.RuntimeSALOME.setRuntime()
+    r=SALOMERuntime.getSALOMERuntime()
+    #
+    with open("async_plugin.py","w") as f:
+        f.write(async_algo_script)
+    #
+    p0=r.createProc("run")
+    #
+    td=p0.createType("double","double")
+    ti=p0.createType("int","int")
+    ts=p0.createType("string","string")
+    tp=p0.createInterfaceTc("python:obj:1.0","pyobj",[])
+    tdd=p0.createSequenceTc("seqdouble","seqdouble",td)
+    tds=p0.createSequenceTc("seqstr","seqstr",ts)
+    tdp=p0.createSequenceTc("list[pyobj]","list[pyobj]",tp)
+    #
+    n0 = r.createScriptNode("Salome","Entree")
+    n0.setExecutionMode("local")
+    n0.setScript(entree_script)
+    o0 = n0.edAddOutputPort("Study",tp)
+    p0.edAddChild(n0)
+    #
+    n1 = r.createOptimizerLoop("MainLoop","async_plugin.py","myalgosync",True)
+    n1.edGetNbOfBranchesPort().edInitInt(nbWorkers)
+    p0.edAddChild(n1)
+    #
+    n10=r.createScriptNode("Salome","PyScript0")
+    n10.setScript(pyscript0_script)
+    i1 = n10.edAddInputPort("double",td)
+    o1 = n10.edAddOutputPort("entier",ti)
+    n10.setExecutionMode("local")
+    n1.edAddChild(n10)
+    #
+    n2 = r.createScriptNode("Salome","Sortie")
+    n2.setExecutionMode("local")
+    n2.setScript(sortie_script)
+    i2 = n2.edAddInputPort("resultats",tp)
+    p0.edAddChild(n2)
+    #
+    p0.edAddCFLink(n0,n1)
+    p0.edAddCFLink(n1,n2)
+    #
+    p0.edAddLink(o0,n1.getInputPort("algoInit"))
+    p0.edAddLink(n1.getOutputPort("algoResults"),i2)
+    p0.edAddLink(n1.getOutputPort("evalSamples"),i1)
+    p0.edAddLink(o1,n1.getInputPort("evalResults"))
+    #
+    #p0.saveSchema(fname)
+    #
+    ex=pilot.ExecutorSwig()
+    ex.RunW(p0,0)
+    self.assertTrue(p0.getEffectiveState() == pilot.DONE)
+    pass
   
   def tearDown(self):
     del self.r
