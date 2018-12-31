@@ -277,7 +277,7 @@ def sum(i):
     pass
 
   def test7(self):
-    """EDF17413 : Python3 porting. Py3 Pickeling generates more often byte(0) into the bytes. This reveals an incorrect management of Python Bytes -> Any String that leads to truncated bytes."""
+    """EDF17963 : Python3 porting. Py3 Pickeling generates more often byte(0) into the bytes. This reveals an incorrect management of Python Bytes -> Any String that leads to truncated bytes."""
     async_algo_script="""import SALOMERuntime
 
 class myalgosync(SALOMERuntime.OptimizerAlgSync):
