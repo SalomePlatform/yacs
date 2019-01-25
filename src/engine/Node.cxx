@@ -86,6 +86,7 @@ Node::Node(const Node& other, ComposedNode *father):_inGate(this),_outGate(this)
 
   // Every node has an InPropertyPort
   _inPropertyPort = new InPropertyPort("__InPropertyPort__Node__YACS_", this, Runtime::_tc_propvec);
+  _eventReceiver=const_cast<Node *>(&other);
 }
 
 Node::~Node()
@@ -683,8 +684,15 @@ void Node::applyDPLScope(ComposedNode *gfn)
 void Node::sendEvent(const std::string& event)
 {
   DEBTRACE("Node::sendEvent " << event);
-  Dispatcher* disp=Dispatcher::getDispatcher();
-  disp->dispatch(this,event);
+  Dispatcher *disp(Dispatcher::getDispatcher());
+  if(!_eventReceiver)
+    {
+      disp->dispatch(this,event);
+    }
+  else
+    {
+      disp->dispatchFromClone(_eventReceiver,event,this);
+    }
 }
 
 //! emit notification to all observers registered with  the dispatcher 

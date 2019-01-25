@@ -34,6 +34,8 @@ using namespace std;
 
 void releasePyObj(PyObject* data)
 {
+  if(!data)
+    return ;
   DEBTRACE( "data refcnt: " << data->ob_refcnt );
   if (PyObject_HasAttrString(data, (char*)"_is_a"))
     {
@@ -159,11 +161,23 @@ void InputPyPort::put(const void *data) throw(ConversionException)
   put((PyObject *)data);
 }
 
+void InputPyPort::releaseDataUnsafe()
+{
+  releasePyObj(_data);
+  Py_XDECREF(_data); 
+  _data = nullptr;
+}
+
+void InputPyPort::releaseData()
+{
+  InterpreterUnlocker l;
+  InputPyPort::releaseDataUnsafe();
+}
+
 void InputPyPort::put(PyObject *data) throw(ConversionException)
 {
   InterpreterUnlocker l;
-  releasePyObj(_data);
-  Py_XDECREF(_data); 
+  InputPyPort::releaseDataUnsafe();
   _data = data;
   _stringRef="";
   Py_INCREF(_data); 
@@ -315,9 +329,8 @@ void OutputPyPort::put(const void *data) throw(ConversionException)
   put((PyObject *)data);
 }
 
-void OutputPyPort::put(PyObject *data) throw(ConversionException)
+void OutputPyPort::putWithoutForward(PyObject *data) throw(ConversionException)
 {
-  InputPort *p;
   DEBTRACE( "OutputPyPort::put.ob refcnt: " << data->ob_refcnt );
 #ifdef _DEVDEBUG_
   PyObject_Print(data,stderr,Py_PRINT_RAW);
@@ -328,6 +341,11 @@ void OutputPyPort::put(PyObject *data) throw(ConversionException)
   _data = data;
   Py_INCREF(_data); 
   //no registerPyObj : we steal the output reference of the node
+}
+
+void OutputPyPort::put(PyObject *data) throw(ConversionException)
+{
+  putWithoutForward(data);
   DEBTRACE( "OutputPyPort::put.ob refcnt: " << data->ob_refcnt );
   OutputPort::put(data);
 }

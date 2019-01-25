@@ -42,11 +42,12 @@ namespace YACS
       void exSaveInit();
       void exRestoreInit();
       bool isLinkedOutOfScope() const;
-      void edNotifyReferencedBy(OutPort *fromPort);
+      void edNotifyReferencedBy(OutPort *fromPort, bool isLoopProof) override;
       void edNotifyDereferencedBy(OutPort *fromPort);
       void *get() const;
       virtual void put(const void *data) throw(ConversionException);
       void put(Any *data) throw(ConversionException);
+      void releaseData() override;
       std::string dump();
       virtual std::string getAsString();
     protected:

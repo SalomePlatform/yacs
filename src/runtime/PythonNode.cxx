@@ -304,7 +304,7 @@ void PythonEntry::commonRemoteLoad(InlineNode *reqNode)
   commonRemoteLoadPart3(reqNode,objContainer,isInitializeRequested);
 }
 
-PythonNode::PythonNode(const PythonNode& other, ComposedNode *father):InlineNode(other,father)
+PythonNode::PythonNode(const PythonNode& other, ComposedNode *father):InlineNode(other,father),_autoSqueeze(other._autoSqueeze)
 {
   _implementation=IMPL_NAME;
   {
@@ -542,6 +542,8 @@ void PythonNode::executeRemote()
           _errorDetails=ex.what();
           throw;
       }
+      if(_autoSqueeze)
+        squeezeMemoryRemote();
   }
   //
   if(!CORBA::is_nil(_pynode))
@@ -654,10 +656,52 @@ void PythonNode::executeLocal()
         _errorDetails=ex.what();
         throw;
     }
-
+    if(_autoSqueeze)
+      squeezeMemory();
     DEBTRACE( "-----------------End PyNode::outputs-----------------" );
   }
   DEBTRACE( "++++++++++++++ End PyNode::execute: " << getName() << " ++++++++++++++++++++" );
+}
+
+void PythonNode::squeezeMemorySafe()
+{
+  AutoGIL agil;
+  if(_mode==PythonNode::REMOTE_NAME)
+    this->squeezeMemoryRemote();
+  else
+    this->squeezeMemory();
+}
+  
+void PythonNode::squeezeMemory()
+{
+  for(auto p : _setOfInputPort)
+    {
+      PyDict_DelItemString(_context,p->getName().c_str());
+      InputPyPort *p2(static_cast<InputPyPort *>(p));
+      if(p2->canSafelySqueezeMemory())
+        p2->put(Py_None);
+    }
+  for(auto p : _setOfOutputPort)
+    {
+      PyDict_DelItemString(_context,p->getName().c_str());
+      OutputPyPort *p2(static_cast<OutputPyPort *>(p));
+      p2->putWithoutForward(Py_None);
+    }
+}
+
+void PythonNode::squeezeMemoryRemote()
+{
+  for(auto p : _setOfInputPort)
+    {
+      InputPyPort *p2(static_cast<InputPyPort *>(p));
+      if(p2->canSafelySqueezeMemory())
+        p2->put(Py_None);
+    }
+  for(auto p : _setOfOutputPort)
+    {
+      OutputPyPort *p2(static_cast<OutputPyPort *>(p));
+      p2->putWithoutForward(Py_None);
+    }
 }
 
 std::string PythonNode::getContainerLog()

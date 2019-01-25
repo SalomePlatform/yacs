@@ -35,6 +35,7 @@ namespace YACS
     public:
       InputToyPort(const InputToyPort& other, Node *newHelder);
       InputToyPort(const std::string& name, Node *node);
+      void releaseData() override;
       void put(const void *data) throw(ConversionException);
       InputPort *clone(Node *newHelder) const;
       bool edIsManuallyInitialized() const;
@@ -201,6 +202,7 @@ namespace YACS
       bool edIsManuallyInitialized() const;
       void *get() const throw(Exception);
       void edRemoveManInit();
+      void releaseData() override;
       void put(Any *data);
       ~InputLimitPort();
       Any *getAny() { return _data; }

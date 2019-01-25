@@ -76,6 +76,7 @@ namespace YACS
       void edRemoveLink(OutPort *start, InPort *end) throw(Exception);
       void edRemoveLink(OutGate *start, InGate *end) throw(Exception);
       virtual bool isRepeatedUnpredictablySeveralTimes() const { return false; }
+      virtual bool isLoop() const { return false; }
       virtual std::list<Node *> edGetDirectDescendants() const =  0;
       virtual void removeRecursivelyRedundantCL();
       std::list<ElementaryNode *> getRecursiveConstituents() const;

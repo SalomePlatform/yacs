@@ -89,6 +89,13 @@ InPropertyPort::put(const void *data) throw(ConversionException)
   put((YACS::ENGINE::Any *)data);
 }
 
+void InPropertyPort::releaseData()
+{
+  if(_property_data)
+    _property_data->decrRef();
+  _property_data = nullptr;
+}
+
 void
 InPropertyPort::put(YACS::ENGINE::Any *data)
 {
@@ -100,9 +107,7 @@ InPropertyPort::put(YACS::ENGINE::Any *data)
     std::string value = ((*seq_data)[i]["value"])->getStringValue();
     exNewPropertyValue(key, value);
   }
-
-  if(_property_data)
-    _property_data->decrRef();
+  InPropertyPort::releaseData();
   _property_data = data;
   _property_data->incrRef();
   DEBTRACE("value ref count: " << _property_data->getRefCnt());

@@ -62,17 +62,19 @@ namespace YACS
       virtual InPort *getPublicRepresentant() { return this; }
       virtual int edGetNumberOfLinks() const;
       virtual std::set<OutPort *> edSetOutPort() const;
+      bool canSafelySqueezeMemory() const;
+      bool isBackLinked() const { return !_backLinks.empty(); }
       virtual ~InPort();
       virtual std::string typeName() {return "YACS__ENGINE__InPort";}
     protected:
       InPort(const InPort& other, Node *newHelder);
       InPort(const std::string& name, Node *node, TypeCode* type);
       void edRemoveAllLinksLinkedWithMe() throw(Exception);
-      virtual void edNotifyReferencedBy(OutPort *fromPort);
+      virtual void edNotifyReferencedBy(OutPort *fromPort, bool isLoopProof = true);
       virtual void edNotifyDereferencedBy(OutPort *fromPort);
       virtual void getAllRepresentants(std::set<InPort *>& repr) const;
     protected:
-      std::set<OutPort *> _backLinks;
+      std::set< std::pair<OutPort *,bool> > _backLinks;
     };
   }
 }

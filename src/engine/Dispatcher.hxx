@@ -47,6 +47,7 @@ namespace YACS
     public:
       virtual void notifyObserver(Node* object,const std::string& event);
       virtual void notifyObserver2(Node* object,const std::string& event, void *something);
+      virtual void notifyObserverFromClone(Node *originalInstance, const std::string& event, Node *clonedInstanceGeneratingEvent);
       virtual ~Observer();
     };
 
@@ -74,6 +75,7 @@ namespace YACS
     public:
       virtual void dispatch(Node* object,const std::string& event);
       virtual void dispatch2(Node* object,const std::string& event, void *something);
+      virtual void dispatchFromClone(Node *originalInstance, const std::string& event, Node *clonedInstanceGeneratingEvent);
       virtual void addObserver(Observer* observer,Node* object,const std::string& event);
       virtual void removeObserver(Observer* observer,Node* object,const std::string& event);
       virtual void printObservers();

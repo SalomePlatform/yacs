@@ -43,6 +43,7 @@ namespace YACS
       void edRemoveManInit();
       virtual void put(const void *data) throw (ConversionException);
       void put(const char *data) throw (ConversionException);
+      void releaseData() override;
       InputPort *clone(Node *newHelder) const;
       virtual const char * getXml() const;
       void *get() const throw(Exception);

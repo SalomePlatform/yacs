@@ -307,13 +307,17 @@ bool ComposedNode::edAddLink(OutPort *start, InPort *end) throw(YACS::Exception)
     iterS=end->getNode()->_father;
 
   InPort *currentPortI=end;
+  bool isLoopProofLink(true),isFirstTurn(true);
   while(iterS!=lwstCmnAnctr)
     {
+      if(!isFirstTurn && iterS->isLoop())// isFirstTurn is a way to filter special inputs like nbBranches, splitPort... These special inputs are loopProof -> they must not be realeased by ForEachLoop::exUpdateState
+        isLoopProofLink=false;
       iterS->buildDelegateOf(currentPortI, start, allAscendanceOfNodeStart);
       iterS=iterS->_father;
+      isFirstTurn=false;
     }
   bool ret=(pO.first)->addInPort(currentPortI);
-  end->edNotifyReferencedBy(pO.second);
+  end->edNotifyReferencedBy(pO.second,isLoopProofLink);
   return ret;
 }
 

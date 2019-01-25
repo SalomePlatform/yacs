@@ -40,6 +40,11 @@ void Observer::notifyObserver2(Node* object,const std::string& event, void *some
   DEBTRACE("notifyObserver2 " << event << object );
 }
 
+void Observer::notifyObserverFromClone(Node *originalInstance, const std::string& event, Node *clonedInstanceGeneratingEvent)
+{
+  DEBTRACE("notifyObserverFromClone " << event << originalInstance );
+}
+
 Dispatcher* Dispatcher::_singleton = 0;
 
 Dispatcher::~Dispatcher()
@@ -100,6 +105,19 @@ void Dispatcher::dispatch2(Node* object,const std::string& event, void *somethin
       for(std::set<Observer*>::const_iterator iter=(*it).second.begin();iter!=(*it).second.end();iter++)
         {
           (*iter)->notifyObserver2(object,event,something);
+        }
+    }
+}
+
+void Dispatcher::dispatchFromClone(Node *originalInstance, const std::string& event, Node *clonedInstanceGeneratingEvent)
+{
+  std::pair<Node*,std::string> key(originalInstance,event);
+  std::map< std::pair<Node*,std::string> , std::set<Observer*> >::const_iterator it(_observers.find(key));
+  if(it!=_observers.end())
+    {
+      for(std::set<Observer*>::const_iterator iter=(*it).second.begin();iter!=(*it).second.end();iter++)
+        {
+          (*iter)->notifyObserverFromClone(originalInstance,event,clonedInstanceGeneratingEvent);
         }
     }
 }

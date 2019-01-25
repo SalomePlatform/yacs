@@ -372,8 +372,9 @@ void DynParaLoop::prepareInputsFromOutOfScope(int branchNb)
       if(portToSet)//portToSet==0 in case of portToSet==_splitterNode._dataPortToDispatch of ForEach
         {
           portToSet->put((const void *)val);
-          portToSet->edNotifyReferencedBy(0);//This is to indicate that somewhere somebody deals with this inputport
+          portToSet->edNotifyReferencedBy(nullptr,false);//This is to indicate that somewhere somebody deals with this inputport
           //even if no direct physical link exists. This exclusively for _execNodes[branchNb]::init on the next turn of loop.
+          //false is put as 2nd parameter to tell to portToSet, do not touch to the data in case of squeezeMemory.
         }
     }
 }

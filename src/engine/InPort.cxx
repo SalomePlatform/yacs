@@ -20,7 +20,9 @@
 #include "InPort.hxx"
 #include "OutPort.hxx"
 #include "ComposedNode.hxx"
+
 #include <iostream>
+#include <algorithm>
 
 using namespace YACS::ENGINE;
 using namespace std;
@@ -47,13 +49,13 @@ int InPort::edGetNumberOfLinks() const
 
 void InPort::edRemoveAllLinksLinkedWithMe() throw(YACS::Exception)
 {
-  set<OutPort *> temp(_backLinks);//edRemoveLink called after causes invalidation of set iterator.
-  for(set<OutPort *>::iterator iter=temp.begin();iter!=temp.end();iter++)
+  set< std::pair<OutPort *,bool> > temp(_backLinks);//edRemoveLink called after causes invalidation of set iterator.
+  for(auto iter : temp)
     {
       set<OutPort *> trueBackOutputs;
-      (*iter)->getAllRepresented(trueBackOutputs);
-      for(set<OutPort *>::iterator iter2=trueBackOutputs.begin();iter2!=trueBackOutputs.end();iter2++)
-        _node->getRootNode()->edRemoveLink(*iter2,this);
+      iter.first->getAllRepresented(trueBackOutputs);
+      for( auto iter2 : trueBackOutputs )
+        _node->getRootNode()->edRemoveLink(iter2,this);
     }
   _backLinks.clear();
   modified();
@@ -62,18 +64,46 @@ void InPort::edRemoveAllLinksLinkedWithMe() throw(YACS::Exception)
 //! Returns \b physical backlinks \b NOT user backlinks.
 std::set<OutPort *> InPort::edSetOutPort() const
 {
-  return _backLinks;
+  std::set<OutPort *> ret;
+  for( auto iter : _backLinks )
+    ret.insert(iter.first);
+  return ret;
 }
 
-void InPort::edNotifyReferencedBy(OutPort *fromPort)
+bool InPort::canSafelySqueezeMemory() const
 {
-  _backLinks.insert(fromPort);
+  if(!isBackLinked())
+    return false;
+  for(auto bl : _backLinks)
+    {
+      if(!bl.second)
+        return false;
+    }
+  return true;
+}
+
+/*!
+ * \param [in] isLoopProof - Tells if the data coming from \a fromPort will be send again in case of \a this is initialized. This value is
+ *                           important if \a this is an InPort of a Node contained directly or not inside a Loop, ForEachLoop, OptimizerLoop.
+ *                           In this case, to optimize memory consumption (see squeezeMemory method), we need to know if data coming from \a fromPort
+ *                           will be generated again in case.
+ *                           If true (the default) it means that for that link is a link loop proof so no need to take care. If false, the link is not loop proof so
+ *                           event in the context of agressive memory management the data can't be safely released.
+ */
+void InPort::edNotifyReferencedBy(OutPort *fromPort, bool isLoopProof)
+{
+  auto it(std::find_if(_backLinks.begin(),_backLinks.end(),[fromPort](const std::pair<OutPort *,bool>& p){ return p.first==fromPort; }));
+  if(it!=_backLinks.end())
+    _backLinks.erase(it);
+  _backLinks.insert(std::pair<OutPort *,bool>(fromPort,isLoopProof));
   modified();
 }
 
 void InPort::edNotifyDereferencedBy(OutPort *fromPort)
 {
-  _backLinks.erase(fromPort);
+  auto it(std::find_if(_backLinks.begin(),_backLinks.end(),[fromPort](const std::pair<OutPort *,bool>& p){ return p.first==fromPort; }));
+  if(it!=_backLinks.end())
+    _backLinks.erase(it);
   modified();
 }
 

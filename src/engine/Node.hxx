@@ -96,6 +96,7 @@ namespace YACS
       int _numId;
       std::string _implementation;
       std::map<std::string,std::string> _propertyMap;
+      Node *_eventReceiver=nullptr;
     protected:
       Node(const std::string& name);
       Node(const Node& other, ComposedNode *father);

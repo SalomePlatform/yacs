@@ -46,6 +46,7 @@ namespace YACS
       void edRemoveManInit();
       virtual void put(const void *data) throw(ConversionException);
       void put(YACS::ENGINE::Any *data) throw(ConversionException);
+      void releaseData() override;
       InputPort *clone(Node *newHelder) const;
       virtual YACS::ENGINE::Any * getCppObj() const;
       void *get() const throw(Exception);

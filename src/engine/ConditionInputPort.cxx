@@ -73,7 +73,7 @@ bool ConditionInputPort::isLinkedOutOfScope() const
   return _outOfScopeBackLink!=0;
 }
 
-void ConditionInputPort::edNotifyReferencedBy(OutPort *fromPort)
+void ConditionInputPort::edNotifyReferencedBy(OutPort *fromPort, bool isLoopProof)
 {
   if(!((ComposedNode*)(_node))->isInMyDescendance(fromPort->getNode()))
     {
@@ -81,7 +81,7 @@ void ConditionInputPort::edNotifyReferencedBy(OutPort *fromPort)
         throw Exception("ConditionInputPort::edNotifyReferenced : already linked from outside");
       _outOfScopeBackLink=fromPort;
     }
-  InputPort::edNotifyReferencedBy(fromPort);
+  InputPort::edNotifyReferencedBy(fromPort,isLoopProof);
 }
 
 void ConditionInputPort::edNotifyDereferencedBy(OutPort *fromPort)
@@ -104,10 +104,16 @@ void ConditionInputPort::put(const void *data) throw(ConversionException)
   put((Any*)data);
 }
 
-void ConditionInputPort::put(Any *data) throw(ConversionException)
+void ConditionInputPort::releaseData()
 {
   if(_value)
     _value->decrRef();
+  _value=nullptr;
+}
+
+void ConditionInputPort::put(Any *data) throw(ConversionException)
+{
+  ConditionInputPort::releaseData();
   _value=data;
   _value->incrRef();
 }    

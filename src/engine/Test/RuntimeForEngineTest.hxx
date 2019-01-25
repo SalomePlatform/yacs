@@ -44,6 +44,7 @@ namespace YACS
     public:
       TestElemInputPort(const std::string& name, Node *node, TypeCode* type);
       TestElemInputPort(const TestElemInputPort& other, Node *newHelder);
+      void releaseData() override;
       void put(const void *data) throw(ConversionException);
       InputPort *clone(Node *newHelder) const;
       void *get() const throw(Exception);

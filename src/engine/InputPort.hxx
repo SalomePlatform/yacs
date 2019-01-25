@@ -74,6 +74,7 @@ namespace YACS
       virtual bool isEmpty();
 
       virtual void *get() const = 0;
+      virtual void releaseData() = 0;
       virtual void put(const void *data) throw(ConversionException) = 0;
       virtual std::string dump();
       virtual std::string getHumanRepr();
@@ -83,6 +84,7 @@ namespace YACS
     protected:
       InputPort(const InputPort& other, Node *newHelder);
       InputPort(const std::string& name, Node *node, TypeCode* type, bool canBeNull = false);
+      void releaseDataUnsafe();
     protected:
       Any *_initValue;
       std::string _stringRef;
@@ -102,7 +104,7 @@ namespace YACS
       
       void edRemoveAllLinksLinkedWithMe() throw(Exception);
       InputPort *clone(Node *newHelder) const;
-      void edNotifyReferencedBy(OutPort *fromPort);
+      void edNotifyReferencedBy(OutPort *fromPort, bool isLoopProof = true) override;
       void edNotifyDereferencedBy(OutPort *fromPort);
       std::set<OutPort *> edSetOutPort() const;
 #ifdef NOCOVARIANT
@@ -112,6 +114,7 @@ namespace YACS
 #endif
       void *get() const;
       virtual void put(const void *data) throw(ConversionException) ;
+      void releaseData() override;
       int edGetNumberOfLinks() const;
       bool isIntermediate() const { return true; }
       void exRestoreInit();

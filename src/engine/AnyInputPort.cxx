@@ -84,16 +84,29 @@ void AnyInputPort::exRestoreInit()
   _value->incrRef();
 }
 
+void AnyInputPort::releaseDataUnsafe()
+{
+  if(_value)
+    _value->decrRef();
+  _value = nullptr;
+}
+
+void AnyInputPort::releaseData()
+{
+  YACS::BASES::AutoLocker<YACS::BASES::Mutex> lock(&_mutex);
+  releaseDataUnsafe();
+}
+
 void AnyInputPort::put(Any *data)
 {
   YACS::BASES::AutoLocker<YACS::BASES::Mutex> lock(&_mutex);
-  if(_value)
-    _value->decrRef();
+  releaseDataUnsafe();
   _value=data;
-  if (_value) {
-    _value->incrRef();
-    DEBTRACE("value ref count: " << _value->getRefCnt());
-  }
+  if (_value)
+    {
+      _value->incrRef();
+      DEBTRACE("value ref count: " << _value->getRefCnt());
+    }
 }
 
 bool AnyInputPort::isEmpty()

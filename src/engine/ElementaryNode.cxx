@@ -435,10 +435,10 @@ void ElementaryNode::getReadyTasks(std::vector<Task *>& tasks)
           std::string input_port_name = (*iter1)->getName();
           // Get Port Name in master node
           InputPort * master_port = getInputPort(input_port_name);
-          for (std::set<OutPort *>::const_iterator itt=master_port->_backLinks.begin(); itt!=master_port->_backLinks.end();itt++)
+          for (auto itt : master_port->_backLinks)
           {
             // Connect dataflow
-            getProc()->edAddDFLink((*itt),(*iter1));
+            getProc()->edAddDFLink(itt.first,(*iter1));
           }
         }
 

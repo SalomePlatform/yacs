@@ -206,9 +206,9 @@ InputPort *ProxyPort::clone(Node *newHelder) const
   throw Exception("ProxyPort::clone : internal error - should never happened");
 }
 
-void ProxyPort::edNotifyReferencedBy(OutPort *fromPort)
+void ProxyPort::edNotifyReferencedBy(OutPort *fromPort, bool isLoopProof)
 {
-  _port->edNotifyReferencedBy(fromPort);
+  _port->edNotifyReferencedBy(fromPort,isLoopProof);
 }
 
 void ProxyPort::edNotifyDereferencedBy(OutPort *fromPort)
@@ -248,6 +248,11 @@ InputPort *ProxyPort::getPublicRepresentant()
 void *ProxyPort::get() const
 {
   return _port->get();
+}
+
+void ProxyPort::releaseData()
+{
+  _port->releaseData();
 }
 
 void ProxyPort::put(const void *data) throw(ConversionException)

@@ -61,7 +61,7 @@ namespace YACS
       virtual void *get() const;
       virtual void put(const void *data) throw(ConversionException);
       virtual void put(YACS::ENGINE::Any *data);
-
+      void releaseData() override;
     protected:
       InPropertyPort(const InPropertyPort& other, Node *newHelder);
       InPropertyPort(const std::string& name, Node *node, TypeCode* type, bool canBeNull = false);

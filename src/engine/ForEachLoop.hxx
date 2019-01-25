@@ -208,6 +208,7 @@ namespace YACS
       void assignPassedResults(const std::vector<unsigned int>& passedIds, const std::vector<SequenceAny *>& passedOutputs, const std::vector<std::string>& nameOfOutputs);
 #endif
      const TypeCode* getOutputPortType(const std::string& portName)const;
+      void cleanDynGraph() override;
     protected:
       Node *simpleClone(ComposedNode *father, bool editionOnly=true) const;
       void checkLinkPossibility(OutPort *start, const std::list<ComposedNode *>& pointsOfViewStart,
@@ -221,7 +222,6 @@ namespace YACS
       void getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(Exception);
       void releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(Exception);
     protected:
-      void cleanDynGraph();
       void pushAllSequenceValues();
       void createOutputOutOfScopeInterceptors(int branchNb);
       void prepareSequenceValues(int sizeOfSamples);

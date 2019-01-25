@@ -91,6 +91,7 @@ namespace YACS
       //! For the moment false is returned : impovement about it coming soon.
       bool isPlacementPredictableB4Run() const;
       void edRemoveChild(Node *node) throw(Exception);
+      bool isLoop() const override { return true; }
       virtual bool edAddChild(Node *DISOWNnode) throw(Exception);
       std::list<Node *> edGetDirectDescendants() const;
       std::list<InputPort *> getSetOfInputPort() const;
@@ -112,6 +113,7 @@ namespace YACS
       Node * getFinalizeNode();
       int getMaxLevelOfParallelism() const;
       void partitionRegardingDPL(const PartDefinition *pd, std::map<ComposedNode *, YACS::BASES::AutoRefCnt<PartDefinition> >& zeMap);
+      virtual void cleanDynGraph();
     protected:
       void buildDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView);
       void buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView);
@@ -124,7 +126,6 @@ namespace YACS
       virtual void checkLinkPossibility(OutPort *start, const std::list<ComposedNode *>& pointsOfViewStart,
                                        InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd) throw(Exception);
     protected:
-      void cleanDynGraph();
       void prepareInputsFromOutOfScope(int branchNb);
       void putValueOnBranch(Any *val, unsigned branchId, bool first);
       TypeOfNode getIdentityOfNotifyerNode(const Node *node, unsigned& id);

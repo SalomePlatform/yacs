@@ -40,6 +40,7 @@ namespace YACS
       void exRestoreInit();
       Any *getValue() const { return _value; }
       int getIntValue() const { return _value ? _value->getIntValue():0; }
+      void releaseData() override;
       void put(Any *data);
       void *get() const;
       virtual std::string getAsString();
@@ -48,6 +49,8 @@ namespace YACS
       InputPort *clone(Node *newHelder) const;
       std::string dump();
       virtual std::string typeName() {return "YACS__ENGINE__AnyInputPort";}
+    protected:
+      void releaseDataUnsafe();
     protected:
       Any *_value;
     private:

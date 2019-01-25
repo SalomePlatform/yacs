@@ -70,6 +70,10 @@ void InputXmlPort::put(const char *data) throw (ConversionException)
   _data = data;
 }
 
+void InputXmlPort::releaseData()
+{//nothing because _data has no ref counter
+}
+
 bool InputXmlPort::isEmpty()
 {
   return _data.empty();

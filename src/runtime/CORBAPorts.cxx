@@ -161,6 +161,10 @@ void display(CORBA::Any* data)
     }
 }
 
+void InputCorbaPort::releaseData()
+{//do nothing - to be implemented
+}
+
 void InputCorbaPort::put(CORBA::Any *data) throw (ConversionException)
 {
 #ifdef REFCNT

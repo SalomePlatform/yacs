@@ -41,6 +41,13 @@ TestElemInputPort::TestElemInputPort(const TestElemInputPort& other, Node *newHe
 {
 }
 
+void TestElemInputPort::releaseData()
+{
+  stringstream msg;
+  msg << "Not implemented (" << __FILE__ << ":" << __LINE__ << ")";
+  throw Exception(msg.str());
+}
+
 void TestElemInputPort::put(const void *data) throw(ConversionException)
 {
   cerr << _name << endl;

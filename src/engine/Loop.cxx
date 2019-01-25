@@ -85,10 +85,16 @@ InputPort *InputPort4DF2DS::clone(Node *newHelder) const
   throw Exception("InputPort4DF2DS::clone : internal error");
 }
 
-void InputPort4DF2DS::put(Any *data)
+void InputPort4DF2DS::releaseData()
 {
   if(_data)
     _data->decrRef();
+  _data = nullptr;
+}
+
+void InputPort4DF2DS::put(Any *data)
+{
+  InputPort4DF2DS::releaseData();
   _data=data;
   _data->incrRef();
 }

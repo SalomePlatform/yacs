@@ -67,10 +67,16 @@ void InputCppPort::put(const void *data) throw(ConversionException)
   put((YACS::ENGINE::Any *)data);
 }
 
-void InputCppPort::put(YACS::ENGINE::Any *data) throw(ConversionException)
+void InputCppPort::releaseData()
 {
   if(_data)
     _data->decrRef();
+  _data=nullptr;
+}
+
+void InputCppPort::put(YACS::ENGINE::Any *data) throw(ConversionException)
+{
+  releaseData();
   _data=data;
   _data->incrRef();
   DEBTRACE("value ref count: " << _data->getRefCnt());

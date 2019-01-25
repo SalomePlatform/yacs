@@ -85,6 +85,12 @@ namespace YACS
       PythonNode* cloneNode(const std::string& name);
       virtual std::string typeName() { return "YACS__ENGINE__PythonNode"; }
       void applyDPLScope(ComposedNode *gfn);
+      void setSqueezeStatus(bool sqStatus) { _autoSqueeze=sqStatus; }
+      bool getSqueezeStatus() const { return _autoSqueeze; }
+      void squeezeMemorySafe();
+    protected:
+      void squeezeMemory();
+      void squeezeMemoryRemote();
     public:
       static const char KIND[];
       static const char IMPL_NAME[];
@@ -92,6 +98,7 @@ namespace YACS
       static const char REMOTE_NAME[];
       static const char DPL_INFO_NAME[];
     protected:
+      bool _autoSqueeze = false;
       Engines::PyScriptNode_var _pynode;
     };
 

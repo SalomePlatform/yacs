@@ -105,7 +105,6 @@ namespace YACS
       OutPort *getOutPort(const std::string& name) const throw(Exception);
       OutputPort *getOutputPort(const std::string& name) const throw(Exception);
       YACS::Event finalize();
-
     protected:
       virtual YACS::Event updateStateOnFailedEventFrom(Node *node, const Executor *execInst);
       void buildDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView);

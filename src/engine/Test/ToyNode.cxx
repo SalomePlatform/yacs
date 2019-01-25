@@ -95,10 +95,16 @@ InputPort *InputToyPort::clone(Node *newHelder) const
   return new InputToyPort(*this,newHelder);
 }
 
-void InputToyPort::put(Any *data)
+void InputToyPort::releaseData()
 {
   if(_data)
     _data->decrRef();
+  _data=nullptr;
+}
+
+void InputToyPort::put(Any *data)
+{
+  InputToyPort::releaseData();
   _data=data;
   _data->incrRef();
 }
@@ -599,10 +605,16 @@ void InputLimitPort::edRemoveManInit()
   InputPort::edRemoveManInit();
 }
 
-void InputLimitPort::put(Any *data)
+void InputLimitPort::releaseData()
 {
   if(_data)
     _data->decrRef();
+  _data=nullptr;
+}
+
+void InputLimitPort::put(Any *data)
+{
+  InputLimitPort::releaseData();
   _data=data;
   _data->incrRef();
 }

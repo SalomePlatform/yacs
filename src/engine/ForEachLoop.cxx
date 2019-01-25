@@ -604,6 +604,14 @@ void ForEachLoop::exUpdateState()
               _passedData->checkLevel2(_execOutGoingPorts[0]);
               _passedData->assignAlreadyDone(_execVals);
             }
+          // clean inputs data coming from the outside in _node
+          set< InPort * > portsToSetVals=getAllInPortsComingFromOutsideOfCurrentScope();
+          for(auto iter : portsToSetVals)
+            {
+              InputPort *curPortCasted=(InputPort *) iter;//Cast granted by ForEachLoop::buildDelegateOf(InPort)
+              if(!curPortCasted->canSafelySqueezeMemory())// this can appear strange ! if not safelySqueeze -> release. Nevertheless it is true.
+                curPortCasted->releaseData();             // these input ports have been incremented with InputPort::put into DynParaLoop::prepareInputsFromOutOfScope. So they can be released now.
+            }
         }
       catch(YACS::Exception& ex)
         {
@@ -853,14 +861,15 @@ YACS::Event ForEachLoop::updateStateForWorkNodeOnFinishedEventFrom(Node *node, u
   else if(_state == YACS::ACTIVATED)
     {//more elements to do and loop still activated
       _execIds[id]=_execCurrentId;
-      node->init(false);
       int posInAbs(_execCurrentId);
       if(_passedData)
         posInAbs=_passedData->toAbsId(_execCurrentId);
       _splitterNode.putSplittedValueOnRankTo(posInAbs,id,false);
+      //forwardExecStateToOriginalBody(node);
+      node->init(false);
       _execCurrentId++;
       node->exUpdateState();
-      forwardExecStateToOriginalBody(node);
+      //forwardExecStateToOriginalBody(node);
       _nbOfEltConsumed++;
     }
   else
@@ -1119,7 +1128,6 @@ void ForEachLoop::resetState(int level)
   if(level==0)return;
   DynParaLoop::resetState(level);
   _execCurrentId=0;
-  //Note: cleanDynGraph is not a virtual method (must be called from ForEachLoop object) 
   cleanDynGraph();
 }
 
