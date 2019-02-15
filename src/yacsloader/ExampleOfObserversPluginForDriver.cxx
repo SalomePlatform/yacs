@@ -1,4 +1,4 @@
-// Copyright (C) 2016  CEA/DEN, EDF R&D
+// Copyright (C) 2016-2019  CEA/DEN, EDF R&D
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -15,7 +15,6 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
 //
 // Author : Anthony Geay (EDF R&D)
 
