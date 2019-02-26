@@ -22,12 +22,14 @@
 #include <PyEditor_Widget.h>
 #include <py2yacs.hxx>
 
-Py2YacsDialog::Py2YacsDialog( QWidget* parent)
+Py2YacsDialog::Py2YacsDialog( QWidget* parent, bool exportXml)
 : QDialog(parent),
   _yacsFile(),
   _pyEditorWindow(0),
   _errorMessages(0),
-  _okButton(0)
+  _okButton(0),
+  _exportXml(exportXml),
+  _pyScript()
 {
   QVBoxLayout *mainLayout = new QVBoxLayout;
   _pyEditorWindow = new PyEditor_Window;
@@ -70,32 +72,37 @@ void Py2YacsDialog::onExport()
   }
 
   Py2yacs converter;
-  std::string text = pyEdit->text().toStdString();
+  _pyScript = pyEdit->text().toStdString();
   try
   {
-    converter.load(text);
+    converter.load(_pyScript);
     // _exec -> default name for OPENTURNS functions
     std::string errors = converter.getFunctionErrors("_exec");
     if(errors.empty())
     {
-      QSettings settings;
-      QString currentDir = settings.value("currentDir").toString();
-      if (currentDir.isEmpty())
-        currentDir = QDir::homePath();
-      QString fileName = QFileDialog::getSaveFileName(this,
-                                  tr("Save to YACS schema..."),
-                                  currentDir,
-                                  QString("%1 (*.xml)" ).arg( tr("xml files")));
-      if (!fileName.isEmpty())
+      if(_exportXml)
       {
-        if (!fileName.endsWith(".xml"))
-          fileName += ".xml";
-        QFile file(fileName);
-        settings.setValue("currentDir", QFileInfo(fileName).absolutePath());
-        converter.save(fileName.toStdString(), "_exec");
-        _yacsFile = fileName;
-        accept();
+        QSettings settings;
+        QString currentDir = settings.value("currentDir").toString();
+        if (currentDir.isEmpty())
+          currentDir = QDir::homePath();
+        QString fileName = QFileDialog::getSaveFileName(this,
+                                    tr("Save to YACS schema..."),
+                                    currentDir,
+                                    QString("%1 (*.xml)" ).arg( tr("xml files")));
+        if (!fileName.isEmpty())
+        {
+          if (!fileName.endsWith(".xml"))
+            fileName += ".xml";
+          QFile file(fileName);
+          settings.setValue("currentDir", QFileInfo(fileName).absolutePath());
+          converter.save(fileName.toStdString(), "_exec");
+          _yacsFile = fileName;
+          accept();
+        }
       }
+      else
+        accept();
     }
     else
     {
@@ -115,4 +122,9 @@ void Py2YacsDialog::onExport()
 QString Py2YacsDialog::getYacsFile()
 {
   return _yacsFile;
+}
+
+std::string Py2YacsDialog::getScriptText()
+{
+  return _pyScript;
 }
