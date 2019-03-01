@@ -27,9 +27,11 @@ class PY2YACSGUILIB_EXPORT Py2YacsDialog : public QDialog
 {
   Q_OBJECT
   public:
-    Py2YacsDialog( QWidget* parent=0, bool exportXml = true);
+    Py2YacsDialog( QWidget* parent=0);
     QString getYacsFile();
     std::string getScriptText();
+    void setScriptText(const std::string& pyScript);
+    void setExportXml(bool yes);
 
   public slots:
     virtual void onExport();

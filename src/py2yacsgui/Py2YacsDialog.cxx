@@ -22,13 +22,13 @@
 #include <PyEditor_Widget.h>
 #include <py2yacs.hxx>
 
-Py2YacsDialog::Py2YacsDialog( QWidget* parent, bool exportXml)
+Py2YacsDialog::Py2YacsDialog( QWidget* parent)
 : QDialog(parent),
   _yacsFile(),
   _pyEditorWindow(0),
   _errorMessages(0),
   _okButton(0),
-  _exportXml(exportXml),
+  _exportXml(true),
   _pyScript()
 {
   QVBoxLayout *mainLayout = new QVBoxLayout;
@@ -127,4 +127,17 @@ QString Py2YacsDialog::getYacsFile()
 std::string Py2YacsDialog::getScriptText()
 {
   return _pyScript;
+}
+
+void Py2YacsDialog::setScriptText(const std::string& pyScript)
+{
+  PyEditor_Widget* pyEdit = dynamic_cast<PyEditor_Widget*>
+                                             (_pyEditorWindow->centralWidget());
+  if(pyEdit != nullptr)
+    pyEdit->setText(QString(pyScript.c_str()));
+}
+
+void Py2YacsDialog::setExportXml(bool yes)
+{
+  _exportXml = yes;
 }
