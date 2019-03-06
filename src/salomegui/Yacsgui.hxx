@@ -23,6 +23,7 @@
 #include "SalomeWrap_Module.hxx"
 #include "Yacsgui_Resource.hxx"
 #include <SALOMEconfig.h>
+#include "YACSExport.hxx"
 
 #include <QModelIndex>
 #include <map>
@@ -40,7 +41,7 @@ namespace YACS
 class SalomeApp_Application;
 class SUIT_ViewWindow;
 
-class Yacsgui: public SalomeWrap_Module
+class YACS_EXPORT Yacsgui: public SalomeWrap_Module
 {
   Q_OBJECT
 
