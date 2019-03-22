@@ -47,7 +47,7 @@ std::size_t SalomeHPContainerVectOfHelper::getNumberOfFreePlace() const
 
 std::size_t SalomeHPContainerVectOfHelper::getNumberOfFreePlaceAmong(const std::vector<std::size_t>& idsOfKernelContainers) const
 {
-  std::size_t ret;
+  std::size_t ret(0);
   for(std::vector<std::size_t>::const_iterator it=idsOfKernelContainers.begin();it!=idsOfKernelContainers.end();it++)
     if(!_whichOccupied[*it])
       ret++;
