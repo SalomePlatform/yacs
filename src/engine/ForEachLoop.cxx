@@ -610,6 +610,7 @@ void ForEachLoop::exUpdateState()
           //ForEachLoop must be put in error and the exception rethrown to notify the caller
           DEBTRACE( "ForEachLoop::exUpdateState: " << ex.what() );
           setState(YACS::ERROR);
+          setErrorDetails(ex.what());
           exForwardFailed();
           throw;
         }

@@ -640,10 +640,13 @@ std::string DynParaLoop::getErrorReport()
         }
       for(vector<Node *>::iterator iter=_execNodes.begin();iter!=_execNodes.end();iter++)
         {
-          std::string rep=(*iter)->getErrorReport();
-          if(rep != "")
+          if(*iter)
             {
-              report=report+rep+"\n";
+              std::string rep=(*iter)->getErrorReport();
+              if(rep != "")
+                {
+                  report=report+rep+"\n";
+                }
             }
         }
       for(vector<Node *>::iterator iter=_execFinalizeNodes.begin();iter!=_execFinalizeNodes.end();iter++)
