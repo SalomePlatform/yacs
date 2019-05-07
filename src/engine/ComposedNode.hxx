@@ -45,7 +45,7 @@ namespace YACS
       friend class Loop;
       friend class OutPort;
       friend class ElementaryNode;
-    protected:
+    public:
       static const char SEP_CHAR_BTW_LEVEL[];
     protected:
       ComposedNode(const std::string& name);

@@ -202,6 +202,8 @@ namespace YACS
       virtual void edDisconnectAllLinksWithMe();
       static void checkValidityOfPortName(const std::string& name) throw(Exception);
       static ComposedNode *checkHavingCommonFather(Node *node1, Node *node2) throw(Exception);
+    public:
+      static void checkValidityOfNodeName(const std::string& name);
     };
 
   }

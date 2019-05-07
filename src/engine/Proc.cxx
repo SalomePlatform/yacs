@@ -203,6 +203,7 @@ void Proc::accept(Visitor *visitor)
 
 void Proc::setName(const std::string& name)
 {
+  Node::checkValidityOfNodeName(name);
   _name = name;
 }
 

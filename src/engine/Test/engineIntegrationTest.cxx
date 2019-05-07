@@ -3272,3 +3272,11 @@ void EngineIntegrationTest::testRemoveRuntime()
   Runtime* r=YACS::ENGINE::getRuntime();
   delete r;
 }
+
+void EngineIntegrationTest::testWrongNodeNameDetection()
+{
+  ToyNode *n1=new ToyNode("T1");
+  CPPUNIT_ASSERT_THROW(n1->setName("jjj.jj"),YACS::Exception);
+  delete n1;
+  CPPUNIT_ASSERT_THROW(ToyNode("T1.DD"),YACS::Exception);
+}

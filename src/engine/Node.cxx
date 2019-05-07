@@ -69,6 +69,7 @@ Node::Node(const std::string& name):_name(name),_inGate(this),_outGate(this),_fa
                                     _implementation(Runtime::RUNTIME_ENGINE_INTERACTION_IMPL_NAME),_modified(1)
 {
   // Should be protected by lock ??
+  Node::checkValidityOfNodeName(_name);
   _numId = _total++;
   idMap[_numId]=this;
 
@@ -158,6 +159,7 @@ Node *Node::cloneWithoutCompAndContDeepCpy(ComposedNode *father, bool editionOnl
  */
 void Node::setName(const std::string& name)
 {
+  Node::checkValidityOfNodeName(name);
   if(_father)
     {
       if(_father->isNameAlreadyUsed(name))
@@ -444,6 +446,15 @@ void Node::checkValidityOfPortName(const std::string& name) throw(YACS::Exceptio
   if(name.find(SEP_CHAR_IN_PORT, 0 )!=string::npos)
     {
       string what("Port name "); what+=name; what+="not valid because it contains character "; what+=SEP_CHAR_IN_PORT;
+      throw Exception(what);
+    }
+}
+
+void Node::checkValidityOfNodeName(const std::string& name)
+{
+  if(name.find(ComposedNode::SEP_CHAR_BTW_LEVEL,0)!=string::npos)
+    {
+      string what("Node name "); what+=name; what+="not valid because it contains character "; what+=ComposedNode::SEP_CHAR_BTW_LEVEL;
       throw Exception(what);
     }
 }
