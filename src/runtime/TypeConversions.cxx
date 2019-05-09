@@ -619,7 +619,7 @@ namespace YACS
     {
       int protocol=-1;
       if(IMPLOUT==XMLImpl || IMPLOUT==NEUTRALImpl)
-        protocol=0;
+        protocol=4;
       std::string d=convertToYacsObjref<IMPLIN,TIN,TIN2,IMPLOUT,TOUT>::convert(t,o,aux,protocol);
       DEBTRACE( d );
       TOUT r=convertFromYacsObjref<IMPLOUT,TOUT>::convert(t,d);
@@ -1868,7 +1868,7 @@ namespace YACS
                 {
                   s=(const char*)buffer->get_buffer();
 
-                  if(protocol !=0)
+                  if(protocol !=4)
                     {
                       std::string mystr(s,buffer->length());
                       return mystr;
