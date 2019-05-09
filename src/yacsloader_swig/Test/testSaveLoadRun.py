@@ -1171,7 +1171,7 @@ for i in i8:
     self.assertEqual(p.getState(),pilot.DONE)
     pass
 
-  def test14(self):
+  def tess14(self):
     """ Non regression EDF11027. Problem after Save/Load of a foreach node with type pyobj with input "SmplsCollection" manually set before. Correction in convertToYacsObjref from XML->Neutral. Objref can hide a string !"""
     xmlFileName="test14.xml"
     SALOMERuntime.RuntimeSALOME_setRuntime()
@@ -1752,6 +1752,31 @@ t1.addKeyValueInVarErrorIfAlreadyExistingNow(obj2Str("ef"),obj2Str([11,12]))
     p.edAddLink(n0_vn,n2_vn)
     #
     ex=pilot.ExecutorSwig()
+    ex.RunW(p,0)
+    self.assertEqual(p.getState(),pilot.DONE)
+    pass
+
+  def test25(self):
+    fname="test25.xml"
+    p=self.r.createProc("p0")
+    tp=p.createInterfaceTc("python:obj:1.0","pyobj",[])
+    n1_0_sc=self.r.createScriptNode("Salome","n1_0_sc")
+    p.edAddChild(n1_0_sc)
+    n1_0_sc.setExecutionMode("remote")
+    n1_0_sc.setScript("""""")
+    i1_0_sc=n1_0_sc.edAddInputPort("i1",tp)
+    i1_0_sc.edInitPy(list(range(4)))
+
+    cont=p.createContainer("gg","Salome")
+    cont.setProperty("name","localhost")
+    cont.setProperty("hostname","localhost")
+    n1_0_sc.setContainer(cont)
+
+    p.saveSchema(fname)
+    l=loader.YACSLoader()
+    p=l.load(fname)
+    ex=pilot.ExecutorSwig()
+    self.assertEqual(p.getState(),pilot.READY)
     ex.RunW(p,0)
     self.assertEqual(p.getState(),pilot.DONE)
     pass

@@ -618,7 +618,9 @@ namespace YACS
     inline TOUT convertObjref(const TypeCode *t,TIN o,TIN2 aux)
     {
       int protocol=-1;
-      if(IMPLOUT==XMLImpl || IMPLOUT==NEUTRALImpl)
+      if(IMPLOUT==XMLImpl)
+        protocol=0;//to avoid presence of \0 into XML generated file
+      if(IMPLOUT==NEUTRALImpl)
         protocol=4;
       std::string d=convertToYacsObjref<IMPLIN,TIN,TIN2,IMPLOUT,TOUT>::convert(t,o,aux,protocol);
       DEBTRACE( d );
