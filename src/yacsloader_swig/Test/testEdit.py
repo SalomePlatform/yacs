@@ -125,7 +125,7 @@ class TestEdit(unittest.TestCase):
         b=self.r.createBloc("b1")
         p.edAddChild(b)
         
-        n=self.r.createScriptNode("","b1.node2")
+        n=self.r.createScriptNode("","b1@node2")
         n.setScript("print('coucou2')")
         b.edAddChild(n)
         # --- end bloc
@@ -136,7 +136,7 @@ class TestEdit(unittest.TestCase):
         ip=lo.edGetNbOfTimesInputPort()
         ip.edInitInt(3)
 
-        n=self.r.createScriptNode("","l1.node2")
+        n=self.r.createScriptNode("","l1@node2")
         n.setScript("print('coucou2')")
         lo.edSetNode(n)
         # --- end loop
@@ -148,7 +148,7 @@ class TestEdit(unittest.TestCase):
         # --- create a while loop with one node
         wh=self.r.createWhileLoop("w1")
         p.edAddChild(wh)
-        n=self.r.createFuncNode("","w1.node3")
+        n=self.r.createFuncNode("","w1@node3")
         n.setScript("""
 def f():
   print('coucou3')
@@ -165,7 +165,7 @@ def f():
         # --- create a switch 
         sw=self.r.createSwitch("sw1")
         p.edAddChild(sw)
-        n=self.r.createFuncNode("","sw1.node3")
+        n=self.r.createFuncNode("","sw1@node3")
         n.setScript("""
 def f():
   print('case1')
@@ -174,7 +174,7 @@ def f():
         n.setFname("f")
         n.edAddOutputPort("p1",ti)
         sw.edSetNode(1,n)
-        n=self.r.createFuncNode("","sw1.node4")
+        n=self.r.createFuncNode("","sw1@node4")
         n.setScript("""
 def f():
   print('default')
