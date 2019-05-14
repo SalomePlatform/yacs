@@ -23,6 +23,9 @@ IF(SALOME_BUILD_TESTS)
 ENDIF(SALOME_BUILD_TESTS)
 
 # --- options ---
+ADD_DEFINITIONS(
+  ${BOOST_DEFINITIONS}
+  )
 
 # additional include directories
 INCLUDE_DIRECTORIES(

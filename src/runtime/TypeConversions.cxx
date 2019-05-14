@@ -1328,7 +1328,10 @@ namespace YACS
                     {
                       DEBTRACE("############### workaround to improve...");
                     }
-                  return mystr;
+                  if(strncmp(t->id(),"python",6)==0 )
+                    return FromBase64(mystr);
+                  else
+                    return mystr;
                 }
               else if ((!xmlStrcmp(cur->name, (const xmlChar *)"string")))// <- here case where pyobj value has been stored in XML. pyobj has kind==ObjRef. And the stored format is String ! EDF11027
                 {
@@ -1498,7 +1501,7 @@ namespace YACS
       static inline std::string convert(const TypeCode *t,std::string& o)
         {
           if(strncmp(t->id(),"python",6)==0 )
-            return "<value><objref><![CDATA[" + o + "]]></objref></value>\n";
+            return "<value><objref><![CDATA[" + ToBase64(o) + "]]></objref></value>\n";
           else if(strncmp(t->id(),"json",4)==0)
             return "<value><objref><![CDATA[" + o + "]]></objref></value>\n";
           else

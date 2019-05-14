@@ -180,7 +180,7 @@ std::string SeqAnyInputPort::dump()
   for (int i = 0; i < nbElem; i++)
     {
       Any *val = getValueAtRank(i);
-      switch (val->getType()->kind())
+      switch (((YACS::ENGINE::TypeCodeSeq *)edGetType())->contentType()->kind())
         {
         case Double:
           xmldump << "<value><double>" << setprecision(16) << val->getDoubleValue() << "</double></value>" << endl;
@@ -195,7 +195,7 @@ std::string SeqAnyInputPort::dump()
           xmldump << "<value><string>" << val->getStringValue() << "</string></value>" << endl;
           break;
         case Objref:
-          xmldump << "<value><objref>" << val->getStringValue() << "</objref></value>" << endl;
+          xmldump << "<value><objref>" << ToBase64(val->getStringValue()) << "</objref></value>" << endl;
           break;
         default:
           xmldump << "<value><error> NO_SERIALISATION_AVAILABLE </error></value>" << endl;

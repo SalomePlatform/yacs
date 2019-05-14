@@ -42,6 +42,10 @@ namespace YACS
     class TypeCodeStruct;
     typedef void (*Deallocator)(void *);
 
+
+    YACSLIBENGINE_EXPORT std::string ToBase64(const std::string& bytes);
+    YACSLIBENGINE_EXPORT std::string FromBase64(const std::string& bytes);
+    
     class YACSLIBENGINE_EXPORT StringOnHeap
     {
       friend class Any;

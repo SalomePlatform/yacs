@@ -1171,7 +1171,7 @@ for i in i8:
     self.assertEqual(p.getState(),pilot.DONE)
     pass
 
-  def tess14(self):
+  def test14(self):
     """ Non regression EDF11027. Problem after Save/Load of a foreach node with type pyobj with input "SmplsCollection" manually set before. Correction in convertToYacsObjref from XML->Neutral. Objref can hide a string !"""
     xmlFileName="test14.xml"
     SALOMERuntime.RuntimeSALOME_setRuntime()
