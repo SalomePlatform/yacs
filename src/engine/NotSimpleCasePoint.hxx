@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2019  CEA/DEN, EDF R&D
+// Copyright (C) 2019  CEA/DEN, EDF R&D
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -17,8 +17,7 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-#ifndef __FORKBLOCPOINT_HXX__
-#define __BLOKBLOCPOINT_HXX__
+#pragma once
 
 #include "YACSlibEngineExport.hxx"
 #include "BlocPoint.hxx"
@@ -27,24 +26,22 @@ namespace YACS
 {
   namespace ENGINE
   {
-    class YACSLIBENGINE_EXPORT ForkBlocPoint : public BlocPoint
+    class YACSLIBENGINE_EXPORT NotSimpleCasePoint : public BlocPoint
     {
     public:
-      ForkBlocPoint() = default;
-      ForkBlocPoint(const std::list<AbstractPoint *>& nodes, AbstractPoint *father);
+      NotSimpleCasePoint() = default;
+      NotSimpleCasePoint(const std::list<AbstractPoint *>& nodes, AbstractPoint *father);
+      ~NotSimpleCasePoint() = default;
       AbstractPoint *deepCopy(AbstractPoint *father) const override;
+      //
       Node *getFirstNode() override;
       Node *getLastNode() override;
-      int getMaxLevelOfParallelism() const;
-      void getWeightRegardingDPL(ComplexWeight *weight);
-      void partitionRegardingDPL(const PartDefinition *pd, std::map<ComposedNode *, YACS::BASES::AutoRefCnt<PartDefinition> >& zeMap) const;
-      std::string getRepr() const;
+      int getMaxLevelOfParallelism() const override;
+      void getWeightRegardingDPL(ComplexWeight *weight) override;
+      void partitionRegardingDPL(const PartDefinition *pd, std::map<ComposedNode *, YACS::BASES::AutoRefCnt<PartDefinition> >& zeMap) const override;
+      std::string getRepr() const override;
       void accept(PointVisitor *pv) override;
       AbstractPoint *expandNonSimpleCaseOn(NotSimpleCasePoint *pathologicalPt, const std::set<Node *>& uncatchedNodes) override;
-      virtual ~ForkBlocPoint();
     };
   }
 }
-
-
-#endif

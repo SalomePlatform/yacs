@@ -38,16 +38,23 @@ namespace YACS
     public:
       ElementaryPoint(Node *node):AbstractPoint(0),_node(node) { }
       AbstractPoint *findPointWithNode(Node *node);
-      bool contains(Node *node);
-      Node *getFirstNode();
-      Node *getLastNode();
+      bool contains(Node *node) const override;
+      bool anyOf(const std::set<Node *>& nodes) const override;
+      AbstractPoint *deepCopy(AbstractPoint *father) const override;
+      Node *getFirstNode() override;
+      Node *getLastNode() override;
       int getNumberOfNodes() const;
       int getMaxLevelOfParallelism() const;
       void getWeightRegardingDPL(ComplexWeight *weight);
       void partitionRegardingDPL(const PartDefinition *pd, std::map<ComposedNode *, YACS::BASES::AutoRefCnt<PartDefinition> >& zeMap) const;
       std::string getRepr() const;
       void accept(PointVisitor *pv) override;
+      AbstractPoint *expandNonSimpleCaseOn(NotSimpleCasePoint *pathologicalPt, const std::set<Node *>& uncatchedNodes) override;
       virtual ~ElementaryPoint();
+    public:
+      void setNode(Node *node) { _node=node; }
+      Node *getNode() const { return _node; }
+      std::string getNodeName() const;
     };
   }
 }

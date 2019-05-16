@@ -25,15 +25,18 @@
 #include "AutoRefCnt.hxx"
 
 #include <map>
+#include <set>
 #include <list>
 #include <vector>
 #include <string>
+#include <memory>
 
 namespace YACS
 {
   namespace ENGINE
   {
     class Node;
+    class Bloc;
     class InGate;
     class OutGate;
     class BlocPoint;
@@ -41,14 +44,17 @@ namespace YACS
     class ForkBlocPoint;
     class PointVisitor;
     class LinkedBlocPoint;
+    class NotSimpleCasePoint;
+    class ElementaryPoint;
     
     class YACSLIBENGINE_EXPORT AbstractPoint
     {
     public:
+      AbstractPoint() = default;
       AbstractPoint(AbstractPoint *father):_father(father) { }
       AbstractPoint *getFather() const { return _father; }
       AbstractPoint *getGodFather();
-      bool amIGod() { return getGodFather()==0; }
+      bool amIGod() { return getGodFather()==nullptr; }
       void setFather(AbstractPoint *father) { _father=father; }
       //
       bool isBegin();
@@ -61,17 +67,23 @@ namespace YACS
       ForkBlocPoint *tryAsFork(BlocPoint *sop);
       ForkBlocPoint *tryAsForkBis(BlocPoint *sop);
       ForkBlocPoint *tryAsForkTer(BlocPoint *sop);
+      //void tryAsNotSimpleCase(BlocPoint *sop, std::list<AbstractPoint *>& nodes, bool& somethingDone);
+      static void TryAsNotSimpleCase(AbstractPoint *father, const std::vector<AbstractPoint *>& ptsToKill, std::list<AbstractPoint *>& nodes, bool& somethingDone);
+      //
+      virtual AbstractPoint *deepCopy(AbstractPoint *father) const = 0;
       //
       virtual Node *getFirstNode() = 0;
       virtual Node *getLastNode() = 0;
       virtual AbstractPoint *findPointWithNode(Node *node) = 0;
-      virtual bool contains(Node *node) = 0;
+      virtual bool contains(Node *node) const = 0;
+      virtual bool anyOf(const std::set<Node *>& nodes) const = 0;
       virtual int getNumberOfNodes() const = 0;
       virtual int getMaxLevelOfParallelism() const = 0;
       virtual void getWeightRegardingDPL(ComplexWeight *weight) = 0;
       virtual void partitionRegardingDPL(const PartDefinition *pd, std::map<ComposedNode *, YACS::BASES::AutoRefCnt<PartDefinition> >& zeMap) const = 0;
       virtual std::string getRepr() const = 0;
       virtual void accept(PointVisitor *pv) = 0;
+      virtual AbstractPoint *expandNonSimpleCaseOn(NotSimpleCasePoint *pathologicalPt, const std::set<Node *>& uncatchedNodes) = 0;
       virtual ~AbstractPoint();
     public:
       static bool IsGatherB4Ext(Node *node);
@@ -87,8 +99,13 @@ namespace YACS
       static AbstractPoint *GetDirectSonOf(AbstractPoint *refFather, AbstractPoint *sonOrLittleSon);
       static bool IsCommonDirectSonOf(AbstractPoint *refFather, const std::list<OutGate *>& outgs, AbstractPoint *&ret);
       static bool IsCommonDirectSonOf(AbstractPoint *refFather, const std::list<InGate *>& ings, AbstractPoint *&ret);
+      static void FeedData(AbstractPoint *ptToBeRewired, std::map< std::string, std::tuple< ElementaryPoint *, Node *, std::shared_ptr<Bloc> > > *m);
+      static void FeedData(const std::list<AbstractPoint *>& ptsToBeRewired, std::map< std::string, std::tuple< ElementaryPoint *, Node *, std::shared_ptr<Bloc> > > *m);
+      static void Rewire(const std::vector<AbstractPoint *>& ptsToKill, std::map< std::string, std::tuple< ElementaryPoint *, Node *, std::shared_ptr<Bloc> > > *m);
+      static void UnRewire(std::map< std::string, std::tuple< ElementaryPoint *, Node *, std::shared_ptr<Bloc> > >& m);
+      static void Display(std::map< std::string, std::tuple< ElementaryPoint *, Node *, std::shared_ptr<Bloc> > > *m);
     protected:
-      AbstractPoint *_father;
+      AbstractPoint *_father = nullptr;
     };
   }
 }

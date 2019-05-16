@@ -25,6 +25,7 @@ namespace YACS
 {
   namespace ENGINE
   {
+    class NotSimpleCasePoint;
     class ElementaryPoint;
     class LinkedBlocPoint;
     class ForkBlocPoint;
@@ -38,6 +39,8 @@ namespace YACS
       virtual void endLinkedBlocPoint(LinkedBlocPoint *pt) = 0;
       virtual void beginElementaryPoint(ElementaryPoint *pt) = 0;
       virtual void endElementaryPoint(ElementaryPoint *pt) = 0;
+      virtual void beginNotSimpleCasePoint(NotSimpleCasePoint *pt) = 0;
+      virtual void endNotSimpleCasePoint(NotSimpleCasePoint *pt) = 0;
     };
   }
 }

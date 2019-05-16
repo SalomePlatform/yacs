@@ -1247,3 +1247,165 @@ void EngineTest::checkGraphAnalyser4()
     CPPUNIT_ASSERT(sop.getRepr()=="(n3+n2+n1) - ");
   }
 }
+
+/*!
+ * Case revealed by EmC2 on complex managers.
+ * Here basic combination of Link/Fork is not enough.
+ */
+void EngineTest::checkGraphAnalyser5()
+{
+  {
+    Bloc proc("TOP");
+    std::vector<Bloc *> vn;
+    std::vector<std::string> v{"A","E","C","F","D","G"};
+    std::size_t i=0;
+    for(auto it : v)
+      {
+        Bloc *pt(new Bloc(v[i++]));
+        proc.edAddChild(pt);
+        vn.push_back(pt);
+      }
+    //
+    proc.edAddCFLink(vn[0],vn[1]);//A -> E
+    proc.edAddCFLink(vn[0],vn[2]);//A -> C
+    proc.edAddCFLink(vn[2],vn[3]);//C -> F
+    proc.edAddCFLink(vn[2],vn[4]);//C -> D
+    proc.edAddCFLink(vn[1],vn[3]);//E -> F
+    proc.edAddCFLink(vn[3],vn[5]);//F -> G
+    //
+    std::vector< std::list<Node *> > rrr(proc.splitIntoIndependantGraph());
+    CPPUNIT_ASSERT_EQUAL(1,(int)rrr.size());
+    CPPUNIT_ASSERT_EQUAL((int)v.size(),(int)rrr[0].size());
+    SetOfPoints sop(rrr[0]);
+    sop.simplify();
+    CPPUNIT_ASSERT(sop.getRepr()=="((A+[C*E])+[(F+G)*[D*E]]) - ");
+  }
+  //
+  {
+    Bloc proc("TOP");
+    std::vector<Bloc *> vn;
+    std::vector<std::string> v{"A","E","C","B","F","D","G"};
+    std::size_t i=0;
+    for(auto it : v)
+      {
+        Bloc *pt(new Bloc(v[i++]));
+        proc.edAddChild(pt);
+        vn.push_back(pt);
+      }
+    //
+    proc.edAddCFLink(vn[0],vn[1]);//A -> E
+    proc.edAddCFLink(vn[0],vn[2]);//A -> C
+    proc.edAddCFLink(vn[0],vn[3]);//A -> B
+    proc.edAddCFLink(vn[3],vn[4]);//B -> F
+    proc.edAddCFLink(vn[2],vn[4]);//C -> F
+    proc.edAddCFLink(vn[2],vn[5]);//C -> D
+    proc.edAddCFLink(vn[1],vn[4]);//E -> F
+    proc.edAddCFLink(vn[4],vn[6]);//F -> G
+    //
+    std::vector< std::list<Node *> > rrr(proc.splitIntoIndependantGraph());
+    CPPUNIT_ASSERT_EQUAL(1,(int)rrr.size());
+    CPPUNIT_ASSERT_EQUAL((int)v.size(),(int)rrr[0].size());
+    SetOfPoints sop(rrr[0]);
+    sop.simplify();
+    CPPUNIT_ASSERT(sop.getRepr()=="(A+[C*[[B*D]*[D*E]]]+[(F+G)*D]) - ");
+  }
+  //
+  {
+    Bloc proc("TOP");
+    std::vector<Bloc *> vn;
+    std::vector<std::string> v{"A","E","C","B","F","D","G"};
+    std::size_t i=0;
+    for(auto it : v)
+      {
+        Bloc *pt(new Bloc(v[i++]));
+        proc.edAddChild(pt);
+        vn.push_back(pt);
+      }
+    //
+    proc.edAddCFLink(vn[0],vn[1]);//A -> E
+    proc.edAddCFLink(vn[0],vn[2]);//A -> C
+    proc.edAddCFLink(vn[0],vn[3]);//A -> B
+    proc.edAddCFLink(vn[3],vn[4]);//B -> F
+    proc.edAddCFLink(vn[2],vn[4]);//C -> F
+    proc.edAddCFLink(vn[2],vn[5]);//C -> D
+    proc.edAddCFLink(vn[1],vn[4]);//E -> F
+    proc.edAddCFLink(vn[4],vn[6]);//F -> G
+    //
+    std::vector< std::list<Node *> > rrr(proc.splitIntoIndependantGraph());
+    CPPUNIT_ASSERT_EQUAL(1,(int)rrr.size());
+    CPPUNIT_ASSERT_EQUAL((int)v.size(),(int)rrr[0].size());
+    SetOfPoints sop(rrr[0]);
+    sop.simplify();
+    CPPUNIT_ASSERT(sop.getRepr()=="(A+[C*[[B*D]*[D*E]]]+[(F+G)*D]) - ");
+  }
+  //
+  {
+    Bloc proc("TOP");
+    std::vector<Bloc *> vn;
+    std::vector<std::string> v{"A","I","E","C","B","J","F","H","D","G"};
+    std::size_t i=0;
+    for(auto it : v)
+      {
+        Bloc *pt(new Bloc(v[i++]));
+        proc.edAddChild(pt);
+        vn.push_back(pt);
+      }
+    //
+    proc.edAddCFLink(vn[0],vn[1]);//A -> I
+    proc.edAddCFLink(vn[0],vn[2]);//A -> E
+    proc.edAddCFLink(vn[0],vn[3]);//A -> C
+    proc.edAddCFLink(vn[0],vn[4]);//A -> B
+    proc.edAddCFLink(vn[4],vn[6]);//B -> F
+    proc.edAddCFLink(vn[3],vn[7]);//C -> H
+    proc.edAddCFLink(vn[3],vn[6]);//C -> F
+    proc.edAddCFLink(vn[3],vn[8]);//C -> D
+    proc.edAddCFLink(vn[2],vn[6]);//E -> F
+    proc.edAddCFLink(vn[6],vn[9]);//F -> G
+    proc.edAddCFLink(vn[9],vn[5]);//G -> J
+    proc.edAddCFLink(vn[7],vn[5]);//H -> J
+    proc.edAddCFLink(vn[1],vn[5]);//I -> J
+    //
+    std::vector< std::list<Node *> > rrr(proc.splitIntoIndependantGraph());
+    CPPUNIT_ASSERT_EQUAL(1,(int)rrr.size());
+    CPPUNIT_ASSERT_EQUAL((int)v.size(),(int)rrr[0].size());
+    SetOfPoints sop(rrr[0]);
+    sop.simplify();
+    CPPUNIT_ASSERT(sop.getRepr()=="(A+[([C*[(F+G)*I]]+[([[(F+G)*H]*[(F+G)*I]]+J)*[[(F+G)*D]*[(F+G)*I]]])*[[B*[(F+G)*I]]*[E*[(F+G)*I]]]]) - ");
+  }
+  //
+  {
+    Bloc proc("TOP");
+    std::vector<Bloc *> vn;
+    std::vector<std::string> v{"A","I","E","C","B","J","F","H","D","K","G","L"};
+    std::size_t i=0;
+    for(auto it : v)
+      {
+        Bloc *pt(new Bloc(v[i++]));
+        proc.edAddChild(pt);
+        vn.push_back(pt);
+      }
+    //
+    proc.edAddCFLink(vn[0],vn[1]);//A -> I
+    proc.edAddCFLink(vn[0],vn[2]);//A -> E
+    proc.edAddCFLink(vn[0],vn[3]);//A -> C
+    proc.edAddCFLink(vn[0],vn[4]);//A -> B
+    proc.edAddCFLink(vn[4],vn[6]);//B -> F
+    proc.edAddCFLink(vn[3],vn[7]);//C -> H
+    proc.edAddCFLink(vn[3],vn[6]);//C -> F
+    proc.edAddCFLink(vn[3],vn[8]);//C -> D
+    proc.edAddCFLink(vn[2],vn[6]);//E -> F
+    proc.edAddCFLink(vn[6],vn[10]);//F -> G
+    proc.edAddCFLink(vn[10],vn[5]);//G -> J
+    proc.edAddCFLink(vn[7],vn[5]);//H -> J
+    proc.edAddCFLink(vn[1],vn[5]);//I -> J
+    proc.edAddCFLink(vn[5],vn[9]);//J -> K
+    proc.edAddCFLink(vn[9],vn[11]);//K -> L
+    //
+    std::vector< std::list<Node *> > rrr(proc.splitIntoIndependantGraph());
+    CPPUNIT_ASSERT_EQUAL(1,(int)rrr.size());
+    CPPUNIT_ASSERT_EQUAL((int)v.size(),(int)rrr[0].size());
+    SetOfPoints sop(rrr[0]);
+    sop.simplify();
+    CPPUNIT_ASSERT(sop.getRepr()=="(A+[([C*[(F+G)*I]]+[([[(F+G)*H]*[(F+G)*I]]+(J+K+L))*[[(F+G)*D]*[(F+G)*I]]])*[[B*[(F+G)*I]]*[E*[(F+G)*I]]]]) - ");
+  }
+}

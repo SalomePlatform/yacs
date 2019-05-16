@@ -63,6 +63,7 @@
 #include "PointVisitor.hxx"
 #include "ForkBlocPoint.hxx"
 #include "LinkedBlocPoint.hxx"
+#include "NotSimpleCasePoint.hxx"
 #include "ElementaryPoint.hxx"
 #include "ObserverAsPlugin.hxx"
   
@@ -589,6 +590,14 @@ namespace YACS
       ForkBlocPoint();
       ForkBlocPoint(const ForkBlocPoint&);
     };
+
+    class NotSimpleCasePoint : public BlocPoint
+    {
+    private:
+      ~NotSimpleCasePoint();
+      NotSimpleCasePoint();
+      NotSimpleCasePoint(const NotSimpleCasePoint&);
+    };
     
     class SetOfPoints
     {
@@ -644,6 +653,20 @@ namespace YACS
           {
             PyObject *ptPy(SWIG_NewPointerObj((void*)pt,SWIGTYPE_p_YACS__ENGINE__ElementaryPoint,0));
             PyObject *meth(PyString_FromString("endElementaryPoint"));
+            PyObject *ret(PyObject_CallMethodObjArgs(_py,meth,ptPy,nullptr));
+            Py_XDECREF(ret); Py_XDECREF(meth); Py_XDECREF(ptPy);
+          }
+          void beginNotSimpleCasePoint(NotSimpleCasePoint *pt)
+          {
+            PyObject *ptPy(SWIG_NewPointerObj((void*)pt,SWIGTYPE_p_YACS__ENGINE__NotSimpleCasePoint,0));//$descriptor(YACS::ENGINE::NotSimpleCasePoint *)
+            PyObject *meth(PyString_FromString("beginNotSimpleCasePoint"));
+            PyObject *ret(PyObject_CallMethodObjArgs(_py,meth,ptPy,nullptr));
+            Py_XDECREF(ret); Py_XDECREF(meth); Py_XDECREF(ptPy);
+          }
+          void endNotSimpleCasePoint(NotSimpleCasePoint *pt)
+          {
+            PyObject *ptPy(SWIG_NewPointerObj((void*)pt,SWIGTYPE_p_YACS__ENGINE__NotSimpleCasePoint,0));
+            PyObject *meth(PyString_FromString("endNotSimpleCasePoint"));
             PyObject *ret(PyObject_CallMethodObjArgs(_py,meth,ptPy,nullptr));
             Py_XDECREF(ret); Py_XDECREF(meth); Py_XDECREF(ptPy);
           }

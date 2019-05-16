@@ -42,7 +42,9 @@ namespace YACS
     {
     public:
       SetOfPoints(const std::list<Node *>& nodes);
+      SetOfPoints(BagPoint *bp):_bp(bp) { }
       ~SetOfPoints();
+      void basicSimplify();
       void simplify();
       std::string getRepr() const;
       AbstractPoint *findPointWithNode(Node *node);

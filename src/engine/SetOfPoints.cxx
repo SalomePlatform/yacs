@@ -40,12 +40,10 @@ SetOfPoints::SetOfPoints(const std::list<Node *>& nodes):_bp(0)
 
 SetOfPoints::~SetOfPoints()
 {
-  if(!_bp)
-    return;
   delete _bp;
 }
 
-void SetOfPoints::simplify()
+void SetOfPoints::basicSimplify()
 {
   while(_bp->size()>1)
     {
@@ -62,6 +60,33 @@ void SetOfPoints::simplify()
       _bp->deal2Ter(somethingDone);
       if(!somethingDone)
         throw Exception("SetOfPoints::simplify : not implemented yet !\nPlease check if there are any recursively redundant links (can be removed by removeRecursivelyRedundantCL method).");
+    }
+}
+
+void SetOfPoints::simplify()
+{
+  while( _bp->internalContinueForSimplify() )
+    {
+      bool somethingDone(false);
+      _bp->deal1(somethingDone);
+      if(somethingDone)
+        continue;
+      _bp->deal2(somethingDone);
+      if(somethingDone)
+        continue;
+      _bp->deal2Bis(somethingDone);
+      if(somethingDone)
+        continue;
+      _bp->deal2Ter(somethingDone);
+      if(somethingDone)
+        continue;
+      _bp->dealNotSimpleCase(somethingDone);
+      if(!somethingDone)
+        throw Exception("SetOfPoints::simplify : not implemented yet !\nPlease check if there are any recursively redundant links (can be removed by removeRecursivelyRedundantCL method).");
+    }
+  if( _bp->presenceOfNonSimpleCase() )
+    {
+      _bp->expandNonSimpleCase();
     }
 }
 

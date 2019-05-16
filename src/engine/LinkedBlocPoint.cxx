@@ -18,6 +18,9 @@
 //
 
 #include "LinkedBlocPoint.hxx"
+#include "ElementaryPoint.hxx"
+#include "NotSimpleCasePoint.hxx"
+#include "ForkBlocPoint.hxx"
 #include "PointVisitor.hxx"
 #include "Exception.hxx"
 
@@ -30,6 +33,14 @@ using namespace YACS::ENGINE;
 
 LinkedBlocPoint::LinkedBlocPoint(const std::list<AbstractPoint *>& nodes, AbstractPoint *father):BlocPoint(nodes,father)
 {
+}
+
+AbstractPoint *LinkedBlocPoint::deepCopy(AbstractPoint *father) const
+{
+  LinkedBlocPoint *ret(new LinkedBlocPoint);
+  ret->deepCopyFrom(*this);
+  ret->setFather(father);
+  return ret;
 }
 
 Node *LinkedBlocPoint::getFirstNode()
@@ -83,6 +94,35 @@ std::string LinkedBlocPoint::getRepr() const
     }
   ret+=")";
   return ret;
+}
+
+AbstractPoint *LinkedBlocPoint::expandNonSimpleCaseOn(NotSimpleCasePoint *pathologicalPt, const std::set<Node *>& uncatchedNodes)
+{
+  if(anyOf(uncatchedNodes))
+    {
+      for(auto& it : _nodes)
+        {
+          AbstractPoint *ret(it->expandNonSimpleCaseOn(pathologicalPt,uncatchedNodes));
+          if(ret!=it)
+            {
+              ret->setFather(this);
+              auto oldIt(it);
+              it = ret;
+              delete oldIt;
+            }
+        }
+      return this;
+    }
+  else
+    {
+      std::list<AbstractPoint *> l;
+      AbstractPoint *p0(this->deepCopy(getFather())),*p1(pathologicalPt->getUnique()->deepCopy(getFather()));
+      l.push_back(p0);
+      l.push_back(p1);
+      AbstractPoint *ret(new ForkBlocPoint(l,getFather()));
+      p0->setFather(ret); p1->setFather(ret);
+      return ret;
+    }
 }
 
 void LinkedBlocPoint::accept(PointVisitor *pv)

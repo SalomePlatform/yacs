@@ -19,6 +19,7 @@
 
 #include "BlocPoint.hxx"
 #include "Node.hxx"
+#include "NotSimpleCasePoint.hxx"
 
 #include <algorithm>
 
@@ -28,6 +29,15 @@ BlocPoint::BlocPoint(const std::list<AbstractPoint *>& nodes, AbstractPoint *fat
 {
   for(std::list<AbstractPoint *>::const_iterator it=_nodes.begin();it!=_nodes.end();it++)
     (*it)->setFather(this);
+}
+
+void BlocPoint::deepCopyFrom(const BlocPoint& other)
+{
+  const std::list<AbstractPoint *>& nodesToIterateOn(other.getListOfPoints());
+  for(auto it : nodesToIterateOn)
+    {
+      _nodes.push_back(it->deepCopy(this));
+    }
 }
 
 void BlocPoint::getOutPoint(AbstractPoint *node)
@@ -78,14 +88,57 @@ AbstractPoint *BlocPoint::getNodeB4(Node *node)
     return 0;
 }
 
-bool BlocPoint::contains(Node *node)
+bool BlocPoint::contains(Node *node) const
 {
-  for(std::list<AbstractPoint *>::iterator it=_nodes.begin();it!=_nodes.end();it++)
+  for(auto it : _nodes)
     {
-      if((*it)->contains(node))
+      if(it->contains(node))
         return true;
     }
   return false;
+}
+
+bool BlocPoint::anyOf(const std::set<Node *>& nodes) const
+{
+  for(auto it : nodes)
+    {
+      if(this->contains(it))
+        return true;
+    }
+  return false;
+}
+
+AbstractPoint *BlocPoint::getUnique()
+{
+  if(_nodes.size()!=1)
+    throw YACS::Exception("BlocPoint::getUnique : invalid call !");
+  else
+    {
+      AbstractPoint *ret(*_nodes.begin());
+      if(!ret)
+        throw YACS::Exception("BlocPoint::getUnique : Ooops !");
+      return ret;
+    }
+}
+
+const AbstractPoint *BlocPoint::getUnique() const
+{
+  if(_nodes.size()!=1)
+    throw YACS::Exception("BlocPoint::getUnique const : invalid call !");
+  else
+    {
+      AbstractPoint *ret(*_nodes.begin());
+      if(!ret)
+        throw YACS::Exception("BlocPoint::getUnique : Ooops !");
+      return ret;
+    }
+}
+
+AbstractPoint *BlocPoint::getUniqueAndReleaseIt()
+{
+  AbstractPoint *ret(getUnique());
+  getOutPoint(ret);
+  return ret;
 }
 
 int BlocPoint::getNumberOfNodes() const
@@ -100,4 +153,18 @@ BlocPoint::~BlocPoint()
 {
   for(std::list<AbstractPoint *>::iterator it=_nodes.begin();it!=_nodes.end();it++)
     delete *it;
+}
+
+bool BlocPoint::internalContinueForSimplify() const
+{
+  std::size_t i(0);
+  std::for_each(_nodes.begin(),_nodes.end(),[&i](AbstractPoint *elt) { if(!dynamic_cast<NotSimpleCasePoint *>(elt)) i++; });
+  return i>1;
+}
+
+bool BlocPoint::presenceOfNonSimpleCase() const
+{
+  std::size_t i(0);
+  std::for_each(_nodes.begin(),_nodes.end(),[&i](AbstractPoint *elt) { if(dynamic_cast<NotSimpleCasePoint *>(elt)) i++; });
+  return i>0;
 }

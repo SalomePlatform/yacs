@@ -29,6 +29,14 @@ ForkBlocPoint::ForkBlocPoint(const std::list<AbstractPoint *>& nodes, AbstractPo
 {
 }
 
+AbstractPoint *ForkBlocPoint::deepCopy(AbstractPoint *father) const
+{
+  ForkBlocPoint *ret(new ForkBlocPoint);
+  ret->deepCopyFrom(*this);
+  ret->setFather(father);
+  return ret;
+}
+
 ForkBlocPoint::~ForkBlocPoint()
 {
 }
@@ -118,3 +126,20 @@ void ForkBlocPoint::accept(PointVisitor *pv)
     it->accept(pv);
   pv->endForkBlocPoint(this);
 }
+
+AbstractPoint *ForkBlocPoint::expandNonSimpleCaseOn(NotSimpleCasePoint *pathologicalPt, const std::set<Node *>& uncatchedNodes)
+{
+  for(auto& it : _nodes)
+    {
+      AbstractPoint *ret(it->expandNonSimpleCaseOn(pathologicalPt,uncatchedNodes));
+      if(ret!=it)
+        {
+          ret->setFather(this);
+          auto oldIt(it);
+          it = ret;
+          delete oldIt;
+        }
+    }
+  return this;
+}
+

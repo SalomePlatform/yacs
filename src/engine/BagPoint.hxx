@@ -32,16 +32,18 @@ namespace YACS
     class YACSLIBENGINE_EXPORT BagPoint : public BlocPoint
     {
     public:
+      BagPoint() = default;
       BagPoint(const std::list<AbstractPoint *>& nodes, AbstractPoint *father);
     public://overloading
-      Node *getFirstNode();
-      Node *getLastNode();
+      AbstractPoint *deepCopy(AbstractPoint *father) const override;
+      Node *getFirstNode() override;
+      Node *getLastNode() override;
       int getMaxLevelOfParallelism() const;
       void getWeightRegardingDPL(ComplexWeight *weight);
       void partitionRegardingDPL(const PartDefinition *pd, std::map<ComposedNode *, YACS::BASES::AutoRefCnt<PartDefinition> >& zeMap) const;
       std::string getRepr() const;
-      AbstractPoint *getUniqueAndReleaseIt();
       void accept(PointVisitor *pv) override;
+      AbstractPoint *expandNonSimpleCaseOn(NotSimpleCasePoint *pathologicalPt, const std::set<Node *>& uncatchedNodes) override;
     public:
       int size() const { return (int)_nodes.size(); }
       void replaceInMe(BlocPoint *aSet);
@@ -49,12 +51,12 @@ namespace YACS
       void deal2(bool& somethingDone);
       void deal2Bis(bool& somethingDone);
       void deal2Ter(bool& somethingDone);
+      void dealNotSimpleCase(bool& somethingDone);
+      void expandNonSimpleCase();
     private:
-      AbstractPoint *getUnique();
-      const AbstractPoint *getUnique() const;
+      void expandNonSimpleCaseOn(AbstractPoint *pathologicalPt);
     };
   }
 }
-
 
 #endif

@@ -19,6 +19,8 @@
 
 #include "ElementaryPoint.hxx"
 #include "PointVisitor.hxx"
+#include "NotSimpleCasePoint.hxx"
+#include "ForkBlocPoint.hxx"
 #include "Node.hxx"
 
 using namespace YACS::ENGINE;
@@ -32,12 +34,24 @@ AbstractPoint *ElementaryPoint::findPointWithNode(Node *node)
   if(node==_node)
     return this;
   else
-    return 0;
+    return nullptr;
 }
 
-bool ElementaryPoint::contains(Node *node)
+bool ElementaryPoint::contains(Node *node) const
 {
   return _node==node;
+}
+
+bool ElementaryPoint::anyOf(const std::set<Node *>& nodes) const
+{
+  return nodes.find(_node)!=nodes.end();
+}
+
+AbstractPoint *ElementaryPoint::deepCopy(AbstractPoint *father) const
+{
+  AbstractPoint *ret(new ElementaryPoint(_node));
+  ret->setFather(father);
+  return ret;
 }
 
 Node *ElementaryPoint::getFirstNode()
@@ -79,4 +93,25 @@ void ElementaryPoint::accept(PointVisitor *pv)
 {
   pv->beginElementaryPoint(this);
   pv->endElementaryPoint(this);
+}
+
+AbstractPoint *ElementaryPoint::expandNonSimpleCaseOn(NotSimpleCasePoint *pathologicalPt, const std::set<Node *>& uncatchedNodes)
+{
+  if(uncatchedNodes.find(_node)!=uncatchedNodes.end())
+    return this;
+  else
+    {
+      std::list<AbstractPoint *> l;
+      AbstractPoint *p0(this->deepCopy(getFather())),*p1(pathologicalPt->getUnique()->deepCopy(getFather()));
+      l.push_back(p0);
+      l.push_back(p1);
+      AbstractPoint *ret(new ForkBlocPoint(l,getFather()));
+      p0->setFather(ret); p1->setFather(ret);
+      return ret;
+    }
+}
+
+std::string ElementaryPoint::getNodeName() const
+{
+  return _node->getName();
 }

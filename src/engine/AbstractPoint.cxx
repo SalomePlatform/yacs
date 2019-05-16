@@ -20,8 +20,14 @@
 #include "AbstractPoint.hxx"
 #include "LinkedBlocPoint.hxx"
 #include "ForkBlocPoint.hxx"
+#include "NotSimpleCasePoint.hxx"
 #include "SetOfPoints.hxx"
+#include "BagPoint.hxx"
+#include "ElementaryPoint.hxx"
 #include "Node.hxx"
+#include "Bloc.hxx"
+
+#include <algorithm>
 
 using namespace YACS::ENGINE;
 
@@ -81,6 +87,8 @@ LinkedBlocPoint *AbstractPoint::tryAsLink(BlocPoint *sop)
   cur2=sop->getNodeB4(bb);
   while(cur2)
     {
+      if(dynamic_cast<NotSimpleCasePoint *>(cur2))
+        continue;
       Node *cur3(cur2->getFirstNode());
       if(cur2->isSimplyLinkedBeforeAfter(sop))
         {
@@ -100,6 +108,8 @@ LinkedBlocPoint *AbstractPoint::tryAsLink(BlocPoint *sop)
   cur2=sop->getNodeAfter(ee);
   while(cur2)
     {
+      if(dynamic_cast<NotSimpleCasePoint *>(cur2))
+        continue;
       Node *cur3(cur2->getLastNode());
       if(cur2->isSimplyLinkedBeforeAfter(sop))
         {
@@ -120,7 +130,7 @@ LinkedBlocPoint *AbstractPoint::tryAsLink(BlocPoint *sop)
       return new LinkedBlocPoint(l,getFather());
     }
   else
-    return 0;
+    return nullptr;
 }
 
 /*!
@@ -137,6 +147,8 @@ ForkBlocPoint *AbstractPoint::tryAsFork(BlocPoint *sop)
     {
       if(*it==this)
         continue;
+      if(dynamic_cast<NotSimpleCasePoint *>(*it))
+        continue;
       Node *curFirst((*it)->getFirstNode()),*curEnd((*it)->getLastNode());
       if(!IsSimplyLinkedBeforeExt(curFirst) || !IsSimplyLinkedAfterExt(curEnd))
         continue;
@@ -150,7 +162,7 @@ ForkBlocPoint *AbstractPoint::tryAsFork(BlocPoint *sop)
       return new ForkBlocPoint(l,getFather());
     }
   else
-    return 0;
+    return nullptr;
 }
 
 ForkBlocPoint *AbstractPoint::tryAsForkBis(BlocPoint *sop)
@@ -163,6 +175,8 @@ ForkBlocPoint *AbstractPoint::tryAsForkBis(BlocPoint *sop)
   for(std::list<AbstractPoint *>::const_iterator it=lp.begin();it!=lp.end();it++)
     {
       if(*it==this)
+        continue;
+      if(dynamic_cast<NotSimpleCasePoint *>(*it))
         continue;
       Node *curFirst((*it)->getFirstNode()),*curEnd((*it)->getLastNode());
       if(!IsNoLinksBefore(curFirst) || !IsSimplyLinkedAfterExt(curEnd))
@@ -177,7 +191,7 @@ ForkBlocPoint *AbstractPoint::tryAsForkBis(BlocPoint *sop)
       return new ForkBlocPoint(l,getFather());
     }
   else
-    return 0;
+    return nullptr;
 }
 
 ForkBlocPoint *AbstractPoint::tryAsForkTer(BlocPoint *sop)
@@ -190,6 +204,8 @@ ForkBlocPoint *AbstractPoint::tryAsForkTer(BlocPoint *sop)
   for(std::list<AbstractPoint *>::const_iterator it=lp.begin();it!=lp.end();it++)
     {
       if(*it==this)
+        continue;
+      if(dynamic_cast<NotSimpleCasePoint *>(*it))
         continue;
       Node *curFirst((*it)->getFirstNode()),*curEnd((*it)->getLastNode());
       if(!IsSimplyLinkedBeforeExt(curFirst) || !IsNoLinksAfter(curEnd))
@@ -204,7 +220,182 @@ ForkBlocPoint *AbstractPoint::tryAsForkTer(BlocPoint *sop)
       return new ForkBlocPoint(l,getFather());
     }
   else
-    return 0;
+    return nullptr;
+}
+
+#include <iostream>
+
+class Visitor1 : public YACS::ENGINE::PointVisitor
+{
+public:
+  Visitor1(std::map< std::string, std::tuple< ElementaryPoint *, Node *, std::shared_ptr<Bloc> > > *m):_m(m) { }
+  void beginForkBlocPoint(ForkBlocPoint *pt) { }
+  void endForkBlocPoint(ForkBlocPoint *pt) { }
+  void beginLinkedBlocPoint(LinkedBlocPoint *pt) { }
+  void endLinkedBlocPoint(LinkedBlocPoint *pt) { }
+  void beginElementaryPoint(ElementaryPoint *pt)
+  {
+    std::string nodeName(pt->getNodeName());
+    auto it(_m->find(nodeName));
+    if(it==_m->end())
+      {
+        (*_m)[nodeName] = std::tuple< ElementaryPoint *, Node *, std::shared_ptr<Bloc> >(pt,pt->getNode(),std::make_shared<Bloc>(nodeName));
+      }
+  }
+  void endElementaryPoint(ElementaryPoint *pt) { }
+  void beginNotSimpleCasePoint(NotSimpleCasePoint *pt) { }
+  void endNotSimpleCasePoint(NotSimpleCasePoint *pt) { }
+private:
+  std::map< std::string, std::tuple< ElementaryPoint *, Node *, std::shared_ptr<Bloc> > > *_m;
+};
+
+/*!
+ * Feed m with all ElementaryPoints inside \a ptToBeRewired.
+ */
+void AbstractPoint::FeedData(AbstractPoint *ptToBeRewired, std::map< std::string, std::tuple< ElementaryPoint *, Node *, std::shared_ptr<Bloc> > > *m)
+{
+  Visitor1 vis(m);
+  ptToBeRewired->accept(&vis);
+}
+
+/*!
+ * Feed m with all ElementaryPoints inside \a ptsToBeRewired.
+ */
+void AbstractPoint::FeedData(const std::list<AbstractPoint *>& ptsToBeRewired, std::map< std::string, std::tuple< ElementaryPoint *, Node *, std::shared_ptr<Bloc> > > *m)
+{
+  for(auto it : ptsToBeRewired)
+    FeedData(it,m);
+}
+
+bool containsPtsToKill(const std::vector<AbstractPoint *>& ptsToKill, Node *node)
+{
+  for(auto it : ptsToKill)
+    if(it->contains(node))
+      return true;
+  return false;
+}
+
+/*!
+ * This method go throw all ElementaryPoints of \a m. 
+ * For each ElementaryPoint change the Node instance underneath. And then create links between those new Node by excluding all links going whose destination :
+ * - is inside \a ptToKill
+ * - is not refered by \a m
+ * 
+ * CF links of old nodes are NOT touched for unrewire phase.
+ * Typically all ElementaryPoints inside \a ptToKill are NOT into \a m.
+ */
+void AbstractPoint::Rewire(const std::vector<AbstractPoint *>& ptsToKill, std::map< std::string, std::tuple< ElementaryPoint *, Node *, std::shared_ptr<Bloc> > > *m)
+{
+  for(auto it : *m)
+    {
+      ElementaryPoint *pt(std::get<0>(it.second));
+      Node *node(std::get<1>(it.second));
+      auto newNode(std::get<2>(it.second).get());
+      pt->setNode(newNode);
+    }
+  for(auto it : *m)
+    {
+      ElementaryPoint *pt(std::get<0>(it.second));
+      Node *node(std::get<1>(it.second));
+      auto newNode(std::get<2>(it.second).get());
+      if(containsPtsToKill(ptsToKill,newNode))
+        continue;
+      for(auto it2 : node->getOutGate()->edSetInGate())
+        {
+          Node *nodeFwd(it2->getNode());
+          std::string nodeFwdName(nodeFwd->getName());
+          auto it3(m->find(nodeFwdName));
+          if(it3!=m->end())
+            {
+              Node *nodeFwdNew = std::get<2>(it3->second).get();
+              if(!containsPtsToKill(ptsToKill,newNode))
+                {
+                  newNode->getOutGate()->edAddInGate(nodeFwdNew->getInGate());
+                }
+              //else
+              // node after nodeFwd is not in m fall into \a ptToKill
+              // -> ignore link.
+            }
+          //else
+          // node after nodeFwd is not in m. Typically because nodeFwd has not been put in m
+          // concretely : do not link incoming links to Node * inside ptToKill
+        }
+    }
+}
+
+/*!
+ * Unrewire consists into replacing newly created nodes into old one in ElementaryPoints contained in m.
+ * As CF links of old ENGINE::Node * has not be touched the CF graph is the same.
+ */
+void AbstractPoint::UnRewire(std::map< std::string, std::tuple< ElementaryPoint *, Node *, std::shared_ptr<Bloc> > >& m)
+{
+  for(auto it : m)
+    {
+      ElementaryPoint *pt(std::get<0>(it.second));
+      Node *node(std::get<1>(it.second));
+      pt->setNode(node);
+    }
+}
+
+void AbstractPoint::Display(std::map< std::string, std::tuple< ElementaryPoint *, Node *, std::shared_ptr<Bloc> > > *m)
+{
+  for(auto it : *m)
+    {
+      ElementaryPoint *pt(std::get<0>(it.second));
+      auto newNode(pt->getNode());
+      for(auto it2 : newNode->getOutGate()->edSetInGate())
+        {
+          std::cerr << pt->getNodeName() << " -> " << it2->getNode()->getName() << " " << newNode->typeName() << std::endl;
+        }
+    }
+}
+
+/*!
+ * This methods tries to deal with \a sop that can t be considered as a composite of Link, Fork.
+ * 
+ * Do do so, this methods tries to exclude \a this from \a sop and then analyze if the graph can be decomposited into Links and Forks. If yes \a somethingDone is set to true and \a nodes is updated in consequence.
+ * 
+ * If the algorithm fails \a nodes are let untouched and \a somethingDone is let false.
+ *
+ */
+void AbstractPoint::TryAsNotSimpleCase(AbstractPoint *father, const std::vector<AbstractPoint *>& ptsToKill, std::list<AbstractPoint *>& nodes, bool& somethingDone)
+{
+  std::list<AbstractPoint *> lp2;
+  for(auto it : nodes)
+    {
+      if(std::find(ptsToKill.cbegin(),ptsToKill.cend(),it)==ptsToKill.cend())
+        lp2.push_back(it->deepCopy(nullptr));
+    }
+  BagPoint *tmp(new BagPoint(lp2,nullptr));
+  for(auto it : lp2)
+    it->setFather(tmp);
+  SetOfPoints sopTest(tmp);
+  std::map< std::string, std::tuple< ElementaryPoint *, Node *, std::shared_ptr<Bloc> > > m;
+  FeedData(tmp,&m);
+  Rewire(ptsToKill,&m);
+  try
+    {
+      sopTest.basicSimplify();
+    }
+  catch(YACS::Exception& ex)
+    {// By removing elements in ptsToKill from this impossible to have a classical case -> un rewire to rollback nodes state
+      UnRewire(m);
+      return ;
+    }
+  AbstractPoint *pt(sopTest.getUniqueAndReleaseIt());
+  pt->setFather(father);
+  UnRewire(m);
+  for(auto it : nodes)
+    if(std::find(ptsToKill.cbegin(),ptsToKill.cend(),it)==ptsToKill.cend())
+      delete it;
+  nodes.clear();
+  nodes.push_back(pt);
+  for(auto it : ptsToKill)
+    {
+      std::list<AbstractPoint *> l; l.push_back(it);
+      nodes.push_back( new NotSimpleCasePoint(l,father) );
+    }
+  somethingDone = true;
 }
 
 bool AbstractPoint::IsGatherB4Ext(Node *node)
@@ -291,6 +482,8 @@ Node *AbstractPoint::GetNodeAfter(Node *node)
 
 AbstractPoint *AbstractPoint::GetDirectSonOf(AbstractPoint *refFather, AbstractPoint *sonOrLittleSon)
 {
+  if(!sonOrLittleSon)
+    throw YACS::Exception("AbstractPoint::GetDirectSonOf : sonOrLittleSon is null !");
   AbstractPoint *curFath(sonOrLittleSon->getFather()),*cur(sonOrLittleSon);
   while(curFath && curFath!=refFather)
     {

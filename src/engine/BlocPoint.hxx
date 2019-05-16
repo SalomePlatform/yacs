@@ -34,14 +34,22 @@ namespace YACS
     protected:
       std::list<AbstractPoint *> _nodes;
     public:
+      BlocPoint() = default;
       BlocPoint(const std::list<AbstractPoint *>& nodes, AbstractPoint *father);
+      void deepCopyFrom(const BlocPoint& other);
       AbstractPoint *findPointWithNode(Node *node);
       AbstractPoint *getNodeAfter(Node *node);
       AbstractPoint *getNodeB4(Node *node);
-      bool contains(Node *node);
+      bool contains(Node *node) const override;
+      bool anyOf(const std::set<Node *>& nodes) const override;
       int getNumberOfNodes() const;
       const std::list<AbstractPoint *>& getListOfPoints() const { return _nodes; }
       virtual ~BlocPoint();
+      bool internalContinueForSimplify() const;
+      bool presenceOfNonSimpleCase() const;
+      AbstractPoint *getUnique();
+      const AbstractPoint *getUnique() const;
+      AbstractPoint *getUniqueAndReleaseIt();
     protected:
       void getOutPoint(AbstractPoint *node);
     };

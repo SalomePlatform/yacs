@@ -107,6 +107,7 @@ SET(YACSlibEngine_HEADERS
   BlocPoint.hxx
   BagPoint.hxx
   ForkBlocPoint.hxx
+  NotSimpleCasePoint.hxx
   LinkedBlocPoint.hxx
   ElementaryPoint.hxx
   SetOfPoints.hxx
@@ -182,6 +183,7 @@ SET(YACSlibEngine_SOURCES
   BlocPoint.cxx
   BagPoint.cxx
   ForkBlocPoint.cxx
+  NotSimpleCasePoint.cxx
   LinkedBlocPoint.cxx
   ElementaryPoint.cxx
   SetOfPoints.cxx
