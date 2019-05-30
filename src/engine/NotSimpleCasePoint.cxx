@@ -21,6 +21,9 @@
 #include "PointVisitor.hxx"
 #include "Exception.hxx"
 
+#include <algorithm>
+
+
 using namespace YACS::ENGINE;
 
 NotSimpleCasePoint::NotSimpleCasePoint(const std::list<AbstractPoint *>& nodes, AbstractPoint *father):BlocPoint(nodes,father)
