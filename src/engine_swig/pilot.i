@@ -694,4 +694,24 @@ namespace YACS
   {
     YACS::ENGINE::UnLoadObserversPluginIfAny();
   }
+
+  PyObject *ToBase64Swig(PyObject *bytes)
+  {
+    char *pt = nullptr;
+    Py_ssize_t length=0;
+    PyBytes_AsStringAndSize(bytes,&pt,&length);
+    std::string input(pt,length);
+    std::string ret(YACS::ENGINE::ToBase64(input));
+    return PyBytes_FromStringAndSize(ret.c_str(),ret.size());
+  }
+
+  PyObject *FromBase64Swig(PyObject *base64Str)
+  {
+    char *pt = nullptr;
+    Py_ssize_t length=0;
+    PyBytes_AsStringAndSize(base64Str,&pt,&length);
+    std::string input(pt,length);
+    std::string ret(YACS::ENGINE::FromBase64(input));
+    return PyBytes_FromStringAndSize(ret.c_str(),ret.size());
+  }
 }

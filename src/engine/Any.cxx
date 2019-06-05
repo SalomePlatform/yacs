@@ -38,47 +38,113 @@ using namespace std;
 // forbidden value int=-269488145 double=-1.54947e+231 bool=239
 const char SeqAlloc::DFT_CHAR_VAR=-17;//0xEF
 
-std::string YACS::ENGINE::ToBase64(const std::string& bytes)
+constexpr unsigned NB_BITS = 6;
+
+constexpr unsigned char TAB[64]={46, 61, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122};
+
+unsigned char BitAtPosSimple(char val, std::size_t bitPos)
 {
-  std::string input(bytes);
-  // The input must be in multiples of 3, otherwise the transformation
-  // may overflow the input buffer, so pad with zero.
-  size_t num_pad_chars((3 - input.size() % 3) % 3);
-  input.append(num_pad_chars, 0);
-
-  // Transform to Base64 with line breaks every 76 characters
-  using namespace boost::archive::iterators;
-  typedef insert_linebreaks<base64_from_binary<transform_width<std::string::const_iterator, 6, 8> >, 76> ItBase64T;
-  std::string output(ItBase64T(input.begin()), ItBase64T(input.end() - num_pad_chars));
-
-  // Pad blank characters with '='
-  output.append(num_pad_chars, '=');
-
-  return output;
+  return (val >> bitPos) & 0x1;
 }
 
-std::string YACS::ENGINE::FromBase64(const std::string& base64Str)
+unsigned char BitAtPos(char pt0, char pt1, std::size_t bitPos)
 {
-  std::string input(base64Str);
-  using namespace boost::archive::iterators;
-  typedef transform_width<binary_from_base64<remove_whitespace<std::string::const_iterator> >, 8, 6> ItBinaryT;
-  
-  try
+  if(bitPos<8)
+    return BitAtPosSimple(pt0,bitPos);
+  else
+    return BitAtPosSimple(pt1,bitPos-8);
+}
+
+unsigned char ChunkInternal(char pt0, char pt1, std::size_t startBitIdInByte)
+{
+  unsigned char ret(0);
+  for(unsigned i = 0; i<NB_BITS; ++i)
     {
-      // If the input isn't a multiple of 4, pad with =
-      size_t num_pad_chars((4 - input.size() % 4) % 4);
-      input.append(num_pad_chars, '=');
-      
-      size_t pad_chars(std::count(input.begin(), input.end(), '='));
-      std::replace(input.begin(), input.end(), '=', 'A');
-      std::string output(ItBinaryT(input.begin()), ItBinaryT(input.end()));
-      output.erase(output.end() - pad_chars, output.end());
-      return output;
+      ret |= BitAtPos(pt0,pt1,startBitIdInByte+i);
+      ret <<= 1;
     }
-  catch (std::exception const&)
+  ret >>= 1;
+  return ret;
+}
+
+unsigned char ChunkAtPos(const char *pt, std::size_t len, std::size_t posChunk)
+{
+  std::size_t startByte((posChunk*NB_BITS)/8);
+  std::size_t startBitIdInByte((posChunk*NB_BITS)%8);
+  char pt1(startByte!=len-1?pt[startByte+1]:pt[startByte]);
+  return ChunkInternal(pt[startByte],pt1,startBitIdInByte);
+}
+
+std::size_t OnOff(std::size_t i)
+{
+  if(i!=0)
+    return 1;
+  return 0;
+}
+
+std::string YACS::ENGINE::ToBase64(const std::string& bytes)
+{//64 == 2**6
+  const char *bytesPt(bytes.c_str());
+  std::size_t input_len(bytes.size());
+  std::size_t input_len_bit(input_len*8);
+  std::size_t nb_chunks( input_len_bit/NB_BITS + OnOff((NB_BITS - input_len_bit%NB_BITS)%NB_BITS) );
+  std::string ret(nb_chunks,'\0');
+  for(std::size_t i=0;i<nb_chunks;++i)
     {
-      return std::string();
+      unsigned char cp(ChunkAtPos(bytesPt,input_len, i));
+      ret[i] = TAB[cp];
     }
+  return ret;
+}
+
+constexpr unsigned MAX_VAL_TAB2=123;
+
+constexpr unsigned char TAB2[MAX_VAL_TAB2] = { 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 0, 128, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 128, 128, 128, 1, 128, 128, 128, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 128, 128, 128, 128, 128, 128, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63 };
+
+unsigned char BitAtPosSimple2(char val, std::size_t bitPos)
+{
+  return (val >> 5-bitPos) & 0x1;
+}
+
+char BitAtPosOnChunk(char pt0, char pt1, std::size_t bitPos)
+{
+  if(bitPos<6)
+    return BitAtPosSimple2(pt0,bitPos);
+  else
+    return BitAtPosSimple2(pt1,bitPos-6);
+}
+
+char ByteInternal(char c0, char c1, std::size_t startBitIdInByte)
+{
+  unsigned char ret(0);
+  char ct0(TAB2[(unsigned char)c0]),ct1(TAB2[(unsigned char)c1]);
+  for(int i = 7; i>=0; --i)
+    {
+      ret |= BitAtPosOnChunk(ct0,ct1,startBitIdInByte+i);
+      if(i!=0)
+        ret <<= 1;
+    }
+  return ret;
+}
+
+char ByteAtPos(const char *chunckPt, std::size_t bytePos)
+{
+  std::size_t startChunk((bytePos*8)/NB_BITS);
+  std::size_t startBitId((bytePos*8)%NB_BITS);
+  return ByteInternal(chunckPt[startChunk],chunckPt[startChunk+1],startBitId);
+}
+
+std::string YACS::ENGINE::FromBase64(const std::string& bytes)
+{
+  std::size_t nb_chunks(bytes.size());
+  const char *chunckPt(bytes.c_str());
+  std::size_t nb_bytes_output((nb_chunks*NB_BITS)/8);
+  std::string ret(nb_bytes_output,'\0');
+  for(std::size_t i = 0; i<nb_bytes_output; ++i)
+    {
+      ret[i] = ByteAtPos(chunckPt,i);
+    }
+  return ret;
 }
 
 StringOnHeap::StringOnHeap(const char *val):_str(strdup(val)),_len(strlen(val)),_dealloc(0)
