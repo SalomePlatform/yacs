@@ -103,7 +103,7 @@ constexpr unsigned char TAB2[MAX_VAL_TAB2] = { 128, 128, 128, 128, 128, 128, 128
 
 unsigned char BitAtPosSimple2(char val, std::size_t bitPos)
 {
-  return (val >> 5-bitPos) & 0x1;
+  return ( val >> (5-bitPos) ) & 0x1;
 }
 
 char BitAtPosOnChunk(char pt0, char pt1, std::size_t bitPos)
