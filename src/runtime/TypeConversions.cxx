@@ -1329,7 +1329,7 @@ namespace YACS
                       DEBTRACE("############### workaround to improve...");
                     }
                   if(strncmp(t->id(),"python",6)==0 )
-                    return FromBase64(mystr);
+                    return FromBase64Safe(mystr);
                   else
                     return mystr;
                 }

@@ -1781,6 +1781,27 @@ t1.addKeyValueInVarErrorIfAlreadyExistingNow(obj2Str("ef"),obj2Str([11,12]))
     self.assertEqual(p.getState(),pilot.DONE)
     pass
 
+  def test27(self):
+    """ 
+    This test is here to check that old (<=930) graphs are always loadable.
+    So an xml file coming from test14 in 930 has been generated and converted into home made "base64" like format.
+    This test puts unbased64 byte array into test_930.xml and load it to check that everything is OK.
+    """
+    import os
+    content_of_file = b'DDkShXM2PeNCndPqRfnYX5EAt.GaRgPq7dNqtfnYZgvqh=kQf7moXCE2z5lED.tCxgM2RcOqdfl29ePC9YnAx3uaGetqF5lE=.E2D0uS1eM2RcOqdfl2FjPqBYE2pdNq7fl2FjPqBYHoT3.2=.Ew9dsCdUFqVfOaj2Eaxet4BeN2=BOKRWOwF0PqfYMqdYHoT3.2=.EwxYNKHeNa=5O4heOwF4OKBeN2=7Maj2FaZXOaFDFwI.E2=1kibUua=5O4heOwF7Nq9YE2pdNq7fl2ZbMiFDFwI.E2=1nqFZNCdaM2RcOqdfl21dvqFZN2=7Maj2ECbWsKxbNQxYNKL6lo12HoT3.2=.EwneOCfeNqleM2RcOqdfl2BdPC9hcCbjN4Jfd2=APqRWuaRWuwF.uSxYNKFDFwI.E2=1kibUua=5O4heOwFAsiHdNqtYE2pdNq7fl2nWtCZbPaFDFwI.E2=1n4xbMiVdNqdYs2RcOqdfl26eNaVesq9g9qRWu4ZbOaHYFwI.E2=.E2=1kCHjMCdYsibUFqVfOaj2H4xbMiVdNqdYvupdNq7YE2PcMqfeOwFAe4BjOqdYHoT3.2=.E2=.Ew1Yvq1eNC9ds2RcOqdfl2VWsiVgMKdWPuxbPulXPqRdNqtYE2PcMqfeOwF.l2x5lE=.E2=.E2D.tCxUuaHWuS=5O4heOwFAPqRWu4ZbOaHjdqVfOaF.FiVXOidfl2McP49jNCbgeaHauaHYHoT3.2=.E2=.Ew1Yvq1eNC9ds2RcOqdfl2RcOqdYE2PcMqfeOwF1PqlcMq3jPC9YHoT3.2=.EwxAPqRWu4ZbOaHblE=.E2D2MqxgM2RcOqdfl29ePC9YnAx9O4ZbN2T3.2=.E2=.EwFXPqlUFqVfOaj2EidgsiHAnoHetqF5lE=.E2=.E2=.E2D4PqHeO4lVM2RcOqdfl29ePC9YnAx48WF.FqFYu4RgMKj2FAF.EqxjMCueOKtVMij2GoX2E29dsCdfl21dvqFZN2T3.2=.E2=.E2=.E2=.EwZbMqZbOa=5O4heOwF0uanWtAnDFCfbPuZbMidYtqVXN2T3.2=.E2=.E2=.E2=.E2=.EwngNCZUsiT1n4xWOaT1m2qg6WUWe0qjMAj7MAp7OAifdwDDH4xWOaT1nongNCZUsiT3.2=.E2=.E2=.E2=.E2=.EwZbMCxYsi=5O4heOwF7MAF.EibUuaj2ECbjN4JYHoT3.2=.E2=.E2=.E2=.E2=.EwZbMCxYsi=5O4heOwF7OAF.EibUuaj2ECbjN4JYHoT3.2=.E2=.E2=.E2=.E2=.Ewxesi1jNC9UFqVfOaj2Hq12E29dsCdfl21dvqFZN2x5lE=.E2=.E2=.E2=.E2DDGKRXOKReNwI.E2=.E2=.E2=1noNjNCdcP43blE=.E2=.E2=.E2D0O49cMqZbPK=APqRWtCxXOwF4O4BguaF5lE=.E2=.E2=.E2=.E2D4NCxfNqxWOaT0uanWtAnDFWcXnoNYvqhbPq7eNw=1laHjOq1jNC9bmaPcMqmcOq1XOanXnoNYvqhUvqHWtwI.E2=.E2=.E2=.E2=1kixbPq7eNw9ePC9YnAx48WR0uanWtAnDFCfbPuZbMidYtqVXMwx0vqRjMadbk2D0vq1jNC9bmK11no9jMCxYsiT3.2=.E2=.E2=.Ewx0O49cMqZbPKT3.2=.E2=.Ewx2MqxgNwI.E2=.E2=1mKRXOKReM2RcOqdfl29ePC9YnAxAMKdgPKF5lE=.E2=.E2=.E2DAv4HdMC9bkwljMadbkwVBf06c6eUhfqX9mKH9euT1noljMadbkwxAv4HdMC9blE=.E2=.E2=.E2D7Nq1jNC9UFqVfOaj2GKH2E29dsCdfl2BdPC9hcCbjN4Jfd2x5lE=.E2=.E2=.E2DDOi9UvqHWs2RcOqdfl2xcl2=0uS1eOwF1OKnWvO1dvqFZOuFDFwI.E2=.E2=1noZbMqZbOaT3.2=.E2=.EwljNq9YvqBbk2D4NCxfNqxWOaT0uanWtAnDFCfbMwx4NCxfNqxWOaT.Ew9jNqxWOaT0uanWtAnDH43eP4pXno9jNqxWOaT.EwxAPqRWtCxXNwI.E2=.E2=1kaVWu4BdNqpUH4xbMiHjMqj2FaVXPCdYFwI.E2=.E2=.E2=1laHjOqRjMadbkidgsiHAnoHetqR0uanWtAnDFWcbEidgsiHAnoHetqydNq9eNCRcMqDDFaHjOqRjMadbk2D4NCxfMCxYsiTDMADDFaHjOq1jNC9blE=.E2=.E2=.E2D0vqRjMadbkidgsiHAnolVOalhMwx0vqRjMadbk2D0vq1jNC9bmKH1no9jMCxYsiT3.2=.E2=.Ewx0O49cMqZbPKT3.2=.Ewx2MqxgNwI.E2=1kCVYu4heMidYtwI.E2=.E2=1kixbPq7eNw9ePC9YnAx9O4ZbNo9ePC9YnAx2uiRbEidgsiHAnoMe6wx0vqRjMadbkw9jMCxYsiT5N4EYu4RgMKdgswx0vq1jNC9blE=.E2=.E2D4u4BeuaT1mKRWtwH1noZbMiT1noPcMqfeNwI.E2=1no1cNCVfOa9eNCT3.2=.Ew1cNCVfOa9eNCT3.2=.E2=.Ew9jNqxWOaT0uanWtAnDGqVdNqR0uanWtAnDFCfbNo9ePC9YnAx48WDDEixbPq7eNwD0vq1jNC9bn8hUsqng9qBXOalWuKxbMwx0vq1jNC9blE=.E2=.E2D4u4BeuaT1m4HYu4bbkw7cMiVblED4u4BeuaT1nC9YuKRiNwAUkmI5EwxAsiHdNqtbkwx4u4BeuaT3.wPcMqfeNwDAsiHdNqtbkmX17ER1nonWtCZbPaT1noPcMqfeNwI1liVXOidbkwnWtCZbPaT17AAZ=oDDHC9YuKRiNwDDFiVXOidblED4u4BeuaT1nC9YuKRiNwAgkmI5EwxAsiHdNqtbkwx4u4BeuaT3.wPcMqfeNwDAsiHdNqtbkm917ER1nonWtCZbPaT1noPcMqfeNwI1liVXOidbkwnWtCZbPaT18gAZ=oDDHC9YuKRiNwDDFiVXOidblED4u4BeuaT1nC9YuKRiNwAakmI5EwxAsiHdNqtbkwx4u4BeuaT3.wPcMqfeNwDAsiHdNqtbkmv17ER1nonWtCZbPaT1noPcMqfeNwI1liVXOidbkwnWtCZbPaT16QAZ=oDDHC9YuKRiNwDDFiVXOidblED4u4BeuaT1nC9YuKRiNwAdkmI5EwxAsiHdNqtbkwx4u4BeuaT3.wx0O49cNwDDG4HYu4bbkwx4u4BeuaT3.2=.Ewx.u4HcOqdWuaHblE=.E2D.u4HcOqdWuaHblE=.E2=.E2D0vqRjMadbkidgsiHAnohcOKRbEidgsiHAnoHetqR0uanWtAnDFWcbEidgsiHAnoHetqydNq9eNCRcMqDDEixbPq7eNwD0vq1jNC9bmKX1no9jMCxYsiT3.2=.E2=.EwPcMqfeNwDDN4JYuaNbkwVBf06c6eUhcmn17ER9euT1noxYNKHeNaT1noPcMqfeNwI.E2=1no1cNCVfOa9eNCT3.wx.tCxgNwI3'
+
+    fname="test_930.xml"
+    with open(fname,"wb") as f:
+      f.write( pilot.FromBase64Swig(content_of_file) )
+
+    SALOMERuntime.RuntimeSALOME_setRuntime()
+    l=loader.YACSLoader()
+    p=l.load(fname)
+    self.assertTrue(p.getChildByName("test23/main").getChildByName("test23/run").getChildByName("test23/FE").getChildByName("test23/run_internal").getInputPort("i1").getPyObj() == 3)
+    self.assertTrue(p.getChildByName("test23/main").getChildByName("test23/run").getChildByName("test23/FE").edGetSeqOfSamplesPort().getPyObj()==list(range(10)))
+    os.remove(fname)
+    pass
+
 if __name__ == '__main__':
   import os,sys
   U = os.getenv('USER')

@@ -99,7 +99,9 @@ std::string YACS::ENGINE::ToBase64(const std::string& bytes)
 
 constexpr unsigned MAX_VAL_TAB2=123;
 
-constexpr unsigned char TAB2[MAX_VAL_TAB2] = { 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 0, 128, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 128, 128, 128, 1, 128, 128, 128, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 128, 128, 128, 128, 128, 128, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63 };
+constexpr unsigned NOT_OK_VAL = 128;
+
+constexpr unsigned char TAB2[MAX_VAL_TAB2] = { NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, 0, NOT_OK_VAL, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, 1, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, NOT_OK_VAL, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63 };
 
 unsigned char BitAtPosSimple2(char val, std::size_t bitPos)
 {
@@ -114,10 +116,22 @@ char BitAtPosOnChunk(char pt0, char pt1, std::size_t bitPos)
     return BitAtPosSimple2(pt1,bitPos-6);
 }
 
+unsigned char CheckEntry(char c)
+{
+  if( ((unsigned) c) < MAX_VAL_TAB2 )
+    {
+      unsigned char ret(TAB2[(unsigned char)c]);
+      if(ret != NOT_OK_VAL)
+        return ret;
+      throw YACS::Exception("Invalid character found !");
+    }
+  throw YACS::Exception("Invalid character found !");
+}
+
 char ByteInternal(char c0, char c1, std::size_t startBitIdInByte)
 {
   unsigned char ret(0);
-  char ct0(TAB2[(unsigned char)c0]),ct1(TAB2[(unsigned char)c1]);
+  char ct0(CheckEntry(c0)),ct1(CheckEntry(c1));
   for(int i = 7; i>=0; --i)
     {
       ret |= BitAtPosOnChunk(ct0,ct1,startBitIdInByte+i);
@@ -145,6 +159,21 @@ std::string YACS::ENGINE::FromBase64(const std::string& bytes)
       ret[i] = ByteAtPos(chunckPt,i);
     }
   return ret;
+}
+
+/*!
+ * Method used at load time in case of non base64 bytes in input (a throw during decoding). If so, the input bytes is returned.
+ */
+std::string YACS::ENGINE::FromBase64Safe(const std::string& bytes)
+{
+  try
+    {
+      return FromBase64(bytes);
+    }
+  catch(const YACS::Exception& e)
+    {
+      return bytes;
+    }
 }
 
 StringOnHeap::StringOnHeap(const char *val):_str(strdup(val)),_len(strlen(val)),_dealloc(0)
