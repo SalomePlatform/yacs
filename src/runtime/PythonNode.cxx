@@ -532,6 +532,12 @@ void PythonNode::executeRemote()
           throw;
       }
   }
+  //
+  if(!CORBA::is_nil(_pynode))
+    {
+      _pynode->UnRegister();
+    }
+  _pynode = Engines::PyScriptNode::_nil();
   DEBTRACE( "++++++++++++++ ENDOF PyNode::executeRemote: " << getName() << " ++++++++++++++++++++" );
 }
 
@@ -666,7 +672,9 @@ void PythonNode::createRemoteAdaptedPyInterpretor(Engines::Container_ptr objCont
 {
   if(!CORBA::is_nil(_pynode))
     _pynode->UnRegister();
+  objContainer->cleanAllPyScripts();
   _pynode=objContainer->createPyScriptNode(getName().c_str(),getScript().c_str());
+  _pynode->Register();
 }
 
 Engines::PyNodeBase_var PythonNode::retrieveDftRemotePyInterpretorIfAny(Engines::Container_ptr objContainer) const
@@ -685,7 +693,10 @@ void PythonNode::assignRemotePyInterpretor(Engines::PyNodeBase_var remoteInterp)
     {
       Engines::PyScriptNode_var tmpp(Engines::PyScriptNode::_narrow(remoteInterp));
       if(_pynode->_is_equivalent(tmpp))
-        return ;
+        {
+          _pynode->UnRegister();
+          return ;
+        }
     }
   if(!CORBA::is_nil(_pynode))
     _pynode->UnRegister();
