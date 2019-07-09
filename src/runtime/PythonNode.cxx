@@ -120,28 +120,39 @@ void PythonEntry::commonRemoteLoadPart1(InlineNode *reqNode)
     }
 }
 
-Engines::Container_var PythonEntry::commonRemoteLoadPart2(InlineNode *reqNode, bool& isInitializeRequested)
+Engines::Container_var GetContainerObj(InlineNode *reqNode, bool& isStandardCont)
 {
+  isStandardCont = false;
   Container *container(reqNode->getContainer());
-  Engines::Container_var objContainer=Engines::Container::_nil();
+  Engines::Container_var objContainer(Engines::Container::_nil());
   if(!container)
-    throw Exception("No container specified !");
+    throw YACS::Exception("No container specified !");
   SalomeContainer *containerCast0(dynamic_cast<SalomeContainer *>(container));
   SalomeHPContainerBase *containerCast1(dynamic_cast<SalomeHPContainerBase *>(container));
   if(containerCast0)
-    objContainer=containerCast0->getContainerPtr(reqNode);
+    {
+      isStandardCont = true;
+      objContainer=containerCast0->getContainerPtr(reqNode);
+    }
   else if(containerCast1)
     {
       objContainer=containerCast1->getContainerPtr(reqNode);
     }
   else
-    throw Exception("Unrecognized type of container ! Salome one is expected for PythonNode/PyFuncNode !");
+    throw YACS::Exception("Unrecognized type of container ! Salome one is expected for PythonNode/PyFuncNode !");
   if(CORBA::is_nil(objContainer))
-    throw Exception("Container corba pointer is NULL for PythonNode !");
+    throw YACS::Exception("Container corba pointer is NULL for PythonNode !");
+  return objContainer;
+}
+
+Engines::Container_var PythonEntry::commonRemoteLoadPart2(InlineNode *reqNode, bool& isInitializeRequested)
+{
+  bool isStandardCont(true);
+  Engines::Container_var objContainer(GetContainerObj(reqNode,isStandardCont));
   isInitializeRequested=false;
   try
   {
-      if(containerCast0)
+      if(isStandardCont)
         {
           createRemoteAdaptedPyInterpretor(objContainer);
         }
@@ -538,6 +549,9 @@ void PythonNode::executeRemote()
       _pynode->UnRegister();
     }
   _pynode = Engines::PyScriptNode::_nil();
+  bool dummy;
+  Engines::Container_var cont(GetContainerObj(this,dummy));
+  cont->removePyScriptNode(getName().c_str());
   DEBTRACE( "++++++++++++++ ENDOF PyNode::executeRemote: " << getName() << " ++++++++++++++++++++" );
 }
 
@@ -672,7 +686,6 @@ void PythonNode::createRemoteAdaptedPyInterpretor(Engines::Container_ptr objCont
 {
   if(!CORBA::is_nil(_pynode))
     _pynode->UnRegister();
-  objContainer->cleanAllPyScripts();
   _pynode=objContainer->createPyScriptNode(getName().c_str(),getScript().c_str());
   _pynode->Register();
 }
