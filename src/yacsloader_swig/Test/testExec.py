@@ -21,6 +21,8 @@
 import time
 import unittest
 import threading
+import tempfile
+import os
 
 import SALOMERuntime
 import loader
@@ -33,6 +35,7 @@ class TestExec(unittest.TestCase):
         self.l = loader.YACSLoader()
         self.e = pilot.ExecutorSwig()
         self.p = self.l.load("samples/aschema.xml")
+        self.workdir = tempfile.mkdtemp(suffix=".yacstest")
         pass
         
     def test1_StepByStep(self):
@@ -142,7 +145,7 @@ class TestExec(unittest.TestCase):
         run4.start()
         time.sleep(0.1)
         self.e.waitPause()
-        self.e.saveState("dumpErrorASchema.xml")
+        self.e.saveState(os.path.join(self.workdir, "dumpErrorASchema.xml"))
         self.e.setStopOnError(False)
         self.e.resumeCurrentBreakPoint()
         time.sleep(0.1)
@@ -169,7 +172,7 @@ class TestExec(unittest.TestCase):
         time.sleep(0.1)
         self.e.waitPause()
         #self.e.displayDot(self.p)
-        self.e.saveState('dumpPartialASchema.xml')
+        self.e.saveState(os.path.join(self.workdir, 'dumpPartialASchema.xml'))
         #self.e.displayDot(self.p)
         self.e.stopExecution()
         run5.join()

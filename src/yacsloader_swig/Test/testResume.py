@@ -21,6 +21,8 @@
 import time
 import unittest
 import threading
+import tempfile
+import os
 
 import SALOMERuntime
 import loader
@@ -33,6 +35,8 @@ class TestResume(unittest.TestCase):
         self.l = loader.YACSLoader()
         self.e = pilot.ExecutorSwig()
         self.p = self.l.load("samples/bloc2.xml")
+        workdir = tempfile.mkdtemp(suffix=".yacstest")
+        self.statefile = os.path.join(workdir, 'dumpPartialBloc2.xml')
         pass
 
     def test1_PartialExec(self):
@@ -49,23 +53,21 @@ class TestResume(unittest.TestCase):
         time.sleep(0.1)
         self.e.waitPause()
         #self.e.displayDot(self.p)
-        self.e.saveState('dumpPartialBloc2.xml')
+        self.e.saveState(self.statefile)
         #self.e.displayDot(self.p)
         self.e.stopExecution()
         #self.e.displayDot(self.p)
         self.assertEqual(101, self.p.getChildByName('b1.b2.node1').getEffectiveState())
         self.assertEqual(106, self.p.getChildByName('b1.node1').getEffectiveState())
         print("================= reach BREAKPOINT PARTIAL EXEC ==========")
-        pass
 
-    def test2_ExecFromLoadState(self):
         # --- reload state from previous partial execution then exec
         time.sleep(1)
 
         print("================= Start of EXECLOADEDSTATE ===============")
         sp = loader.stateParser()
         sl = loader.stateLoader(sp,self.p)
-        sl.parse('dumpPartialBloc2.xml')
+        sl.parse(self.statefile)
         #self.e.displayDot(self.p)
         self.e.setExecMode(0) # YACS::CONTINUE
         run2 = threading.Thread(None, self.e.RunPy, "loadState", (self.p,0,True,True))

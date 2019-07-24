@@ -21,6 +21,8 @@
 import time
 import unittest
 import threading
+import tempfile
+import os
 
 import SALOMERuntime
 import loader
@@ -30,6 +32,7 @@ class TestSave(unittest.TestCase):
 
     def setUp(self):
         SALOMERuntime.RuntimeSALOME_setRuntime(1)
+        self.workdir = tempfile.mkdtemp(suffix=".yacstest")
         pass
 
     def test0_saveAndExec(self):
@@ -54,10 +57,10 @@ class TestSave(unittest.TestCase):
         e = pilot.ExecutorSwig()
         for schema in schemaList:
             fileOrig = "samples/" + schema + ".xml"
-            saveSchema1 = "schema1_" + schema
-            dumpSchema1 = "dump1_" + schema
-            saveSchema2 = "schema2_" + schema
-            dumpSchema2 = "dump2_" + schema
+            saveSchema1 = os.path.join(self.workdir, "schema1_" + schema)
+            dumpSchema1 = os.path.join(self.workdir, "dump1_" + schema)
+            saveSchema2 = os.path.join(self.workdir, "schema2_" + schema)
+            dumpSchema2 = os.path.join(self.workdir, "dump2_" + schema)
             try:
                 p = l.load(fileOrig)
                 s = pilot.SchemaSave(p)

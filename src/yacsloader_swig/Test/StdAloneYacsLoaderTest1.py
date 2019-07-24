@@ -21,6 +21,8 @@ import pilot
 import SALOMERuntime
 import loader
 import unittest
+import tempfile
+import os
 
 class StdAloneYacsLoaderTest1(unittest.TestCase):
 
@@ -28,6 +30,7 @@ class StdAloneYacsLoaderTest1(unittest.TestCase):
     SALOMERuntime.RuntimeSALOME_setRuntime()
     self.r = pilot.getRuntime()
     self.l = loader.YACSLoader()# self.l.load("foreachImbr_tmp.xml")
+    self.workdir = tempfile.mkdtemp(suffix=".yacstest")
     pass
 
   def test1(self):
@@ -80,14 +83,15 @@ class StdAloneYacsLoaderTest1(unittest.TestCase):
     self.assertEqual(p.getState(),pilot.DONE)
     zeResu=node3.getOutputPort("o3").get()
     self.assertEqual(zeResu,[[[3.,3.],[4.,4.,4.]],[[12.],[13.,13.],[14.,14.,14.]],[[22.],[23.,23.],[24.,24.,24.],[25.,25.,25.,25.]]])
-    p.saveSchema("foreachImbrBuildFS.xml")
+    fname = os.path.join(self.workdir, "foreachImbrBuildFS.xml")
+    p.saveSchema(fname)
     pass
 
   def test2(self):
     """ Non regression test. When input/output declared as pyobj hiding a string type to go to or from a ForEachLoop it previous lead
     to an error.
     """
-    fname="BugPyObjStrInYacs.xml"
+    fname=os.path.join(self.workdir, "BugPyObjStrInYacs.xml")
     p=self.r.createProc("pr")
     tc0=p.createInterfaceTc("python:obj:1.0","pyobj",[])
     tc1=p.createSequenceTc("list[pyobj]","list[pyobj]",tc0)
@@ -131,7 +135,7 @@ class StdAloneYacsLoaderTest1(unittest.TestCase):
 
   def test3(self):
     """ Non regression test Mantis 23234 CEA1726"""
-    fname="test23234.xml"
+    fname=os.path.join(self.workdir, "test23234.xml")
     p=self.r.createProc("Test23234")
     ti=p.createType("int","int")
     initNode=self.r.createScriptNode("","init")
@@ -178,7 +182,6 @@ def sum(i):
 
   def test4(self):
     """ test linked to TestSaveLoadRun.test20. This is a smaller test coming from EDF autotest"""
-    xmlFileName="test4.xml"
     p=self.r.createProc("test26")
     n=self.r.createScriptNode("","node1")
     n.setScript("import os")
@@ -195,7 +198,7 @@ def sum(i):
   def test5(self):
     """ Test focusing P13268. If I connect a list[pyobj] output inside a ForEach to a list[pyobj] outside a foreach it works now."""
     #self.assertTrue(False)
-    fname="testP1328.xml"
+    fname=os.path.join(self.workdir, "testP1328.xml")
     p=self.r.createProc("testP1328")
     tc0=p.createInterfaceTc("python:obj:1.0","pyobj",[])
     tc1=p.createSequenceTc("list[pyobj]","list[pyobj]",tc0)
@@ -232,7 +235,7 @@ def sum(i):
 
   def test6(self):
     """ Test focusing on P13766. Test of a connection of 2 foreach at same level where the output pyobj is connected to the list[pyobj] input samples of the 2nd foreach"""
-    fname="testP13766.xml"
+    fname=os.path.join(self.workdir, "testP13766.xml")
     p=self.r.createProc("testP13766")
     tc0=p.createInterfaceTc("python:obj:1.0","pyobj",[])
     tc1=p.createSequenceTc("list[pyobj]","list[pyobj]",tc0)
@@ -278,52 +281,6 @@ def sum(i):
 
   def test7(self):
     """EDF17963 : Python3 porting. Py3 Pickeling generates more often byte(0) into the bytes. This reveals an incorrect management of Python Bytes -> Any String that leads to truncated bytes."""
-    async_algo_script="""import SALOMERuntime
-
-class myalgosync(SALOMERuntime.OptimizerAlgSync):
-  def __init__(self):
-    SALOMERuntime.OptimizerAlgSync.__init__(self, None)
-    r=SALOMERuntime.getSALOMERuntime()
-    self.tin=r.getTypeCode("double")
-    self.tout=r.getTypeCode("int")
-    self.tAlgoInit=r.getTypeCode("pyobj")
-    self.tAlgoResult=r.getTypeCode("pyobj")
-
-  def setPool(self,pool):
-    print("Algo setPool")
-
-  def getTCForIn(self):
-    return self.tin
-
-  def getTCForOut(self):
-    return self.tout
-
-  def getTCForAlgoInit(self):
-    return self.tAlgoInit
-
-  def getTCForAlgoResult(self):
-    return self.tAlgoResult
-
-  def initialize(self,input):
-    print ("Algo initialize")
-
-  def start(self):
-    print ("Algo start")
-
-  def takeDecision(self):
-    print ("Algo takeDecision")
-
-  def finish(self):
-    print ("Algo finish")
-
-  def getAlgoResult(self):
-    print("Algo getAlgoResult : on charge un objet complet obtenu en pickle 9.2 avant tuyau")
-    import pickle
-    import numpy as np
-    resu = np.array(range(1),dtype=np.int32)
-    ob=pickle.dumps(resu,protocol=0)
-    assert(bytes([0]) in ob) # test is here presence of 0 in the pickelization
-    return ob"""
 
     entree_script="""Study = "toto"
 print("Entree", Study)"""
@@ -337,13 +294,9 @@ assert(isinstance(resultats,np.ndarray))
 """
 
     nbWorkers=1
-    fname="test7.xml"
 
     SALOMERuntime.RuntimeSALOME.setRuntime()
     r=SALOMERuntime.getSALOMERuntime()
-    #
-    with open("async_plugin.py","w") as f:
-        f.write(async_algo_script)
     #
     p0=r.createProc("run")
     #

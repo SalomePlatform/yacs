@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# Copyright (C) 2007-2019  CEA/DEN, EDF R&D
+# Copyright (C) 2015-2019  CEA/DEN, EDF R&D
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -18,22 +17,9 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-import os,sys,subprocess,shutil
 
-# Here the most beautiful part of test :)
-dirALaCon0="Test"
-dirAlaCon1="samples"
-if not os.path.exists(dirALaCon0):
-    os.mkdir(dirALaCon0)
-if not os.path.exists(os.path.join(dirALaCon0,dirAlaCon1)):
-    os.chdir(dirALaCon0)
-    os.symlink(os.path.join("..",dirAlaCon1),dirAlaCon1)
-    os.chdir("..")
-# GO !
-dn=os.path.dirname(__file__)
-p=subprocess.Popen(["python3","PMMLBasicsTest.py"],cwd=dn,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-a,b=p.communicate()
-ret=p.returncode
-# Clean up the wonderful first part stuf
-shutil.rmtree(dirALaCon0)
-sys.exit(ret)
+# Add all test subdirs
+SUBDIRS(
+Test
+pmml_swig
+)

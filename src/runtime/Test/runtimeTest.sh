@@ -18,15 +18,16 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-BASEREP=`pwd`
-OMNIORB_CONFIG=${BASEREP}/omniorb.cfg
-OMNINAMES_LOGDIR=${BASEREP}/omnilog
+BASEDIR=`pwd`
+TESTDIR=$(mktemp -d  --suffix=.yacstest)
+OMNIORB_CONFIG=${TESTDIR}/omniorb.cfg
+OMNINAMES_LOGDIR=${TESTDIR}/omnilog
 
-export BASEREP
+export TESTDIR
 export OMNIORB_CONFIG
 export OMNINAMES_LOGDIR
 
-echo ${BASEREP}
+echo ${TESTDIR}
 echo ${OMNIORB_CONFIG}
 
 # do not use the default port 2810 for omninames (to improve, cf. SALOME)
@@ -48,18 +49,22 @@ sleep 2
 pidecho=$!
 echo $pidecho
 
-if ! [ -f lib/salome/libTestComponentLocal.so ]
-then
-  mkdir -p lib/salome
-  cp libTestComponentLocal.so lib/salome
-fi
-export TESTCOMPONENT_ROOT_DIR=`pwd`
+# this find should work both for make test and for salome test
+mkdir -p ${TESTDIR}/lib/salome
+LIBTEST=`find .. -name libTestComponentLocal.so | head -n 1`
+cp $LIBTEST ${TESTDIR}/lib/salome
+
+export TESTCOMPONENT_ROOT_DIR=${TESTDIR}
 
 #wait enough time to let runtimeTestEchoSrv start and register
 sleep 2
 
+cp xmlrun.sh ${TESTDIR}
+cp TestRuntime ${TESTDIR}
+cd ${TESTDIR}
 ./TestRuntime
 ret=$?
+cd -
 
 kill -9 $pidecho $pidomni
 cat /tmp/${USER}/UnitTestsResult

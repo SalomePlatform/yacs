@@ -40,7 +40,11 @@ export PYTHONPATH=@CMAKE_CURRENT_SOURCE_DIR@:$PYTHONPATH
 # --- launch unit tests
 
 export ROOT_SAMPLES=@CMAKE_SOURCE_DIR@/src/yacsloader/samples
-export TESTCOMPONENT_ROOT_DIR=@CMAKE_BINARY_DIR@/src/runtime/Test
+export TESTCOMPONENT_ROOT_DIR=$(mktemp -d  --suffix=.yacstest)
+
+mkdir -p ${TESTCOMPONENT_ROOT_DIR}/lib/salome
+LIBTEST=`find ../.. -name libTestComponentLocal.so | head -n 1`
+cp $LIBTEST ${TESTCOMPONENT_ROOT_DIR}/lib/salome
 
 ./TestYacsLoader
 ret=$?

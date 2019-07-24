@@ -1000,7 +1000,7 @@ void EngineTest::RecursiveBlocs_multipleRecursion()
         DEBTRACE("     output port name for graphe = " << _nodeMap["graphe"]->getOutPortName(*it));
       }
     YACS::ENGINE::VisitorSaveState vst(_compoMap["graphe"]);
-    vst.openFileDump("dumpState.xml");
+    vst.openFileDump("/tmp/RecursiveBlocs_multipleRecursion_dumpState.xml");
     _compoMap["graphe"]->accept(&vst);
     vst.closeFileDump();
   }

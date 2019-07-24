@@ -22,10 +22,22 @@
 ./echoSrv &
 pidecho=$!
 
-export TESTCOMPONENT_ROOT_DIR=`pwd`/../runtime
+BASEDIR=`pwd`
+TESTDIR=$(mktemp -d --suffix=.yacstest)
+export TESTCOMPONENT_ROOT_DIR=${TESTDIR}
 
-./TestYacsLoader
+mkdir -p ${TESTDIR}/lib/salome
+LIBTEST=$BASEDIR/../runtime/lib/salome/libTestComponentLocal.so
+cp $LIBTEST ${TESTDIR}/lib/salome
+LIBDIR=$BASEDIR/../lib
+
+cp xmlrun.sh $TESTDIR
+cp *.py $TESTDIR
+ln -s $BASEDIR/samples $TESTDIR/samples
+cd $TESTDIR
+LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LIBDIR $BASEDIR/TestYacsLoader
 ret=$?
+cd $BASEDIR
 echo "exec status TestYacsLoader " $ret
 
 kill -9 $pidecho

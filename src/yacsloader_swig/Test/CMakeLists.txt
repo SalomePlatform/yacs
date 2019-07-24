@@ -46,6 +46,7 @@ IF(NOT WIN32)
     testValidationChecks.py
     testProgress.py
     testExecForEachGeoMesh.py
+    async_plugin.py
    )
   INSTALL(FILES ${LOCAL_TEST_FILES}
         DESTINATION ${LOCAL_TEST_DIR})
