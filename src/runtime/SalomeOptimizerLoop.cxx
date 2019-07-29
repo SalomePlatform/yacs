@@ -69,6 +69,7 @@ SalomeOptimizerLoop::SalomeOptimizerLoop(const SalomeOptimizerLoop& other, Compo
 
 SalomeOptimizerLoop::~SalomeOptimizerLoop()
 {
+  Py_XDECREF(_pyAlgo);
 }
 
 Node *SalomeOptimizerLoop::simpleClone(ComposedNode *father, bool editionOnly) const
@@ -147,10 +148,11 @@ void SalomeOptimizerLoop::loadAlgorithm()
               PyObject *next;
           } SwigPyObject;
 
+          PyObject * _pyAlgo = PyDict_GetItemString(globals, "algo");
+          Py_XINCREF(_pyAlgo);
           SwigPyObject* pyalgo = (SwigPyObject*)PyDict_GetItemString(globals, "swigalgo");
           _alg=(OptimizerAlgBase*)pyalgo->ptr;
           _alg->setPool(&_myPool);
-          _alg->incrRef();
         }
       PyGILState_Release(gstate);
     }

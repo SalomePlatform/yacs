@@ -22,6 +22,7 @@
 
 #include "YACSRuntimeSALOMEExport.hxx"
 #include "OptimizerLoop.hxx"
+#include <Python.h>
 
 namespace YACS
 {
@@ -39,6 +40,8 @@ namespace YACS
         SalomeOptimizerLoop(const SalomeOptimizerLoop& other, ComposedNode *father, bool editionOnly);
         ~SalomeOptimizerLoop();
         virtual std::string typeName() {return "YACS__ENGINE__SalomeOptimizerLoop";}
+      private:
+        PyObject * _pyAlgo = nullptr;
     };
   }
 }

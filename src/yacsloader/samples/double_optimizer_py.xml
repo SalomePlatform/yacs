@@ -1,0 +1,104 @@
+<?xml version='1.0' encoding='iso-8859-1' ?>
+<proc name="newSchema_1">
+   <type name="string" kind="string"/>
+   <struct name="Engines/dataref">
+      <member name="ref" type="string"/>
+   </struct>
+   <type name="bool" kind="bool"/>
+   <sequence name="boolvec" content="bool"/>
+   <type name="double" kind="double"/>
+   <sequence name="dblevec" content="double"/>
+   <objref name="file" id="file"/>
+   <type name="int" kind="int"/>
+   <sequence name="intvec" content="int"/>
+   <struct name="stringpair">
+      <member name="name" type="string"/>
+      <member name="value" type="string"/>
+   </struct>
+   <sequence name="propvec" content="stringpair"/>
+   <objref name="pyobj" id="python:obj:1.0"/>
+   <sequence name="seqboolvec" content="boolvec"/>
+   <sequence name="seqdblevec" content="dblevec"/>
+   <sequence name="seqintvec" content="intvec"/>
+   <sequence name="seqpyobj" content="pyobj"/>
+   <sequence name="stringvec" content="string"/>
+   <sequence name="seqstringvec" content="stringvec"/>
+   <container name="DefaultContainer">
+      <property name="container_kind" value="Salome"/>
+      <property name="attached_on_cloning" value="0"/>
+      <property name="container_name" value="FactoryServer"/>
+      <property name="name" value="localhost"/>
+   </container>
+   <optimizer name="OptimizerLoop1" nbranch="1" loopWeight="-1" lib="algosyncexample.py" entry="myalgosync">
+      <inline name="PyScript7">
+         <script><code><![CDATA[o9 = int(i8)
+print("traitement:", i8)
+]]></code></script>
+         <inport name="i8" type="double"/>
+         <outport name="o9" type="int"/>
+      </inline>
+   </optimizer>
+   <datanode name="DataIn3">
+      <parameter name="o4" type="int">
+         <value><int>5</int></value>
+      </parameter>
+   </datanode>
+   <outnode name="OutNode5">
+      <parameter name="i6" type="int"/>
+   </outnode>
+   <optimizer name="OptimizerLoop10" nbranch="1" loopWeight="-1" lib="algosyncexample.py" entry="myalgosync">
+      <inline name="PyScript7">
+         <script><code><![CDATA[o9 = int(i8)
+print("traitement:", i8)
+]]></code></script>
+         <inport name="i8" type="double"/>
+         <outport name="o9" type="int"/>
+      </inline>
+   </optimizer>
+   <control> <fromnode>OptimizerLoop1</fromnode> <tonode>OutNode5</tonode> </control>
+   <control> <fromnode>DataIn3</fromnode> <tonode>OptimizerLoop1</tonode> </control>
+   <control> <fromnode>DataIn3</fromnode> <tonode>OptimizerLoop10</tonode> </control>
+   <datalink control="false">
+      <fromnode>OptimizerLoop1</fromnode> <fromport>algoResults</fromport>
+      <tonode>OutNode5</tonode> <toport>i6</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>OptimizerLoop1</fromnode> <fromport>evalSamples</fromport>
+      <tonode>OptimizerLoop1.PyScript7</tonode> <toport>i8</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>DataIn3</fromnode> <fromport>o4</fromport>
+      <tonode>OptimizerLoop1</tonode> <toport>algoInit</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>DataIn3</fromnode> <fromport>o4</fromport>
+      <tonode>OptimizerLoop10</tonode> <toport>algoInit</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>OptimizerLoop10</fromnode> <fromport>evalSamples</fromport>
+      <tonode>OptimizerLoop10.PyScript7</tonode> <toport>i8</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>OptimizerLoop1.PyScript7</fromnode> <fromport>o9</fromport>
+      <tonode>OptimizerLoop1</tonode> <toport>evalResults</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>OptimizerLoop10.PyScript7</fromnode> <fromport>o9</fromport>
+      <tonode>OptimizerLoop10</tonode> <toport>evalResults</toport>
+   </datalink>
+   <parameter>
+      <tonode>OptimizerLoop1</tonode><toport>nbBranches</toport>
+      <value><int>1</int></value>
+   </parameter>
+   <parameter>
+      <tonode>OptimizerLoop10</tonode><toport>nbBranches</toport>
+      <value><int>1</int></value>
+   </parameter>
+   <presentation name="OptimizerLoop1.PyScript7" x="42.5" y="149" width="158" height="63" expanded="1" expx="42.5" expy="149" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="OptimizerLoop10.PyScript7" x="6" y="111.5" width="158" height="63" expanded="1" expx="6" expy="111.5" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="OptimizerLoop1" x="238.5" y="83.5" width="204.5" height="216" expanded="1" expx="238.5" expy="83.5" expWidth="204.5" expHeight="216" shownState="0"/>
+   <presentation name="OutNode5" x="488.5" y="84" width="158" height="63" expanded="1" expx="488.5" expy="84" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="DataIn3" x="16.5259" y="83.7897" width="158" height="63" expanded="1" expx="16.5259" expy="83.7897" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="OptimizerLoop10" x="240.927" y="311.658" width="168" height="178.5" expanded="1" expx="240.927" expy="311.658" expWidth="168" expHeight="178.5" shownState="0"/>
+   <presentation name="__ROOT__" x="0" y="0" width="650.5" height="494.158" expanded="1" expx="0" expy="0" expWidth="650.5" expHeight="494.158" shownState="0"/>
+</proc>
