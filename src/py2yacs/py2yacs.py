@@ -138,7 +138,11 @@ def create_yacs_schema(text, fn_name, fn_args, fn_returns, file_name):
   schema.saveSchema(file_name)
 
 def get_properties(text_file):
-  bt=ast.parse(text_file)
+  try:
+    bt=ast.parse(text_file)
+  except SyntaxError as err:
+    import traceback
+    return [], ["".join(traceback.format_exception_only(SyntaxError,err))]
   w=v()
   w.visit(bt)
   return w.functions, w.global_errors
