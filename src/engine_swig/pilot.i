@@ -66,6 +66,7 @@
 #include "NotSimpleCasePoint.hxx"
 #include "ElementaryPoint.hxx"
 #include "ObserverAsPlugin.hxx"
+#include "InGate.hxx"
   
 using namespace YACS::ENGINE;
 
@@ -113,6 +114,7 @@ using namespace YACS::ENGINE;
 %template()              std::pair<YACS::ENGINE::OutPort *,YACS::ENGINE::InPort *>;
 %template()              std::pair<YACS::ENGINE::InPort *,YACS::ENGINE::OutPort *>;
 %template()              std::pair< std::string, int >;
+%template()              std::pair< YACS::ENGINE::InGate *, bool>;
 %template(ItPy3TC)       IteratorPy3<YACS::ENGINE::TypeCode *>;
 //%template(TCmap)         std::map<std::string, YACS::ENGINE::TypeCode *>;
 REFCOUNT_TEMPLATE(TCmap,YACS::ENGINE::TypeCode)
@@ -140,6 +142,8 @@ REFCOUNT_TEMPLATE(CONTAINmap,YACS::ENGINE::Container)
 %template()              std::pair<std::string, std::string>;
 %template(propmap)       std::map<std::string, std::string>;
 %template(ItPy3Comp)     IteratorPy3<YACS::ENGINE::ComponentInstance *>;
+%template(listpairingatebool) std::list< std::pair< YACS::ENGINE::InGate *, bool> >;
+
 REFCOUNT_TEMPLATE(CompoInstmap,YACS::ENGINE::ComponentInstance)
 
 %include "exception.i"
