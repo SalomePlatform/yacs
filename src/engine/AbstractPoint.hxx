@@ -62,11 +62,13 @@ namespace YACS
       bool isSimplyLinkedBeforeAfter(BlocPoint *sop);
       bool isSimplyLinkedAfterNullBefore(BlocPoint *sop);
       bool isSimplyLinkedBeforeNullAfter(BlocPoint *sop);
+      bool isNullBeforeNullAfter(BlocPoint *sop);
       //
       LinkedBlocPoint *tryAsLink(BlocPoint *sop);
       ForkBlocPoint *tryAsFork(BlocPoint *sop);
       ForkBlocPoint *tryAsForkBis(BlocPoint *sop);
       ForkBlocPoint *tryAsForkTer(BlocPoint *sop);
+      ForkBlocPoint *tryAsForkQuatro(BlocPoint *sop);
       //void tryAsNotSimpleCase(BlocPoint *sop, std::list<AbstractPoint *>& nodes, bool& somethingDone);
       static void TryAsNotSimpleCase(AbstractPoint *father, const std::vector<AbstractPoint *>& ptsToKill, std::list<AbstractPoint *>& nodes, bool& somethingDone);
       //

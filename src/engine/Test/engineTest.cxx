@@ -1307,7 +1307,8 @@ void EngineTest::checkGraphAnalyser5()
     CPPUNIT_ASSERT_EQUAL((int)v.size(),(int)rrr[0].size());
     SetOfPoints sop(rrr[0]);
     sop.simplify();
-    CPPUNIT_ASSERT(sop.getRepr()=="(A+[C*[[B*D]*[D*E]]]+[(F+G)*D]) - ");
+    //"(A+[C*[[B*D]*[D*E]]]+[(F+G)*D]) - "
+    CPPUNIT_ASSERT(sop.getRepr()=="[(A+[[B*C]*[C*E]]+(F+G))*D] - ");
   }
   //
   {
@@ -1336,7 +1337,8 @@ void EngineTest::checkGraphAnalyser5()
     CPPUNIT_ASSERT_EQUAL((int)v.size(),(int)rrr[0].size());
     SetOfPoints sop(rrr[0]);
     sop.simplify();
-    CPPUNIT_ASSERT(sop.getRepr()=="(A+[C*[[B*D]*[D*E]]]+[(F+G)*D]) - ");
+    //"(A+[C*[[B*D]*[D*E]]]+[(F+G)*D]) - "
+    CPPUNIT_ASSERT(sop.getRepr()=="[(A+[[B*C]*[C*E]]+(F+G))*D] - ");
   }
   //
   {
@@ -1370,7 +1372,8 @@ void EngineTest::checkGraphAnalyser5()
     CPPUNIT_ASSERT_EQUAL((int)v.size(),(int)rrr[0].size());
     SetOfPoints sop(rrr[0]);
     sop.simplify();
-    CPPUNIT_ASSERT(sop.getRepr()=="(A+[([C*[(F+G)*I]]+[([[(F+G)*H]*[(F+G)*I]]+J)*[[(F+G)*D]*[(F+G)*I]]])*[[B*[(F+G)*I]]*[E*[(F+G)*I]]]]) - ");
+    //"(A+[([C*[(F+G)*I]]+[([[(F+G)*H]*[(F+G)*I]]+J)*[[(F+G)*D]*[(F+G)*I]]])*[[B*[(F+G)*I]]*[E*[(F+G)*I]]]]) - "
+    CPPUNIT_ASSERT(sop.getRepr()=="[([(A+[([[B*C]*[C*E]]+(F+G))*[C*I]])*H]+J)*D] - ");
   }
   //
   {
@@ -1406,6 +1409,36 @@ void EngineTest::checkGraphAnalyser5()
     CPPUNIT_ASSERT_EQUAL((int)v.size(),(int)rrr[0].size());
     SetOfPoints sop(rrr[0]);
     sop.simplify();
-    CPPUNIT_ASSERT(sop.getRepr()=="(A+[([C*[(F+G)*I]]+[([[(F+G)*H]*[(F+G)*I]]+(J+K+L))*[[(F+G)*D]*[(F+G)*I]]])*[[B*[(F+G)*I]]*[E*[(F+G)*I]]]]) - ");
+    //"(A+[([C*[(F+G)*I]]+[([[(F+G)*H]*[(F+G)*I]]+(J+K+L))*[[(F+G)*D]*[(F+G)*I]]])*[[B*[(F+G)*I]]*[E*[(F+G)*I]]]]) - "
+    CPPUNIT_ASSERT(sop.getRepr()=="[([(A+[([[B*C]*[C*E]]+(F+G))*[C*I]])*H]+(J+K+L))*D] - ");
+  }
+  {
+    Bloc proc("TOP");
+    std::vector<Bloc *> vn;
+    std::vector<std::string> v{"B","C","D","E","F","G","H","I","J","K"};
+    std::size_t i=0;
+    for(auto it : v)
+      {
+        Bloc *pt(new Bloc(v[i++]));
+        proc.edAddChild(pt);
+        vn.push_back(pt);
+      }
+    //
+    proc.edAddCFLink(vn[0],vn[1]);//B -> C
+    proc.edAddCFLink(vn[0],vn[3]);//B -> E
+    proc.edAddCFLink(vn[0],vn[5]);//B -> G
+    proc.edAddCFLink(vn[2],vn[3]);//D -> E
+    proc.edAddCFLink(vn[4],vn[5]);//F -> G
+    proc.edAddCFLink(vn[6],vn[7]);//H -> I
+    proc.edAddCFLink(vn[0],vn[7]);//B -> I
+    proc.edAddCFLink(vn[8],vn[9]);//J -> K
+    proc.edAddCFLink(vn[0],vn[9]);//B -> K
+    //
+    std::vector< std::list<Node *> > rrr(proc.splitIntoIndependantGraph());
+    CPPUNIT_ASSERT_EQUAL(1,(int)rrr.size());
+    CPPUNIT_ASSERT_EQUAL((int)v.size(),(int)rrr[0].size());
+    SetOfPoints sop(rrr[0]);
+    sop.simplify();
+    CPPUNIT_ASSERT(sop.getRepr()=="[([B*D]+E)*([B*F]+G)*([B*H]+I)*([B*J]+K)*C] - ");
   }
 }

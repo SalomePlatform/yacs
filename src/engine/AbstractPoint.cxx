@@ -75,6 +75,12 @@ bool AbstractPoint::isSimplyLinkedBeforeNullAfter(BlocPoint *sop)
   return IsNoLinksAfter(endd) && isSimplyLinkedBefore(sop,beg);
 }
 
+bool AbstractPoint::isNullBeforeNullAfter(BlocPoint *sop)
+{
+  Node *beg(getFirstNode()),*endd(getLastNode());
+  return IsNoLinksBefore(beg) && IsNoLinksAfter(endd);
+}
+
 /*!
  * precondition : isSimplyLinkedBeforeAfter must return true on \a this.
  */
@@ -209,6 +215,35 @@ ForkBlocPoint *AbstractPoint::tryAsForkTer(BlocPoint *sop)
         continue;
       Node *curFirst((*it)->getFirstNode()),*curEnd((*it)->getLastNode());
       if(!IsSimplyLinkedBeforeExt(curFirst) || !IsNoLinksAfter(curEnd))
+        continue;
+      Node *curbb(GetNodeB4(curFirst));
+      AbstractPoint *bb3(sop->findPointWithNode(curbb));
+      if(bb2==bb3)
+        l.push_back(*it);
+    }
+  if(l.size()>1)
+    {
+      return new ForkBlocPoint(l,getFather());
+    }
+  else
+    return nullptr;
+}
+
+ForkBlocPoint *AbstractPoint::tryAsForkQuatro(BlocPoint *sop)
+{
+  Node *bb(GetNodeB4(getFirstNode())),*ee(GetNodeAfter(getLastNode()));
+  AbstractPoint *bb2(sop->findPointWithNode(bb));
+  //
+  const std::list<AbstractPoint *>& lp(sop->getListOfPoints());
+  std::list<AbstractPoint *> l; l.push_back(this);
+  for(std::list<AbstractPoint *>::const_iterator it=lp.begin();it!=lp.end();it++)
+    {
+      if(*it==this)
+        continue;
+      if(dynamic_cast<NotSimpleCasePoint *>(*it))
+        continue;
+      Node *curFirst((*it)->getFirstNode()),*curEnd((*it)->getLastNode());
+      if(!IsNoLinksBefore(curFirst) || !IsNoLinksAfter(curEnd))
         continue;
       Node *curbb(GetNodeB4(curFirst));
       AbstractPoint *bb3(sop->findPointWithNode(curbb));

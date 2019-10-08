@@ -51,6 +51,7 @@ namespace YACS
       void deal2(bool& somethingDone);
       void deal2Bis(bool& somethingDone);
       void deal2Ter(bool& somethingDone);
+      void deal2Quatro(bool& somethingDone);
       void dealNotSimpleCase(bool& somethingDone);
       void expandNonSimpleCase();
     private:

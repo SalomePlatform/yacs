@@ -175,6 +175,23 @@ void BagPoint::deal2Ter(bool& somethingDone)
       }
 }
 
+void BagPoint::deal2Quatro(bool& somethingDone)
+{
+  somethingDone=false;
+  for(std::list<AbstractPoint *>::iterator it=_nodes.begin();it!=_nodes.end();it++)
+    {
+      if(!(*it)->isNullBeforeNullAfter(this))
+        continue;
+      ForkBlocPoint *try1((*it)->tryAsForkQuatro(this));
+      if(try1)
+        {
+          replaceInMe(try1);
+          somethingDone=true;
+          break;
+        }
+      }
+}
+
 /*!
  * This method remove 1, 2 or 3 points from this by flagging them as pathological nodes.
  * By doing so, we hope to simplify enough to have a standart case.

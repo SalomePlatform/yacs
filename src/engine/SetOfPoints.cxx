@@ -58,6 +58,9 @@ void SetOfPoints::basicSimplify()
       if(somethingDone)
         continue;
       _bp->deal2Ter(somethingDone);
+      if(somethingDone)
+        continue;
+      _bp->deal2Quatro(somethingDone);
       if(!somethingDone)
         throw Exception("SetOfPoints::simplify : not implemented yet !\nPlease check if there are any recursively redundant links (can be removed by removeRecursivelyRedundantCL method).");
     }
@@ -78,6 +81,9 @@ void SetOfPoints::simplify()
       if(somethingDone)
         continue;
       _bp->deal2Ter(somethingDone);
+      if(somethingDone)
+        continue;
+      _bp->deal2Quatro(somethingDone);
       if(somethingDone)
         continue;
       _bp->dealNotSimpleCase(somethingDone);
