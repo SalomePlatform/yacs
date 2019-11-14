@@ -793,7 +793,7 @@ namespace YACS
               // the objref is used by Python as a string (prefix:value) keep it as a string
               Py_ssize_t size;
               std::string s;
-              const char *ptr = (char*) PyUnicode_AsUTF8AndSize(o, &size);
+              const char *ptr = PyUnicode_AsUTF8AndSize(o, &size);
               if (!ptr)
                 throw YACS::ENGINE::ConversionException("Conversion from PyUnicode to string failed");
               s.assign(ptr, size);
@@ -846,7 +846,7 @@ namespace YACS
                 }
               Py_ssize_t size;
               std::string mystr;
-              const char *ptr = (char*) PyUnicode_AsUTF8AndSize(pystring, &size);
+              const char *ptr = PyUnicode_AsUTF8AndSize(pystring, &size);
               if (!ptr)
                 throw YACS::ENGINE::ConversionException("Conversion from PyUnicode to string failed");
               mystr.assign(ptr, size);
