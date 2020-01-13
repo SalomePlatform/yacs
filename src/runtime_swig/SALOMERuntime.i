@@ -66,6 +66,7 @@
 #include "PyStdout.hxx"
 #include "ExecutorSwig.hxx"
 #include <sstream>
+#include "Catalog.hxx"
 %}
 
 // ----------------------------------------------------------------------------
@@ -227,7 +228,10 @@ namespace YACS
 // becomes a real derived class, this will have to be changed.
 %rename(OptimizerAlgSync) YACS::ENGINE::PyOptimizerAlgBase;
 %rename(OptimizerAlgASync) YACS::ENGINE::PyOptimizerAlgASync;
+
 %include "PyOptimizerAlg.hxx"
+
+%newobject YACS::ENGINE::RuntimeSALOME::createAnyPyObject;
 
 %extend YACS::ENGINE::RuntimeSALOME
 {
@@ -235,5 +239,11 @@ namespace YACS
   {
     YACS::ENGINE::Container *ret(self->createContainer(kind));
     return convertContainer2(ret,SWIG_POINTER_OWN | 0);
+  }
+
+  Any* createAnyPyObject(PyObject * pyobj)
+  {
+    return convertPyObjectNeutral(self->getBuiltinCatalog()->_typeMap["pyobj"],
+                                  pyobj);
   }
 }

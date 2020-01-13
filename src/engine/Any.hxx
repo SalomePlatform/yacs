@@ -111,6 +111,7 @@ namespace YACS
     class YACSLIBENGINE_EXPORT AtomAny : public Any
     {
       friend class TypeCode;
+      friend class TypeCodeObjref;
 
       union ValueContainer
       {
@@ -124,6 +125,7 @@ namespace YACS
       template<class T>
       static AtomAny *New(T val) { return new AtomAny(val); }
       static AtomAny *New(char *val, Deallocator dealloc);
+      static AtomAny *New(const std::string& val, TypeCode *type);
       AnyPtr operator[](int i) const throw(Exception);
       AnyPtr operator[](const char *key) const throw(Exception);
       bool operator ==(const Any& other) const;
@@ -145,6 +147,7 @@ namespace YACS
       AtomAny(double val);
       AtomAny(const char *val);
       AtomAny(const std::string& val);
+      AtomAny(const std::string& val, TypeCode* type);
       AtomAny(const AtomAny& other);
       AtomAny(char *data, TypeCode* type);
       AtomAny(char *val, Deallocator deAlloc);

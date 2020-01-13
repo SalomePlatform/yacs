@@ -244,6 +244,7 @@ EXCEPTION(YACS::ENGINE::ExecutorSwig::waitPause)
 
 %include <RefCounter.hxx>
 
+%feature("unref") YACS::ENGINE::Any "$this->decrRef();"
 %include <Any.hxx>
 
 %ignore YACS::ENGINE::TypeCode::getOrBuildAnyFromZippedData;

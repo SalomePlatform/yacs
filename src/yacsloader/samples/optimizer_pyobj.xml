@@ -1,0 +1,84 @@
+<?xml version='1.0' encoding='iso-8859-1' ?>
+<proc name="newSchema_1">
+   <type name="string" kind="string"/>
+   <struct name="Engines/dataref">
+      <member name="ref" type="string"/>
+   </struct>
+   <type name="bool" kind="bool"/>
+   <sequence name="boolvec" content="bool"/>
+   <type name="double" kind="double"/>
+   <sequence name="dblevec" content="double"/>
+   <objref name="file" id="file"/>
+   <type name="int" kind="int"/>
+   <sequence name="intvec" content="int"/>
+   <struct name="stringpair">
+      <member name="name" type="string"/>
+      <member name="value" type="string"/>
+   </struct>
+   <sequence name="propvec" content="stringpair"/>
+   <objref name="pyobj" id="python:obj:1.0"/>
+   <sequence name="seqboolvec" content="boolvec"/>
+   <sequence name="seqdblevec" content="dblevec"/>
+   <sequence name="seqintvec" content="intvec"/>
+   <sequence name="seqpyobj" content="pyobj"/>
+   <sequence name="stringvec" content="string"/>
+   <sequence name="seqstringvec" content="stringvec"/>
+   <container name="DefaultContainer">
+      <property name="container_kind" value="Salome"/>
+      <property name="attached_on_cloning" value="0"/>
+      <property name="container_name" value="FactoryServer"/>
+      <property name="name" value="localhost"/>
+   </container>
+   <container name="container0">
+      <property name="container_kind" value="Salome"/>
+      <property name="attached_on_cloning" value="0"/>
+   </container>
+   <optimizer name="OptimizerLoop0" nbranch="1" loopWeight="-1" lib="sync_plugin_pyobj.py" entry="myalgosync">
+      <remote name="PyScript1" elementaryWeight="-1">
+         <script><code><![CDATA[o3=list(range(len(i2)))
+]]></code></script>
+         <load container="container0"/>
+         <inport name="i2" type="pyobj"/>
+         <outport name="o3" type="pyobj"/>
+      </remote>
+   </optimizer>
+   <inline name="PyScript4">
+      <script><code><![CDATA[o5=range(10)
+]]></code></script>
+      <outport name="o5" type="pyobj"/>
+   </inline>
+   <inline name="PyScript1">
+      <script><code><![CDATA[r = i
+]]></code></script>
+      <load container="DefaultContainer"/>
+      <inport name="i" type="pyobj"/>
+      <outport name="r" type="int"/>
+   </inline>
+   <control> <fromnode>OptimizerLoop0</fromnode> <tonode>PyScript1</tonode> </control>
+   <control> <fromnode>PyScript4</fromnode> <tonode>OptimizerLoop0</tonode> </control>
+   <datalink control="false">
+      <fromnode>OptimizerLoop0</fromnode> <fromport>algoResults</fromport>
+      <tonode>PyScript1</tonode> <toport>i</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>OptimizerLoop0</fromnode> <fromport>evalSamples</fromport>
+      <tonode>OptimizerLoop0.PyScript1</tonode> <toport>i2</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>PyScript4</fromnode> <fromport>o5</fromport>
+      <tonode>OptimizerLoop0</tonode> <toport>algoInit</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>OptimizerLoop0.PyScript1</fromnode> <fromport>o3</fromport>
+      <tonode>OptimizerLoop0</tonode> <toport>evalResults</toport>
+   </datalink>
+   <parameter>
+      <tonode>OptimizerLoop0</tonode><toport>nbBranches</toport>
+      <value><int>1</int></value>
+   </parameter>
+   <presentation name="OptimizerLoop0" x="272.5" y="32" width="167" height="202" expanded="1" expx="272.5" expy="32" expWidth="167" expHeight="202" shownState="0"/>
+   <presentation name="PyScript1" x="472" y="32" width="158" height="63" expanded="1" expx="472" expy="32" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="PyScript4" x="4" y="58" width="158" height="63" expanded="1" expx="4" expy="58" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="OptimizerLoop0.PyScript1" x="5" y="135" width="158" height="63" expanded="1" expx="5" expy="135" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="__ROOT__" x="0" y="0" width="634" height="238" expanded="1" expx="0" expy="0" expWidth="634" expHeight="238" shownState="0"/>
+</proc>

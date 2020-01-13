@@ -422,8 +422,8 @@ YACS::Event OptimizerLoop::finalize()
             (*iter)->setState(YACS::DONE);
         }
     }
-  _alg->finishProxy();
   _algoResultPort.put(_alg->getAlgoResultProxy());
+  _alg->finishProxy();
   if (_finalizeNode == NULL)
     {
       // No finalize node, we just finish OptimizerLoop at the end of exec nodes execution

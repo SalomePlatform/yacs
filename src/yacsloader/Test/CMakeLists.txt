@@ -120,6 +120,8 @@ IF(NOT WIN32)
   SET(LOCAL_TEST_FILES
     algoasyncexample.py
     algosyncexample.py
+    sync_plugin_pyobj.py
+    optim_plugin.py
     genPascal.py
     genTriangle.py
     echoclt.py)
@@ -132,8 +134,6 @@ IF(NOT WIN32)
   INSTALL(FILES CTestTestfileInstall.cmake
           DESTINATION ${LOCAL_TEST_DIR}
           RENAME CTestTestfile.cmake)
-  INSTALL(FILES optim_plugin.py
-          DESTINATION ${LOCAL_TEST_DIR})
   INSTALL(PROGRAMS runYacsLoaderTest.sh ${CMAKE_CURRENT_BINARY_DIR}/xmlrun.sh
           DESTINATION ${LOCAL_TEST_DIR})
   # Use relative path for symbolic links in order to allow the copy of the directory.

@@ -71,13 +71,11 @@ AnyPtr TypeCode::getOrBuildAnyFromZippedData(char *data) const
 
 const char * TypeCode::name() const throw(YACS::Exception)
 {
-  //throw Exception("No name");
   return id();
 }
 
 const char * TypeCode::shortName() const
 {
-  //throw Exception("No shortName");
   return id();
 }
 
@@ -313,17 +311,17 @@ TypeCode *TypeCodeObjref::clone() const
 
 void TypeCodeObjref::putReprAtPlace(char *pt, const char *val, bool deepCpy) const
 {
-  throw Exception("Not implemented yet : YACS::Any for objs ref");
+  AtomAny::putReprAtPlace(pt,val,this,deepCpy);
 }
 
 void TypeCodeObjref::destroyZippedAny(char *data) const
 {
-  throw Exception("Not implemented yet : YACS::Any for objs ref");
+  AtomAny::destroyReprAtPlace(data,this);
 }
 
 AnyPtr TypeCodeObjref::getOrBuildAnyFromZippedData(char *data) const
 {
-  throw Exception("Not implemented yet : YACS::Any for objs ref");
+  return AtomAny::getOrBuildFromData(data,this);
 }
 
 const char * TypeCodeObjref::id() const throw(YACS::Exception)

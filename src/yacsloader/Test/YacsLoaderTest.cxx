@@ -847,6 +847,12 @@ void YacsLoaderTest::optimizers()
   CPPUNIT_ASSERT(ret == 0);
   CPPUNIT_ASSERT(p->getEffectiveState() == YACS::DONE );
   delete p;
+
+  ret = driverTest(p, "samples/optimizer_pyobj.xml");
+  CPPUNIT_ASSERT(ret == 0);
+  CPPUNIT_ASSERT(p->getEffectiveState() == YACS::DONE );
+  delete p;
+
 }
 
 void YacsLoaderTest::pyremotes()

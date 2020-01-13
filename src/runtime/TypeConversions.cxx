@@ -1616,7 +1616,7 @@ namespace YACS
     {
       static inline std::string convert(const TypeCode *t,YACS::ENGINE::Any* o,void*,int protocol)
         {
-          if(o->getType()->kind()==String)
+          if(o->getType()->kind()==String || o->getType()->kind()==Objref)
             return o->getStringValue();
           stringstream msg;
           msg << "Problem in conversion: a objref(string) is expected " ;
@@ -1702,7 +1702,7 @@ namespace YACS
         {
           //Check if objref is a GenericObj and register it if it is the case (workaround for bad management of GenericObj)
           if(o=="" || (t->isA(Runtime::_tc_file)) || (strncmp(t->id(),"python",6)==0) || (strncmp(t->id(),"json",4)==0))
-            return YACS::ENGINE::AtomAny::New(o);
+            return YACS::ENGINE::AtomAny::New(o, const_cast<TypeCode *>(t));
 
           //Objref CORBA. prefix=IOR,corbaname,corbaloc
           CORBA::Object_var obref;
@@ -1736,7 +1736,7 @@ namespace YACS
           else
               DEBTRACE("It's a CORBA::Object but not a SALOME::GenericObj");
 
-          return YACS::ENGINE::AtomAny::New(o);
+          return YACS::ENGINE::AtomAny::New(o, const_cast<TypeCode *>(t));
         }
     };
 

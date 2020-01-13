@@ -280,9 +280,14 @@ AtomAny::AtomAny(const std::string& val):Any(Runtime::_tc_string)
   _value._s=new StringOnHeap(val);
 }
 
+AtomAny::AtomAny(const std::string& val, TypeCode* type):Any(type)
+{
+  _value._s=new StringOnHeap(val);
+}
+
 AtomAny::AtomAny(const AtomAny& other):Any(other)
 {
-  if(_type->isA(Runtime::_tc_string))
+  if(_type->isA(Runtime::_tc_string) || _type->kind()==YACS::ENGINE::Objref)
     {
       StringOnHeap *cpy=(other._value._s)->deepCopy();
       memcpy(&_value._s,&cpy,_type->getSizeInByteOfAnyReprInSeq());
@@ -302,7 +307,7 @@ AtomAny::AtomAny(char *val, Deallocator deAlloc):Any(Runtime::_tc_string)
 
 AtomAny::AtomAny(char *data, TypeCode* type):Any(type)
 {
-  if(type->isA(Runtime::_tc_string))
+  if(type->isA(Runtime::_tc_string) || _type->kind()==YACS::ENGINE::Objref)
     {
       void **tmp=(void **)data;
       StringOnHeap *cpy=((StringOnHeap *)(*tmp))->deepCopy();
@@ -326,6 +331,11 @@ AtomAny *AtomAny::New(char *val,Deallocator dealloc)
   return new AtomAny(val,dealloc);
 }
 
+AtomAny *AtomAny::New(const std::string& val, TypeCode *type)
+{
+  return new AtomAny(val,type);
+}
+
 AnyPtr AtomAny::operator[](int i) const throw(YACS::Exception)
 {
   throw InvalidExtractionException(_type->kind(),Sequence);
@@ -347,7 +357,7 @@ bool AtomAny::operator ==(const Any& other) const
     return _value._i==otherC._value._i;
   else if(_type->isA(Runtime::_tc_bool))
     return _value._b==otherC._value._b;
-  else if(_type->isA(Runtime::_tc_string))
+  else if(_type->isA(Runtime::_tc_string) || _type->kind()==Objref)
     return (*_value._s)==*(otherC._value._s);
   else
     return false;
@@ -379,7 +389,7 @@ double AtomAny::getDoubleValue() const throw(YACS::Exception)
 
 std::string AtomAny::getStringValue() const throw(YACS::Exception)
 {
-  if(_type->isA(Runtime::_tc_string))
+  if(_type->isA(Runtime::_tc_string) || _type->kind()==YACS::ENGINE::Objref)
     {
       std::size_t sz(_value._s->size());
       if(sz==0)
@@ -393,7 +403,7 @@ std::string AtomAny::getStringValue() const throw(YACS::Exception)
 
 const char *AtomAny::getBytesValue(std::size_t& len) const
 {
-  if(_type->isA(Runtime::_tc_string))
+  if(_type->isA(Runtime::_tc_string) || _type->kind()==YACS::ENGINE::Objref)
     {
       len=_value._s->size();
       return _value._s->cStr();
@@ -411,7 +421,7 @@ const char *AtomAny::getBytesValue(std::size_t& len) const
  */
 void AtomAny::putMyReprAtPlace(char *data) const
 {
-  if(_type->isA(Runtime::_tc_string))
+  if(_type->isA(Runtime::_tc_string) || _type->kind()==YACS::ENGINE::Objref)
     {
       StringOnHeap *tmp=_value._s->deepCopy();
       memcpy(data,&tmp,_type->getSizeInByteOfAnyReprInSeq());
@@ -437,7 +447,7 @@ void AtomAny::putMyReprAtPlace(char *data) const
  */
 void AtomAny::putReprAtPlace(char *data, const char *src, const TypeCode *type, bool deepCpy)
 {
-  if(type->isA(Runtime::_tc_string))
+  if(type->isA(Runtime::_tc_string) || type->kind()==YACS::ENGINE::Objref)
     {
       void **tmp1=(void **)src;
       StringOnHeap *tmp=((const StringOnHeap *)(*tmp1))->deepCopy();
@@ -458,7 +468,7 @@ void AtomAny::putReprAtPlace(char *data, const char *src, const TypeCode *type, 
 void AtomAny::destroyReprAtPlace(char *data, const TypeCode *type)
 {
   DynType typ=type->kind();
-  if(typ==String)
+  if(typ==String || typ==Objref)
     {
       if(!Any::IsNull(data))
         {
@@ -483,7 +493,7 @@ bool AtomAny::takeInChargeStorageOf(TypeCode *type)
 
 AtomAny::~AtomAny()
 {
-  if(_type->kind() == String)
+  if(_type->kind() == String || _type->kind()==Objref)
     delete _value._s;
 }
 
@@ -759,23 +769,11 @@ SequenceAny *SequenceAny::removeUnsetItemsFromThis() const
 
 SequenceAny *SequenceAny::New(const TypeCode *typeOfContent)
 {
-  if(typeOfContent->kind() == Objref)
-    {
-      //In case of Objref, use a sequence of string
-      return new SequenceAny(Runtime::_tc_string);
-    }
-  else
     return new SequenceAny(typeOfContent);
 }
 
 SequenceAny *SequenceAny::New(const TypeCode *typeOfContent, unsigned lgth)
 {
-  if(typeOfContent->kind() == Objref)
-    {
-      //In case of Objref, use a sequence of string
-      return new SequenceAny(Runtime::_tc_string,lgth);
-    }
-  else
     return new SequenceAny(typeOfContent,lgth);
 }
 
