@@ -112,17 +112,16 @@ InputPyPort::InputPyPort(const std::string& name, Node *node, TypeCode * type)
   , DataPort(name, node, type)
   , Port(node)
   , _data(Py_None)
-  ,_initData(Py_None)
+  ,_initData(nullptr)
   ,_isEmpty(true)
 {
   Py_INCREF(_data);
-  Py_INCREF(_initData);
 }
 InputPyPort::~InputPyPort()
 {
   PyGILState_STATE gstate = PyGILState_Ensure();
-  DEBTRACE( "_data refcnt: " << _data->ob_refcnt );
-  DEBTRACE( "_initData refcnt: " << _initData->ob_refcnt );
+  DEBTRACE( "_data refcnt: " << (_data ? _data->ob_refcnt : -1) );
+  DEBTRACE( "_initData refcnt: " << (_initData ? _initData->ob_refcnt : -1));
   // Release or not release : all GenericObj are deleted when the input port is deleted
   releasePyObj(_data);
   Py_XDECREF(_data); 
@@ -133,7 +132,7 @@ InputPyPort::~InputPyPort()
 InputPyPort::InputPyPort(const InputPyPort& other, Node *newHelder):InputPort(other,newHelder),DataPort(other,newHelder),Port(other,newHelder)
 {
   _initData=other._initData;
-  Py_INCREF(_initData);
+  Py_XINCREF(_initData);
   _data=other._data;
   Py_INCREF(_data);
   _isEmpty=other._isEmpty;
@@ -141,14 +140,13 @@ InputPyPort::InputPyPort(const InputPyPort& other, Node *newHelder):InputPort(ot
 
 bool InputPyPort::edIsManuallyInitialized() const
 {
-  return _initData!=Py_None;
+  return _initData!=nullptr;
 }
 
 void InputPyPort::edRemoveManInit()
 {
   Py_XDECREF(_initData);
-  _initData=Py_None;
-  Py_INCREF(_initData);
+  _initData=nullptr;
   Py_XDECREF(_data);
   _data=Py_None;
   Py_INCREF(_data);
@@ -241,10 +239,10 @@ void InputPyPort::exSaveInit()
   // Interpreter lock seems necessary when deleting lists in Python 2.7
   PyGILState_STATE gstate = PyGILState_Ensure();
   Py_XDECREF(_initData);
-  PyGILState_Release(gstate);
   _initData=_data;
   Py_INCREF(_initData); 
-  DEBTRACE( "_initData.ob refcnt: " << _initData->ob_refcnt );
+  PyGILState_Release(gstate);
+  DEBTRACE( "_initData.ob refcnt: " << (_initData ? _initData->ob_refcnt : -1));
   DEBTRACE( "_data.ob refcnt: " << _data->ob_refcnt );
 }
 
@@ -257,7 +255,7 @@ void InputPyPort::exRestoreInit()
   if(!_initData)return;
   Py_XDECREF(_data); 
   _data=_initData;
-  Py_INCREF(_data);
+  Py_XINCREF(_data);
   _isEmpty = false;
   DEBTRACE( "_initData.ob refcnt: " << _initData->ob_refcnt );
   DEBTRACE( "_data.ob refcnt: " << _data->ob_refcnt );
@@ -265,22 +263,11 @@ void InputPyPort::exRestoreInit()
 
 std::string InputPyPort::dump()
 {
-  if( _data == Py_None)
+  if( _isEmpty)
     return "<value>None</value>";
 
   InterpreterUnlocker l;
-  if (edGetType()->kind() != YACS::ENGINE::Objref)
-    return convertPyObjectXml(edGetType(), _data);
-  if (! _stringRef.empty())
-    return _stringRef;
-  else 
-    return convertPyObjectXml(edGetType(), _data);
-//     {
-//       stringstream msg;
-//       msg << "Cannot retreive init reference string for port " << _name
-//           << " on node " << _node->getName();
-//       throw Exception(msg.str());      
-//     }
+  return convertPyObjectXml(edGetType(), _data);
 }
 
 std::string InputPyPort::valToStr()
@@ -378,8 +365,6 @@ std::string OutputPyPort::getAsString()
 
 std::string OutputPyPort::dump()
 {
-  if( _data == Py_None)
-    return "<value>None</value>";
   InterpreterUnlocker l;
   string xmldump = convertPyObjectXml(edGetType(), _data);
   return xmldump;

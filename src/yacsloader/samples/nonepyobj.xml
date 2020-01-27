@@ -37,9 +37,10 @@
       <outport name="r" type="bool"/>
    </inline>
    <inline name="n1">
-      <script><code><![CDATA[a=None
+      <script><code><![CDATA[a=i
 ]]></code></script>
       <load container="DefaultContainer"/>
+      <inport name="i" type="pyobj"/>
       <outport name="a" type="pyobj"/>
    </inline>
    <control> <fromnode>n1</fromnode> <tonode>n2</tonode> </control>
@@ -47,6 +48,10 @@
       <fromnode>n1</fromnode> <fromport>a</fromport>
       <tonode>n2</tonode> <toport>a</toport>
    </datalink>
+   <parameter>
+      <tonode>n1</tonode><toport>i</toport>
+      <value><objref><![CDATA[QbF]]></objref></value>
+   </parameter>
    <presentation name="n2" x="211.5" y="32" width="158" height="63" expanded="1" expx="211.5" expy="32" expWidth="158" expHeight="63" shownState="0"/>
    <presentation name="n1" x="12" y="32" width="158" height="63" expanded="1" expx="12" expy="32" expWidth="158" expHeight="63" shownState="0"/>
    <presentation name="__ROOT__" x="0" y="0" width="373.5" height="99" expanded="1" expx="0" expy="0" expWidth="373.5" expHeight="99" shownState="0"/>
