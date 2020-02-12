@@ -33,6 +33,8 @@
 
 #include <gvc.h>
 
+#include <Qtx.h> // for Localizer
+
 #include "Resource.hxx"
 
 //#define _DEVDEBUG_
@@ -70,7 +72,6 @@ void SceneBlocItem::arrangeChildNodes()
   clock_t start_t, end_t;
   start_t = clock();
 #endif //_DEVDEBUG_
-  GVC_t* aGvc = 0;
 
 
   SubjectComposedNode *scnode = dynamic_cast<SubjectComposedNode*>(getSubject());
@@ -80,14 +81,11 @@ void SceneBlocItem::arrangeChildNodes()
 
   // ---- Create a graphviz context
 
-  if(!aGvc)
-    {
-      DEBTRACE(setlocale(LC_ALL,NULL));
-      //Graphviz is sensitive to locale : set the mimimal one ("C")for numeric
-      setlocale(LC_NUMERIC, "C");
-      //aginit();
-      aGvc = gvContext();
-    }
+  // Graphviz is sensitive to locale : set the mimimal one ("C")for numeric
+  Qtx::Localizer loc;
+
+  //aginit();
+  GVC_t* aGvc = gvContext();
 
   // ---- Create a graph
 
