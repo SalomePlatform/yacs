@@ -245,6 +245,7 @@ void OptimizerLoop::exUpdateState()
               _nodeForSpecialCases = new FakeNodeForOptimizerLoop(this, normal,
                   string("The algorithm of OptimizerLoop with name ") + _name +
                   " returns no sample to launch");
+              _alg->finishProxy();
               return;
             }
           launchMaxOfSamples(true);
