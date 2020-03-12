@@ -61,7 +61,7 @@ namespace YACS
         std::pair<int,int> pos;
         bool operator<(const Cost& a) const
           {
-            return (a.F <= F);
+            return (a.F < F);
           }
       };
 
