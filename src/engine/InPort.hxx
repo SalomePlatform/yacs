@@ -54,6 +54,7 @@ namespace YACS
       friend class SplitterNode;
       friend class ComposedNode;
       friend class OptimizerLoop;
+      friend class NbBranches;
       friend class ElementaryNode; //for removeAllLinksWithMe
       friend class CollectorSwOutPort;
       friend class OutputDataStreamPort;

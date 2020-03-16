@@ -113,6 +113,7 @@ SET(YACSlibEngine_HEADERS
   SetOfPoints.hxx
   PlayGround.hxx
   ObserverAsPlugin.hxx
+  NbBranches.hxx
   )
 
 # --- sources ---
@@ -156,6 +157,7 @@ SET(YACSlibEngine_SOURCES
   WhileLoop.cxx
   Switch.cxx
   DynParaLoop.cxx
+  NbBranches.cxx
   ForEachLoop.cxx
   OptimizerAlg.cxx
   OptimizerLoop.cxx
