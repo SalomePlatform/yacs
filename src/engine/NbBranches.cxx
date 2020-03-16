@@ -25,12 +25,12 @@ const char NbBranches::NAME_OF_NUMBER_OF_BRANCHES[]="nbBranches";
 
 void NbBranches::exInit(bool start)
 {
-    _nbOfBranches.exInit(start);
+  _nbOfBranches.exInit(start);
 }
 
 InputPort *NbBranches::getPort() const
 {
-    return const_cast<AnyInputPort *>(&_nbOfBranches);
+  return const_cast<AnyInputPort *>(&_nbOfBranches);
 }
 
 bool NbBranches::isMultiplicitySpecified(unsigned& value) const

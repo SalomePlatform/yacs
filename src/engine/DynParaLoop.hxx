@@ -25,6 +25,7 @@
 #include "AnyInputPort.hxx"
 #include "AnyOutputPort.hxx"
 #include "OutputPort.hxx"
+#include "NbBranches.hxx"
 
 namespace YACS
 {
@@ -49,7 +50,7 @@ namespace YACS
       Node *_finalizeNode;
       unsigned _nbOfEltConsumed;
       std::vector<int> _execIds;
-      AnyInputPort _nbOfBranches;
+      NbBranches _nbOfBranches;
       AnyOutputPort _splittedPort;
       std::vector<Node *> _execNodes;
       std::vector<Node *> _execInitNodes;
@@ -62,7 +63,6 @@ namespace YACS
     protected:
       static const char NAME_OF_SPLITTED_SEQ_OUT[];
       static const char OLD_NAME_OF_SPLITTED_SEQ_OUT[];
-      static const char NAME_OF_NUMBER_OF_BRANCHES[];
     protected:
       DynParaLoop(const std::string& name, TypeCode *typeOfDataSplitted);
       virtual ~DynParaLoop();
@@ -77,7 +77,7 @@ namespace YACS
       Node *edSetFinalizeNode(Node *DISOWNnode);
       virtual bool edAddDFLink(OutPort *start, InPort *end) throw(Exception);
       void init(bool start=true);
-      InputPort *edGetNbOfBranchesPort() { return &_nbOfBranches; }
+      InputPort *edGetNbOfBranchesPort() { return _nbOfBranches.getPort(); }
       int getNumberOfInputPorts() const;
       int getNumberOfOutputPorts() const;
       unsigned getNumberOfEltsConsumed() const { return _nbOfEltConsumed; }

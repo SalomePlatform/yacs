@@ -1084,7 +1084,7 @@ void ForEachLoop::checkLinkPossibility(OutPort *start, const std::list<ComposedN
   if(end->getNode() == &_splitterNode)
     throw Exception("Illegal link within a foreach loop: \
 the 'SmplsCollection' port cannot be linked within the scope of the loop.");
-  if(end == &_nbOfBranches)
+  if(end == _nbOfBranches.getPort())
     throw Exception("Illegal link within a foreach loop: \
 the 'nbBranches' port cannot be linked within the scope of the loop.");
 }

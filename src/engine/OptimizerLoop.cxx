@@ -530,7 +530,7 @@ void OptimizerLoop::checkLinkPossibility(OutPort *start, const std::list<Compose
   linkName += start->getName()+" to "+end->getName()+")";
 
   // Yes, it should be possible to link back the result port to any input port of the loop.
-  if(end == &_nbOfBranches || end == &_algoInitPort)
+  if(end == _nbOfBranches.getPort() || end == &_algoInitPort)
     if(start != &_algoResultPort)
       throw Exception(std::string("Illegal OptimizerLoop link.") + linkName);
     else

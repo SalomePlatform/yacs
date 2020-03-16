@@ -39,11 +39,9 @@ using namespace YACS::ENGINE;
 const char DynParaLoop::NAME_OF_SPLITTED_SEQ_OUT[] = "evalSamples";
 const char DynParaLoop::OLD_NAME_OF_SPLITTED_SEQ_OUT[] = "SmplPrt"; // For backward compatibility with 5.1.4
 
-const char DynParaLoop::NAME_OF_NUMBER_OF_BRANCHES[]="nbBranches";
-
 DynParaLoop::DynParaLoop(const std::string& name, TypeCode *typeOfDataSplitted)
   : ComposedNode(name),_node(0),_initNode(0),_finalizeNode(0),_nbOfEltConsumed(0),
-    _nbOfBranches(NAME_OF_NUMBER_OF_BRANCHES,this,Runtime::_tc_int),
+    _nbOfBranches(this),
     _splittedPort(NAME_OF_SPLITTED_SEQ_OUT,this,typeOfDataSplitted),_initializingCounter(0),_unfinishedCounter(0),_failedCounter(0),_weight(), _loopWeight(0)
 {
   _weight.setDefaultLoop();
@@ -276,21 +274,21 @@ std::list<Node *> DynParaLoop::edGetDirectDescendants() const
 std::list<InputPort *> DynParaLoop::getSetOfInputPort() const
 {
   list<InputPort *> ret=ComposedNode::getSetOfInputPort();
-  ret.push_back((InputPort *)&_nbOfBranches);
+  ret.push_back(_nbOfBranches.getPort());
   return ret;
 }
 
 InputPort *DynParaLoop::getInputPort(const std::string& name) const throw(YACS::Exception)
 {
-  if(name==NAME_OF_NUMBER_OF_BRANCHES)
-    return (InputPort *)&_nbOfBranches;
+  if(NbBranches::IsBranchPortName(name))
+    return _nbOfBranches.getPort();
   return ComposedNode::getInputPort(name);
 }
 
 std::list<InputPort *> DynParaLoop::getLocalInputPorts() const
 {
   list<InputPort *> ret=ComposedNode::getLocalInputPorts();
-  ret.push_back((InputPort *)&_nbOfBranches);
+  ret.push_back(_nbOfBranches.getPort());
   return ret;
 }
 
@@ -441,19 +439,12 @@ ComplexWeight* DynParaLoop::getWeight()
 
 bool DynParaLoop::isMultiplicitySpecified(unsigned& value) const
 {
-  if(_nbOfBranches.edIsManuallyInitialized())
-    if(_nbOfBranches.edGetNumberOfLinks()==0)
-      {
-        value=_nbOfBranches.getIntValue();
-        return true;
-      }
-  return false;
+  return _nbOfBranches.isMultiplicitySpecified(value);
 }
 
 void DynParaLoop::forceMultiplicity(unsigned value)
 {
-  _nbOfBranches.edRemoveAllLinksLinkedWithMe();
-  _nbOfBranches.edInit((int)value);
+  _nbOfBranches.forceMultiplicity(value);
 }
 
 void DynParaLoop::buildDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView)
