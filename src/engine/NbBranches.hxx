@@ -33,6 +33,7 @@ namespace YACS
     {
       public:
         virtual std::unique_ptr<NbBranchesAbstract> copy(Node *node) const = 0;
+        virtual int getNumberOfBranches(int nbOfElems) const = 0;
         virtual bool isMyName(const std::string& name) const = 0;
         virtual void exInit(bool start) = 0;
         virtual InputPort *getPort() const = 0;
@@ -51,6 +52,7 @@ namespace YACS
         NbBranches(const NbBranches& other, Node *node):_nbOfBranches(other._nbOfBranches,node) { }
         bool isMyName(const std::string& name) const override;
         std::unique_ptr<NbBranchesAbstract> copy(Node *node) const override;
+        int getNumberOfBranches(int nbOfElems) const override;
         void exInit(bool start) override;
         InputPort *getPort() const override;
         bool isMultiplicitySpecified(unsigned& value) const override;
@@ -65,6 +67,7 @@ namespace YACS
       public:
         NoNbBranches() = default;
         std::unique_ptr<NbBranchesAbstract> copy(Node *node) const override;
+        int getNumberOfBranches(int nbOfElems) const override;
         bool isMyName(const std::string& name) const override { return false; }
         void exInit(bool start) override;
         InputPort *getPort() const override;

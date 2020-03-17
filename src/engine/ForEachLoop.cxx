@@ -526,7 +526,8 @@ void ForEachLoop::exUpdateState()
     {
       //internal graph update
       int i;
-      int nbOfBr(_nbOfBranches->getIntValue()),nbOfElts(_splitterNode.getNumberOfElements()),nbOfEltsDone(0);
+      int nbOfElts(_splitterNode.getNumberOfElements()),nbOfEltsDone(0);
+      int nbOfBr(_nbOfBranches->getNumberOfBranches(nbOfElts));
       if(_passedData)
         {
           _passedData->checkCompatibilyWithNb(nbOfElts);
@@ -1168,8 +1169,9 @@ list<ProgressWeight> ForEachLoop::getProgressWeight() const
 
 int ForEachLoop::getNbOfElementsToBeProcessed() const
 {
-  int nbBranches = _nbOfBranches->getIntValue();
-  return _splitterNode.getNumberOfElements()
+  int nbOfElems(_splitterNode.getNumberOfElements());
+  int nbBranches = _nbOfBranches->getNumberOfBranches(nbOfElems);
+  return nbOfElems
          + (_initNode ? nbBranches:0)
          + (_finalizeNode ? nbBranches:0) ;
 }

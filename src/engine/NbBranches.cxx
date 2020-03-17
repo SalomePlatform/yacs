@@ -33,6 +33,11 @@ std::unique_ptr<NbBranchesAbstract> NbBranches::copy(Node *node) const
   return std::unique_ptr<NbBranchesAbstract>(new NbBranches(*this,node));
 }
 
+int NbBranches::getNumberOfBranches(int) const
+{
+  return this->getIntValue();
+}
+
 bool NbBranches::isMyName(const std::string& name) const
 {
   return NbBranchesAbstract::IsBranchPortName(name);
@@ -68,6 +73,11 @@ void NbBranches::forceMultiplicity(unsigned value)
 std::unique_ptr<NbBranchesAbstract> NoNbBranches::copy(Node *) const
 {
   return std::unique_ptr<NbBranchesAbstract>(new NoNbBranches);
+}
+
+int NoNbBranches::getNumberOfBranches(int nbOfElems) const
+{
+  return nbOfElems;
 }
 
 void NoNbBranches::exInit(bool start)
