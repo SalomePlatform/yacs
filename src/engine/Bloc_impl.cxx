@@ -51,6 +51,7 @@ void Bloc::fitToPlayGround(const PlayGround *pg)
         if(_lev==0)
           _max_lev=0;
         }
+      void visitForEachLoopDyn(ForEachLoopDyn *node) { throw YACS::Exception(MSG); }
       void visitOptimizerLoop(OptimizerLoop *node) { throw YACS::Exception(MSG); }
       void visitDynParaLoop(DynParaLoop *node) { throw YACS::Exception(MSG); }
       void visitForLoop(ForLoop *node) { throw YACS::Exception(MSG); }

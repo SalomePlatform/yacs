@@ -184,6 +184,19 @@ void VisitorSaveState::visitForEachLoop(ForEachLoop *node)
   _out << "  </node>" << endl;
 }
 
+void VisitorSaveState::visitForEachLoopDyn(ForEachLoopDyn *node)
+{
+  node->ComposedNode::accept(this);
+  if (!_out) throw Exception("No file open for dump state");
+  string name = _root->getName();
+  if (static_cast<ComposedNode*>(node) != _root) name = _root->getChildName(node);
+  DEBTRACE("VisitorSaveState::visitForEachLoopDyn ------ " << name);
+  _out << "  <node type='forEachLoopDyn'>" << endl;
+  _out << "    <name>" << name << "</name>" << endl;
+  _out << "    <state>" << _nodeStateName[node->getState()] << "</state>" << endl;
+  _out << "  </node>" << endl;
+}
+
 void VisitorSaveState::visitOptimizerLoop(OptimizerLoop *node)
 {
   node->ComposedNode::accept(this);

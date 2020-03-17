@@ -148,6 +148,29 @@ void VisitorSaveSchema::visitForEachLoop(ForEachLoop *node)
   DEBTRACE("END visitForEachLoop " << _root->getChildName(node));
 }
 
+void VisitorSaveSchema::visitForEachLoopDyn(ForEachLoopDyn *node)
+{
+  DEBTRACE("START visitForEachLoopDyn " << _root->getChildName(node));
+  beginCase(node);
+  int depth = depthNode(node);
+
+  _out << indent(depth) << "<foreachdyn name=\"" << node->getName() << "\"";
+  if (node->getState() == YACS::DISABLED)
+    _out << " state=\"disabled\"";
+  _out << " loopWeight=\"" << node->getWeight()->getSimpleLoopWeight() << "\"";
+  if (node->edGetSamplePort())
+    _out << " type=\"" << node->edGetSamplePort()->edGetType()->name() << "\"";
+  _out << ">" << endl;
+  
+  writeProperties(node);
+  node->DynParaLoop::accept(this);
+  writeSimpleDataLinks(node);
+  writeSimpleStreamLinks(node);
+  _out << indent(depth) << "</foreach>" << endl;
+  endCase(node);
+  DEBTRACE("END visitForEachLoopDyn " << _root->getChildName(node));
+}
+
 void VisitorSaveSchema::visitOptimizerLoop(OptimizerLoop *node)
 {
   DEBTRACE("START visitOptimizerLoop " << _root->getChildName(node));
