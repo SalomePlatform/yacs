@@ -21,7 +21,22 @@
 
 using namespace YACS::ENGINE;
 
-const char NbBranches::NAME_OF_NUMBER_OF_BRANCHES[]="nbBranches";
+const char NbBranchesAbstract::NAME_OF_NUMBER_OF_BRANCHES[]="nbBranches";
+
+bool NbBranchesAbstract::IsBranchPortName(const std::string& name)
+{
+  return name == NAME_OF_NUMBER_OF_BRANCHES;
+}
+
+std::unique_ptr<NbBranchesAbstract> NbBranches::copy(Node *node) const
+{
+  return std::unique_ptr<NbBranchesAbstract>(new NbBranches(*this,node));
+}
+
+bool NbBranches::isMyName(const std::string& name) const
+{
+  return NbBranchesAbstract::IsBranchPortName(name);
+}
 
 void NbBranches::exInit(bool start)
 {
@@ -50,7 +65,31 @@ void NbBranches::forceMultiplicity(unsigned value)
   _nbOfBranches.edInit((int)value);
 }
 
-bool NbBranches::IsBranchPortName(const std::string& name)
+std::unique_ptr<NbBranchesAbstract> NoNbBranches::copy(Node *) const
 {
-  return name == NAME_OF_NUMBER_OF_BRANCHES;
+  return std::unique_ptr<NbBranchesAbstract>(new NoNbBranches);
+}
+
+void NoNbBranches::exInit(bool start)
+{
+}
+
+InputPort *NoNbBranches::getPort() const
+{
+  return nullptr;
+}
+
+bool NoNbBranches::isMultiplicitySpecified(unsigned& value) const
+{
+  return false;
+}
+
+void NoNbBranches::forceMultiplicity(unsigned value)
+{
+  throw Exception("NoNbBranches::forceMultiplicity : impossible to be forced !");
+}
+
+int NoNbBranches::getIntValue() const
+{
+  throw Exception("NoNbBranches::getIntValue : no value stored !");
 }

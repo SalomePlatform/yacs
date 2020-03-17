@@ -39,9 +39,9 @@ using namespace YACS::ENGINE;
 const char DynParaLoop::NAME_OF_SPLITTED_SEQ_OUT[] = "evalSamples";
 const char DynParaLoop::OLD_NAME_OF_SPLITTED_SEQ_OUT[] = "SmplPrt"; // For backward compatibility with 5.1.4
 
-DynParaLoop::DynParaLoop(const std::string& name, TypeCode *typeOfDataSplitted)
+DynParaLoop::DynParaLoop(const std::string& name, TypeCode *typeOfDataSplitted, std::unique_ptr<NbBranchesAbstract>&& branchManager)
   : ComposedNode(name),_node(0),_initNode(0),_finalizeNode(0),_nbOfEltConsumed(0),
-    _nbOfBranches(this),
+    _nbOfBranches(std::move(branchManager)),
     _splittedPort(NAME_OF_SPLITTED_SEQ_OUT,this,typeOfDataSplitted),_initializingCounter(0),_unfinishedCounter(0),_failedCounter(0),_weight(), _loopWeight(0)
 {
   _weight.setDefaultLoop();
@@ -55,7 +55,7 @@ DynParaLoop::~DynParaLoop()
 }
 
 DynParaLoop::DynParaLoop(const DynParaLoop& other, ComposedNode *father, bool editionOnly)
-  : ComposedNode(other,father), _nbOfBranches(other._nbOfBranches,this),
+  : ComposedNode(other,father),_nbOfBranches(other._nbOfBranches->copy(this)),
     _splittedPort(other._splittedPort,this), _node(0), _initNode(0), _finalizeNode(0),
     _nbOfEltConsumed(0),_initializingCounter(0),_unfinishedCounter(0),_failedCounter(0),_weight(other._weight), _loopWeight(other._loopWeight)
 {
@@ -113,7 +113,7 @@ void DynParaLoop::init(bool start)
   _node->init(start);
   if (_initNode) _initNode->init(start);
   if (_finalizeNode) _finalizeNode->init(start);
-  _nbOfBranches.exInit(start);
+  _nbOfBranches->exInit(start);
   _splittedPort.exInit();
   _nbOfEltConsumed=0;
   _failedCounter=0;
@@ -274,21 +274,25 @@ std::list<Node *> DynParaLoop::edGetDirectDescendants() const
 std::list<InputPort *> DynParaLoop::getSetOfInputPort() const
 {
   list<InputPort *> ret=ComposedNode::getSetOfInputPort();
-  ret.push_back(_nbOfBranches.getPort());
+  InputPort *port(_nbOfBranches->getPort());
+  if(port)
+    ret.push_back(port);
   return ret;
 }
 
 InputPort *DynParaLoop::getInputPort(const std::string& name) const throw(YACS::Exception)
 {
-  if(NbBranches::IsBranchPortName(name))
-    return _nbOfBranches.getPort();
+  if(_nbOfBranches->isMyName(name))
+    return _nbOfBranches->getPort();
   return ComposedNode::getInputPort(name);
 }
 
 std::list<InputPort *> DynParaLoop::getLocalInputPorts() const
 {
   list<InputPort *> ret=ComposedNode::getLocalInputPorts();
-  ret.push_back(_nbOfBranches.getPort());
+  InputPort *port(_nbOfBranches->getPort());
+  if(port)
+    ret.push_back(port);
   return ret;
 }
 
@@ -439,12 +443,12 @@ ComplexWeight* DynParaLoop::getWeight()
 
 bool DynParaLoop::isMultiplicitySpecified(unsigned& value) const
 {
-  return _nbOfBranches.isMultiplicitySpecified(value);
+  return _nbOfBranches->isMultiplicitySpecified(value);
 }
 
 void DynParaLoop::forceMultiplicity(unsigned value)
 {
-  _nbOfBranches.forceMultiplicity(value);
+  _nbOfBranches->forceMultiplicity(value);
 }
 
 void DynParaLoop::buildDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView)
@@ -903,7 +907,7 @@ Node * DynParaLoop::getFinalizeNode()
 
 int DynParaLoop::getMaxLevelOfParallelism() const
 {
-  return _nbOfBranches.getIntValue() * _node->getMaxLevelOfParallelism();
+  return _nbOfBranches->getIntValue() * _node->getMaxLevelOfParallelism();
 }
 
 void DynParaLoop::partitionRegardingDPL(const PartDefinition *pd, std::map<ComposedNode *, YACS::BASES::AutoRefCnt<PartDefinition> >& zeMap)

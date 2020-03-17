@@ -22,25 +22,55 @@
 #include "YACSlibEngineExport.hxx"
 #include "AnyInputPort.hxx"
 
+#include <memory>
+
 namespace YACS
 {
   namespace ENGINE
   {
     class Node;
-    class YACSLIBENGINE_EXPORT NbBranches
+    class YACSLIBENGINE_EXPORT NbBranchesAbstract
+    {
+      public:
+        virtual std::unique_ptr<NbBranchesAbstract> copy(Node *node) const = 0;
+        virtual bool isMyName(const std::string& name) const = 0;
+        virtual void exInit(bool start) = 0;
+        virtual InputPort *getPort() const = 0;
+        virtual bool isMultiplicitySpecified(unsigned& value) const = 0;
+        virtual void forceMultiplicity(unsigned value) = 0;
+        virtual int getIntValue() const = 0;
+        static bool IsBranchPortName(const std::string& name);
+      protected:
+        static const char NAME_OF_NUMBER_OF_BRANCHES[];
+    };
+
+    class YACSLIBENGINE_EXPORT NbBranches : public NbBranchesAbstract
     {
       public:
         NbBranches(Node *node):_nbOfBranches(NAME_OF_NUMBER_OF_BRANCHES,node,Runtime::_tc_int) { }
         NbBranches(const NbBranches& other, Node *node):_nbOfBranches(other._nbOfBranches,node) { }
-        void exInit(bool start);
-        InputPort *getPort() const;
-        bool isMultiplicitySpecified(unsigned& value) const;
-        void forceMultiplicity(unsigned value);
-        int getIntValue() const { return _nbOfBranches.getIntValue(); }
-        static bool IsBranchPortName(const std::string& name);
+        bool isMyName(const std::string& name) const override;
+        std::unique_ptr<NbBranchesAbstract> copy(Node *node) const override;
+        void exInit(bool start) override;
+        InputPort *getPort() const override;
+        bool isMultiplicitySpecified(unsigned& value) const override;
+        void forceMultiplicity(unsigned value) override;
+        int getIntValue() const override { return _nbOfBranches.getIntValue(); }
       private:
         AnyInputPort _nbOfBranches;
-        static const char NAME_OF_NUMBER_OF_BRANCHES[];
+    };
+
+    class YACSLIBENGINE_EXPORT NoNbBranches : public NbBranchesAbstract
+    {
+      public:
+        NoNbBranches() = default;
+        std::unique_ptr<NbBranchesAbstract> copy(Node *node) const override;
+        bool isMyName(const std::string& name) const override { return false; }
+        void exInit(bool start) override;
+        InputPort *getPort() const override;
+        bool isMultiplicitySpecified(unsigned& value) const override;
+        void forceMultiplicity(unsigned value) override;
+        int getIntValue() const override;
     };
   }
 }

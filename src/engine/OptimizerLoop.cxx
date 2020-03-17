@@ -98,7 +98,7 @@ void FakeNodeForOptimizerLoop::finished()
 OptimizerLoop::OptimizerLoop(const std::string& name, const std::string& algLibWthOutExt,
                              const std::string& symbolNameToOptimizerAlgBaseInstanceFactory,
                              bool algInitOnFile,bool initAlgo, Proc * procForTypes):
-        DynParaLoop(name,Runtime::_tc_string),_algInitOnFile(algInitOnFile),_alglib(algLibWthOutExt),
+        DynParaLoop(name,Runtime::_tc_string,std::unique_ptr<NbBranchesAbstract>(new NbBranches(this))),_algInitOnFile(algInitOnFile),_alglib(algLibWthOutExt),
         _algoInitPort(NAME_OF_ALGO_INIT_PORT, this, Runtime::_tc_string, true),
         _loader(NULL),_alg(0),_convergenceReachedWithOtherCalc(false),
         _retPortForOutPool(NAME_OF_OUT_POOL_INPUT,this,Runtime::_tc_string),
@@ -183,7 +183,7 @@ void OptimizerLoop::exUpdateState()
 
           //internal graph update
           int i;
-          int nbOfBr=_nbOfBranches.getIntValue();
+          int nbOfBr=_nbOfBranches->getIntValue();
           _alg->setNbOfBranches(nbOfBr);
 
           _alg->startProxy();
@@ -435,7 +435,7 @@ YACS::Event OptimizerLoop::finalize()
     {
       // Run the finalize nodes, the OptimizerLoop will be done only when they all finish
       _unfinishedCounter = 0;  // This counter indicates how many branches are not finished
-      for (int i=0 ; i<_nbOfBranches.getIntValue() ; i++)
+      for (int i=0 ; i<_nbOfBranches->getIntValue() ; i++)
         if (_execIds[i] == NOT_RUNNING_BRANCH_ID)
           {
             DEBTRACE("Launching finalize node for branch " << i)
@@ -530,7 +530,7 @@ void OptimizerLoop::checkLinkPossibility(OutPort *start, const std::list<Compose
   linkName += start->getName()+" to "+end->getName()+")";
 
   // Yes, it should be possible to link back the result port to any input port of the loop.
-  if(end == _nbOfBranches.getPort() || end == &_algoInitPort)
+  if(end == _nbOfBranches->getPort() || end == &_algoInitPort)
     if(start != &_algoResultPort)
       throw Exception(std::string("Illegal OptimizerLoop link.") + linkName);
     else

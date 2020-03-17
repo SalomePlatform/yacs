@@ -465,7 +465,7 @@ void ForEachLoopPassedData::assignAlreadyDone(const std::vector<SequenceAny *>& 
     }
 }
 
-ForEachLoop::ForEachLoop(const std::string& name, TypeCode *typeOfDataSplitted):DynParaLoop(name,typeOfDataSplitted),
+ForEachLoop::ForEachLoop(const std::string& name, TypeCode *typeOfDataSplitted):DynParaLoop(name,typeOfDataSplitted,std::unique_ptr<NbBranchesAbstract>(new NbBranches(this))),
                                                                                 _splitterNode(NAME_OF_SPLITTERNODE,typeOfDataSplitted,this),
                                                                                 _execCurrentId(0),_nodeForSpecialCases(0),_currentIndex(0),_passedData(0)
 {
@@ -526,7 +526,7 @@ void ForEachLoop::exUpdateState()
     {
       //internal graph update
       int i;
-      int nbOfBr(_nbOfBranches.getIntValue()),nbOfElts(_splitterNode.getNumberOfElements()),nbOfEltsDone(0);
+      int nbOfBr(_nbOfBranches->getIntValue()),nbOfElts(_splitterNode.getNumberOfElements()),nbOfEltsDone(0);
       if(_passedData)
         {
           _passedData->checkCompatibilyWithNb(nbOfElts);
@@ -1084,7 +1084,7 @@ void ForEachLoop::checkLinkPossibility(OutPort *start, const std::list<ComposedN
   if(end->getNode() == &_splitterNode)
     throw Exception("Illegal link within a foreach loop: \
 the 'SmplsCollection' port cannot be linked within the scope of the loop.");
-  if(end == _nbOfBranches.getPort())
+  if(end == _nbOfBranches->getPort())
     throw Exception("Illegal link within a foreach loop: \
 the 'nbBranches' port cannot be linked within the scope of the loop.");
 }
@@ -1168,7 +1168,7 @@ list<ProgressWeight> ForEachLoop::getProgressWeight() const
 
 int ForEachLoop::getNbOfElementsToBeProcessed() const
 {
-  int nbBranches = _nbOfBranches.getIntValue();
+  int nbBranches = _nbOfBranches->getIntValue();
   return _splitterNode.getNumberOfElements()
          + (_initNode ? nbBranches:0)
          + (_finalizeNode ? nbBranches:0) ;
