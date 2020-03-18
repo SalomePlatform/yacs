@@ -1219,7 +1219,7 @@ int ForEachLoopGen::getFEDeltaBetween(OutPort *start, InPort *end)
   Node *work(ns);
   while(work!=co)
     {
-      ForEachLoop *isFE(dynamic_cast<ForEachLoop *>(work));
+      ForEachLoopGen *isFE(dynamic_cast<ForEachLoopGen *>(work));
       if(isFE)
         ret++;
       work=work->getFather();

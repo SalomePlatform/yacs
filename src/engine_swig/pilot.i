@@ -177,6 +177,7 @@ REFCOUNT_TEMPLATE(CompoInstmap,YACS::ENGINE::ComponentInstance)
 %newobject *::createBloc;
 %newobject *::createForLoop;
 %newobject *::createForEachLoop;
+%newobject *::createForEachLoopDyn;
 %newobject *::createWhileLoop;
 %newobject *::createSwitch;
 %newobject *::loadCatalog;

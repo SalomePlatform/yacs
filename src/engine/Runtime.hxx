@@ -42,6 +42,7 @@ namespace YACS
     class InPropertyPort;
     class ForLoop;
     class ForEachLoop;
+    class ForEachLoopDyn;
     class OptimizerLoop;
     class WhileLoop;
     class Switch;
@@ -89,6 +90,7 @@ namespace YACS
       virtual WhileLoop* createWhileLoop(const std::string& name);
       virtual ForLoop* createForLoop(const std::string& name);
       virtual ForEachLoop* createForEachLoop(const std::string& name,TypeCode * type);
+      virtual ForEachLoopDyn* createForEachLoopDyn(const std::string& name,TypeCode * type);
       virtual OptimizerLoop* createOptimizerLoop(const std::string& name,const std::string& algLib,
                                                  const std::string& factoryName,bool algInitOnFile,
                                                  const std::string& kind="", Proc * procForTypes = NULL);

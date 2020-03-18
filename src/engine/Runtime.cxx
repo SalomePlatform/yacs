@@ -255,6 +255,11 @@ ForEachLoop* Runtime::createForEachLoop(const std::string& name,TypeCode *type)
   return ret;
 }
 
+ForEachLoopDyn* Runtime::createForEachLoopDyn(const std::string& name,TypeCode * type)
+{
+  return new ForEachLoopDyn(name,type);
+}
+
 OptimizerLoop* Runtime::createOptimizerLoop(const std::string& name,const std::string& algLib,const std::string& factoryName,bool algInitOnFile,
                                             const std::string& kind, Proc * procForTypes)
 {
