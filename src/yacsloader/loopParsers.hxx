@@ -62,6 +62,7 @@ struct looptypeParser:parser
   virtual void node (ENGINE::InlineNode* const& n);
   virtual void forloop (ENGINE::ForLoop* const& b);
   virtual void foreach (ENGINE::ForEachLoop* const& b);
+  virtual void foreachdyn (ENGINE::ForEachLoopDyn* const& b);
   virtual void optimizer (ENGINE::OptimizerLoop* const& b);
   virtual void while_ (ENGINE::WhileLoop* const& b);
   virtual void switch_ (ENGINE::Switch* const& b);
@@ -190,6 +191,16 @@ void looptypeParser<T>::foreach (ENGINE::ForEachLoop* const& b)
       fullname += ".splitter";
       currentProc->nodeMap[fullname]=b->getChildByShortName("splitter");
     }
+template <class T>
+void looptypeParser<T>::foreachdyn (ENGINE::ForEachLoopDyn* const& b)
+{
+      DEBTRACE("loop_foreachdyn" << b->getName())
+      _cnode->edSetNode(b);
+      std::string fullname=currentProc->names.back()+ b->getName();
+      currentProc->nodeMap[fullname]=b;
+      fullname += ".splitter";
+      currentProc->nodeMap[fullname]=b->getChildByShortName("splitter");
+}
 template <class T>
 void looptypeParser<T>::optimizer (ENGINE::OptimizerLoop* const& b)
   {
@@ -581,6 +592,97 @@ struct foreachlooptypeParser:dynparalooptypeParser<T>
 
 template <class T> foreachlooptypeParser<T> foreachlooptypeParser<T>::foreachloopParser;
 
+//FIXME
+template <class T=ENGINE::ForEachLoopDyn*>
+struct foreachloopdyntypeParser:dynparalooptypeParser<T>
+{
+  static foreachloopdyntypeParser<T> foreachloopdynParser;
+
+  virtual void buildAttr(const XML_Char** attr)
+    {
+      if (!attr)
+        return;
+      this->required("name",attr);
+      this->required("type",attr);
+      for (int i = 0; attr[i]; i += 2) 
+        {
+          if(std::string(attr[i]) == "name")name(attr[i+1]);
+          if(std::string(attr[i]) == "state")this->state(attr[i+1]);
+          if(std::string(attr[i]) == "nbranch")nbranch(atoi(attr[i+1]));
+          if(std::string(attr[i]) == "loopWeight")weight(atof(attr[i+1]));
+          if(std::string(attr[i]) == "type")datatype(attr[i+1]);
+        }
+      postAttr();
+    }
+  virtual void pre ()
+    {
+      _nbranch=0;
+      _weight=-1.;
+      this->looptypeParser<T>::pre();
+    }
+  virtual void name (const std::string& name)
+    {
+      DEBTRACE("foreach_name: " << name)
+      _name=name;
+      _fullname=currentProc->names.back()+name;
+    }
+  virtual void nbranch (const int& n)
+    {
+      DEBTRACE("foreach_nbranch: " << n )
+      _nbranch=n;
+    }
+  virtual void weight (const double& x)
+    {
+      DEBTRACE("foreach_weight: " << x )
+      _weight=x;
+    }
+  virtual void datatype (const std::string& type)
+    {
+      DEBTRACE("foreach_datatype: "<< type)
+      _datatype=type;
+    }
+  virtual void postAttr()
+    {
+      if(currentProc->typeMap.count(_datatype)==0)
+      {
+        //Check if the typecode is defined in the runtime
+        YACS::ENGINE::TypeCode* t=theRuntime->getTypeCode(_datatype);
+        if(t==0)
+        {
+          std::stringstream msg;
+          msg << "Type "<< _datatype <<" does not exist"<<" ("<<__FILE__<<":"<<__LINE__<< ")";
+          throw Exception(msg.str());
+        }
+        else
+        {
+          currentProc->typeMap[_datatype]=t;
+          t->incrRef();
+        }
+      }
+      this->_cnode=theRuntime->createForEachLoopDyn(_name,currentProc->typeMap[_datatype]);
+      //set number of branches
+      if(_nbranch > 0)this->_cnode->edGetNbOfBranchesPort()->edInit(_nbranch);
+      if(_weight > 0)this->_cnode->setWeight(_weight);
+      this->_cnodes.push_back(this->_cnode);
+      currentProc->names.push_back(_fullname + '.');
+    }
+  virtual T post()
+    {
+      DEBTRACE("foreach_post" << this->_cnode->getName())
+      T b=this->_cnode;
+      this->_cnodes.pop_back();
+      currentProc->names.pop_back();
+      this->_cnode=this->_cnodes.empty() ? 0 : this->_cnodes.back();
+      return b;
+    }
+  int _nbranch;
+  double _weight;
+  std::string _fullname;
+  std::string _name;
+  std::string _datatype;
+};
+
+template <class T> foreachloopdyntypeParser<T> foreachloopdyntypeParser<T>::foreachloopdynParser;
 }
 
 namespace YACS
@@ -697,6 +799,7 @@ void looptypeParser<T>::onStart(const XML_Char* el, const XML_Char** attr)
   this->maxcount("node",1,element);
   this->maxcount("forloop",1,element);
   this->maxcount("foreach",1,element);
+  this->maxcount("foreachdyn",1,element);
   this->maxcount("optimizer",1,element);
   this->maxcount("while",1,element);
   this->maxcount("switch",1,element);
@@ -713,6 +816,7 @@ void looptypeParser<T>::onStart(const XML_Char* el, const XML_Char** attr)
 
   else if(element == "forloop")pp=&forlooptypeParser<>::forloopParser;
   else if(element == "foreach")pp=&foreachlooptypeParser<>::foreachloopParser;
+  else if(element == "foreachdyn")pp=&foreachloopdyntypeParser<>::foreachloopdynParser;
   else if(element == "optimizer")pp=&optimizerlooptypeParser<>::optimizerloopParser;
   else if(element == "while")pp=&whilelooptypeParser<>::whileloopParser;
   else if(element == "switch")pp=&switchtypeParser::switchParser;
@@ -739,6 +843,7 @@ void looptypeParser<T>::onEnd(const char *el,parser* child)
 
   else if(element == "forloop")forloop(((forlooptypeParser<>*)child)->post());
   else if(element == "foreach")foreach(((foreachlooptypeParser<>*)child)->post());
+  else if(element == "foreachdyn")foreachdyn(((foreachloopdyntypeParser<>*)child)->post());
   else if(element == "optimizer")optimizer(((optimizerlooptypeParser<>*)child)->post());
   else if(element == "while")while_(((whilelooptypeParser<>*)child)->post());
   else if(element == "switch")switch_(((switchtypeParser*)child)->post());

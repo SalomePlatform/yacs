@@ -166,7 +166,7 @@ void VisitorSaveSchema::visitForEachLoopDyn(ForEachLoopDyn *node)
   node->DynParaLoop::accept(this);
   writeSimpleDataLinks(node);
   writeSimpleStreamLinks(node);
-  _out << indent(depth) << "</foreach>" << endl;
+  _out << indent(depth) << "</foreachdyn>" << endl;
   endCase(node);
   DEBTRACE("END visitForEachLoopDyn " << _root->getChildName(node));
 }
@@ -871,7 +871,7 @@ void VisitorSaveSchema::writeSimpleDataLinks(ComposedNode *node)
 
   for (list<Node*>::iterator ic = setOfChildren.begin(); ic != setOfChildren.end(); ++ic)
     // add "splitter" node of ForEachLoop nodes to the set of children
-    if ( dynamic_cast<ForEachLoop*>( *ic ) )
+    if ( dynamic_cast<ForEachLoopGen*>( *ic ) )
       {
         Node *nodeToInsert=(*ic)->getChildByName(ForEachLoop::NAME_OF_SPLITTERNODE);
         if(find(setOfChildrenPlusSplitters.begin(),setOfChildrenPlusSplitters.end(),nodeToInsert)==setOfChildrenPlusSplitters.end())
@@ -901,13 +901,13 @@ void VisitorSaveSchema::writeSimpleDataLinks(ComposedNode *node)
                   DEBTRACE( "BINGO!" );
 
                   string fromName;
-                  if ( dynamic_cast<SplitterNode*>(from) && dynamic_cast<ForEachLoop*>(from->getFather()) )
+                  if ( dynamic_cast<SplitterNode*>(from) && dynamic_cast<ForEachLoopGen*>(from->getFather()) )
                     fromName = from->getFather()->getName();
                   else
                     fromName = node->getChildName(from);
 
                   string childName;
-                  if ( dynamic_cast<SplitterNode*>(to) && dynamic_cast<ForEachLoop*>(to->getFather()) )
+                  if ( dynamic_cast<SplitterNode*>(to) && dynamic_cast<ForEachLoopGen*>(to->getFather()) )
                     childName = node->getChildName(to->getFather());
                   else
                     childName = node->getChildName(to);
