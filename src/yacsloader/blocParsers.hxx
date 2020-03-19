@@ -178,7 +178,7 @@ struct bloctypeParser:parser
       //fullname += ".splitter";
       //currentProc->nodeMap[fullname]=b->getChildByShortName("splitter");
     }
-  virtual void foreach (YACS::ENGINE::ForEachLoop* const& b)
+  virtual void foreach (YACS::ENGINE::ForEachLoopGen* const& b)
     {
       DEBTRACE( "bloc_foreach_set: " << b->getName() )             
       _bloc->edAddChild(b);

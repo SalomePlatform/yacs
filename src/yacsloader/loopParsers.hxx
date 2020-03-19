@@ -608,7 +608,6 @@ struct foreachloopdyntypeParser:dynparalooptypeParser<T>
         {
           if(std::string(attr[i]) == "name")name(attr[i+1]);
           if(std::string(attr[i]) == "state")this->state(attr[i+1]);
-          if(std::string(attr[i]) == "nbranch")nbranch(atoi(attr[i+1]));
           if(std::string(attr[i]) == "loopWeight")weight(atof(attr[i+1]));
           if(std::string(attr[i]) == "type")datatype(attr[i+1]);
         }
@@ -616,7 +615,6 @@ struct foreachloopdyntypeParser:dynparalooptypeParser<T>
     }
   virtual void pre ()
     {
-      _nbranch=0;
       _weight=-1.;
       this->looptypeParser<T>::pre();
     }
@@ -625,11 +623,6 @@ struct foreachloopdyntypeParser:dynparalooptypeParser<T>
       DEBTRACE("foreach_name: " << name)
       _name=name;
       _fullname=currentProc->names.back()+name;
-    }
-  virtual void nbranch (const int& n)
-    {
-      DEBTRACE("foreach_nbranch: " << n )
-      _nbranch=n;
     }
   virtual void weight (const double& x)
     {
@@ -661,7 +654,6 @@ struct foreachloopdyntypeParser:dynparalooptypeParser<T>
       }
       this->_cnode=theRuntime->createForEachLoopDyn(_name,currentProc->typeMap[_datatype]);
       //set number of branches
-      if(_nbranch > 0)this->_cnode->edGetNbOfBranchesPort()->edInit(_nbranch);
       if(_weight > 0)this->_cnode->setWeight(_weight);
       this->_cnodes.push_back(this->_cnode);
       currentProc->names.push_back(_fullname + '.');
@@ -675,7 +667,6 @@ struct foreachloopdyntypeParser:dynparalooptypeParser<T>
       this->_cnode=this->_cnodes.empty() ? 0 : this->_cnodes.back();
       return b;
     }
-  int _nbranch;
   double _weight;
   std::string _fullname;
   std::string _name;

@@ -22,8 +22,8 @@ n0=r.createScriptNode("","n0")
 o0=n0.edAddOutputPort("o0",tsi)
 n0.setScript("o0=[ elt for elt in range(8) ]")
 p.edAddChild(n0)
-n1=r.createForEachLoop("n1",ti)#Dyn
-n1.getInputPort("nbBranches").edInitPy(2)
+n1=r.createForEachLoopDyn("n1",ti)#Dyn
+#n1.getInputPort("nbBranches").edInitPy(2)
 n10=r.createScriptNode("","n10")
 n10.setExecutionMode("remote")
 n10.setContainer(cont)
@@ -49,8 +49,8 @@ p.edAddChild(n2)
 p.edAddCFLink(n1,n2)
 p.edAddLink(o2,i3)
 # Second parallel foreach
-n11=r.createForEachLoop("n11",ti)#Dyn
-n11.getInputPort("nbBranches").edInitPy(2)
+n11=r.createForEachLoopDyn("n11",ti)
+#n11.getInputPort("nbBranches").edInitPy(2)
 n110=r.createScriptNode("","n110")
 n110.setExecutionMode("remote")
 n110.setContainer(cont)
