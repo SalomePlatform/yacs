@@ -424,7 +424,8 @@ void bloctypeParser<T>::onStart(const XML_Char* el, const XML_Char** attr)
 
   else if(element == "bloc")pp=&bloctypeParser<>::blocParser;
   else if(element == "forloop")pp=&forlooptypeParser<>::forloopParser;
-  else if(element == "foreach")pp=&foreachlooptypeParser<>::foreachloopParser;
+  else if(element == "foreach")pp=&foreachlooptypeParser<ENGINE::ForEachLoop *>::foreachloopParser;
+  else if(element == "foreachdyn")pp=&foreachlooptypeParser<ENGINE::ForEachLoopDyn *>::foreachloopParser;
   else if(element == "optimizer")pp=&optimizerlooptypeParser<>::optimizerloopParser;
   else if(element == "while")pp=&whilelooptypeParser<>::whileloopParser;
   else if(element == "switch")pp=&switchtypeParser::switchParser;
@@ -458,7 +459,8 @@ void bloctypeParser<T>::onEnd(const char *el,parser* child)
   else if(element == "bloc")bloc(((bloctypeParser<>*)child)->post());
   else if(element == "forloop")forloop(((forlooptypeParser<>*)child)->post());
   else if(element == "optimizer")optimizer(((optimizerlooptypeParser<>*)child)->post());
-  else if(element == "foreach")foreach(((foreachlooptypeParser<>*)child)->post());
+  else if(element == "foreach")foreach(((foreachlooptypeParser<ENGINE::ForEachLoop *>*)child)->post());
+  else if(element == "foreachdyn")foreach(((foreachlooptypeParser<ENGINE::ForEachLoopDyn *>*)child)->post());
   else if(element == "while")while_(((whilelooptypeParser<>*)child)->post());
   else if(element == "switch")switch_(((switchtypeParser*)child)->post());
 
