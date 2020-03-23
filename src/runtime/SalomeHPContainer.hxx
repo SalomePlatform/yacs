@@ -108,7 +108,7 @@ namespace YACS
       //
 #ifndef SWIG
       void forYourTestsOnly(ForTestOmlyHPContCls *data) const;
-      std::map<std::string,std::string> getResourcePropertiesSpe(const std::string& name) const;
+      std::map<std::string,std::string> getResourceProperties(const std::string& name) const;
       void addComponentNameSpe(const std::string& name);
       void checkCapabilityToDealWithSpe(const ComponentInstance *inst) const throw(YACS::Exception);
       std::size_t locateTask(const Task *askingNode) const { return _launchModeType->locateTask(askingNode); }

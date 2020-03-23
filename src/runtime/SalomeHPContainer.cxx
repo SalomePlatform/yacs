@@ -280,7 +280,7 @@ int SalomeHPContainer::getNumberOfCoresPerWorker() const
   return _sct.getNumberOfCoresPerWorker();
 }
 
-std::map<std::string,std::string> SalomeHPContainer::getResourcePropertiesSpe(const std::string& name) const
+std::map<std::string,std::string> SalomeHPContainer::getResourceProperties(const std::string& name) const
 {
   return _sct.getResourceProperties(name);
 }
