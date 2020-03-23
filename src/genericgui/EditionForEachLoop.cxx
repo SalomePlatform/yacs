@@ -49,7 +49,7 @@ EditionForEachLoop::EditionForEachLoop(Subject* subject,
   if (!QtGuiContext::getQtCurrent()->isEdition())
     _formEachLoop->setEnabled (false);
   Node* node=_subjectNode->getNode();
-  ForEachLoop *fe = dynamic_cast<ForEachLoop*>(node);
+  ForEachLoopGen *fe = dynamic_cast<ForEachLoopGen*>(node);
   if(fe)
     _formEachLoop->lineEdit->setText(fe->edGetSamplePort()->edGetType()->name());
   connect(_formEachLoop->sb_nbranch, SIGNAL(editingFinished()),
@@ -67,7 +67,7 @@ void EditionForEachLoop::onModifyCollection()
 {
   bool isOk = false;
   Node* node=_subjectNode->getNode();
-  ForEachLoop *fe = dynamic_cast<ForEachLoop*>(node);
+  ForEachLoopGen *fe = dynamic_cast<ForEachLoopGen*>(node);
   InputPort* dp=fe->edGetSeqOfSamplesPort();
   SubjectDataPort* sdp = QtGuiContext::getQtCurrent()->_mapOfSubjectDataPort[dp];
   isOk=sdp->setValue(_formEachLoop->lineEdit_2->text().toStdString());

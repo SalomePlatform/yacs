@@ -148,7 +148,7 @@ TypeOfElem ProcInvoc::getTypeOfNode(YACS::ENGINE::Node* node)
   else if (dynamic_cast<YACS::ENGINE::ForLoop*>(node))          nodeType = FORLOOP;
   else if (dynamic_cast<YACS::ENGINE::WhileLoop*>(node))        nodeType = WHILELOOP;
   else if (dynamic_cast<YACS::ENGINE::Switch*>(node))           nodeType = SWITCH;
-  else if (dynamic_cast<YACS::ENGINE::ForEachLoop*>(node))      nodeType = FOREACHLOOP;
+  else if (dynamic_cast<YACS::ENGINE::ForEachLoopGen*>(node))      nodeType = FOREACHLOOP;
   else if (dynamic_cast<YACS::ENGINE::OptimizerLoop*>(node))    nodeType = OPTIMIZERLOOP;
   else if (dynamic_cast<YACS::ENGINE::PresetNode*>(node))       nodeType = PRESETNODE;
   else if (dynamic_cast<YACS::ENGINE::OutNode*>(node))          nodeType = OUTNODE;
@@ -292,7 +292,7 @@ bool CommandAddNodeFromCatalog::localExecute()
               (dynamic_cast<YACS::ENGINE::Switch*>(father))->edSetNode(_swCase,son);
               break;
             case FOREACHLOOP:
-              (dynamic_cast<YACS::ENGINE::ForEachLoop*>(father))->edSetNode(son);
+              (dynamic_cast<YACS::ENGINE::ForEachLoopGen*>(father))->edSetNode(son);
               break;
             case OPTIMIZERLOOP:
               (dynamic_cast<YACS::ENGINE::OptimizerLoop*>(father))->edSetNode(son);
