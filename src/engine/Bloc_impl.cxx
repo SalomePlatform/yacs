@@ -62,9 +62,7 @@ void Bloc::fitToPlayGround(const PlayGround *pg)
           if(!cont2)
             return ;
           _cont.push_back(cont2);
-          HomogeneousPoolContainer *cont3(cont2->getDirectFather());
-          if(cont3)
-            _cont2.insert(cont3);
+          _cont2.insert(cont2);
       }
       void visitInlineFuncNode(InlineFuncNode *node) { throw YACS::Exception(MSG); }
       void visitLoop(Loop *node) { throw YACS::Exception(MSG); }
@@ -108,6 +106,5 @@ void Bloc::fitToPlayGround(const PlayGround *pg)
     }
   for(std::set< HomogeneousPoolContainer * >::const_iterator it=vis._cont2.begin();it!=vis._cont2.end();it++)
     (*it)->setSizeOfPool(pg->getNumberOfWorkers((*it)->getNumberOfCoresPerWorker()));
-  for(std::list< HomogeneousPoolContainer *>::const_iterator it=vis._cont.begin();it!=vis._cont.end();it++)
-    (*it)->prepareMaskForExecution();
+  //FIXME
 }

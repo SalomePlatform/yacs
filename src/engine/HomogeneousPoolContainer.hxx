@@ -17,8 +17,7 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-#ifndef __HOMOGENEOUSPOOLCONTAINER_HXX__
-#define __HOMOGENEOUSPOOLCONTAINER_HXX__
+#pragma once
 
 #include "YACSlibEngineExport.hxx"
 #include "Exception.hxx"
@@ -50,12 +49,7 @@ namespace YACS
       virtual std::size_t getNumberOfFreePlace() const = 0;
       virtual void allocateFor(const std::vector<const Task *>& nodes) = 0;
       virtual void release(const Task *node) = 0;
-      virtual YACS::BASES::AutoRefCnt<HomogeneousPoolContainer> decorate(YACS::BASES::AutoConstRefCnt<PartDefinition> pd) = 0;
-      virtual HomogeneousPoolContainer *getDirectFather() = 0;
-      virtual const HomogeneousPoolContainer *getDirectFather() const = 0;
       virtual int getNumberOfCoresPerWorker() const = 0;
-      virtual void prepareMaskForExecution() const = 0;
-      virtual void forYourTestsOnly(ForTestOmlyHPContCls *data) const = 0;
       static const char SIZE_OF_POOL_KEY[];
       static const char INITIALIZE_SCRIPT_KEY[];
     protected:
@@ -67,4 +61,3 @@ namespace YACS
   }
 }
 
-#endif

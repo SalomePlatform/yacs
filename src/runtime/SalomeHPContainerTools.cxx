@@ -1,4 +1,4 @@
-// Copyright (C) 2006-2019  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2016  CEA/DEN, EDF R&D
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -23,7 +23,6 @@
 #include "Exception.hxx"
 
 #include <algorithm>
-#include <limits>
 
 using namespace YACS::ENGINE;
 
@@ -45,15 +44,6 @@ std::size_t SalomeHPContainerVectOfHelper::getNumberOfFreePlace() const
   return std::count(_whichOccupied.begin(),_whichOccupied.end(),false);
 }
 
-std::size_t SalomeHPContainerVectOfHelper::getNumberOfFreePlaceAmong(const std::vector<std::size_t>& idsOfKernelContainers) const
-{
-  std::size_t ret(0);
-  for(std::vector<std::size_t>::const_iterator it=idsOfKernelContainers.begin();it!=idsOfKernelContainers.end();it++)
-    if(!_whichOccupied[*it])
-      ret++;
-  return ret;
-}
-
 void SalomeHPContainerVectOfHelper::allocateFor(const std::vector<const Task *>& nodes)
 {
   for(std::vector<const Task *>::const_iterator it=nodes.begin();it!=nodes.end();it++)
@@ -67,27 +57,6 @@ void SalomeHPContainerVectOfHelper::allocateFor(const std::vector<const Task *>&
         throw Exception("All ressources are already occupied ! You are expected to wait for released resources !");
       std::size_t pos(std::distance(_whichOccupied.begin(),it2));
       _currentlyWorking[*it]=pos; _whichOccupied[pos]=true;
-    }
-}
-
-void SalomeHPContainerVectOfHelper::allocateForAmong(const std::vector<std::size_t>& idsOfKernelContainers, const std::vector<const Task *>& nodes)
-{
-  for(std::vector<const Task *>::const_iterator it=nodes.begin();it!=nodes.end();it++)
-    {
-      if(!(*it))
-        continue;
-      if(_currentlyWorking.find(*it)!=_currentlyWorking.end())
-        throw Exception("Searching 2 to allocate for a ServiceNode instance already declared as allocated !");
-      std::size_t it2(std::numeric_limits<std::size_t>::max());
-      for(std::vector<std::size_t>::const_iterator it=idsOfKernelContainers.begin();it!=idsOfKernelContainers.end();it++)
-        if(!_whichOccupied[*it])
-          {
-            it2=*it;
-            break;
-          }
-      if(it2==std::numeric_limits<std::size_t>::max())
-        throw Exception("All 2 ressources are already occupied ! You are expected to wait for released resources !");
-      _currentlyWorking[*it]=it2; _whichOccupied[it2]=true;
     }
 }
 
@@ -112,9 +81,9 @@ std::size_t SalomeHPContainerVectOfHelper::locateTask(const Task *node) const
   return ret;
 }
 
-const SalomeContainerMonoHelper *SalomeHPContainerVectOfHelper::getHelperOfTaskThreadSafe(const Task *node) const
+const SalomeContainerMonoHelper *SalomeHPContainerVectOfHelper::getHelperOfTaskThreadSafe(const SalomeHPContainer *cont, const Task *node) const
 {
-  YACS::BASES::AutoLocker<SalomeHPContainerVectOfHelper> alck(const_cast<SalomeHPContainerVectOfHelper *>(this));
+  YACS::BASES::AutoLocker<Container> alck(const_cast<SalomeHPContainer *>(cont));
   return _launchModeType[locateTask(node)];
 }
 
@@ -123,15 +92,30 @@ const SalomeContainerMonoHelper *SalomeHPContainerVectOfHelper::getHelperOfTask(
   return _launchModeType[locateTask(node)];
 }
 
-SalomeContainerMonoHelper *SalomeHPContainerVectOfHelper::getHelperOfTaskThreadSafe(const Task *node)
+SalomeContainerMonoHelper *SalomeHPContainerVectOfHelper::getHelperOfTaskThreadSafe(SalomeHPContainer *cont, const Task *node)
 {
-  YACS::BASES::AutoLocker<SalomeHPContainerVectOfHelper> alck(this);
+  YACS::BASES::AutoLocker<Container> alck(cont);
   return _launchModeType[locateTask(node)];
 }
 
 SalomeContainerMonoHelper *SalomeHPContainerVectOfHelper::getHelperOfTask(const Task *node)
 {
   return _launchModeType[locateTask(node)];
+}
+
+std::vector<std::string> SalomeHPContainerVectOfHelper::getKernelContainerNames(const SalomeHPContainer *cont) const
+{
+  std::vector<std::string> ret;
+  {
+    YACS::BASES::AutoLocker<Container> alck(const_cast<SalomeHPContainer *>(cont));
+    std::size_t sz(_launchModeType.size());
+    ret.resize(sz);
+    for(std::size_t i=0;i<sz;i++)
+      {
+        ret[i]=_launchModeType[i]->getKernelContainerName();
+      }
+  }
+  return ret;
 }
 
 void SalomeHPContainerVectOfHelper::checkNoCurrentWork() const
@@ -148,37 +132,4 @@ void SalomeHPContainerVectOfHelper::checkPosInVec(std::size_t pos) const
 {
   if(pos<0 || pos>=_launchModeType.size())
     throw Exception("The task has been found, but its id is not in the correct range ! resize of of container size during run ?");
-}
-
-void SalomeHPContainerVectOfHelper::shutdown()
-{
-  for(std::vector< BASES::AutoRefCnt<YACS::ENGINE::SalomeContainerMonoHelper> >::iterator it=_launchModeType.begin();it!=_launchModeType.end();it++)
-    if((*it).isNotNull())
-      if(!(*it)->isKernelContNull())
-        (*it)->shutdown();
-}
-
-std::vector<std::string> SalomeHPContainerVectOfHelper::getKernelContainerNames() const
-{
-  std::vector<std::string> ret;
-  {
-    YACS::BASES::AutoLocker<SalomeHPContainerVectOfHelper> alck(const_cast<SalomeHPContainerVectOfHelper *>(this));
-    std::size_t sz(_launchModeType.size());
-    ret.resize(sz);
-    for(std::size_t i=0;i<sz;i++)
-      {
-        ret[i]=_launchModeType[i]->getKernelContainerName();
-      }
-  }
-  return ret;
-}
-
-void SalomeHPContainerVectOfHelper::lock()
-{
-  _mutex.lock();
-}
-
-void SalomeHPContainerVectOfHelper::unLock()
-{
-  _mutex.unLock();
 }

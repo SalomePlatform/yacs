@@ -128,7 +128,7 @@ Engines::Container_var GetContainerObj(InlineNode *reqNode, bool& isStandardCont
   if(!container)
     throw YACS::Exception("No container specified !");
   SalomeContainer *containerCast0(dynamic_cast<SalomeContainer *>(container));
-  SalomeHPContainerBase *containerCast1(dynamic_cast<SalomeHPContainerBase *>(container));
+  SalomeHPContainer *containerCast1(dynamic_cast<SalomeHPContainer *>(container));
   if(containerCast0)
     {
       isStandardCont = true;
@@ -136,7 +136,8 @@ Engines::Container_var GetContainerObj(InlineNode *reqNode, bool& isStandardCont
     }
   else if(containerCast1)
     {
-      objContainer=containerCast1->getContainerPtr(reqNode);
+      YACS::BASES::AutoCppPtr<SalomeContainerTmpForHP> tmpCont(SalomeContainerTmpForHP::BuildFrom(containerCast1,reqNode));
+      objContainer=tmpCont->getContainerPtr(reqNode);
     }
   else
     throw YACS::Exception("Unrecognized type of container ! Salome one is expected for PythonNode/PyFuncNode !");
