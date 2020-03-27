@@ -70,6 +70,7 @@ namespace YACS
       void removeRecursivelyRedundantCL();
       void partitionRegardingDPL(const PartDefinition *pd, std::map<ComposedNode *, YACS::BASES::AutoRefCnt<PartDefinition> >& zeMap);
       void fitToPlayGround(const PlayGround *pg);
+      void propagePlayGround(const PlayGround *pg);
     protected:
       bool areAllSubNodesFinished() const;
       bool areAllSubNodesDone() const;

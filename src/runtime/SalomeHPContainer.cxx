@@ -216,12 +216,10 @@ void SalomeHPContainer::checkCapabilityToDealWith(const ComponentInstance *inst)
 
 std::vector<std::string> SalomeHPContainer::getKernelContainerNames() const
 {
-  throw Exception("FIXME");
-  //return _launchModeType->getKernelContainerNames();
+  return _launchModeType.getKernelContainerNames(this);
 }
 
 int SalomeHPContainer::getNumberOfCoresPerWorker() const
 {
-  throw Exception("FIXME");
-  //return _sct.getNumberOfCoresPerWorker();
+  return _sct.getNumberOfCoresPerWorker();
 }

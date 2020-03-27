@@ -34,11 +34,11 @@ std::string PlayGround::printSelf() const
 {
   std::ostringstream oss;
   std::size_t sz(0);
-  for(std::vector< std::pair<std::string,int> >::const_iterator it=_data.begin();it!=_data.end();it++)
-    sz=std::max(sz,(*it).first.length());
-  for(std::vector< std::pair<std::string,int> >::const_iterator it=_data.begin();it!=_data.end();it++)
+  for(auto it : _data)
+    sz=std::max(sz,it.name().length());
+  for(auto it : _data)
     {
-      oss << " - " << std::setw(10) << (*it).first << " : " << (*it).second << std::endl;
+      oss << " - " << std::setw(10) << it.name() << " : " << it.nbCores() << std::endl;
     }
   return oss.str();
 }
@@ -54,15 +54,15 @@ void PlayGround::loadFromKernelCatalog()
 
 void PlayGround::setData(const std::vector< std::pair<std::string,int> >& defOfRes)
 {
-  _data=defOfRes;
+  _data=std::vector<Resource>(defOfRes.begin(),defOfRes.end());
   checkCoherentInfo();
 }
 
 int PlayGround::getNumberOfCoresAvailable() const
 {
   int ret(0);
-  for(std::vector< std::pair<std::string,int> >::const_iterator it=_data.begin();it!=_data.end();it++)
-    ret+=(*it).second;
+  for(auto it : _data)
+    ret+=it.nbCores();
   return ret;
 }
 
@@ -71,8 +71,8 @@ int PlayGround::getMaxNumberOfContainersCanBeHostedWithoutOverlap(int nbCoresPer
   if(nbCoresPerCont<1)
     throw Exception("PlayGround::getMaxNumberOfContainersCanBeHostedWithoutOverlap : invalid nbCoresPerCont. Must be >=1 !");
   int ret(0);
-  for(std::vector< std::pair<std::string,int> >::const_iterator it=_data.begin();it!=_data.end();it++)
-    ret+=(*it).second/nbCoresPerCont;
+  for(auto it : _data)
+    ret+=it.nbCores()/nbCoresPerCont;
   return ret;
 }
 
@@ -80,18 +80,18 @@ std::vector<int> PlayGround::computeOffsets() const
 {
   std::size_t sz(_data.size()),i(0);
   std::vector<int> ret(sz+1); ret[0]=0;
-  for(std::vector< std::pair<std::string,int> >::const_iterator it=_data.begin();it!=_data.end();it++,i++)
-    ret[i+1]=ret[i]+(*it).second;
+  for(auto it=_data.begin();it!=_data.end();it++,i++)
+    ret[i+1]=ret[i]+it->nbCores();
   return ret;
 }
 
 void PlayGround::checkCoherentInfo() const
 {
   std::set<std::string> s;
-  for(std::vector< std::pair<std::string,int> >::const_iterator it=_data.begin();it!=_data.end();it++)
+  for(auto it : _data)
     {
-      s.insert((*it).first);
-      if((*it).second<0)
+      s.insert(it.name());
+      if(it.nbCores()<0)
         throw Exception("Presence of negative int value !");
     }
   if(s.size()!=_data.size())
@@ -162,16 +162,16 @@ std::vector<std::size_t> PlayGround::getWorkerIdsFullyFetchedBy(int nbCoresPerCo
 {
   std::size_t posBg(0),posWorker(0);
   std::vector<std::size_t> ret;
-  for(std::vector< std::pair<std::string,int> >::const_iterator it=_data.begin();it!=_data.end();it++)
+  for(auto it : _data)
     {
-      int nbWorker((*it).second/nbCoresPerComp);
+      int nbWorker(it.nbCores()/nbCoresPerComp);
       for(int j=0;j<nbWorker;j++,posWorker++)
         {
           std::vector<bool>::const_iterator it2(std::find(coreFlags.begin()+posBg+j*nbCoresPerComp,coreFlags.begin()+posBg+(j+1)*nbCoresPerComp,false));
           if(it2==coreFlags.begin()+posBg+(j+1)*nbCoresPerComp)
             ret.push_back(posWorker);
         }
-      posBg+=(*it).second;
+      posBg+=it.nbCores();
     }
   return ret;
 }
@@ -436,7 +436,7 @@ int PlayGround::fromWorkerIdToResId(int workerId, int nbProcPerNode) const
   std::size_t sz2(_data.size());
   std::vector<int> deltas(sz2+1); deltas[0]=0;
   for(std::size_t i=0;i<sz2;i++)
-    deltas[i+1]=deltas[i]+(_data[i].second)/nbProcPerNode;
+    deltas[i+1]=deltas[i]+(_data[i].nbCores())/nbProcPerNode;
   int zePos(0);
   while(zePos<sz2 && (workerId<deltas[zePos] || workerId>=deltas[zePos+1]))
     zePos++;
@@ -451,7 +451,7 @@ int PlayGround::fromWorkerIdToResId(int workerId, int nbProcPerNode) const
 std::string PlayGround::deduceMachineFrom(int workerId, int nbProcPerNode) const
 {
   int zePos(fromWorkerIdToResId(workerId,nbProcPerNode));
-  return _data[zePos].first;
+  return _data[zePos].name();
 }
 
 /*! 

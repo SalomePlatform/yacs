@@ -230,6 +230,11 @@ std::string SalomeContainerTools::getContainerName() const
   return std::string(_params.container_name);
 }
 
+int SalomeContainerTools::getNumberOfCoresPerWorker() const
+{
+  return _params.resource_params.nb_proc_per_node;
+}
+
 void SalomeContainerTools::setContainerName(const std::string& name)
 {
   SetContainerNameOf(_params,name);

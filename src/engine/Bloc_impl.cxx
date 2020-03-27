@@ -108,3 +108,46 @@ void Bloc::fitToPlayGround(const PlayGround *pg)
     (*it)->setSizeOfPool(pg->getNumberOfWorkers((*it)->getNumberOfCoresPerWorker()));
   //FIXME
 }
+
+void Bloc::propagePlayGround(const PlayGround *pg)
+{
+  static const char MSG[]="Bloc::propagePlayGround : Not implemented yet for this type of node !";
+  class MyVisitor : public Visitor
+    {
+    public:
+      MyVisitor(ComposedNode *root):Visitor(root) { }
+      void visitBloc(Bloc *node) { node->ComposedNode::accept(this); }
+      void visitElementaryNode(ElementaryNode *node) { }
+      void visitForEachLoop(ForEachLoop *node) { throw YACS::Exception(MSG); }
+      void visitForEachLoopDyn(ForEachLoopDyn *node) { }
+      void visitOptimizerLoop(OptimizerLoop *node) { throw YACS::Exception(MSG); }
+      void visitDynParaLoop(DynParaLoop *node) { throw YACS::Exception(MSG); }
+      void visitForLoop(ForLoop *node) { throw YACS::Exception(MSG); }
+      void visitInlineNode(InlineNode *node)
+      {
+          Container *cont(node->getContainer());
+          HomogeneousPoolContainer *cont2(dynamic_cast<HomogeneousPoolContainer *>(cont));
+          if(!cont2)
+            return ;
+          _cont2.insert(cont2);
+      }
+      void visitInlineFuncNode(InlineFuncNode *node) { throw YACS::Exception(MSG); }
+      void visitLoop(Loop *node) { throw YACS::Exception(MSG); }
+      void visitProc(Proc *node) { node->ComposedNode::accept(this); }
+      void visitServiceNode(ServiceNode *node) { throw YACS::Exception(MSG); }
+      void visitServerNode(ServerNode *node) { throw YACS::Exception(MSG); }
+      void visitServiceInlineNode(ServiceInlineNode *node) { throw YACS::Exception(MSG); }
+      void visitSwitch(Switch *node) { throw YACS::Exception(MSG); }
+      void visitWhileLoop(WhileLoop *node) { throw YACS::Exception(MSG); }
+      void visitPresetNode(DataNode *node) { throw YACS::Exception(MSG); }
+      void visitOutNode(DataNode *node) { throw YACS::Exception(MSG); }
+      void visitStudyInNode(DataNode *node) { throw YACS::Exception(MSG); }
+      void visitStudyOutNode(DataNode *node) { throw YACS::Exception(MSG); }
+    public:
+      std::set< HomogeneousPoolContainer * > _cont2;
+  };
+  MyVisitor vis(this);
+  this->accept(&vis);
+  for(auto cont : vis._cont2)
+    cont->assignPG(pg);
+}

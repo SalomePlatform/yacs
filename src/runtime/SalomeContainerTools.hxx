@@ -50,10 +50,12 @@ namespace YACS
       void addToResourceList(const std::string& name);
     public:
       std::string getContainerName() const;
+      int getNumberOfCoresPerWorker() const;
       void setContainerName(const std::string& name);
       std::string getNotNullContainerName(const Container *contPtr, const Task *askingNode, bool& isEmpty) const;
       std::string getHostName() const;
       Engines::ContainerParameters getParameters() const { return _params; }
+
       static void SetContainerNameOf(Engines::ContainerParameters& params, const std::string& name);
     public:
       static void Start(const std::vector<std::string>& compoNames, SalomeContainerHelper *schelp, SalomeContainerTools& sct, int& shutdownLevel, const Container *cont, const Task *askingNode);

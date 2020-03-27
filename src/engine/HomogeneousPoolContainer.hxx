@@ -43,6 +43,7 @@ namespace YACS
       void dettachOnCloning() const;
       bool isAttachedOnCloning() const;
       void setAttachOnCloningStatus(bool val) const;
+      void assignPG(const PlayGround *pg);
       //
       virtual void setSizeOfPool(int sz) = 0;
       virtual int getSizeOfPool() const = 0;
@@ -57,6 +58,8 @@ namespace YACS
 #ifndef SWIG
       virtual ~HomogeneousPoolContainer();
 #endif
+    private:
+      YACS::BASES::AutoConstRefCnt<PlayGround> _pg;
     };
   }
 }
