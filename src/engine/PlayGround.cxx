@@ -68,6 +68,24 @@ std::vector<std::size_t> Resource::allocateFor(std::size_t& nbOfPlacesToTake, in
   return ret;
 }
 
+void Resource::release(std::size_t workerId, int nbCoresPerCont) const
+{
+  if(workerId >= this->getNumberOfWorkers(nbCoresPerCont))
+    throw Exception("Resource::release : invalid worker id !");
+  std::size_t pos(workerId*static_cast<std::size_t>(nbCoresPerCont));
+  for(int i = 0 ; i < nbCoresPerCont ; ++i)
+    {
+      if(!_occupied[pos + static_cast<std::size_t>(i)])
+        throw Exception("Resource::release : internal error ! A core is expected to be occupied !");
+      _occupied[pos + static_cast<std::size_t>(i)] = false;
+    }
+}
+
+std::size_t Resource::getNumberOfWorkers(int nbCoresPerCont) const
+{
+  return static_cast<std::size_t>(this->nbCores())/static_cast<std::size_t>(nbCoresPerCont);
+}
+
 std::string PlayGround::printSelf() const
 {
   std::ostringstream oss;
@@ -174,6 +192,21 @@ std::vector<std::size_t> PlayGround::allocateFor(std::size_t nbOfPlacesToTake, i
   if( ( nbOfPlacesToTakeCpy!=0 ) || ( ret.size()!=nbOfPlacesToTake ) )
     throw Exception("PlayGround::allocateFor : internal error ! Promised place is not existing !");
   return ret;
+}
+
+void PlayGround::release(std::size_t workerId, int nbCoresPerCont) const
+{
+  std::size_t offset(0);
+  for(auto res : _data)
+    {
+      std::size_t nbOfWorker(static_cast<std::size_t>(res.nbCores()/nbCoresPerCont));
+      std::size_t minId(offset),maxId(offset+nbOfWorker);
+      if(workerId>=minId && workerId<maxId)
+        {
+          res.release(workerId-minId,nbCoresPerCont);
+          break;
+        }
+    }
 }
 
 std::vector<int> PlayGround::BuildVectOfIdsFromVecBool(const std::vector<bool>& v)

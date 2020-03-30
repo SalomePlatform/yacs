@@ -86,21 +86,12 @@ void SalomeHPContainer::allocateFor(const std::vector<const Task *>& nodes)
 
 void SalomeHPContainer::release(const Task *node)
 {
-  _launchModeType.release(node);
+  std::size_t workerId(_launchModeType.release(node));
+  getPG()->release(workerId,this->getNumberOfCoresPerWorker());
 }
 
 SalomeHPContainer::~SalomeHPContainer()
 {
-}
-
-void SalomeHPContainer::lock()
-{
-  _mutex.lock();
-}
-
-void SalomeHPContainer::unLock()
-{
-  _mutex.unLock();
 }
 
 std::string SalomeHPContainer::getKind() const

@@ -79,15 +79,16 @@ void SalomeHPContainerVectOfHelper::allocateForCrude(const std::vector<std::pair
     }
 }
 
-void SalomeHPContainerVectOfHelper::release(const Task *node)
+std::size_t SalomeHPContainerVectOfHelper::release(const Task *node)
 {
   if(!node)
-    return ;
+    return std::numeric_limits<std::size_t>::max();
   std::map< const Task *,std::size_t >::iterator it(_currentlyWorking.find(node));
   if(it==_currentlyWorking.end())
     throw Exception("Request to release a resource not declared as working !");
   _whichOccupied[(*it).second]=false;
   _currentlyWorking.erase(it);
+  return (*it).second;
 }
 
 std::size_t SalomeHPContainerVectOfHelper::locateTask(const Task *node) const

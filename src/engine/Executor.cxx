@@ -1236,7 +1236,7 @@ void *Executor::functionForTaskExecution(void *arg)
   HomogeneousPoolContainer *contC(dynamic_cast<HomogeneousPoolContainer *>(task->getContainer()));
   if(contC)
     {
-      YACS::BASES::AutoLocker<Container> alckCont(contC);
+      std::lock_guard<std::mutex> alckCont(contC->getLocker());
       contC->release(task);
     }
 
@@ -1379,7 +1379,7 @@ void Executor::FilterTasksConsideringContainers(std::vector<Task *>& tsks)
       else
         {
           // start of critical section for container curhpc
-          YACS::BASES::AutoLocker<Container> alckForCont(curhpc);
+          std::lock_guard<std::mutex> alckCont(curhpc->getLocker());
           std::vector<const Task *> vecOfTaskSharingSameHPContToBeRunSimutaneously;
           std::size_t sz(curhpc->getNumberOfFreePlace());
           std::vector<Task *>::const_iterator it2(curtsks.begin());

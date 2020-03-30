@@ -29,6 +29,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <mutex>
 #include <SALOMEconfig.h>
 #include CORBA_CLIENT_HEADER(SALOME_Component)
 #include CORBA_CLIENT_HEADER(SALOME_ContainerManager)
@@ -51,11 +52,11 @@ namespace YACS
       int getSizeOfPool() const;
       std::size_t getNumberOfFreePlace() const;
       void allocateFor(const std::vector<const Task *>& nodes);
-      void release(const Task *node);
+      void release(const Task *node) override;
       //! For thread safety for concurrent load operation on same Container.
-      void lock();
+      void lock() { _lock.lock(); }
       //! For thread safety for concurrent load operation on same Container.
-      void unLock();
+      void unLock() { _lock.unlock(); }
       //
       std::string getKind() const;
       std::string getDiscreminantStrOfThis(const Task *askingNode) const;
@@ -83,8 +84,6 @@ namespace YACS
       int getShutdownLev() const { return _shutdownLevel; }
       SalomeContainerMonoHelper *getHelperOfTask(const Task *node) { return _launchModeType.getHelperOfTask(node); }
       const SalomeContainerMonoHelper *getHelperOfTask(const Task *node) const { return _launchModeType.getHelperOfTask(node); }
-      //
-      YACS::BASES::Mutex& getLocker() { return _mutex; }
 #endif
     public:
       static const char KIND[];
@@ -93,9 +92,9 @@ namespace YACS
       ~SalomeHPContainer();
 #endif
     protected:
+      std::mutex _lock;
       int _shutdownLevel;
       SalomeContainerTools _sct;
-      YACS::BASES::Mutex _mutex;
       std::vector<std::string> _componentNames;
       //
       SalomeHPContainerVectOfHelper _launchModeType;

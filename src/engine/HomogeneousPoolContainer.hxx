@@ -44,6 +44,7 @@ namespace YACS
       bool isAttachedOnCloning() const;
       void setAttachOnCloningStatus(bool val) const;
       virtual void assignPG(const PlayGround *pg);
+      std::mutex &getLocker() const { return this->getPG()->getLocker(); }
       //
       virtual void setSizeOfPool(int sz) = 0;
       virtual int getSizeOfPool() const = 0;
