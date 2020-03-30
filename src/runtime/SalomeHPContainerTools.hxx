@@ -42,6 +42,7 @@ namespace YACS
       void resize(std::size_t sz);
       std::size_t getNumberOfFreePlace() const;
       void allocateFor(const std::vector<const Task *>& nodes);
+      void allocateForCrude(const std::vector<std::pair<const Task *,std::size_t>>& nodes);
       void release(const Task *node);
       std::size_t locateTask(const Task *node) const;
       const SalomeContainerMonoHelper *at(std::size_t pos) const { checkPosInVec(pos); return _launchModeType[pos]; }

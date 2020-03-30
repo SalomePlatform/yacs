@@ -46,6 +46,7 @@ namespace YACS
       SalomeHPContainer();
       SalomeHPContainer(const SalomeHPContainer& other);
       //HP specific part
+      void assignPG(const PlayGround *pg) override;
       void setSizeOfPool(int sz);
       int getSizeOfPool() const;
       std::size_t getNumberOfFreePlace() const;

@@ -43,10 +43,12 @@ namespace YACS
       std::pair<std::string,int> toPair() const { return {_name,_nbCores}; }
       int nbCores() const { return _nbCores; }
       std::string name() const { return _name; }
+      std::size_t getNumberOfFreePlace(int nbCoresPerCont) const;
+      std::vector<std::size_t> allocateFor(std::size_t& nbOfPlacesToTake, int nbCoresPerCont) const;
     private:
       std::string _name;
       int _nbCores;
-      std::vector<bool> _occupied;
+      mutable std::vector<bool> _occupied;
     };
     
     
@@ -88,6 +90,9 @@ namespace YACS
       std::vector<std::size_t> getWorkerIdsFullyFetchedBy(int nbCoresPerComp, const std::vector<bool>& coreFlags) const;
       static std::vector<int> BuildVectOfIdsFromVecBool(const std::vector<bool>& v);
       static std::vector<int> GetIdsMatching(const std::vector<bool>& bigArr, const std::vector<bool>& pat);
+    public:// critical section part
+      std::size_t getNumberOfFreePlace(int nbCoresPerCont) const;
+      std::vector<std::size_t> allocateFor(std::size_t nbOfPlacesToTake, int nbCoresPerCont) const;
     private:
       std::vector< std::pair <const ComplexWeight *, int> > bigToTiny(const std::vector< std::pair <const ComplexWeight *, int> > &weights, std::map<int,int> &saveOrder) const;
 	  std::vector< std::vector<int> > backToOriginalOrder(const std::vector< std::vector<int> > &disorderVec, const std::map<int,int> &saveOrder) const;

@@ -60,6 +60,25 @@ void SalomeHPContainerVectOfHelper::allocateFor(const std::vector<const Task *>&
     }
 }
 
+void SalomeHPContainerVectOfHelper::allocateForCrude(const std::vector<std::pair<const Task *,std::size_t>>& nodes)
+{
+  for(auto it : nodes)
+    {
+      std::size_t workerId(it.second);
+      if(workerId>=size())
+        throw Exception("SalomeHPContainerVectOfHelper::allocateForCrude : Internal error ! WorkerId is greater or equal to size of HPCont !");
+      if(_whichOccupied[workerId])
+        throw Exception("SalomeHPContainerVectOfHelper::allocateForCrude : Mismatch between Playground info and HPContainer info !");
+    }
+  for(auto it : nodes)
+    {
+      const Task *task(it.first);
+      std::size_t workerId(it.second);
+      _currentlyWorking[task]=workerId;
+      _whichOccupied[workerId]=true;
+    }
+}
+
 void SalomeHPContainerVectOfHelper::release(const Task *node)
 {
   if(!node)

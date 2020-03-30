@@ -29,6 +29,44 @@
 
 using namespace YACS::ENGINE;
 
+std::size_t Resource::getNumberOfFreePlace(int nbCoresPerCont) const
+{
+  std::size_t ret(0),pos(0);
+  while( pos < _occupied.size() )
+    {
+      bool isChunckFree(true);
+      int posInChunck(0);
+      for( ; ( posInChunck < nbCoresPerCont ) && ( pos < _occupied.size() ) ; ++posInChunck, ++pos)
+        if(_occupied[pos])
+          isChunckFree = false;
+      if( isChunckFree && (posInChunck == nbCoresPerCont) )
+        ret++;
+    }
+  return ret;
+}
+
+std::vector<std::size_t> Resource::allocateFor(std::size_t& nbOfPlacesToTake, int nbCoresPerCont) const
+{
+  std::vector<std::size_t> ret;
+  std::size_t pos(0),curWorkerId(0);
+  while( ( pos < _occupied.size() ) && ( nbOfPlacesToTake > 0 ) )
+    {
+      bool isChunckFree(true);
+      int posInChunck(0);
+      for( ; ( posInChunck < nbCoresPerCont ) && ( pos < _occupied.size() ) ; ++posInChunck, ++pos)
+        if(_occupied[pos])
+          isChunckFree = false;
+      if( isChunckFree && (posInChunck == nbCoresPerCont) )
+        {
+          for(int i = 0 ; i < nbCoresPerCont ; ++i)
+            _occupied[pos-nbCoresPerCont+i] = true;
+          ret.push_back(curWorkerId);
+          --nbOfPlacesToTake;
+        }
+      ++curWorkerId;
+    }
+  return ret;
+}
 
 std::string PlayGround::printSelf() const
 {
@@ -109,6 +147,32 @@ std::vector<int> PlayGround::GetIdsMatching(const std::vector<bool>& bigArr, con
       if(t==pat)
         ret.push_back(i);
     }
+  return ret;
+}
+
+std::size_t PlayGround::getNumberOfFreePlace(int nbCoresPerCont) const
+{
+  std::size_t ret(0);
+  for(auto res : _data)
+    {
+      ret += res.getNumberOfFreePlace(nbCoresPerCont);
+    }
+  return ret;
+}
+
+std::vector<std::size_t> PlayGround::allocateFor(std::size_t nbOfPlacesToTake, int nbCoresPerCont) const
+{
+  std::vector<std::size_t> ret;
+  std::size_t nbOfPlacesToTakeCpy(nbOfPlacesToTake),offset(0);
+  for(auto res : _data)
+    {
+      std::vector<std::size_t> contIdsInRes(res.allocateFor(nbOfPlacesToTakeCpy,nbCoresPerCont));
+      std::for_each(contIdsInRes.begin(),contIdsInRes.end(),[offset](std::size_t& val) { val += offset; });
+      ret.insert(ret.end(),contIdsInRes.begin(),contIdsInRes.end());
+      offset += static_cast<std::size_t>(res.nbCores()/nbCoresPerCont);
+    }
+  if( ( nbOfPlacesToTakeCpy!=0 ) || ( ret.size()!=nbOfPlacesToTake ) )
+    throw Exception("PlayGround::allocateFor : internal error ! Promised place is not existing !");
   return ret;
 }
 

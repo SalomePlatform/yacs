@@ -23,6 +23,7 @@
 #include "AutoLocker.hxx"
 
 #include <algorithm>
+#include <utility>
 
 using namespace YACS::ENGINE;
 
@@ -34,6 +35,13 @@ SalomeHPContainer::SalomeHPContainer():_shutdownLevel(999)
 
 SalomeHPContainer::SalomeHPContainer(const SalomeHPContainer& other):_componentNames(other._componentNames),_shutdownLevel(999),_sct(other._sct),_initScript(other._initScript)
 {
+}
+
+void SalomeHPContainer::assignPG(const PlayGround *pg)
+{
+  HomogeneousPoolContainer::assignPG(pg);
+  int nbOfWorkers(getPG()->getNumberOfWorkers(this->getNumberOfCoresPerWorker()));
+  this->setSizeOfPool(nbOfWorkers);
 }
 
 void SalomeHPContainer::setSizeOfPool(int sz)
@@ -48,12 +56,32 @@ int SalomeHPContainer::getSizeOfPool() const
 
 std::size_t SalomeHPContainer::getNumberOfFreePlace() const
 {
-  return _launchModeType.getNumberOfFreePlace();
+  return getPG()->getNumberOfFreePlace(this->getNumberOfCoresPerWorker());
 }
+
+class PairVecIterator : public std::iterator<
+                        std::input_iterator_tag,     // iterator_category
+                        std::pair<const Task *,std::size_t>,                    // value_type
+                        long,                        // difference_type
+                        const std::pair<const Task *,std::size_t>*,             // pointer
+                        std::pair<const Task *,std::size_t> > // reference
+{
+  const std::vector< const Task *> *_v0;
+  const std::vector<std::size_t> *_v1;
+  std::size_t _num;
+public:
+  explicit PairVecIterator(const std::vector< const Task * > *v0, const std::vector<std::size_t> *v1, const std::size_t num) : _v0(v0),_v1(v1),_num(num) { }
+  PairVecIterator& operator++() { _num++; return *this; }
+  bool operator==(PairVecIterator other) const { return _num == other._num; }
+  bool operator!=(PairVecIterator other) const { return !(*this == other); }
+  reference operator*() const { return std::pair<const Task *,std::size_t>((*_v0)[_num],(*_v1)[_num]); }
+};
 
 void SalomeHPContainer::allocateFor(const std::vector<const Task *>& nodes)
 {
-  _launchModeType.allocateFor(nodes);
+  std::vector<std::size_t> workerIdsAllocated(getPG()->allocateFor(nodes.size(),this->getNumberOfCoresPerWorker()));
+  std::vector<std::pair<const Task *,std::size_t>> nodesAndIds(PairVecIterator(&nodes,&workerIdsAllocated,0),PairVecIterator(&nodes,&workerIdsAllocated,nodes.size()));
+  _launchModeType.allocateForCrude(nodesAndIds);
 }
 
 void SalomeHPContainer::release(const Task *node)

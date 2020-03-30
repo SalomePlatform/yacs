@@ -67,3 +67,10 @@ HomogeneousPoolContainer::HomogeneousPoolContainer()
 HomogeneousPoolContainer::~HomogeneousPoolContainer()
 {
 }
+
+const PlayGround *HomogeneousPoolContainer::getPG() const
+{
+  if(_pg.isNull())
+    throw Exception("HomogeneousPoolContainer::getPG : PlayGround is nullptr !");
+  return _pg;
+}
