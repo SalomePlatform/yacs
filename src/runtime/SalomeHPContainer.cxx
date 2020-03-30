@@ -114,6 +114,7 @@ bool SalomeHPContainer::isAlreadyStarted(const Task *askingNode) const
 void SalomeHPContainer::start(const Task *askingNode) throw(YACS::Exception)
 {
   SalomeContainerMonoHelper *helper(_launchModeType.getHelperOfTaskThreadSafe(this,askingNode));
+  SalomeContainerToolsDecorator sctDeco(&_sct,this->getPG(),&_launchModeType,askingNode,this->getNumberOfCoresPerWorker());
   SalomeContainerTools::Start(_componentNames,helper,_sct,_shutdownLevel,this,askingNode);
 }
 

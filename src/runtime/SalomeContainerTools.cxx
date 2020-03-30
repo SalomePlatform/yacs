@@ -30,6 +30,7 @@
 #include "ServiceNode.hxx"
 #include "ComponentInstance.hxx"
 #include "SalomeContainerHelper.hxx"
+#include "SalomeHPContainerTools.hxx"
 #include "RuntimeSALOME.hxx"
 #include "Exception.hxx"
 
@@ -267,7 +268,7 @@ std::string SalomeContainerTools::getHostName() const
   return std::string(_params.resource_params.hostname);
 }
 
-void SalomeContainerTools::SetContainerNameOf(Engines::ContainerParameters& params, const std::string& name)
+void SalomeContainerToolsBase::SetContainerNameOf(Engines::ContainerParameters& params, const std::string& name)
 {
   params.container_name=CORBA::string_dup(name.c_str());
 }
@@ -316,7 +317,7 @@ std::map<std::string,std::string> SalomeContainerTools::getResourceProperties(co
  * \param [in] compoNames
  * \param [in,out] shutdownLevel
  */
-void SalomeContainerTools::Start(const std::vector<std::string>& compoNames, SalomeContainerHelper *schelp, SalomeContainerTools& sct, int& shutdownLevel, const Container *cont, const Task *askingNode)
+void SalomeContainerToolsBase::Start(const std::vector<std::string>& compoNames, SalomeContainerHelper *schelp, SalomeContainerToolsBase& sct, int& shutdownLevel, const Container *cont, const Task *askingNode)
 {
   CORBA::ORB_ptr orb(getSALOMERuntime()->getOrb());
   SALOME_NamingService ns;
@@ -427,7 +428,7 @@ void SalomeContainerTools::Start(const std::vector<std::string>& compoNames, Sal
   std::cerr << "SalomeContainer launched : " << containerName << " " << hostName << " " << trueCont->getPID() << std::endl;
 }
 
-CORBA::Object_ptr SalomeContainerTools::LoadComponent(SalomeContainerHelper *launchModeType, Container *cont, Task *askingNode)
+CORBA::Object_ptr SalomeContainerToolsBase::LoadComponent(SalomeContainerHelper *launchModeType, Container *cont, Task *askingNode)
 {
   DEBTRACE("SalomeContainer::loadComponent ");
   const ComponentInstance *inst(askingNode?askingNode->getComponent():0);
@@ -437,7 +438,7 @@ CORBA::Object_ptr SalomeContainerTools::LoadComponent(SalomeContainerHelper *lau
       cont->start(askingNode);
   }
   if(!inst)
-    throw Exception("SalomeContainerTools::LoadComponent : no instance of component in the task requesting for a load of its component !");
+    throw Exception("SalomeContainerToolsBase::LoadComponent : no instance of component in the task requesting for a load of its component !");
   CORBA::Object_ptr objComponent=CORBA::Object::_nil();
   {
     YACS::BASES::AutoLocker<Container> alck(cont);//To be sure
@@ -452,10 +453,10 @@ CORBA::Object_ptr SalomeContainerTools::LoadComponent(SalomeContainerHelper *lau
   return objComponent;
 }
 
-CORBA::Object_ptr SalomeContainerTools::CreateComponentInstance(Container *cont, Engines::Container_ptr contPtr, const ComponentInstance *inst)
+CORBA::Object_ptr SalomeContainerToolsBase::CreateComponentInstance(Container *cont, Engines::Container_ptr contPtr, const ComponentInstance *inst)
 {
   if(!inst)
-    throw Exception("SalomeContainerTools::CreateComponentInstance : no instance of component in the task requesting for a load of its component !");
+    throw Exception("SalomeContainerToolsBase::CreateComponentInstance : no instance of component in the task requesting for a load of its component !");
   char *reason(0);
   std::string compoName(inst->getCompoName());
   CORBA::Object_ptr objComponent=CORBA::Object::_nil();
@@ -492,7 +493,7 @@ CORBA::Object_ptr SalomeContainerTools::CreateComponentInstance(Container *cont,
   return objComponent;
 }
 
-std::string SalomeContainerTools::GetPlacementId(const SalomeContainerHelper *launchModeType, const Container *cont, const Task *askingNode)
+std::string SalomeContainerToolsBase::GetPlacementId(const SalomeContainerHelper *launchModeType, const Container *cont, const Task *askingNode)
 {
   if(cont->isAlreadyStarted(askingNode))
     {
@@ -512,7 +513,7 @@ std::string SalomeContainerTools::GetPlacementId(const SalomeContainerHelper *la
     return "Not placed yet !!!";
 }
 
-std::string SalomeContainerTools::GetFullPlacementId(const SalomeContainerHelper *launchModeType, const Container *cont, const Task *askingNode)
+std::string SalomeContainerToolsBase::GetFullPlacementId(const SalomeContainerHelper *launchModeType, const Container *cont, const Task *askingNode)
 {
   if(cont->isAlreadyStarted(askingNode))
     {
@@ -530,4 +531,19 @@ std::string SalomeContainerTools::GetFullPlacementId(const SalomeContainerHelper
     }
   else
     return "Not_placed_yet";
+}
+
+Engines::ContainerParameters SalomeContainerToolsDecorator::getParameters() const
+{
+  Engines::ContainerParameters ret(_decorated->getParameters());
+  std::string st(ret.resource_params.hostname);
+  if(!st.empty())
+    return ret;
+  int nbProcPerNode(this->_nb_cores_per_worker);
+  std::size_t iPos(_vh->locateTask(_node)),nPos(_vh->size());
+  if(_vh->size()!=_pg->getNumberOfWorkers(nbProcPerNode))
+    throw YACS::Exception("SalomeContainerToolsDecorator::getParameters : Internal error !");
+  std::string zeMachine(_pg->deduceMachineFrom(iPos,nbProcPerNode));
+  ret.resource_params.hostname=CORBA::string_dup(zeMachine.c_str());
+  return ret;
 }
