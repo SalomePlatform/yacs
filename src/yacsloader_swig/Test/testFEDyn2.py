@@ -90,5 +90,4 @@ print(str(datetime.datetime.now()-stt))
 assert(p.getState()==pilot.DONE)
 o4=p.getChildByName("n2").getOutputPort("o4")
 assert(o4.getPyObj()==[0, 5, 10, 15, 20, 25, 30, 35])
-# Ideal ForEachDyn time = 22 s
-# ForEach time = 40 s"""
+# Ideal ForEachDyn time = 28 s

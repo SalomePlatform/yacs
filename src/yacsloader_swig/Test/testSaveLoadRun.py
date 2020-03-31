@@ -43,10 +43,12 @@ class TestSaveLoadRun(unittest.TestCase):
     p=self.r.createProc("prTest0")
     td=p.createType("double","double")
     ti=p.createType("int","int")
+    pg=pilot.PlayGround()
+    pg.setData([("localhost",4)])
     cont=p.createContainer("gg","HPSalome")
-    cont.setSizeOfPool(4)
     cont.setProperty("name","localhost")
     cont.setProperty("hostname","localhost")
+    cont.setProperty("nb_proc_per_node","1")
     script0="""
 def ff(nb,dbg):
     from math import cos
@@ -111,6 +113,7 @@ print("coucou from script1-%i  -> %s"%(dbg,str(datetime.datetime.now()-ref)))
     ex=pilot.ExecutorSwig()
     self.assertEqual(p.getState(),pilot.READY)
     st=datetime.datetime.now()
+    p.propagePlayGround(pg)
     # 1st exec
     ex.RunW(p,0)
     print("Time spend of test0 to run 1st %s"%(str(datetime.datetime.now()-st)))
@@ -136,11 +139,13 @@ print("coucou from script1-%i  -> %s"%(dbg,str(datetime.datetime.now()-ref)))
     p=self.r.createProc("prTest1")
     td=p.createType("double","double")
     ti=p.createType("int","int")
+    pg=pilot.PlayGround()
+    pg.setData([("localhost",4)])
     cont=p.createContainer("gg","HPSalome")
-    cont.setSizeOfPool(4)
     cont.setProperty("InitializeScriptKey","aa=123.456")
     cont.setProperty("name","localhost")
     cont.setProperty("hostname","localhost")
+    cont.setProperty("nb_proc_per_node","1")
     script0="""
 def ff(nb,dbg):
     from math import cos
@@ -197,6 +202,7 @@ aa+=1.
     p.saveSchema(fname)
     p=l.load(fname)
     self.assertEqual(p.edGetDirectDescendants()[0].getContainer().getProperty("InitializeScriptKey"),"aa=123.456")
+    p.propagePlayGround(pg)
     # 1st exec
     ex=pilot.ExecutorSwig()
     self.assertEqual(p.getState(),pilot.READY)
@@ -247,11 +253,13 @@ o3=0
     ti=p.createType("int","int")
     tdi=p.createSequenceTc("seqint","seqint",ti)
     tdd=p.createSequenceTc("seqdouble","seqdouble",td)
+    pg=pilot.PlayGround()
+    pg.setData([("localhost",4)])
     cont=p.createContainer("gg","HPSalome")
-    cont.setSizeOfPool(4)
     cont.setProperty("InitializeScriptKey","aa=123.456")
     cont.setProperty("name","localhost")
     cont.setProperty("hostname","localhost")
+    cont.setProperty("nb_proc_per_node","1")
     #
     node0=self.r.createFuncNode("Salome","PyFunction0") # PyFuncNode remote
     p.edAddChild(node0)
@@ -293,6 +301,7 @@ o3=0
     # 1st exec
     refExpected=16016013.514623128
     ex=pilot.ExecutorSwig()
+    p.propagePlayGround(pg)
     self.assertEqual(p.getState(),pilot.READY)
     st=datetime.datetime.now()
     ex.RunW(p,0)
@@ -345,10 +354,12 @@ o3=0
     tdi=p.createSequenceTc("seqint","seqint",ti)
     tdd=p.createSequenceTc("seqdouble","seqdouble",td)
     cont=p.createContainer("gg","HPSalome")
-    cont.setSizeOfPool(8)
+    pg=pilot.PlayGround()
+    pg.setData([("localhost",8)])
     cont.setProperty("InitializeScriptKey","aa=123.456")
     cont.setProperty("name","localhost")
     cont.setProperty("hostname","localhost")
+    cont.setProperty("nb_proc_per_node","1")
     #
     node0=self.r.createFuncNode("Salome","PyFunction0") # PyFuncNode remote
     p.edAddChild(node0)
@@ -390,6 +401,7 @@ o3=0
     # 1st exec
     refExpected=11000.008377058712
     ex=pilot.ExecutorSwig()
+    p.propagePlayGround(pg)
     self.assertEqual(p.getState(),pilot.READY)
     st=datetime.datetime.now()
     ex.RunW(p,0)
@@ -428,8 +440,10 @@ for i in range(nb):
     l=loader.YACSLoader()
     ex=pilot.ExecutorSwig()
     p=self.r.createProc("pr")
+    pg=pilot.PlayGround()
+    pg.setData([("localhost",10)])
     cont=p.createContainer("gg","HPSalome")
-    cont.setSizeOfPool(10)
+    cont.setProperty("nb_proc_per_node","1")
     td=p.createType("int","int")
     td2=p.createSequenceTc("seqint","seqint",td)
     td3=p.createSequenceTc("seqintvec","seqintvec",td2)
@@ -487,6 +501,7 @@ for i in range(nb):
     p.edAddLink(o15,i8)
     p.saveSchema(fname)
     p=l.load(fname)
+    p.propagePlayGround(pg)
     ex = pilot.ExecutorSwig()
     self.assertEqual(p.getState(),pilot.READY)
     ex.RunW(p,0)
@@ -513,8 +528,10 @@ for i in range(nb):
     l=loader.YACSLoader()
     ex=pilot.ExecutorSwig()
     p=self.r.createProc("pr")
+    pg=pilot.PlayGround()
+    pg.setData([("localhost",10)])
     cont=p.createContainer("gg","HPSalome")
-    cont.setSizeOfPool(10)
+    cont.setProperty("nb_proc_per_node","1")
     td=p.createType("int","int")
     td2=p.createSequenceTc("seqint","seqint",td)
     td3=p.createSequenceTc("seqintvec","seqintvec",td2)
@@ -574,6 +591,7 @@ for i in range(nb):
     p.edAddLink(o15,i8)
     p.saveSchema(fname)
     p=l.load(fname)
+    p.propagePlayGround(pg)
     ex = pilot.ExecutorSwig()
     self.assertEqual(p.getState(),pilot.READY)
     ex.RunW(p,0)
@@ -1319,7 +1337,7 @@ for i in i8:
     cont.setProperty("nb_proc_per_node","7")           # <- here
     self.assertEqual(n00.getMaxLevelOfParallelism(),7) # <- here
     pass
-    
+
   def test19(self):
     """This test checks the mechanism of YACS that allow PythonNodes to know their DynParaLoop context."""
     fname=os.path.join(self.workdir, "test19.xml")
@@ -1375,13 +1393,15 @@ assert(my_dpl_localization[0][1]>=0 and my_dpl_localization[0][1]<3)
 
     # run remote
     p=l.load(fname)
+    pg=pilot.PlayGround()
+    pg.setData([("localhost",4)])
     cont=p.createContainer("gg","HPSalome")
-    cont.setSizeOfPool(2)
+    cont.setProperty("nb_proc_per_node","1")
     n1=p.getChildByName("FE0.b0.n1") ; n1.setExecutionMode("remote") ; n1.setContainer(cont)
     n2=p.getChildByName("FE0.b0.FE1.n2") ; n2.setExecutionMode("remote") ; n2.setContainer(cont)
-    
     p.init()
     self.assertEqual(p.getState(),pilot.READY)
+    p.propagePlayGround(pg)
     ex.RunW(p,0)
     self.assertEqual(p.getState(),pilot.DONE)
     pass
@@ -1394,8 +1414,10 @@ assert(my_dpl_localization[0][1]>=0 and my_dpl_localization[0][1]<3)
     xmlFileName="test20.xml"
     p=self.r.createProc("test26")
     #
+    pg=pilot.PlayGround()
+    pg.setData([("localhost",8)]) # important make this figure >= 6
     cont=p.createContainer("gg","HPSalome") # very important ! HP Container needed for the test !
-    cont.setSizeOfPool(8) # important make this figure >= 6
+    cont.setProperty("nb_proc_per_node","1")
     #
     po=p.createInterfaceTc("python:obj:1.0","pyobj",[])
     sop=p.createSequenceTc("list[pyobj]","list[pyobj]",po)
@@ -1456,6 +1478,7 @@ dd=range(10)""")
     p.getChildByName("test26/main.test26/FE0").edGetNbOfBranchesPort().edInitInt(1) # very important 1 !
     #
     ex=pilot.ExecutorSwig()
+    p.propagePlayGround(pg)
     self.assertEqual(p.getState(),pilot.READY)
     ex.RunW(p,0)
     self.assertEqual(p.getState(),pilot.DONE)
