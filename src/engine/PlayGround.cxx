@@ -25,6 +25,7 @@
 #include <sstream>
 #include <iomanip>
 #include <numeric>
+#include <iostream>
 #include <algorithm>
 
 using namespace YACS::ENGINE;
@@ -84,6 +85,18 @@ void Resource::release(std::size_t workerId, int nbCoresPerCont) const
 std::size_t Resource::getNumberOfWorkers(int nbCoresPerCont) const
 {
   return static_cast<std::size_t>(this->nbCores())/static_cast<std::size_t>(nbCoresPerCont);
+}
+
+void Resource::printSelf(std::ostream& oss) const
+{
+  oss << this->name() << " (" << this->nbCores() << ") : ";
+  for(auto it : this->_occupied)
+    {
+      if(it)
+        oss << "1";
+      else
+        oss << "0";
+    }
 }
 
 std::string PlayGround::printSelf() const
@@ -182,7 +195,7 @@ std::vector<std::size_t> PlayGround::allocateFor(std::size_t nbOfPlacesToTake, i
 {
   std::vector<std::size_t> ret;
   std::size_t nbOfPlacesToTakeCpy(nbOfPlacesToTake),offset(0);
-  for(auto res : _data)
+  for(const auto& res : _data)
     {
       std::vector<std::size_t> contIdsInRes(res.allocateFor(nbOfPlacesToTakeCpy,nbCoresPerCont));
       std::for_each(contIdsInRes.begin(),contIdsInRes.end(),[offset](std::size_t& val) { val += offset; });
@@ -197,7 +210,7 @@ std::vector<std::size_t> PlayGround::allocateFor(std::size_t nbOfPlacesToTake, i
 void PlayGround::release(std::size_t workerId, int nbCoresPerCont) const
 {
   std::size_t offset(0);
-  for(auto res : _data)
+  for(const auto& res : _data)
     {
       std::size_t nbOfWorker(static_cast<std::size_t>(res.nbCores()/nbCoresPerCont));
       std::size_t minId(offset),maxId(offset+nbOfWorker);
@@ -207,6 +220,15 @@ void PlayGround::release(std::size_t workerId, int nbCoresPerCont) const
           break;
         }
     }
+}
+
+void PlayGround::printMe() const
+{
+  for(auto it : _data)
+  {
+    it.printSelf(std::cout);
+    std::cout << std::endl;
+  }
 }
 
 std::vector<int> PlayGround::BuildVectOfIdsFromVecBool(const std::vector<bool>& v)

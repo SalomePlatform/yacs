@@ -16,7 +16,7 @@ cont.setProperty("nb_proc_per_node","1")
 #
 pg=pilot.PlayGround()
 #pg.loadFromKernelCatalog()
-pg.setData([("localhost",8)])
+pg.setData([("localhost",4)])
 #
 #cont.setSizeOfPool(4)
 cont.setProperty("name","localhost")
@@ -80,13 +80,13 @@ p=l.load(fname)
 p.saveSchema(fname2)
 p.init()
 p.propagePlayGround(pg)
-"""ex=pilot.ExecutorSwig()
+ex=pilot.ExecutorSwig()
 assert(p.getState()==pilot.READY)
 stt = datetime.datetime.now()
 ex.RunW(p,0)
 print(str(datetime.datetime.now()-stt))
 assert(p.getState()==pilot.DONE)
 o4=p.getChildByName("n2").getOutputPort("o4")
-assert(o4.getPyObj()==[0, 5, 10, 15, 20, 25, 30, 35])"""
+assert(o4.getPyObj()==[0, 5, 10, 15, 20, 25, 30, 35])
 # Ideal ForEachDyn time = 22 s
 # ForEach time = 40 s"""

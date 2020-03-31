@@ -48,6 +48,7 @@ namespace YACS
       std::vector<std::size_t> allocateFor(std::size_t& nbOfPlacesToTake, int nbCoresPerCont) const;
       void release(std::size_t workerId, int nbCoresPerCont) const;
       std::size_t getNumberOfWorkers(int nbCoresPerCont) const;
+      void printSelf(std::ostream& oss) const;
     private:
       std::string _name;
       int _nbCores;
@@ -98,6 +99,7 @@ namespace YACS
       std::vector<std::size_t> allocateFor(std::size_t nbOfPlacesToTake, int nbCoresPerCont) const;
       void release(std::size_t workerId, int nbCoresPerCont) const;
       std::mutex& getLocker() const { return _locker; }
+      void printMe() const;
     private:
       std::vector< std::pair <const ComplexWeight *, int> > bigToTiny(const std::vector< std::pair <const ComplexWeight *, int> > &weights, std::map<int,int> &saveOrder) const;
 	  std::vector< std::vector<int> > backToOriginalOrder(const std::vector< std::vector<int> > &disorderVec, const std::map<int,int> &saveOrder) const;

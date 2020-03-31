@@ -1338,6 +1338,20 @@ void Executor::sendEvent(const std::string& event)
   disp->dispatch(_root,event);
 }
 
+struct HPCCompare
+{
+  bool operator()(HomogeneousPoolContainer * lhs, HomogeneousPoolContainer * rhs) const
+  {
+    if(!lhs && !rhs)
+      return false;
+    if(!lhs)
+      return true;
+    if(!rhs)
+      return false;
+    return lhs->getNumberOfCoresPerWorker() < rhs->getNumberOfCoresPerWorker();
+  }
+};
+
 /*!
  * This method takes in input a list of tasks and selects from that lists a part of it considering only the containers.
  * If tasks have no container instance subclass of HomogeneousPoolContainer this method will let the \a tsks untouched.
@@ -1346,32 +1360,31 @@ void Executor::sendEvent(const std::string& event)
  */
 void Executor::FilterTasksConsideringContainers(std::vector<Task *>& tsks)
 {
-  std::map<HomogeneousPoolContainer *, std::vector<Task *> > m;
-  for(std::vector<Task *>::const_iterator it=tsks.begin();it!=tsks.end();it++)
+  std::map<HomogeneousPoolContainer *, std::vector<Task *>, HPCCompare > m;
+  for(auto cur : tsks)
     {
-      Task *cur(*it);
       if(!cur)
         continue;
       Container *cont(cur->getContainer());
       if(!cont)
         {
-          m[(HomogeneousPoolContainer *)NULL].push_back(cur);
+          m[nullptr].push_back(cur);
           continue;
         }
       HomogeneousPoolContainer *contC(dynamic_cast<HomogeneousPoolContainer *>(cont));
       if(!contC)
         {
-          m[(HomogeneousPoolContainer *)NULL].push_back(cur);
+          m[nullptr].push_back(cur);
           continue;
         }
       m[contC].push_back(cur);
     }
   //
   std::vector<Task *> ret;
-  for(std::map<HomogeneousPoolContainer *, std::vector<Task *> >::const_iterator it=m.begin();it!=m.end();it++)
+  for(auto it : m)
     {
-      HomogeneousPoolContainer *curhpc((*it).first);
-      const std::vector<Task *>& curtsks((*it).second);
+      HomogeneousPoolContainer *curhpc(it.first);
+      const std::vector<Task *>& curtsks(it.second);
       if(!curhpc)
         {
           ret.insert(ret.end(),curtsks.begin(),curtsks.end());

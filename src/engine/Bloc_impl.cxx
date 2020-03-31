@@ -119,7 +119,7 @@ void Bloc::propagePlayGround(const PlayGround *pg)
       void visitBloc(Bloc *node) { node->ComposedNode::accept(this); }
       void visitElementaryNode(ElementaryNode *node) { }
       void visitForEachLoop(ForEachLoop *node) { throw YACS::Exception(MSG); }
-      void visitForEachLoopDyn(ForEachLoopDyn *node) { }
+      void visitForEachLoopDyn(ForEachLoopDyn *node) { node->ComposedNode::accept(this); }
       void visitOptimizerLoop(OptimizerLoop *node) { throw YACS::Exception(MSG); }
       void visitDynParaLoop(DynParaLoop *node) { throw YACS::Exception(MSG); }
       void visitForLoop(ForLoop *node) { throw YACS::Exception(MSG); }
