@@ -1337,7 +1337,7 @@ for i in i8:
     cont.setProperty("nb_proc_per_node","7")           # <- here
     self.assertEqual(n00.getMaxLevelOfParallelism(),7) # <- here
     pass
-
+    
   def test19(self):
     """This test checks the mechanism of YACS that allow PythonNodes to know their DynParaLoop context."""
     fname=os.path.join(self.workdir, "test19.xml")

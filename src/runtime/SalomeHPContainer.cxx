@@ -132,9 +132,9 @@ void SalomeHPContainer::shutdown(int level)
 
 std::string SalomeHPContainer::getPlacementId(const Task *askingNode) const
 {
-  const SalomeContainerMonoHelper *helper(0);
+  const SalomeContainerMonoHelper *helper(nullptr);
   {
-    YACS::BASES::AutoLocker<Container> alckCont(const_cast<SalomeHPContainer *>(this));
+    std::lock_guard<std::mutex> lg(getPG()->getLocker());
     helper=_launchModeType.getHelperOfTask(askingNode);
   }
   return SalomeContainerTools::GetPlacementId(helper,this,askingNode);
@@ -142,9 +142,9 @@ std::string SalomeHPContainer::getPlacementId(const Task *askingNode) const
 
 std::string SalomeHPContainer::getFullPlacementId(const Task *askingNode) const
 {
-  const SalomeContainerMonoHelper *helper(0);
+  const SalomeContainerMonoHelper *helper(nullptr);
   {
-    YACS::BASES::AutoLocker<Container> alckCont(const_cast<SalomeHPContainer *>(this));
+    std::lock_guard<std::mutex> lg(getPG()->getLocker());
     helper=_launchModeType.getHelperOfTask(askingNode);
   }
   return SalomeContainerTools::GetFullPlacementId(helper,this,askingNode);
