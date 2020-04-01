@@ -460,7 +460,7 @@ void PythonNode::executeRemote()
   // Execute in remote Python node
   //===========================================================================
   DEBTRACE( "-----------------starting remote python invocation-----------------" );
-  Engines::pickledArgs_var resultCorba;
+  Engines::pickledArgs *resultCorba(nullptr);
   try
     {
       //pass outargsname and dict serialized
@@ -478,15 +478,16 @@ void PythonNode::executeRemote()
   //===========================================================================
   // Get results, unpickle and put them in output ports
   //===========================================================================
-  char *resultCorbaC=new char[resultCorba->length()+1];
-  resultCorbaC[resultCorba->length()]='\0';
-  for(int i=0;i<resultCorba->length();i++)
-    resultCorbaC[i]=resultCorba[i];
-
+  auto length(resultCorba->length());
+  char *resultCorbaC=new char[length+1];
+  for(int i=0;i<length;i++)
+    resultCorbaC[i]=(*resultCorba)[i];
+  resultCorbaC[length]='\0';
+  delete resultCorba; resultCorba=nullptr;
   {
       AutoGIL agil;
       PyObject *args(0),*ob(0);
-      PyObject* resultPython=PyBytes_FromStringAndSize(resultCorbaC,resultCorba->length());
+      PyObject* resultPython=PyBytes_FromStringAndSize(resultCorbaC,length);
       delete [] resultCorbaC;
       args = PyTuple_New(1);
       PyTuple_SetItem(args,0,resultPython);
