@@ -48,7 +48,7 @@ IF(NOT WIN32)
     testExecForEachGeoMesh.py
     async_plugin.py
    )
-  INSTALL(FILES ${LOCAL_TEST_FILES}
+  INSTALL(PROGRAMS ${LOCAL_TEST_FILES}
         DESTINATION ${LOCAL_TEST_DIR})
   INSTALL(PROGRAMS runUnitTest.sh
         DESTINATION ${LOCAL_TEST_DIR})

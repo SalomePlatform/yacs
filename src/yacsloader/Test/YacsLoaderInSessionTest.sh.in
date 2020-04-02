@@ -22,7 +22,7 @@
 
 # --- wait until SALOME containers are ready
 
-python @CMAKE_CURRENT_SOURCE_DIR@/waitContainers.py
+python3 @CMAKE_CURRENT_SOURCE_DIR@/waitContainers.py
 
 # --- launch CORBA server echoSrv for tests
 
