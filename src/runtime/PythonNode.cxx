@@ -474,6 +474,15 @@ void PythonNode::executeRemote()
       _errorDetails=msg;
       throw Exception(msg);
     }
+  if(!CORBA::is_nil(_pynode))
+    {
+      _pynode->UnRegister();
+    }
+  _pynode = Engines::PyScriptNode::_nil();
+  //
+  bool dummy;
+  Engines::Container_var cont(GetContainerObj(this,dummy));
+  cont->removePyScriptNode(getName().c_str());
   DEBTRACE( "-----------------end of remote python invocation-----------------" );
   //===========================================================================
   // Get results, unpickle and put them in output ports
@@ -546,15 +555,6 @@ void PythonNode::executeRemote()
       if(_autoSqueeze)
         squeezeMemoryRemote();
   }
-  //
-  if(!CORBA::is_nil(_pynode))
-    {
-      _pynode->UnRegister();
-    }
-  _pynode = Engines::PyScriptNode::_nil();
-  bool dummy;
-  Engines::Container_var cont(GetContainerObj(this,dummy));
-  cont->removePyScriptNode(getName().c_str());
   DEBTRACE( "++++++++++++++ ENDOF PyNode::executeRemote: " << getName() << " ++++++++++++++++++++" );
 }
 
