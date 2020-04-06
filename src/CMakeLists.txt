@@ -21,7 +21,7 @@
 # Common packages
 ##
 SET(SUBDIRS_COMMON
-  bases engine wrappergen yacsorb salomeloader
+  bases engine wrappergen yacsorb salomeloader workloadmanager
   pmml
   )
 

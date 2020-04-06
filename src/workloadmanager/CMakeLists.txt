@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2019  CEA/DEN, EDF R&D
+# Copyright (C) 2020  CEA/DEN, EDF R&D
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -17,23 +17,29 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-#SET(SALOME_TEST_DRIVER "$ENV{ABSOLUTE_APPLI_PATH}/bin/salome/appliskel/salome_test_driver.py")
-SET(SALOME_TEST_DRIVER "$ENV{KERNEL_ROOT_DIR}/bin/salome/appliskel/salome_test_driver.py")
+SET (_link_LIBRARIES
+  #Threads::Threads
+  ${PTHREAD_LIBRARIES}
+)
 
-SET(COMPONENT_NAME YACS)
-SET(TIMEOUT        500)
+SET (_wlm_sources
+  Task.cxx
+  WorkloadManager.cxx
+  DefaultAlgorithm.cxx
+)
 
-SET(YACS_TEST_LIB "../lib")
+SET (_wlm_headers
+  Task.hxx
+  WorkloadManager.hxx
+  WorkloadAlgorithm.hxx
+  DefaultAlgorithm.hxx
+)
 
-# Add all test subdirs
-SUBDIRS(
-    bases
-    engine
-    engine_swig
-    runtime
-    pmml
-    yacsloader
-    yacsloader_swig
-    py2yacs
-    workloadmanager
-    )
+ADD_LIBRARY(YACSlibWorkloadmanager ${_wlm_sources})
+TARGET_LINK_LIBRARIES(YACSlibWorkloadmanager ${_link_LIBRARIES})
+INSTALL(TARGETS YACSlibWorkloadmanager EXPORT ${PROJECT_NAME}TargetGroup DESTINATION ${SALOME_INSTALL_LIBS})
+INSTALL(FILES ${_wlm_headers} DESTINATION ${SALOME_INSTALL_HEADERS})
+
+IF(SALOME_BUILD_TESTS)
+  ADD_SUBDIRECTORY(Test)
+ENDIF(SALOME_BUILD_TESTS)

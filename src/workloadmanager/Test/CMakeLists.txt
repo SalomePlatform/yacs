@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2019  CEA/DEN, EDF R&D
+# Copyright (C) 2020  CEA/DEN, EDF R&D
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -17,23 +17,19 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-#SET(SALOME_TEST_DRIVER "$ENV{ABSOLUTE_APPLI_PATH}/bin/salome/appliskel/salome_test_driver.py")
-SET(SALOME_TEST_DRIVER "$ENV{KERNEL_ROOT_DIR}/bin/salome/appliskel/salome_test_driver.py")
+SET(_link_LIBRARIES
+  ${CPPUNIT_LIBRARIES} 
+  ${PTHREAD_LIBRARIES}
+  YACSlibWorkloadmanager
+)
 
-SET(COMPONENT_NAME YACS)
-SET(TIMEOUT        500)
+ADD_EXECUTABLE(WorkloadManagerTest TestMain.cxx)
+TARGET_LINK_LIBRARIES(WorkloadManagerTest ${_link_LIBRARIES})
+ADD_TEST(WorkloadManager WorkloadManagerTest)
 
-SET(YACS_TEST_LIB "../lib")
-
-# Add all test subdirs
-SUBDIRS(
-    bases
-    engine
-    engine_swig
-    runtime
-    pmml
-    yacsloader
-    yacsloader_swig
-    py2yacs
-    workloadmanager
-    )
+# For salome test
+SET(LOCAL_TEST_DIR ${SALOME_YACS_INSTALL_TEST}/workloadmanager)
+INSTALL(TARGETS WorkloadManagerTest DESTINATION ${LOCAL_TEST_DIR})
+INSTALL(FILES CTestTestfileInstall.cmake
+        DESTINATION ${LOCAL_TEST_DIR}
+        RENAME CTestTestfile.cmake)
