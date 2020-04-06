@@ -496,11 +496,11 @@ void PythonNode::executeRemote()
   {
       AutoGIL agil;
       PyObject *args(0),*ob(0);
-      PyObject* resultPython=PyBytes_FromStringAndSize(resultCorbaC,length);
-      delete [] resultCorbaC;
+      PyObject* resultPython=PyMemoryView_FromMemory(resultCorbaC,length,PyBUF_READ);
       args = PyTuple_New(1);
       PyTuple_SetItem(args,0,resultPython);
       PyObject *finalResult=PyObject_CallObject(_pyfuncUnser,args);
+      delete [] resultCorbaC;
       Py_DECREF(args);
 
       if (finalResult == NULL)
