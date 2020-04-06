@@ -30,6 +30,7 @@
 
 #include "PyStdout.hxx"
 #include <iostream>
+#include <memory>
 #include <sstream>
 #include <fstream>
 
@@ -408,7 +409,7 @@ void PythonNode::executeRemote()
       _pynode->assignNewCompiledCode(getScript().c_str());
     }
   //
-  Engines::pickledArgs_var serializationInputCorba(new Engines::pickledArgs);
+  std::unique_ptr<Engines::pickledArgs> serializationInputCorba(new Engines::pickledArgs);
   {
       AutoGIL agil;
       PyObject *args(0),*ob(0);
@@ -438,7 +439,7 @@ void PythonNode::executeRemote()
         throw Exception("DistributedPythonNode problem in python pickle");
       serializationInputCorba->length(len);
       for(int i=0; i < len ; i++)
-        serializationInputCorba[i]=serializationInputC[i];
+        (*serializationInputCorba.get())[i]=serializationInputC[i];
       Py_DECREF(serializationInput);
   }
 
@@ -464,7 +465,7 @@ void PythonNode::executeRemote()
   try
     {
       //pass outargsname and dict serialized
-      resultCorba=_pynode->execute(myseq,serializationInputCorba);
+      resultCorba=_pynode->execute(myseq,*(serializationInputCorba.get()));
     }
   catch( const SALOME::SALOME_Exception& ex )
     {
@@ -478,6 +479,7 @@ void PythonNode::executeRemote()
     {
       _pynode->UnRegister();
     }
+  serializationInputCorba.reset(nullptr);
   _pynode = Engines::PyScriptNode::_nil();
   //
   bool dummy;
