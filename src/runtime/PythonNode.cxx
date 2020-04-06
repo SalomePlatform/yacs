@@ -488,11 +488,7 @@ void PythonNode::executeRemote()
   // Get results, unpickle and put them in output ports
   //===========================================================================
   auto length(resultCorba->length());
-  char *resultCorbaC=new char[length+1];
-  for(int i=0;i<length;i++)
-    resultCorbaC[i]=(*resultCorba)[i];
-  resultCorbaC[length]='\0';
-  delete resultCorba; resultCorba=nullptr;
+  char *resultCorbaC(reinterpret_cast<char *>(resultCorba->get_buffer()));
   {
       AutoGIL agil;
       PyObject *args(0),*ob(0);
@@ -500,7 +496,7 @@ void PythonNode::executeRemote()
       args = PyTuple_New(1);
       PyTuple_SetItem(args,0,resultPython);
       PyObject *finalResult=PyObject_CallObject(_pyfuncUnser,args);
-      delete [] resultCorbaC;
+      delete resultCorba; resultCorba=nullptr;
       Py_DECREF(args);
 
       if (finalResult == NULL)
