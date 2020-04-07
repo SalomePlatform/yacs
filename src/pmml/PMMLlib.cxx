@@ -2044,7 +2044,7 @@ std::string PMMLlib::ExportNeuralNetworkPyStr(std::string functionName,
     fillVectorsForExport(nInput,nOutput,nHidden,normType,minInput,maxInput,minOutput,maxOutput,valW);
 
     // Shebang et imports
-    out << "#!/usr/bin/env python" << endl;
+    out << "#!/usr/bin/env python3" << endl;
     out << "# -*- coding: utf-8 -*-" << endl;
     out << endl;
     out << "from math import tanh, exp" << endl;
@@ -2814,7 +2814,7 @@ std::string PMMLlib::ExportLinearRegressionPyStr(std::string functionName,
     ostringstream out;
     
     // Shebang et imports
-    out << "#!/usr/bin/env python" << endl;
+    out << "#!/usr/bin/env python3" << endl;
     out << "# -*- coding: utf-8 -*-" << endl;
     out << endl;    
     

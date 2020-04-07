@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Copyright (C) 2006-2019  CEA/DEN, EDF R&D
 #
 # This library is free software; you can redistribute it and/or
