@@ -460,22 +460,30 @@ void PythonNode::executeRemote()
   // Execute in remote Python node
   //===========================================================================
   DEBTRACE( "-----------------starting remote python invocation-----------------" );
-  Engines::pickledArgs *resultCorba(nullptr);
+  std::unique_ptr<Engines::pickledArgs> resultCorba;
   try
     {
       //pass outargsname and dict serialized
       _pynode->executeFirst(*(serializationInputCorba.get()));
       //serializationInput and serializationInputCorba are no more needed for server. Release it.
       serializationInputCorba.reset(nullptr); serializationInput.set(nullptr);
-      resultCorba=_pynode->executeSecond(myseq);
+      resultCorba.reset(_pynode->executeSecond(myseq));
     }
   catch( const SALOME::SALOME_Exception& ex )
     {
-      std::string msg="Exception on remote python invocation";
-      msg += '\n';
-      msg += ex.details.text.in();
-      _errorDetails=msg;
-      throw Exception(msg);
+      std::ostringstream msg; msg << "Exception on remote python invocation" << std::endl << ex.details.text.in() << std::endl;
+      msg << "PyScriptNode CORBA ref : ";
+      {
+        CORBA::ORB_ptr orb(getSALOMERuntime()->getOrb());
+        if(!CORBA::is_nil(orb))
+        {
+          CORBA::String_var IOR(orb->object_to_string(_pynode));
+          msg << IOR;
+        }
+      }
+      msg << std::endl;
+      _errorDetails=msg.str();
+      throw Exception(msg.str());
     }
   if(!CORBA::is_nil(_pynode))
     {
@@ -499,7 +507,7 @@ void PythonNode::executeRemote()
       args = PyTuple_New(1);
       PyTuple_SetItem(args,0,resultPython);
       PyObject *finalResult=PyObject_CallObject(_pyfuncUnser,args);
-      delete resultCorba; resultCorba=nullptr;
+      resultCorba.reset(nullptr);
       Py_DECREF(args);
 
       if (finalResult == NULL)
