@@ -39,7 +39,7 @@ namespace YACS
     class AutoPyRef
     {
     public:
-      AutoPyRef(PyObject *pyobj=0):_pyobj(pyobj) { }
+      AutoPyRef(PyObject *pyobj=nullptr):_pyobj(pyobj) { }
       ~AutoPyRef() { release(); }
       AutoPyRef(const AutoPyRef& other):_pyobj(other._pyobj) { if(_pyobj) Py_XINCREF(_pyobj); }
       AutoPyRef& operator=(const AutoPyRef& other) { if(_pyobj==other._pyobj) return *this; release(); _pyobj=other._pyobj; Py_XINCREF(_pyobj); return *this; }

@@ -410,6 +410,7 @@ void PythonNode::executeRemote()
     }
   //
   std::unique_ptr<Engines::pickledArgs> serializationInputCorba(new Engines::pickledArgs);
+  AutoPyRef serializationInput;
   {
       AutoGIL agil;
       PyObject *args(0),*ob(0);
@@ -430,17 +431,15 @@ void PythonNode::executeRemote()
       PyObject_Print(args,stderr,Py_PRINT_RAW);
       std::cerr << endl;
 #endif
-      PyObject *serializationInput(PyObject_CallFunctionObjArgs(_pyfuncSer,args,NULL));
+      serializationInput.set(PyObject_CallFunctionObjArgs(_pyfuncSer,args,nullptr));
       Py_DECREF(args);
       //The pickled string may contain NULL characters so use PyString_AsStringAndSize
       char *serializationInputC(0);
       Py_ssize_t len;
       if (PyBytes_AsStringAndSize(serializationInput, &serializationInputC, &len))
         throw Exception("DistributedPythonNode problem in python pickle");
-      serializationInputCorba->length(len);
-      for(int i=0; i < len ; i++)
-        (*serializationInputCorba.get())[i]=serializationInputC[i];
-      Py_DECREF(serializationInput);
+      // no copy here. The C byte array of Python is taken  as this into CORBA sequence to avoid copy
+      serializationInputCorba.reset(new Engines::pickledArgs(len,len,reinterpret_cast<CORBA::Octet *>(serializationInputC),0));
   }
 
   //get the list of output argument names
@@ -465,7 +464,10 @@ void PythonNode::executeRemote()
   try
     {
       //pass outargsname and dict serialized
-      resultCorba=_pynode->execute(myseq,*(serializationInputCorba.get()));
+      _pynode->executeFirst(*(serializationInputCorba.get()));
+      //serializationInput and serializationInputCorba are no more needed for server. Release it.
+      serializationInputCorba.reset(nullptr); serializationInput.set(nullptr);
+      resultCorba=_pynode->executeSecond(myseq);
     }
   catch( const SALOME::SALOME_Exception& ex )
     {
@@ -479,7 +481,6 @@ void PythonNode::executeRemote()
     {
       _pynode->UnRegister();
     }
-  serializationInputCorba.reset(nullptr);
   _pynode = Engines::PyScriptNode::_nil();
   //
   bool dummy;
