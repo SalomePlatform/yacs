@@ -180,7 +180,8 @@ class Server:
 
 class CatalogServer(Server):
     SCMD1=['SALOME_ModuleCatalog_Server','-common']
-    SCMD2=['-personal','${HOME}/Salome/resources/CatalogModulePersonnel.xml']
+    home_dir=os.path.expanduser("~")
+    SCMD2=['-personal',os.path.join(home_dir,'Salome', 'resources', 'CatalogModulePersonnel.xml')]
 
     def setpath(self,liste_modules):
         cata_path=[]
