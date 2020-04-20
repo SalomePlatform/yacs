@@ -36,7 +36,13 @@ void RuntimeForEngineIntegrationTest::setRuntime()
 
 std::vector< std::pair<std::string,int> > RuntimeForEngineIntegrationTest::getCatalogOfComputeNodes() const
 {
-  throw Exception("RuntimeForEngineIntegrationTest not implemented !");
+  std::vector< std::pair<std::string,int> > result(1);
+  std::pair<std::string,int> localhost;
+  localhost.first = "localhost";
+  localhost.second = 8;
+  result[0] = localhost;
+  return result;
+//  throw Exception("RuntimeForEngineTest::getCatalogOfComputeNodes : not implemented !");
 }
 
 ElementaryNode* RuntimeForEngineIntegrationTest::createNode(const std::string& implementation, const std::string& name) throw (YACS::Exception)

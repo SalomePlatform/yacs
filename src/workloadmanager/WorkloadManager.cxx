@@ -40,7 +40,7 @@ namespace WorkloadManager
     stop();
   }
   
-  void WorkloadManager::addResource(Resource* r)
+  void WorkloadManager::addResource(const Resource& r)
   {
     std::unique_lock<std::mutex> lock(_data_mutex);
     _algo.addResource(r);
@@ -78,8 +78,8 @@ namespace WorkloadManager
     }
     _startCondition.notify_one();
     _endCondition.notify_one();
-    for(std::future<void>& th : _otherThreads)
-      th.wait();
+   for(std::future<void>& th : _otherThreads)
+     th.wait();
   }
 
   void WorkloadManager::runTasks()
@@ -88,7 +88,7 @@ namespace WorkloadManager
     while(!threadStop)
     {
       std::unique_lock<std::mutex> lock(_data_mutex);
-      _startCondition.wait(lock, [this] {return !_algo.empty();});
+      _startCondition.wait(lock, [this] {return !_algo.empty() || _stop;});
       RunningInfo taskInfo;
       while(chooseTaskToRun(taskInfo))
       {
@@ -118,7 +118,11 @@ namespace WorkloadManager
     while(!threadStop)
     {
       std::unique_lock<std::mutex> lock(_data_mutex);
-      _endCondition.wait(lock, [this] {return !_finishedTasks.empty();});
+      _endCondition.wait(lock, [this]
+                            {
+                              return !_finishedTasks.empty() ||
+                              (_stop && _runningTasks.empty() && _algo.empty());
+                            });
       while(!_finishedTasks.empty())
       {
         RunningInfo taskInfo = _finishedTasks.front();
@@ -136,8 +140,9 @@ namespace WorkloadManager
   {
     // We are already under the lock
     taskInfo.id = _nextIndex;
-    _nextIndex ++;
     taskInfo.info = _algo.chooseTask();
+    if(taskInfo.info.taskFound)
+      _nextIndex ++;
     return taskInfo.info.taskFound;
   }
 

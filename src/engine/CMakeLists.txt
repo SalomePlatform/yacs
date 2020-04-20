@@ -31,12 +31,14 @@ ADD_DEFINITIONS(
 INCLUDE_DIRECTORIES(
   ${PTHREAD_INCLUDE_DIR}
   ${PROJECT_SOURCE_DIR}/src/bases
+  ${PROJECT_SOURCE_DIR}/src
   )
 
 # libraries to link to
 SET(_link_LIBRARIES
   ${PTHREAD_LIBRARIES}
   YACSBases
+  YACSlibWorkloadmanager
   )
 
 # --- headers ---

@@ -33,7 +33,7 @@ class DefaultAlgorithm : public WorkloadAlgorithm
 {
 public:
   void addTask(Task* t)override;
-  void addResource(Resource* r)override;
+  void addResource(const Resource& r)override;
   LaunchInfo chooseTask()override;
   void liberate(const LaunchInfo& info)override;
   bool empty()const override;
@@ -43,36 +43,46 @@ private:
   class ResourceInfoForContainer
   {
   public:
-    ResourceInfoForContainer(const Resource * r, const ContainerType* ctype);
+    ResourceInfoForContainer(const Resource& r, const ContainerType& ctype);
     unsigned int maxContainers()const;
     unsigned int  alloc();
     void free(unsigned int index);
     unsigned int nbRunningContainers()const;
     bool isContainerRunning(unsigned int index)const;
+    bool operator<(const ResourceInfoForContainer& other)const
+    { return _ctype < other._ctype;}
+    bool operator==(const ContainerType& other)const
+    { return _ctype == other;}
+    const ContainerType& type()const { return _ctype;}
   private:
-    const ContainerType* _ctype;
-    const Resource* _resource;
-    std::set<unsigned int> _runningContainers;
+    ContainerType _ctype;
+    const Resource& _resource; // same ref as ResourceLoadInfo
+    std::set<unsigned int> _runningContainers; // 0 to max possible containers on this resource
     unsigned int _firstFreeContainer;
   };
   
   class ResourceLoadInfo
   {
   public:
-    ResourceLoadInfo(const Resource * r);
-    bool isSupported(const ContainerType* ctype)const;
-    bool isAllocPossible(const ContainerType* ctype)const;
-    float cost(const ContainerType* ctype)const;
-    unsigned int alloc(const ContainerType* ctype);
-    void free(const ContainerType* ctype, int index);
+    ResourceLoadInfo(const Resource& r);
+    bool isSupported(const ContainerType& ctype)const;
+    bool isAllocPossible(const ContainerType& ctype)const;
+    float cost(const ContainerType& ctype)const;
+    unsigned int alloc(const ContainerType& ctype);
+    void free(const ContainerType& ctype, int index);
+    bool operator<(const ResourceLoadInfo& other)const
+    { return _resource < other._resource;}
+    bool operator==(const Resource& other)const
+    { return _resource == other;}
+    const Resource& resource()const { return _resource;}
   private:
-    const Resource* _resource;
+    Resource _resource;
     float _load;
-    std::map<const ContainerType*, ResourceInfoForContainer> _ctypes;
+    std::list<ResourceInfoForContainer> _ctypes;
   };
   
 private:
-  std::map<const Resource *, ResourceLoadInfo> _resources;
+  std::list<ResourceLoadInfo> _resources;
   std::list<Task*> _waitingTasks;
 };
 }

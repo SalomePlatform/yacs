@@ -33,9 +33,11 @@ namespace WorkloadManager
   {
   public:
     WorkloadManager(WorkloadAlgorithm& algo);
+    WorkloadManager(const WorkloadManager&) = delete;
+    WorkloadManager()=delete;
     ~WorkloadManager();
     void addTask(Task* t);
-    void addResource(Resource* r);
+    void addResource(const Resource& r);
     void start(); //! start execution
     void stop(); //! stop execution
 
@@ -53,7 +55,7 @@ namespace WorkloadManager
     std::condition_variable _startCondition; // start tasks thread notification
     std::condition_variable _endCondition; // end tasks thread notification
     bool _stop;
-    std::list< std::future<void> > _otherThreads;
+    std::vector< std::future<void> > _otherThreads;
     WorkloadAlgorithm& _algo;
 
     void runTasks();

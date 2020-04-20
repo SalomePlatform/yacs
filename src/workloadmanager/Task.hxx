@@ -25,24 +25,38 @@ namespace WorkloadManager
 {
   struct ContainerType
   {
-    float neededCores; // needed by WorkloadManager
-    // parameters for client use, not needed by WorkloadManager:
+    float neededCores = 0.0; // needed by WorkloadManager
+    // parameters for client use, used by WorkloadManager to distinguish objects
     std::string name;
-    int id;
+    int id = 0;
+    bool operator==(const ContainerType& other)const
+    { return id == other.id && name == other.name;}
+    bool operator<(const ContainerType& other)const
+    {
+      return (id < other.id) ||
+             (id == other.id && name < other.name);
+    }
   };
   
   struct Resource
   {
     unsigned int nbCores; // needed by WorkloadManager
-    // parameters for client use, not needed by WorkloadManager:
+    // parameters for client use, used by WorkloadManager to distinguish objects
     std::string name;
     int id;
+    bool operator==(const Resource& other)const
+    { return id == other.id && name == other.name;}
+    bool operator<(const Resource& other)const
+    {
+      return (id < other.id) ||
+             (id == other.id && name < other.name);
+    }
   };
   
   struct Container
   {
-    const ContainerType* type;
-    const Resource* resource;
+    ContainerType type;
+    Resource resource;
     unsigned int index; // worker index on the resource for this type
   };
 
@@ -52,7 +66,8 @@ namespace WorkloadManager
   class Task
   {
   public:
-    virtual const ContainerType* type()const =0;
+    virtual ~Task(){};
+    virtual const ContainerType& type()const =0;
     virtual void run(const Container& c)=0;
   };
 }
