@@ -1787,6 +1787,8 @@ void Executor::newRun(Scheduler *graph,int debug, bool fromScratch)
         for(Task * t : readyTasks)
           if(_runningTasks.find(t) == _runningTasks.end())
             _tasks.push_back(t);
+        // TODO: to be removed
+        FilterTasksConsideringContainers(_tasks);
         numberAllTasks=_numberOfRunningTasks+_tasks.size();
       } // --- End of critical section
       if (debug > 2) _displayDot(graph);

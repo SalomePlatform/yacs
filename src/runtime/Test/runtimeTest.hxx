@@ -42,6 +42,15 @@
 
 namespace YACS
 {
+  class RuntimeForTest : public YACS::ENGINE::RuntimeSALOME
+  {
+  public:
+    static void setRuntime();
+    RuntimeForTest();
+    virtual ~RuntimeForTest();
+    std::vector< std::pair<std::string,int> > getCatalogOfComputeNodes() const override;
+  };
+
   class RuntimeTest
 #ifdef USE_CPPUNIT
                      : public CppUnit::TestFixture
