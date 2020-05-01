@@ -25,7 +25,11 @@ namespace WorkloadManager
 {
   struct ContainerType
   {
-    float neededCores = 0.0; // needed by WorkloadManager
+    // parameters needed by WorkloadManager
+    float neededCores = 0.0;
+    bool ignoreResources = false; // if true, the task can be run as soon as
+                                  // added to the manager without any resource
+                                  // allocation
     // parameters for client use, used by WorkloadManager to distinguish objects
     std::string name;
     int id = 0;
@@ -40,10 +44,10 @@ namespace WorkloadManager
   
   struct Resource
   {
-    unsigned int nbCores; // needed by WorkloadManager
+    unsigned int nbCores = 0; // needed by WorkloadManager
     // parameters for client use, used by WorkloadManager to distinguish objects
     std::string name;
-    int id;
+    int id = 0;
     bool operator==(const Resource& other)const
     { return id == other.id && name == other.name;}
     bool operator<(const Resource& other)const
@@ -53,7 +57,7 @@ namespace WorkloadManager
     }
   };
   
-  struct Container
+  struct RunInfo
   {
     ContainerType type;
     Resource resource;
@@ -68,7 +72,14 @@ namespace WorkloadManager
   public:
     virtual ~Task(){};
     virtual const ContainerType& type()const =0;
-    virtual void run(const Container& c)=0;
+    virtual void run(const RunInfo& c)=0;
+
+    // Is it possible to run the task on this resource?
+    virtual bool isAccepted(const Resource& r)
+    {
+      // by default, a task can be run on any resource.
+      return true;
+    }
   };
 }
 

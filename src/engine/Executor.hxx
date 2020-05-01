@@ -39,6 +39,11 @@
 #include <ctime>
 #include <chrono>
 
+namespace WorkloadManager
+{
+  struct RunInfo;
+}
+
 namespace YACS
 {
   namespace ENGINE
@@ -128,7 +133,7 @@ namespace YACS
       static size_t _threadStackSize;
       YACS::BASES::Mutex& getTheMutexForSchedulerUpdate() { return _mutexForSchedulerUpdate; }
       ///// new executor !!!!!
-      void loadTask(Task *task);
+      void loadTask(Task *task, const WorkloadManager::RunInfo& runInfo);
       YACS::Event runTask(Task *task);
       void makeDatastreamConnections(Task *task);
       void beginTask(Task *task);

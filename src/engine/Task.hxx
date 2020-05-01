@@ -23,6 +23,7 @@
 #include "YACSlibEngineExport.hxx"
 #include "define.hxx"
 #include <set>
+#include <string>
 
 namespace YACS
 {
@@ -51,6 +52,9 @@ namespace YACS
       virtual YACS::StatesForNode getState() const = 0;
       virtual void finished() = 0;
       virtual void aborted() = 0;
+      virtual void imposeResource(const std::string& resource_name,
+                                  const std::string& container_name) {}
+      virtual bool canAcceptImposedResource() { return false;}
       virtual ~Task();
     };
   }

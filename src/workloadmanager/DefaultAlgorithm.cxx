@@ -60,37 +60,46 @@ WorkloadAlgorithm::LaunchInfo DefaultAlgorithm::chooseTask()
       itTask ++)
   {
     const ContainerType& ctype = (*itTask)->type();
-    std::list<ResourceLoadInfo>::iterator best_resource;
-    best_resource = _resources.end();
-    float best_cost = std::numeric_limits<float>::max();
-    bool isSupported = false;
-    for(auto itResource = _resources.begin();
-        itResource != _resources.end();
-        itResource++)
-      if(itResource->isSupported(ctype))
-      {
-        if(itResource->isAllocPossible(ctype))
+    if(ctype.ignoreResources)
+      result.taskFound = true;
+    else
+    {
+      std::list<ResourceLoadInfo>::iterator best_resource;
+      best_resource = _resources.end();
+      float best_cost = std::numeric_limits<float>::max();
+      bool isSupported = false;
+      for(auto itResource = _resources.begin();
+          itResource != _resources.end();
+          itResource++)
+        if(itResource->isSupported(ctype)
+            && (*itTask)->isAccepted(itResource->resource()))
         {
-          float thisCost = itResource->cost(ctype);
-          if( best_cost > thisCost)
+          if(itResource->isAllocPossible(ctype))
           {
-            best_cost = thisCost;
-            best_resource = itResource;
+            float thisCost = itResource->cost(ctype);
+            if( best_cost > thisCost)
+            {
+              best_cost = thisCost;
+              best_resource = itResource;
+            }
           }
         }
+      if(best_resource != _resources.end())
+      {
+        result.taskFound = true;
+        result.worker.resource = best_resource->resource();
+        result.worker.index = best_resource->alloc(ctype);
       }
-    if(best_resource != _resources.end())
+      else if(!isSupported)
+      {
+        // TODO: This task can never be run by any available resource.
+      }
+    }
+    if(result.taskFound)
     {
       chosenTaskIt = itTask;
       result.task = (*itTask);
-      result.taskFound = true;
-      result.worker.resource = best_resource->resource();
       result.worker.type = ctype;
-      result.worker.index = best_resource->alloc(ctype);
-    }
-    else if(!isSupported)
-    {
-      // TODO: This task can never be run by any available resource.
     }
   }
   if(result.taskFound)
@@ -100,13 +109,16 @@ WorkloadAlgorithm::LaunchInfo DefaultAlgorithm::chooseTask()
 
 void DefaultAlgorithm::liberate(const LaunchInfo& info)
 {
-  const Resource& r = info.worker.resource;
-  unsigned int index = info.worker.index;
   const ContainerType& ctype = info.worker.type;
-  std::list<ResourceLoadInfo>::iterator it = std::find(_resources.begin(),
-                                                       _resources.end(),
-                                                       r);
-  it->free(ctype, index); // we are sure to find it
+  if(!ctype.ignoreResources)
+  {
+    const Resource& r = info.worker.resource;
+    unsigned int index = info.worker.index;
+    std::list<ResourceLoadInfo>::iterator it = std::find(_resources.begin(),
+                                                        _resources.end(),
+                                                        r);
+    it->free(ctype, index); // we are sure to find it
+  }
 }
 
 // ResourceInfoForContainer

@@ -30,6 +30,9 @@
 #include "ServiceNode.hxx"
 #include "ComposedNode.hxx"
 
+#include "workloadmanager/WorkloadManager.hxx"
+#include "workloadmanager/DefaultAlgorithm.hxx"
+
 #include <iostream>
 #include <fstream>
 #include <sys/stat.h>
@@ -1404,7 +1407,7 @@ std::string Executor::ComputePlacement(Task *zeTask)
 }
 
 ///////// NEW EXECUTOR ////////////////////////////////
-void Executor::loadTask(Task *task)
+void Executor::loadTask(Task *task, const WorkloadManager::RunInfo& runInfo)
 {
   if(task->getState() != YACS::TOLOAD)
     return;
@@ -1415,6 +1418,10 @@ void Executor::loadTask(Task *task)
   }//End of critical section
   try
     {
+      std::ostringstream container_name;
+      container_name << runInfo.resource.name << "-"
+                     << runInfo.type.name << "-" << runInfo.index;
+      task->imposeResource(runInfo.resource.name, container_name.str());
       traceExec(task, "load", ComputePlacement(task));
       task->load();
       traceExec(task, "initService", ComputePlacement(task));
@@ -1658,8 +1665,6 @@ void Executor::makeDatastreamConnections(Task *task)
   traceExec(task, "state:"+Node::getStateName(task->getState()),ComputePlacement(task));
 }
 
-#include "workloadmanager/WorkloadManager.hxx"
-#include "workloadmanager/DefaultAlgorithm.hxx"
 #include "Runtime.hxx"
 static
 void loadResources(WorkloadManager::WorkloadManager& wm)
@@ -1685,7 +1690,7 @@ class NewTask : public WorkloadManager::Task
 public:
   NewTask(Executor& executor, YACS::ENGINE::Task* yacsTask);
   const WorkloadManager::ContainerType& type()const override;
-  void run(const WorkloadManager::Container& c)override;
+  void run(const WorkloadManager::RunInfo& runInfo)override;
 private:
   WorkloadManager::ContainerType _type;
   Executor& _executor;
@@ -1697,9 +1702,20 @@ NewTask::NewTask(Executor& executor, YACS::ENGINE::Task* yacsTask)
 , _executor(executor)
 , _yacsTask(yacsTask)
 {
-  _type.neededCores = 0;
+  Container * yacsContainer = yacsTask->getContainer();
+  if(yacsContainer != nullptr && !yacsTask->canAcceptImposedResource())
+  {
+    _type.ignoreResources = false;
+    _type.name = yacsContainer->getName();
+    _type.neededCores = 1; // TODO: use the actual value
+  }
+  else
+  {
+    _type.ignoreResources = true;
+    _type.name = "test";
+    _type.neededCores = 0;
+  }
   _type.id = 0;
-  _type.name = "test";
 }
 
 const WorkloadManager::ContainerType& NewTask::type()const
@@ -1707,9 +1723,9 @@ const WorkloadManager::ContainerType& NewTask::type()const
   return _type;
 }
 
-void NewTask::run(const WorkloadManager::Container& c)
+void NewTask::run(const WorkloadManager::RunInfo& runInfo)
 {
-  _executor.loadTask(_yacsTask);
+  _executor.loadTask(_yacsTask, runInfo);
   _executor.makeDatastreamConnections(_yacsTask);
   YACS::Event ev = _executor.runTask(_yacsTask);
   _executor.endTask(_yacsTask, ev);

@@ -18,7 +18,6 @@
 //
 #include "WorkloadManager.hxx"
 #include "Task.hxx"
-//#include "Container.hxx"
 
 namespace WorkloadManager
 {

@@ -29,7 +29,7 @@ public:
   struct LaunchInfo
   {
     bool taskFound=false;
-    Container worker;
+    RunInfo worker;
     Task* task=nullptr;
   };
 

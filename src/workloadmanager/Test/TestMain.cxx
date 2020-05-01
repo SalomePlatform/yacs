@@ -55,7 +55,7 @@ class MyTask;
 class AbstractChecker
 {
 public:
-  virtual void check(const WorkloadManager::Container& c, MyTask* t)=0;
+  virtual void check(const WorkloadManager::RunInfo& c, MyTask* t)=0;
 };
 
 template <std::size_t size_R, std::size_t size_T>
@@ -63,7 +63,7 @@ class Checker : public AbstractChecker
 {
 public:
   Checker();
-  void check(const WorkloadManager::Container& c, MyTask* t)override;
+  void check(const WorkloadManager::RunInfo& c, MyTask* t)override;
   void globalCheck();
   void reset();
 
@@ -78,7 +78,7 @@ class MyTask : public WorkloadManager::Task
 {
 public:
   const WorkloadManager::ContainerType& type()const override {return *_type;}
-  void run(const WorkloadManager::Container& c)override
+  void run(const WorkloadManager::RunInfo& c)override
   {
     _check->check(c, this);
 
@@ -131,7 +131,7 @@ Checker<size_R, size_T>::Checker()
 }
 
 template <std::size_t size_R, std::size_t size_T>
-void Checker<size_R, size_T>::check(const WorkloadManager::Container& c,
+void Checker<size_R, size_T>::check(const WorkloadManager::RunInfo& c,
                                     MyTask* t)
 {
   std::unique_lock<std::mutex> lock(_mutex);
@@ -172,9 +172,11 @@ class MyTest: public CppUnit::TestFixture
 {
   CPPUNIT_TEST_SUITE(MyTest);
   CPPUNIT_TEST(atest);
+  CPPUNIT_TEST(btest);
   CPPUNIT_TEST_SUITE_END();
 public:
   void atest();
+  void btest(); // ignore resources
 };
 
 void MyTest::atest()
@@ -262,6 +264,33 @@ void MyTest::atest()
   DEBUG_LOG("Test step duration : ", duration.count(), "s");
   check.globalCheck();
 
+}
+
+void MyTest::btest()
+{
+  Checker<1, 1> check;
+  WorkloadManager::ContainerType ctype;
+  ctype.ignoreResources = true;
+  constexpr std::size_t tasksNumber = 20;
+  MyTask tasks[tasksNumber];
+  for(std::size_t i = 0; i < tasksNumber; i++)
+    tasks[i].reset(i, &ctype, 1, &check);
+  WorkloadManager::DefaultAlgorithm algo;
+  WorkloadManager::WorkloadManager wlm(algo);
+  // no resource needed
+  std::chrono::steady_clock::time_point start_time;
+  std::chrono::steady_clock::time_point end_time;
+  std::chrono::seconds duration;
+  start_time = std::chrono::steady_clock::now();
+  wlm.start();
+  for(std::size_t i = 0; i < tasksNumber; i++)
+    wlm.addTask(&tasks[i]);
+  wlm.stop();
+  end_time = std::chrono::steady_clock::now();
+  duration = std::chrono::duration_cast<std::chrono::seconds>
+             (end_time - start_time);
+  std::chrono::seconds maxExpectedDuration(2);
+  CPPUNIT_ASSERT( duration <= maxExpectedDuration);
 }
 
 CPPUNIT_TEST_SUITE_REGISTRATION(MyTest);

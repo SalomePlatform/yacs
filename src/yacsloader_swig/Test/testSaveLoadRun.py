@@ -1391,6 +1391,7 @@ assert(my_dpl_localization[0][1]>=0 and my_dpl_localization[0][1]<3)
     ex.RunW(p,0)
     self.assertEqual(p.getState(),pilot.DONE)
 
+    self.skipTest("Skip HPContainertest")
     # run remote
     p=l.load(fname)
     pg=pilot.PlayGround()
