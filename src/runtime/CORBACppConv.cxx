@@ -46,7 +46,7 @@ namespace YACS
      *   \param data : CORBA::Any object as a void * pointer
      */
 
-    void CorbaCpp::put(const void *data) throw(ConversionException)
+    void CorbaCpp::put(const void *data)
     {
       put((CORBA::Any *)data);
     }
@@ -55,7 +55,7 @@ namespace YACS
     /*!
      *   \param data : CORBA::Any object
      */
-    void CorbaCpp::put(CORBA::Any *data) throw(ConversionException)
+    void CorbaCpp::put(CORBA::Any *data)
     {
       DEBTRACE("CorbaCpp::put");
       YACS::ENGINE::Any *ob;

@@ -58,7 +58,7 @@ const char Runtime::RUNTIME_ENGINE_INTERACTION_IMPL_NAME[]="Neutral";
 
 // singleton creation must be done before by a derived class
 
-Runtime* YACS::ENGINE::getRuntime() throw(Exception)
+Runtime* YACS::ENGINE::getRuntime() 
 {
   if ( !  Runtime::_singleton )
     throw Exception("Runtime is not yet initialized");

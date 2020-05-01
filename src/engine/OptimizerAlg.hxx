@@ -60,7 +60,7 @@ namespace YACS
       virtual TypeCode *getTCForAlgoInit() const;
       //! returns typecode of type expected as algo result. OwnerShip of returned pointer is held by this.
       virtual TypeCode *getTCForAlgoResult() const;
-      virtual void initialize(const Any *input) throw (Exception);
+      virtual void initialize(const Any *input) ;
       virtual void start() = 0;//! Update _pool attribute before performing anything.
       virtual void takeDecision() = 0;//! _pool->getCurrentId gives the \b id at the origin of this call.
                                       //! Perform the job of analysing to know what new jobs to do (_pool->pushInSample)
@@ -74,7 +74,7 @@ namespace YACS
       virtual TypeCode *getTCForOutProxy() const;
       virtual TypeCode *getTCForAlgoInitProxy() const;
       virtual TypeCode *getTCForAlgoResultProxy() const;
-      virtual void initializeProxy(const Any *input) throw (Exception);
+      virtual void initializeProxy(const Any *input) ;
       virtual void startProxy();
       virtual void takeDecisionProxy();
       virtual void finishProxy();

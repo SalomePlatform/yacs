@@ -41,7 +41,7 @@ namespace YACS
     public:
       virtual void load();
       virtual bool isDeployable() const;
-      virtual void setComponent(ComponentInstance* compo) throw(Exception);
+      virtual void setComponent(ComponentInstance* compo) ;
       virtual ComponentInstance *getComponent();
       virtual const ComponentInstance *getComponent() const;
       virtual Container *getContainer();

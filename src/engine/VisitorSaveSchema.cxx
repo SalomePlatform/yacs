@@ -71,7 +71,7 @@ VisitorSaveSchema::~VisitorSaveSchema()
     }
 }
 
-void VisitorSaveSchema::openFileSchema(std::string xmlSchema) throw(YACS::Exception)
+void VisitorSaveSchema::openFileSchema(std::string xmlSchema) 
 {
   _out.open(xmlSchema.c_str(), ios::out);
   if (!_out)

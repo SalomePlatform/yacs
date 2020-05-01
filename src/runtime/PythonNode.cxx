@@ -345,7 +345,7 @@ PythonNode::~PythonNode()
     }
 }
 
-void PythonNode::checkBasicConsistency() const throw(YACS::Exception)
+void PythonNode::checkBasicConsistency() const 
 {
   DEBTRACE("checkBasicConsistency");
   InlineNode::checkBasicConsistency();
@@ -894,7 +894,7 @@ void PyFuncNode::init(bool start)
     setState(YACS::TORECONNECT);
 }
 
-void PyFuncNode::checkBasicConsistency() const throw(YACS::Exception)
+void PyFuncNode::checkBasicConsistency() const 
 {
   DEBTRACE("checkBasicConsistency");
   InlineFuncNode::checkBasicConsistency();

@@ -30,7 +30,7 @@
 using namespace YACS::ENGINE;
 using namespace std;
 
-void NeutralPyDouble::put(const void *data) throw(ConversionException)
+void NeutralPyDouble::put(const void *data)
 {
   put((YACS::ENGINE::Any *)data);
 }
@@ -39,7 +39,7 @@ void NeutralPyDouble::put(const void *data) throw(ConversionException)
 /*!
  *   \param data : YACS::ENGINE::Any object
  */
-void NeutralPyDouble::put(YACS::ENGINE::Any *data) throw(ConversionException)
+void NeutralPyDouble::put(YACS::ENGINE::Any *data)
 {
   InterpreterUnlocker loc;
   PyObject* ob=convertNeutralPyObject(edGetType(),data);
@@ -49,7 +49,7 @@ void NeutralPyDouble::put(YACS::ENGINE::Any *data) throw(ConversionException)
 }
 
 
-void NeutralPyInt::put(const void *data) throw(ConversionException)
+void NeutralPyInt::put(const void *data)
 {
   put((YACS::ENGINE::Any *)data);
 }
@@ -58,7 +58,7 @@ void NeutralPyInt::put(const void *data) throw(ConversionException)
 /*!
  *   \param data : YACS::ENGINE::Any object
  */
-void NeutralPyInt::put(YACS::ENGINE::Any *data) throw(ConversionException)
+void NeutralPyInt::put(YACS::ENGINE::Any *data)
 {
   InterpreterUnlocker loc;
   PyObject* ob=convertNeutralPyObject(edGetType(),data);
@@ -67,7 +67,7 @@ void NeutralPyInt::put(YACS::ENGINE::Any *data) throw(ConversionException)
   Py_DECREF(ob);
 }
 
-void NeutralPyString::put(const void *data) throw(ConversionException)
+void NeutralPyString::put(const void *data)
 {
   put((YACS::ENGINE::Any *)data);
 }
@@ -76,7 +76,7 @@ void NeutralPyString::put(const void *data) throw(ConversionException)
 /*!
  *   \param data : YACS::ENGINE::Any object
  */
-void NeutralPyString::put(YACS::ENGINE::Any *data) throw(ConversionException)
+void NeutralPyString::put(YACS::ENGINE::Any *data)
 {
   InterpreterUnlocker loc;
   PyObject* ob=convertNeutralPyObject(edGetType(),data);
@@ -85,7 +85,7 @@ void NeutralPyString::put(YACS::ENGINE::Any *data) throw(ConversionException)
   Py_DECREF(ob);
 }
 
-void NeutralPyBool::put(const void *data) throw(ConversionException)
+void NeutralPyBool::put(const void *data)
 {
   put((YACS::ENGINE::Any *)data);
 }
@@ -94,7 +94,7 @@ void NeutralPyBool::put(const void *data) throw(ConversionException)
 /*!
  *   \param data : YACS::ENGINE::Any object
  */
-void NeutralPyBool::put(YACS::ENGINE::Any *data) throw(ConversionException)
+void NeutralPyBool::put(YACS::ENGINE::Any *data)
 {
   InterpreterUnlocker loc;
   PyObject* ob=convertNeutralPyObject(edGetType(),data);
@@ -103,7 +103,7 @@ void NeutralPyBool::put(YACS::ENGINE::Any *data) throw(ConversionException)
   Py_DECREF(ob);
 }
 
-void NeutralPyObjref::put(const void *data) throw(ConversionException)
+void NeutralPyObjref::put(const void *data)
 {
   put((YACS::ENGINE::Any *)data);
 }
@@ -112,7 +112,7 @@ void NeutralPyObjref::put(const void *data) throw(ConversionException)
 /*!
  *   \param data : Neutral::Any object
  */
-void NeutralPyObjref::put(YACS::ENGINE::Any *data) throw(ConversionException)
+void NeutralPyObjref::put(YACS::ENGINE::Any *data)
 {
   InterpreterUnlocker loc;
   PyObject* ob=convertNeutralPyObject(edGetType(),data);
@@ -122,7 +122,7 @@ void NeutralPyObjref::put(YACS::ENGINE::Any *data) throw(ConversionException)
   DEBTRACE( "ob refcnt: " << ob->ob_refcnt );
 }
 
-void NeutralPySequence::put(const void *data) throw(ConversionException)
+void NeutralPySequence::put(const void *data)
 {
   put((YACS::ENGINE::Any *)data);
 }
@@ -131,7 +131,7 @@ void NeutralPySequence::put(const void *data) throw(ConversionException)
 /*!
  *   \param data : Neutral::Any object
  */
-void NeutralPySequence::put(YACS::ENGINE::Any *data) throw(ConversionException)
+void NeutralPySequence::put(YACS::ENGINE::Any *data)
 {
   DEBTRACE( "--------NeutralPySequence::put" );
   InterpreterUnlocker loc;
@@ -147,7 +147,7 @@ void NeutralPySequence::put(YACS::ENGINE::Any *data) throw(ConversionException)
   DEBTRACE( "ob refcnt: " << ob->ob_refcnt );
 }
 
-void NeutralPyStruct::put(const void *data) throw(ConversionException)
+void NeutralPyStruct::put(const void *data)
 {
   put((YACS::ENGINE::Any *)data);
 }
@@ -156,7 +156,7 @@ void NeutralPyStruct::put(const void *data) throw(ConversionException)
 /*!
  *   \param data : Neutral::Any object
  */
-void NeutralPyStruct::put(YACS::ENGINE::Any *data) throw(ConversionException)
+void NeutralPyStruct::put(YACS::ENGINE::Any *data)
 {
   InterpreterUnlocker loc;
   PyObject* ob=convertNeutralPyObject(edGetType(),data);

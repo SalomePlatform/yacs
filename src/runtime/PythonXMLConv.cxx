@@ -40,7 +40,7 @@ PyXml::PyXml(InputXmlPort* p)
  *   \param data : PyObject object as a void * pointer
  */
 
-void PyXml::put(const void *data) throw(ConversionException)
+void PyXml::put(const void *data)
 {
   put((PyObject *)data);
 }
@@ -49,7 +49,7 @@ void PyXml::put(const void *data) throw(ConversionException)
 /*!
  *   \param data : PyObject object
  */
-void PyXml::put(PyObject *data) throw(ConversionException)
+void PyXml::put(PyObject *data)
 {
   DEBTRACE("PyXml::put" );
   std::string sss = convertPyObjectXml(edGetType(),data);

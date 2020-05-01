@@ -76,9 +76,9 @@ namespace YACS
     private:
       //For OptimizerNode use
       void destroyCurrentCase();
-      void checkConsistency() throw(Exception);
-      void setCurrentId(int id) throw(Exception);
-      void putOutSampleAt(int id, Any *outValue) throw(Exception);
+      void checkConsistency() ;
+      void setCurrentId(int id) ;
+      void putOutSampleAt(int id, Any *outValue) ;
       Any *getNextSampleWithHighestPriority(int& id, unsigned char& priority) const;
       void markIdAsInUse(int id);
       bool empty() const;

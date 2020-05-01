@@ -34,7 +34,7 @@ namespace YACS
   namespace ENGINE
   {
     class Runtime;
-    YACSLIBENGINE_EXPORT Runtime* getRuntime() throw(Exception);
+    YACSLIBENGINE_EXPORT Runtime* getRuntime() ;
 
     class Any;
     class InputPort;
@@ -67,7 +67,7 @@ namespace YACS
 
     class YACSLIBENGINE_EXPORT Runtime
     {
-      friend Runtime* getRuntime() throw(Exception);
+      friend Runtime* getRuntime() ;
     public:
       virtual void init() { }
       virtual void fini() { }
@@ -119,12 +119,12 @@ namespace YACS
                                                                TypeCode * type);
 
       virtual InputPort* adapt(InputPort* source, const std::string& impl, TypeCode * type,
-                               bool init=false) throw (ConversionException) = 0;
+                               bool init=false) = 0;
 
       virtual InputPort* adapt(InPropertyPort* source,
                                const std::string& impl,
                                TypeCode * type,
-                               bool init=false) throw (ConversionException) = 0;
+                               bool init=false) = 0;
 
       virtual void* convertNeutral(TypeCode * type, Any *data);
       virtual std::string convertNeutralAsString(TypeCode * type, Any *data);

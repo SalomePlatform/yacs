@@ -52,7 +52,7 @@ namespace YACS
         virtual ~CppComponent();
 
         void run(const char * service, int nbIn, int nbOut,
-                         Any ** argIn, Any ** argOut) throw (YACS::Exception);
+                         Any ** argIn, Any ** argOut);
 
         static const char KIND[];
         virtual std::string getKind() const;

@@ -51,7 +51,7 @@ namespace YACS
       bool edAddInGate(InGate *inGate);
       std::list< std::pair< InGate *, bool> >& edMapInGate() { return _setOfInGate; }
       std::list<InGate *> edSetInGate() const;
-      void edRemoveInGate(InGate *inGate, bool coherenceWithInGate=true) throw(Exception);
+      void edRemoveInGate(InGate *inGate, bool coherenceWithInGate=true);
       int getNbOfInGatesConnected() const;
       bool isAlreadyInSet(InGate *inGate) const;
       virtual std::string typeName() {return "YACS__ENGINE__OutGate";}

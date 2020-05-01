@@ -154,7 +154,7 @@ void InputPyPort::edRemoveManInit()
   InputPort::edRemoveManInit();
 }
 
-void InputPyPort::put(const void *data) throw(ConversionException)
+void InputPyPort::put(const void *data)
 {
   put((PyObject *)data);
 }
@@ -172,7 +172,7 @@ void InputPyPort::releaseData()
   InputPyPort::releaseDataUnsafe();
 }
 
-void InputPyPort::put(PyObject *data) throw(ConversionException)
+void InputPyPort::put(PyObject *data)
 {
   InterpreterUnlocker l;
   InputPyPort::releaseDataUnsafe();
@@ -194,7 +194,7 @@ PyObject * InputPyPort::getPyObj() const
   return _data;
 }
 
-void *InputPyPort::get() const throw(YACS::Exception)
+void *InputPyPort::get() const 
 {
   return (void*) _data;
 }
@@ -311,12 +311,12 @@ OutputPyPort::OutputPyPort(const OutputPyPort& other, Node *newHelder):OutputPor
   Py_INCREF(_data);
 }
 
-void OutputPyPort::put(const void *data) throw(ConversionException)
+void OutputPyPort::put(const void *data)
 {
   put((PyObject *)data);
 }
 
-void OutputPyPort::putWithoutForward(PyObject *data) throw(ConversionException)
+void OutputPyPort::putWithoutForward(PyObject *data)
 {
   DEBTRACE( "OutputPyPort::put.ob refcnt: " << data->ob_refcnt );
 #ifdef _DEVDEBUG_
@@ -330,7 +330,7 @@ void OutputPyPort::putWithoutForward(PyObject *data) throw(ConversionException)
   //no registerPyObj : we steal the output reference of the node
 }
 
-void OutputPyPort::put(PyObject *data) throw(ConversionException)
+void OutputPyPort::put(PyObject *data)
 {
   putWithoutForward(data);
   DEBTRACE( "OutputPyPort::put.ob refcnt: " << data->ob_refcnt );

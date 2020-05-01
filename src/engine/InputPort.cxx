@@ -145,7 +145,7 @@ void InputPort::edRemoveManInit()
 }
 
 //! Check basically that this port has one chance to be specified on time. It's a necessary condition \b not \b sufficient at all.
-void InputPort::checkBasicConsistency() const throw(YACS::Exception)
+void InputPort::checkBasicConsistency() const 
 {
   if(!_canBeNull && !edIsManuallyInitialized() && _backLinks.size()==0 )
     {
@@ -192,7 +192,7 @@ ProxyPort::~ProxyPort()
     */
 }
 
-void ProxyPort::edRemoveAllLinksLinkedWithMe() throw(YACS::Exception)
+void ProxyPort::edRemoveAllLinksLinkedWithMe() 
 {
   _port->edRemoveAllLinksLinkedWithMe();
 }
@@ -255,7 +255,7 @@ void ProxyPort::releaseData()
   _port->releaseData();
 }
 
-void ProxyPort::put(const void *data) throw(ConversionException)
+void ProxyPort::put(const void *data)
 {
   _port->put(data);
 }

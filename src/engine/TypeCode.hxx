@@ -76,11 +76,11 @@ namespace YACS
       virtual void putReprAtPlace(char *pt, const char *val, bool deepCpy) const;
       virtual void destroyZippedAny(char *data) const;
       virtual AnyPtr getOrBuildAnyFromZippedData(char *data) const;
-      virtual const char * name()       const throw(Exception);
+      virtual const char * name()       const;
       virtual const char * shortName()  const;
-      virtual const char * id()         const throw(Exception);
-      virtual const TypeCode * contentType() const throw(Exception);
-      virtual int isA(const char* repositoryId) const throw(Exception);
+      virtual const char * id()         const;
+      virtual const TypeCode * contentType() const;
+      virtual int isA(const char* repositoryId) const;
       virtual int isA(const TypeCode* tc) const ;
       virtual int isAdaptable(const TypeCode* tc) const;
       virtual int isEquivalent(const TypeCode* tc) const;
@@ -134,10 +134,10 @@ namespace YACS
       void putReprAtPlace(char *pt, const char *val, bool deepCpy) const;
       void destroyZippedAny(char *data) const;
       AnyPtr getOrBuildAnyFromZippedData(char *data) const;
-      const char * id() const   throw(Exception);
-      const char * name() const throw(Exception);
+      const char * id() const;
+      const char * name() const;
       const char * shortName() const;
-      int isA(const char* repositoryId) const throw(Exception);
+      int isA(const char* repositoryId) const;
       virtual int isA(const TypeCode* tc) const ;
       virtual int isAdaptable(const TypeCode* tc) const;
       virtual int isEquivalent(const TypeCode* tc) const;
@@ -166,12 +166,12 @@ namespace YACS
       void destroyZippedAny(char *data) const;
       virtual unsigned getSizeInByteOfAnyReprInSeq() const;
       AnyPtr getOrBuildAnyFromZippedData(char *data) const;
-      const char * id()   const throw(Exception);
-      const char * name() const throw(Exception);
+      const char * id()   const;
+      const char * name() const;
       const char * shortName() const;
       virtual std::string getPrintStr() const;
 
-      virtual const TypeCode * contentType() const throw(Exception);
+      virtual const TypeCode * contentType() const;
       virtual int isA(const TypeCode* tc) const ;
       virtual int isAdaptable(const TypeCode* tc) const;
       virtual int isEquivalent(const TypeCode* tc) const;
@@ -197,12 +197,12 @@ namespace YACS
       void putReprAtPlace(char *pt, const char *val, bool deepCpy) const;
       void destroyZippedAny(char *data) const;
       AnyPtr getOrBuildAnyFromZippedData(char *data) const;
-      const char * id()   const throw(Exception);
-      const char * name() const throw(Exception);
+      const char * id()   const;
+      const char * name() const;
       const char * shortName() const;
       unsigned getStaticLgth() const;
 
-      virtual const TypeCode * contentType() const throw(Exception);
+      virtual const TypeCode * contentType() const;
       virtual int isA(const TypeCode* tc) const ;
       virtual int isAdaptable(const TypeCode* tc) const;
       virtual int isEquivalent(const TypeCode* tc) const;
@@ -233,12 +233,12 @@ namespace YACS
       void putReprAtPlace(char *pt, const char *val, bool deepCpy) const;
       void destroyZippedAny(char *data) const;
       AnyPtr getOrBuildAnyFromZippedData(char *data) const;
-      const char * id() const   throw(Exception);
-      const char * name() const throw(Exception);
+      const char * id() const;
+      const char * name() const;
       const char * shortName() const;
       virtual unsigned getSizeInByteOfAnyReprInSeq() const;
-      const TypeCode * contentType() const throw(Exception);
-      virtual int isA(const char* repositoryId) const throw(Exception);
+      const TypeCode * contentType() const;
+      virtual int isA(const char* repositoryId) const;
       virtual int isA(const TypeCode* tc) const ;
       virtual int isAdaptable(const TypeCode* tc) const;
       virtual int isEquivalent(const TypeCode* tc) const;

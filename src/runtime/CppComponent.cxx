@@ -113,7 +113,7 @@ CppComponent::~CppComponent()
 }
 
 void CppComponent::run (const char * service, int nbIn, int nbOut,
-                        Any ** argIn, Any ** argOut) throw (YACS::Exception)
+                        Any ** argIn, Any ** argOut)
 {
   int i;
   returnInfo return_code;

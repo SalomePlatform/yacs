@@ -59,7 +59,7 @@ namespace YACS
             void parseFileToInit(const std::string& fileName);
             void start();
             void takeDecision();
-            void initialize(const Any *input) throw(Exception);
+            void initialize(const Any *input) ;
             void finish();
         };
     }

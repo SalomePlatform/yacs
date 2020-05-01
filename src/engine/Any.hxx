@@ -85,13 +85,13 @@ namespace YACS
       const TypeCode *getType() const { return _type; }
       //for convenience methods
       virtual Any *clone() const = 0;
-      virtual AnyPtr operator[](int i) const throw(Exception) = 0;
-      virtual AnyPtr operator[](const char *key) const throw(Exception) = 0;
+      virtual AnyPtr operator[](int i) const = 0;
+      virtual AnyPtr operator[](const char *key) const = 0;
       virtual bool operator ==(const Any& other) const = 0;
-      virtual int getIntValue() const throw(Exception) = 0;
-      virtual bool getBoolValue() const throw(Exception) = 0;
-      virtual double getDoubleValue() const throw(Exception) = 0;
-      virtual std::string getStringValue() const throw(Exception) = 0;
+      virtual int getIntValue() const = 0;
+      virtual bool getBoolValue() const = 0;
+      virtual double getDoubleValue() const = 0;
+      virtual std::string getStringValue() const = 0;
       //
     protected:
 #ifndef SWIG
@@ -126,13 +126,13 @@ namespace YACS
       static AtomAny *New(T val) { return new AtomAny(val); }
       static AtomAny *New(char *val, Deallocator dealloc);
       static AtomAny *New(const std::string& val, TypeCode *type);
-      AnyPtr operator[](int i) const throw(Exception);
-      AnyPtr operator[](const char *key) const throw(Exception);
+      AnyPtr operator[](int i) const;
+      AnyPtr operator[](const char *key) const;
       bool operator ==(const Any& other) const;
-      int getIntValue() const throw(Exception);
-      bool getBoolValue() const throw(Exception);
-      double getDoubleValue() const throw(Exception);
-      std::string getStringValue() const throw(Exception);
+      int getIntValue() const;
+      bool getBoolValue() const;
+      double getDoubleValue() const;
+      std::string getStringValue() const;
       const char *getBytesValue(std::size_t& len) const;
     protected:
       void putMyReprAtPlace(char *data) const;
@@ -184,18 +184,18 @@ namespace YACS
     class YACSLIBENGINE_EXPORT ComposedAny : public Any
     {
     public:
-      virtual void setEltAtRank(int i, const Any *elem) throw(Exception) = 0;
-      AnyPtr operator[](const char *key) const throw(Exception);
+      virtual void setEltAtRank(int i, const Any *elem) = 0;
+      AnyPtr operator[](const char *key) const;
     protected:
       ComposedAny(const ComposedAny& other);
       ComposedAny(TypeCode* type, bool isNew=true);
     protected:
-      void checkTypeOf(const Any *elem) const throw(Exception);
+      void checkTypeOf(const Any *elem) const;
     private://error methods called during incorrect runtime extraction
-      int getIntValue() const throw(Exception);
-      bool getBoolValue() const throw(Exception);
-      double getDoubleValue() const throw(Exception);
-      std::string getStringValue() const throw(Exception);
+      int getIntValue() const;
+      bool getBoolValue() const;
+      double getDoubleValue() const;
+      std::string getStringValue() const;
     };
 
     typedef SharedPtr<SequenceAny> SequenceAnyPtr;
@@ -209,8 +209,8 @@ namespace YACS
       unsigned int size() const { return _alloc.size(); }
       void pushBack(const Any *elem);
       bool operator ==(const Any& other) const;
-      void setEltAtRank(int i, const Any *elem) throw(Exception);
-      AnyPtr operator[](int i) const throw(Exception);
+      void setEltAtRank(int i, const Any *elem);
+      AnyPtr operator[](int i) const;
       Any *clone() const;
       template<class T>
       static SequenceAny *New(const std::vector<T>& vec);
@@ -250,9 +250,9 @@ namespace YACS
     {
       friend class TypeCodeArray;
     public:
-      void setEltAtRank(int i, const Any *elem) throw(Exception);
+      void setEltAtRank(int i, const Any *elem);
       bool operator ==(const Any& other) const;
-      AnyPtr operator[](int i) const throw(Exception);
+      AnyPtr operator[](int i) const;
       unsigned int size() const;
       Any *clone() const;
       template<class T>
@@ -290,10 +290,10 @@ namespace YACS
       Any *clone() const;
       bool operator ==(const Any& other) const;
       static StructAny *New(TypeCodeStruct *type);
-      AnyPtr operator[](int i) const throw(Exception);
-      AnyPtr operator[](const char *key) const throw(Exception);
-      void setEltAtRank(int i, const Any *elem) throw(Exception);
-      void setEltAtRank(const char *key, const Any *elem) throw(Exception);
+      AnyPtr operator[](int i) const;
+      AnyPtr operator[](const char *key) const;
+      void setEltAtRank(int i, const Any *elem);
+      void setEltAtRank(const char *key, const Any *elem);
     protected:
       void putMyReprAtPlace(char *data) const;
       static void putReprAtPlace(char *data, const char *src, const TypeCodeStruct *type, bool deepCpy);

@@ -138,7 +138,7 @@ Node * DynParaLoop::edSetFinalizeNode(Node * node)
  * \param end : the InPort to connect
  * \return  true if a new link has been created, false otherwise.
  */
-bool DynParaLoop::edAddDFLink(OutPort *start, InPort *end) throw(YACS::Exception)
+bool DynParaLoop::edAddDFLink(OutPort *start, InPort *end) 
 {
   return edAddLink(start,end);
 }
@@ -195,7 +195,7 @@ std::list<OutputPort *> DynParaLoop::getLocalOutputPorts() const
   return ret;
 }
 
-OutPort *DynParaLoop::getOutPort(const std::string& name) const throw(YACS::Exception)
+OutPort *DynParaLoop::getOutPort(const std::string& name) const 
 {
   if (name == NAME_OF_SPLITTED_SEQ_OUT || name == OLD_NAME_OF_SPLITTED_SEQ_OUT)
     return (OutPort *)&_splittedPort;
@@ -203,7 +203,7 @@ OutPort *DynParaLoop::getOutPort(const std::string& name) const throw(YACS::Exce
 }
 
 
-OutputPort *DynParaLoop::getOutputPort(const std::string& name) const throw(YACS::Exception)
+OutputPort *DynParaLoop::getOutputPort(const std::string& name) const 
 {
   if (name == NAME_OF_SPLITTED_SEQ_OUT || name == OLD_NAME_OF_SPLITTED_SEQ_OUT)
     return (OutputPort *)&_splittedPort;
@@ -242,7 +242,7 @@ Node * DynParaLoop::edRemoveFinalizeNode()
   return removeNode(_finalizeNode);
 }
 
-void DynParaLoop::edRemoveChild(Node *node) throw(YACS::Exception)
+void DynParaLoop::edRemoveChild(Node *node) 
 {
   ComposedNode::edRemoveChild(node);
   if(node==_node)
@@ -254,7 +254,7 @@ void DynParaLoop::edRemoveChild(Node *node) throw(YACS::Exception)
   modified();
 }
 
-bool DynParaLoop::edAddChild(Node *DISOWNnode) throw(YACS::Exception)
+bool DynParaLoop::edAddChild(Node *DISOWNnode) 
 {
   return edSetNode(DISOWNnode);
 }
@@ -280,7 +280,7 @@ std::list<InputPort *> DynParaLoop::getSetOfInputPort() const
   return ret;
 }
 
-InputPort *DynParaLoop::getInputPort(const std::string& name) const throw(YACS::Exception)
+InputPort *DynParaLoop::getInputPort(const std::string& name) const 
 {
   if(_nbOfBranches->isMyName(name))
     return _nbOfBranches->getPort();
@@ -296,7 +296,7 @@ std::list<InputPort *> DynParaLoop::getLocalInputPorts() const
   return ret;
 }
 
-unsigned DynParaLoop::getNumberOfBranchesCreatedDyn() const throw(YACS::Exception)
+unsigned DynParaLoop::getNumberOfBranchesCreatedDyn() const 
 {
   if(_execNodes.empty())
     throw Exception("ForEachLoop::getNumberOfBranches : No branches created dynamically ! - ForEachLoop needs to run or to be runned to call getNumberOfBranches");
@@ -304,7 +304,7 @@ unsigned DynParaLoop::getNumberOfBranchesCreatedDyn() const throw(YACS::Exceptio
     return _execNodes.size();
 }
 
-Node *DynParaLoop::getChildByShortName(const std::string& name) const throw(YACS::Exception)
+Node *DynParaLoop::getChildByShortName(const std::string& name) const 
 {
   if (_node && name == _node->getName())
     return _node;
@@ -316,7 +316,7 @@ Node *DynParaLoop::getChildByShortName(const std::string& name) const throw(YACS
   throw Exception(what);
 }
 
-Node *DynParaLoop::getChildByNameExec(const std::string& name, unsigned id) const throw(YACS::Exception)
+Node *DynParaLoop::getChildByNameExec(const std::string& name, unsigned id) const 
 {
   if(id>=getNumberOfBranchesCreatedDyn())
     throw Exception("ForEachLoop::getChildByNameExec : invalid id - too large compared with dynamically created branches.");
@@ -519,7 +519,7 @@ void DynParaLoop::checkControlDependancy(OutPort *start, InPort *end, bool cross
 }
 
 void DynParaLoop::checkLinkPossibility(OutPort *start, const std::list<ComposedNode *>& pointsOfViewStart,
-                                InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd) throw(YACS::Exception)
+                                InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd) 
 {
   ComposedNode::checkLinkPossibility(start, pointsOfViewStart, end, pointsOfViewEnd);
   Node * startNode = isInMyDescendance(start->getNode());
@@ -575,7 +575,7 @@ InputPort *DynParaLoop::getDynInputPortByAbsName(int branchNb, const std::string
   return 0;
 }
 
-void DynParaLoop::checkBasicConsistency() const throw(YACS::Exception)
+void DynParaLoop::checkBasicConsistency() const 
 {
   DEBTRACE("DynParaLoop::checkBasicConsistency");
   ComposedNode::checkBasicConsistency();

@@ -117,7 +117,7 @@ std::list<InGate *> OutGate::edSetInGate() const
   return ret;
 }
 
-void OutGate::edRemoveInGate(InGate *inGate, bool coherenceWithInGate) throw(YACS::Exception)
+void OutGate::edRemoveInGate(InGate *inGate, bool coherenceWithInGate) 
 {
   std::list< pair<InGate* , bool> >::iterator iter(std::find_if(_setOfInGate.begin(),_setOfInGate.end(),ItemCmp(inGate)));
   if(iter==_setOfInGate.end())

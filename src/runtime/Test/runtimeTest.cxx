@@ -1495,7 +1495,7 @@ void RuntimeTest::convertPorts()
     }
 }
 
-void myTestRun(int nIn, int nOut, Any **In, Any **Out) throw (YACS::Exception)
+void myTestRun(int nIn, int nOut, Any **In, Any **Out)
 {
   double x, y;
   cerr << "myTestRun nIn = " << nIn << endl;

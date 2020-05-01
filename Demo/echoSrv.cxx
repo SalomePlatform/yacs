@@ -91,7 +91,7 @@ public:
   inline Echo_i() {}
   virtual ~Echo_i() {}
   virtual char* echoString(const char* mesg);
-  CORBA::Long echoLong(CORBA::Long i) throw(eo::SALOME_Exception);
+  CORBA::Long echoLong(CORBA::Long i);
   void echoDouble(CORBA::Double i,CORBA::Double& j) ;
   void echoDoubleVec(const eo::DoubleVec& i,eo::DoubleVec_out j) ;
   void echoDoubleVecVec(const eo::DoubleVecVec&, eo::DoubleVecVec_out);
@@ -192,7 +192,7 @@ void Echo_i::echoDoubleVecVec(const eo::DoubleVecVec& in, eo::DoubleVecVec_out o
   out=new eo::DoubleVecVec(in);
 }
 
-CORBA::Long Echo_i::echoLong(CORBA::Long i ) throw(eo::SALOME_Exception) 
+CORBA::Long Echo_i::echoLong(CORBA::Long i )
 {
   DEBTRACE("Echo_i::echoLong " << i);
   CORBA::Long j=i;

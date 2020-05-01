@@ -73,7 +73,7 @@ namespace YACS
       PythonNode(const PythonNode& other, ComposedNode *father);
       PythonNode(const std::string& name);
       virtual ~PythonNode();
-      virtual void checkBasicConsistency() const throw(Exception);
+      virtual void checkBasicConsistency() const ;
       virtual void execute();
       virtual void load();
       virtual void loadRemote();
@@ -117,7 +117,7 @@ namespace YACS
       PyFuncNode(const std::string& name);
       virtual ~PyFuncNode();
       virtual void init(bool start=true);
-      virtual void checkBasicConsistency() const throw(Exception);
+      virtual void checkBasicConsistency() const ;
       virtual void execute();
       virtual void load();
       virtual void loadRemote();

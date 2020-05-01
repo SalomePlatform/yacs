@@ -61,7 +61,7 @@ namespace YACS
       std::string getKind() const;
       std::string getDiscreminantStrOfThis(const Task *askingNode) const;
       bool isAlreadyStarted(const Task *askingNode) const;
-      void start(const Task *askingNode) throw(Exception);
+      void start(const Task *askingNode) ;
       void shutdown(int level);
       std::string getPlacementId(const Task *askingNode) const;
       std::string getFullPlacementId(const Task *askingNode) const;
@@ -73,7 +73,7 @@ namespace YACS
       void addComponentName(const std::string& name);
       std::map<std::string,std::string> getProperties() const;
       std::map<std::string,std::string> getResourceProperties(const std::string& name) const;
-      void checkCapabilityToDealWith(const ComponentInstance *inst) const throw(YACS::Exception);
+      void checkCapabilityToDealWith(const ComponentInstance *inst) const ;
       std::vector<std::string> getKernelContainerNames() const;
       int getNumberOfCoresPerWorker() const;
       //

@@ -36,7 +36,7 @@ namespace YACS
       PresetNode(const PresetNode& other, ComposedNode *father);
       virtual void execute();
       virtual void accept(Visitor *visitor);
-      virtual void checkBasicConsistency() const throw(Exception);
+      virtual void checkBasicConsistency() const ;
       virtual void setData(OutputPort* port, const std::string& data);
       virtual OutputPort *createOutputPort(const std::string& outputPortName, TypeCode* type);
       virtual std::string typeName() {return "YACS__ENGINE__PresetNode";}

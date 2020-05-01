@@ -112,7 +112,7 @@ Container *SalomeContainer::cloneAlways() const
   return new SalomeContainer(*this);
 }
 
-void SalomeContainer::checkCapabilityToDealWith(const ComponentInstance *inst) const throw(YACS::Exception)
+void SalomeContainer::checkCapabilityToDealWith(const ComponentInstance *inst) const 
 {
   if(inst->getKind()!=SalomeComponent::KIND)
     throw Exception("SalomeContainer::checkCapabilityToDealWith : SalomeContainer is not able to deal with this type of ComponentInstance.");
@@ -221,7 +221,7 @@ Engines::Container_ptr SalomeContainer::getContainerPtr(const Task *askingNode) 
 /*!
  * \param inst the component instance
  */
-void SalomeContainer::start(const Task *askingNode) throw(YACS::Exception)
+void SalomeContainer::start(const Task *askingNode) 
 {
   SalomeContainerTools::Start(_componentNames,_launchModeType,_sct,_shutdownLevel,this,askingNode);
 }

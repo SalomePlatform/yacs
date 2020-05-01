@@ -41,12 +41,12 @@ namespace YACS
       InputXmlPort(const InputXmlPort& other, Node *newHelder);
       bool edIsManuallyInitialized() const;
       void edRemoveManInit();
-      virtual void put(const void *data) throw (ConversionException);
-      void put(const char *data) throw (ConversionException);
+      virtual void put(const void *data);
+      void put(const char *data);
       void releaseData() override;
       InputPort *clone(Node *newHelder) const;
       virtual const char * getXml() const;
-      void *get() const throw(Exception);
+      void *get() const ;
       bool isEmpty();
       virtual void exSaveInit();
       virtual void exRestoreInit();
@@ -69,9 +69,9 @@ namespace YACS
     public:
       OutputXmlPort(const std::string& name,  Node* node, TypeCode * type);
       OutputXmlPort(const OutputXmlPort& other, Node *newHelder);
-      virtual void put(const void *data) throw (ConversionException);
-      void put(const char *data) throw (ConversionException);
-      virtual const char * get() const throw (ConversionException);
+      virtual void put(const void *data);
+      void put(const char *data);
+      virtual const char * get() const;
       OutputPort *clone(Node *newHelder) const;
       virtual std::string dump();
       virtual std::string valToStr();

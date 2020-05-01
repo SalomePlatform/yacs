@@ -45,9 +45,9 @@ namespace YACS
       TestElemInputPort(const std::string& name, Node *node, TypeCode* type);
       TestElemInputPort(const TestElemInputPort& other, Node *newHelder);
       void releaseData() override;
-      void put(const void *data) throw(ConversionException);
+      void put(const void *data);
       InputPort *clone(Node *newHelder) const;
-      void *get() const throw(Exception);
+      void *get() const ;
       void exRestoreInit();
       void exSaveInit();
     protected:
@@ -59,7 +59,7 @@ namespace YACS
     public:
       TestElemOutputPort(const std::string& name, Node *node, TypeCode* type);
       TestElemOutputPort(const TestElemOutputPort& other, Node *newHelder);
-      void put(const void *data) throw(ConversionException);
+      void put(const void *data);
       OutputPort *clone(Node *newHelder) const;
     };
     
@@ -68,11 +68,11 @@ namespace YACS
     public:
       static void setRuntime();
       std::vector< std::pair<std::string,int> > getCatalogOfComputeNodes() const;
-      ElementaryNode* createNode(const std::string& implementation, const std::string& name) throw(Exception);
+      ElementaryNode* createNode(const std::string& implementation, const std::string& name) ;
       InputPort* createInputPort(const std::string& name, const std::string& impl, Node * node, TypeCode * type);
       OutputPort* createOutputPort(const std::string& name, const std::string& impl, Node * node, TypeCode * type);
-      InputPort* adapt(InputPort* source, const std::string& impl, TypeCode * type,bool init) throw (ConversionException);
-      InputPort* adapt(InPropertyPort* source, const std::string& impl, TypeCode * type,bool init) throw (ConversionException);
+      InputPort* adapt(InputPort* source, const std::string& impl, TypeCode * type,bool init);
+      InputPort* adapt(InPropertyPort* source, const std::string& impl, TypeCode * type,bool init);
     };
   }
 }

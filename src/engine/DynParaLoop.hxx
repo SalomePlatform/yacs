@@ -78,7 +78,7 @@ namespace YACS
       Node *edSetNode(Node *DISOWNnode);
       Node *edSetInitNode(Node *DISOWNnode);
       Node *edSetFinalizeNode(Node *DISOWNnode);
-      virtual bool edAddDFLink(OutPort *start, InPort *end) throw(Exception);
+      virtual bool edAddDFLink(OutPort *start, InPort *end) ;
       void init(bool start=true);
       InputPort *edGetNbOfBranchesPort() { return _nbOfBranches->getPort(); }
       int getNumberOfInputPorts() const;
@@ -88,27 +88,27 @@ namespace YACS
       std::list<OutputPort *> getSetOfOutputPort() const;
       std::list<OutputPort *> getLocalOutputPorts() const;
       OutputPort *edGetSamplePort() { return &_splittedPort; }
-      OutPort *getOutPort(const std::string& name) const throw(Exception);
-      InputPort *getInputPort(const std::string& name) const throw(Exception);
-      OutputPort *getOutputPort(const std::string& name) const throw(Exception);
+      OutPort *getOutPort(const std::string& name) const ;
+      InputPort *getInputPort(const std::string& name) const ;
+      OutputPort *getOutputPort(const std::string& name) const ;
       //! For the moment false is returned : impovement about it coming soon.
       bool isPlacementPredictableB4Run() const;
-      void edRemoveChild(Node *node) throw(Exception);
+      void edRemoveChild(Node *node) ;
       bool isLoop() const override { return true; }
-      virtual bool edAddChild(Node *DISOWNnode) throw(Exception);
+      virtual bool edAddChild(Node *DISOWNnode) ;
       std::list<Node *> edGetDirectDescendants() const;
       std::list<InputPort *> getSetOfInputPort() const;
       std::list<InputPort *> getLocalInputPorts() const;
-      unsigned getNumberOfBranchesCreatedDyn() const throw(Exception);
-      Node *getChildByShortName(const std::string& name) const throw(Exception);
-      Node *getChildByNameExec(const std::string& name, unsigned id) const throw(Exception);
+      unsigned getNumberOfBranchesCreatedDyn() const ;
+      Node *getChildByShortName(const std::string& name) const ;
+      Node *getChildByNameExec(const std::string& name, unsigned id) const ;
       std::vector<Node *> getNodes() const { return _execNodes; } // need to use in GUI part for adding observers for clone nodes
       ComplexWeight * getWeight();
       void setWeight(double loopWeight);
       void getWeightRegardingDPL(ComplexWeight *weight) {weight->addWeight(getWeight());}
       bool isMultiplicitySpecified(unsigned& value) const;
       void forceMultiplicity(unsigned value);
-      virtual void checkBasicConsistency() const throw(Exception);
+      virtual void checkBasicConsistency() const ;
       virtual std::string getErrorReport();
       void accept(Visitor *visitor);
       Node * getInitNode();
@@ -127,7 +127,7 @@ namespace YACS
                                   std::map< ComposedNode *, std::list < OutPort *>, SortHierarc >& bw,
                                   LinkInfo& info) const;
       virtual void checkLinkPossibility(OutPort *start, const std::list<ComposedNode *>& pointsOfViewStart,
-                                       InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd) throw(Exception);
+                                       InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd) ;
     protected:
       void prepareInputsFromOutOfScope(int branchNb);
       void putValueOnBranch(Any *val, unsigned branchId, bool first);

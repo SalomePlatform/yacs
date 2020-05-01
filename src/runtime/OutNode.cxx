@@ -107,7 +107,7 @@ void OutNode::setData(InputPort* port, const std::string& data)
   inp->setData(data);
 }
 
-void OutNode::checkBasicConsistency() const throw(YACS::Exception)
+void OutNode::checkBasicConsistency() const 
 {
   DEBTRACE("OutNode::checkBasicConsistency");
   if (! _setOfOutputPort.empty())

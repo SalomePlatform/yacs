@@ -235,7 +235,7 @@ void Node::exDisabledState()
   _outGate.exNotifyDisabled();
 }
 
-InPort *Node::getInPort(const std::string& name) const throw(YACS::Exception)
+InPort *Node::getInPort(const std::string& name) const 
 {
   InPort *ret;
   try
@@ -250,13 +250,13 @@ InPort *Node::getInPort(const std::string& name) const throw(YACS::Exception)
 }
 
 InPropertyPort *
-Node::getInPropertyPort() const throw(YACS::Exception)
+Node::getInPropertyPort() const 
 {
   return _inPropertyPort;
 }
 
 InputPort *
-Node::getInputPort(const std::string& name) const throw(YACS::Exception)
+Node::getInputPort(const std::string& name) const 
 {
   if (name == "__InPropertyPort__Node__YACS_")
     return _inPropertyPort;
@@ -271,7 +271,7 @@ Node::getInputPort(const std::string& name) const throw(YACS::Exception)
  * \note: Contrary to getOutputPort method, this method returns the output port at highest level, possible.
  *        That is to say in some ComposedNode, like ForEachLoop or Switch, an outport inside 'this' is seen differently than the true outport.
  */
-OutPort *Node::getOutPort(const std::string& name) const throw(YACS::Exception)
+OutPort *Node::getOutPort(const std::string& name) const 
 {
   OutPort *ret;
   try
@@ -427,7 +427,7 @@ DynParaLoop *Node::getClosestDPLAmongAncestors() const
   return NULL;
 }
 
-ComposedNode *Node::getRootNode() const throw(YACS::Exception)
+ComposedNode *Node::getRootNode() const 
 {
   if(!_father)
     throw Exception("No root node");
@@ -442,7 +442,7 @@ ComposedNode *Node::getRootNode() const throw(YACS::Exception)
  * USAGE NOT CLEAR, not used so far, when are those characters set ?
  */
 
-void Node::checkValidityOfPortName(const std::string& name) throw(YACS::Exception)
+void Node::checkValidityOfPortName(const std::string& name) 
 {
   if(name.find(SEP_CHAR_IN_PORT, 0 )!=string::npos)
     {
@@ -464,7 +464,7 @@ void Node::checkValidityOfNodeName(const std::string& name)
  * @note : Check that 'node1' and 'node2' have exactly the same father
  * @exception : If 'node1' and 'node2' have NOT exactly the same father
  */
-ComposedNode *Node::checkHavingCommonFather(Node *node1, Node *node2) throw(YACS::Exception)
+ComposedNode *Node::checkHavingCommonFather(Node *node1, Node *node2) 
 {
   if(node1!=0 && node2!=0)
     {

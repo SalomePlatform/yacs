@@ -51,12 +51,12 @@ namespace YACS
       std::string getKind() const;
       bool isAlreadyStarted(const Task *askingNode) const;
       Engines::Container_ptr getContainerPtr(const Task *askingNode) const;
-      void start(const Task *askingNode) throw (Exception);
+      void start(const Task *askingNode) ;
       Container *clone() const;
       Container *cloneAlways() const;
       std::string getPlacementId(const Task *askingNode) const;
       std::string getFullPlacementId(const Task *askingNode) const;
-      void checkCapabilityToDealWith(const ComponentInstance *inst) const throw (Exception);
+      void checkCapabilityToDealWith(const ComponentInstance *inst) const ;
       void setProperty(const std::string& name, const std::string& value);
       std::string getProperty(const std::string& name) const;
       void clearProperties();

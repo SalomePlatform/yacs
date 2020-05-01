@@ -35,7 +35,7 @@ XmlPython::XmlPython(InputPyPort* p)
 {
 }
 
-void XmlPython::put(const void *data) throw(ConversionException)
+void XmlPython::put(const void *data)
 {
   DEBTRACE((const char *)data);
   put((const char *)data);
@@ -46,7 +46,7 @@ void XmlPython::put(const void *data) throw(ConversionException)
   *   \param data : Xml::char *
   */
 
-void XmlPython::put(const char *data) throw(ConversionException)
+void XmlPython::put(const char *data)
 {
   DEBTRACE(data);
   xmlDocPtr doc;

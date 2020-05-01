@@ -31,11 +31,11 @@ namespace YACS
     public:
       static void setRuntime();
       std::vector< std::pair<std::string,int> > getCatalogOfComputeNodes() const;
-      ElementaryNode* createNode(const std::string& implementation, const std::string& name) throw(Exception);
+      ElementaryNode* createNode(const std::string& implementation, const std::string& name) ;
       InputPort* createInputPort(const std::string& name, const std::string& impl, Node * node, TypeCode * type);
       OutputPort* createOutputPort(const std::string& name, const std::string& impl, Node * node, TypeCode * type);
-      InputPort* adapt(InputPort* source, const std::string& impl,TypeCode * type,bool init) throw (ConversionException);
-      InputPort* adapt(InPropertyPort* source, const std::string& impl, TypeCode * type,bool init) throw (ConversionException);
+      InputPort* adapt(InputPort* source, const std::string& impl,TypeCode * type,bool init);
+      InputPort* adapt(InPropertyPort* source, const std::string& impl, TypeCode * type,bool init);
       ComponentInstance* createComponentInstance(const std::string& name, const std::string& kind="");
     };
   }

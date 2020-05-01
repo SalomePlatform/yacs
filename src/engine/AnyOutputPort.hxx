@@ -37,8 +37,8 @@ namespace YACS
       AnyOutputPort(const AnyOutputPort& other, Node *newHelder);
       virtual ~AnyOutputPort();
       virtual void setValue(Any *data);
-      virtual void put(const void *data) throw(ConversionException);
-      void put(Any *data) throw(ConversionException);
+      virtual void put(const void *data);
+      void put(Any *data);
       //! get the current dispatched value for update port value 
       Any* getValue() const { return _data; }
       virtual std::string getAsString();

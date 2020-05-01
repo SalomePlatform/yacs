@@ -36,8 +36,8 @@ namespace YACS
     public:
       PyCorbaInt(InputCorbaPort* p)
         : ProxyPort(p), DataPort(p->getName(), p->getNode(), p->edGetType()), Port(p->getNode()) {}
-      virtual void put(const void *data) throw(ConversionException);
-      void put(PyObject *data) throw(ConversionException);
+      virtual void put(const void *data);
+      void put(PyObject *data);
     };
 
     class PyCorbaDouble : public ProxyPort
@@ -45,8 +45,8 @@ namespace YACS
     public:
       PyCorbaDouble(InputCorbaPort* p)
         : ProxyPort(p), DataPort(p->getName(), p->getNode(), p->edGetType()), Port(p->getNode()) {}
-      virtual void put(const void *data) throw(ConversionException);
-      void put(PyObject *data) throw(ConversionException);
+      virtual void put(const void *data);
+      void put(PyObject *data);
     };
 
     class PyCorbaString : public ProxyPort
@@ -54,8 +54,8 @@ namespace YACS
     public:
       PyCorbaString(InputCorbaPort* p)
         : ProxyPort(p), DataPort(p->getName(), p->getNode(), p->edGetType()), Port(p->getNode()) {}
-      virtual void put(const void *data) throw(ConversionException);
-      void put(PyObject *data) throw(ConversionException);
+      virtual void put(const void *data);
+      void put(PyObject *data);
     };
 
     class PyCorbaBool : public ProxyPort
@@ -63,16 +63,16 @@ namespace YACS
     public:
       PyCorbaBool(InputCorbaPort* p)
         : ProxyPort(p), DataPort(p->getName(), p->getNode(), p->edGetType()), Port(p->getNode()) {}
-      virtual void put(const void *data) throw(ConversionException);
-      void put(PyObject *data) throw(ConversionException);
+      virtual void put(const void *data);
+      void put(PyObject *data);
     };
 
     class PyCorbaObjref : public ProxyPort
     {
     public:
       PyCorbaObjref(InputCorbaPort* p);
-      virtual void put(const void *data) throw(ConversionException);
-      void put(PyObject *data) throw(ConversionException);
+      virtual void put(const void *data);
+      void put(PyObject *data);
     protected:
       PyObject * _pyorb;
       CORBA::ORB_ptr _orb;
@@ -82,16 +82,16 @@ namespace YACS
     {
     public:
       PyCorbaSequence(InputCorbaPort* p);
-      virtual void put(const void *data) throw(ConversionException);
-      void put(PyObject *data) throw(ConversionException);
+      virtual void put(const void *data);
+      void put(PyObject *data);
     };
 
     class PyCorbaStruct : public ProxyPort
     {
     public:
       PyCorbaStruct(InputCorbaPort* p);
-      virtual void put(const void *data) throw(ConversionException);
-      void put(PyObject *data) throw(ConversionException);
+      virtual void put(const void *data);
+      void put(PyObject *data);
     };
 
   }

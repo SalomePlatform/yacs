@@ -39,7 +39,7 @@ PyInit::PyInit(InputPyPort* p)
  *   \param data : PyObject object as a void * pointer
  */
 
-void PyInit::put(const void *data) throw(ConversionException)
+void PyInit::put(const void *data)
 {
   put((PyObject *)data);
 }
@@ -48,7 +48,7 @@ void PyInit::put(const void *data) throw(ConversionException)
 /*!
  *   \param data : PyObject object
  */
-void PyInit::put(PyObject *data) throw(ConversionException)
+void PyInit::put(PyObject *data)
 {
   DEBTRACE("PyInit::put(PyObject *data)"<<data->ob_refcnt);
   InterpreterUnlocker l;

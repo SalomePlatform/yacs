@@ -36,7 +36,7 @@ NeutralInit::NeutralInit(InputPort* p)
 {
 }
 
-void NeutralInit::put(const void *data) throw(ConversionException)
+void NeutralInit::put(const void *data)
 {
   DEBTRACE(" NeutralInit::put(const void *data)");
   put((YACS::ENGINE::Any *)data);
@@ -47,7 +47,7 @@ void NeutralInit::put(const void *data) throw(ConversionException)
   *   \param data : YACS::ENGINE::Any object
   */
 
-void NeutralInit::put(YACS::ENGINE::Any *data) throw(ConversionException)
+void NeutralInit::put(YACS::ENGINE::Any *data)
 {
   DEBTRACE("NeutralInit::put " << data);
   if(!edGetType()->isAdaptable(data->getType()))

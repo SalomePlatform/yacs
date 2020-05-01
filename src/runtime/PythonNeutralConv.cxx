@@ -36,7 +36,7 @@ PyNeutral::PyNeutral(InputPort* p)
 {
 }
 
-void PyNeutral::put(const void *data) throw(ConversionException)
+void PyNeutral::put(const void *data)
 {
   DEBTRACE( " PyNeutral::put(const void *data)" );
   put((PyObject *)data);
@@ -47,7 +47,7 @@ void PyNeutral::put(const void *data) throw(ConversionException)
   *   \param data : Python value
   */
 
-void PyNeutral::put(PyObject *data) throw(ConversionException)
+void PyNeutral::put(PyObject *data)
 {
   DEBTRACE( "PyNeutral::put " );
   YACS::ENGINE::Any *ob;

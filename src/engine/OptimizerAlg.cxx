@@ -31,7 +31,7 @@ OptimizerAlgBase::~OptimizerAlgBase()
 {
 }
 
-void OptimizerAlgBase::initialize(const Any *input) throw (YACS::Exception)
+void OptimizerAlgBase::initialize(const Any *input)
 {
 }
 
@@ -74,7 +74,7 @@ TypeCode * OptimizerAlgBase::getTCForAlgoResultProxy() const
   return getTCForAlgoResult();
 }
 
-void OptimizerAlgBase::initializeProxy(const Any *input) throw (YACS::Exception)
+void OptimizerAlgBase::initializeProxy(const Any *input)
 {
   initialize(input);
 }

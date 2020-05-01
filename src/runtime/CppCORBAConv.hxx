@@ -34,8 +34,8 @@ namespace YACS
     public:
       CppCorba(InputCorbaPort* p)
         : ProxyPort(p), DataPort(p->getName(), p->getNode(), p->edGetType()), Port(p->getNode()) {}
-      virtual void put(const void *data) throw(ConversionException);
-      void put(Any *data) throw(ConversionException);
+      virtual void put(const void *data);
+      void put(Any *data);
     };
     int isAdaptableCorbaCpp(const TypeCode *t1, const TypeCode *t2);
   }

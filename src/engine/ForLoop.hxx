@@ -44,9 +44,9 @@ namespace YACS
       void init(bool start=true);
       InputPort *edGetNbOfTimesInputPort() { return &_nbOfTimesPort; }
       Node *simpleClone(ComposedNode *father, bool editionOnly=true) const;
-      InputPort* getInputPort(const std::string& name) const throw(Exception);
-      OutPort *getOutPort(const std::string& name) const throw(Exception);
-      OutputPort *getOutputPort(const std::string& name) const throw(Exception);
+      InputPort* getInputPort(const std::string& name) const ;
+      OutPort *getOutPort(const std::string& name) const ;
+      OutputPort *getOutputPort(const std::string& name) const ;
       std::list<InputPort *> getLocalInputPorts() const;
       std::list<OutputPort *> getLocalOutputPorts() const;
       std::list<OutputPort *> getSetOfOutputPort() const;

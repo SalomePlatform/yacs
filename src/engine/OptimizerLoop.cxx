@@ -264,7 +264,7 @@ int OptimizerLoop::getNumberOfInputPorts() const
   return DynParaLoop::getNumberOfInputPorts()+2;
 }
 
-InputPort *OptimizerLoop::getInputPort(const std::string& name) const throw(YACS::Exception)
+InputPort *OptimizerLoop::getInputPort(const std::string& name) const 
 {
   if (name == NAME_OF_ALGO_INIT_PORT)
     return (InputPort *)&_algoInitPort;
@@ -468,7 +468,7 @@ YACS::Event OptimizerLoop::updateStateOnFailedEventFrom(Node *node, const Execut
   return DynParaLoop::updateStateOnFailedEventFrom(node,execInst);
 }
 
-void OptimizerLoop::checkNoCyclePassingThrough(Node *node) throw(YACS::Exception)
+void OptimizerLoop::checkNoCyclePassingThrough(Node *node) 
 {
 }
 
@@ -523,7 +523,7 @@ void OptimizerLoop::checkCFLinks(const std::list<OutPort *>& starts, InputPort *
 }
 
 void OptimizerLoop::checkLinkPossibility(OutPort *start, const std::list<ComposedNode *>& pointsOfViewStart,
-                          InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd) throw(YACS::Exception)
+                          InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd) 
 {
   DynParaLoop::checkLinkPossibility(start, pointsOfViewStart, end, pointsOfViewEnd);
   std::string linkName("(");
@@ -799,7 +799,7 @@ std::string OptimizerLoop::getAlgLib() const
 /*!
  *  Throw an exception if the node is not valid
  */
-void OptimizerLoop::checkBasicConsistency() const throw(YACS::Exception)
+void OptimizerLoop::checkBasicConsistency() const 
 {
   DEBTRACE("OptimizerLoop::checkBasicConsistency");
   if (_alglib == "")
@@ -831,14 +831,14 @@ std::list<OutputPort *> OptimizerLoop::getLocalOutputPorts() const
   return ret;
 }
 
-OutPort * OptimizerLoop::getOutPort(const std::string& name) const throw(YACS::Exception)
+OutPort * OptimizerLoop::getOutPort(const std::string& name) const 
 {
   return (name == NAME_OF_ALGO_RESULT_PORT) ? (OutPort *)&_algoResultPort :
                                               DynParaLoop::getOutPort(name);
 }
 
 
-OutputPort * OptimizerLoop::getOutputPort(const std::string& name) const throw(YACS::Exception)
+OutputPort * OptimizerLoop::getOutputPort(const std::string& name) const 
 {
   return (name == NAME_OF_ALGO_RESULT_PORT) ? (OutputPort *)&_algoResultPort :
                                               DynParaLoop::getOutputPort(name);

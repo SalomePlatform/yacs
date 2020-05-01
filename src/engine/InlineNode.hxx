@@ -102,7 +102,7 @@ namespace YACS
       void accept(Visitor *visitor);
       virtual ~InlineFuncNode();
       virtual std::string typeName() { return "YACS__ENGINE__InlineFuncNode"; }
-      virtual void checkBasicConsistency() const throw(Exception);
+      virtual void checkBasicConsistency() const ;
     protected:
       std::string _fname;
     };

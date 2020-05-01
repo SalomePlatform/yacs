@@ -61,12 +61,12 @@ OutputPort *AnyOutputPort::clone(Node *newHelder) const
   return new AnyOutputPort(*this,newHelder);
 }
 
-void AnyOutputPort::put(const void *data) throw(ConversionException)
+void AnyOutputPort::put(const void *data)
 {
   put((YACS::ENGINE::Any *)data);
 }
 
-void AnyOutputPort::put(YACS::ENGINE::Any *data) throw(ConversionException)
+void AnyOutputPort::put(YACS::ENGINE::Any *data)
 {
   setValue(data);
   OutputPort::put(data);

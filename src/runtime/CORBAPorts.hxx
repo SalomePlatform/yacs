@@ -49,11 +49,11 @@ namespace YACS
       virtual ~InputCorbaPort();
       bool edIsManuallyInitialized() const;
       void edRemoveManInit();
-      virtual void put(const void *data) throw(ConversionException);
-      void put(CORBA::Any *data) throw (ConversionException);
+      virtual void put(const void *data);
+      void put(CORBA::Any *data);
       void releaseData() override;
       InputPort *clone(Node *newHelder) const;
-      void *get() const throw(Exception);
+      void *get() const ;
       virtual bool isEmpty();
       virtual CORBA::Any * getAny();
       virtual std::string getAsString();
@@ -85,8 +85,8 @@ namespace YACS
       OutputCorbaPort(const std::string& name, Node *node, TypeCode * type);
       OutputCorbaPort(const OutputCorbaPort& other, Node *newHelder);
       virtual ~OutputCorbaPort();
-      virtual void put(const void *data) throw(ConversionException);
-      void put(CORBA::Any *data) throw (ConversionException);
+      virtual void put(const void *data);
+      void put(CORBA::Any *data);
       OutputPort *clone(Node *newHelder) const;
       virtual CORBA::Any * getAny();
       virtual CORBA::Any * getAnyOut();

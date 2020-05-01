@@ -47,7 +47,7 @@ namespace YACS
      *   \param data : YACS::ENGINE::Any object as a void * pointer
      */
 
-    void CppXml::put(const void *data) throw(ConversionException)
+    void CppXml::put(const void *data)
     {
       put((YACS::ENGINE::Any *)data);
     }
@@ -56,7 +56,7 @@ namespace YACS
     /*!
      *   \param data : YACS::ENGINE::Any object
      */
-    void CppXml::put(YACS::ENGINE::Any *data) throw(ConversionException)
+    void CppXml::put(YACS::ENGINE::Any *data)
     {
       DEBTRACE("CppXml::put");
       std::string s = convertCppXml(edGetType(), data);

@@ -61,7 +61,7 @@ namespace YACS
     public:
       VisitorSaveSchema(ComposedNode *root);
       virtual ~VisitorSaveSchema();
-      void openFileSchema(std::string xmlDump) throw(Exception);
+      void openFileSchema(std::string xmlDump) ;
       void closeFileSchema();
       virtual void visitBloc(Bloc *node);
       virtual void visitElementaryNode(ElementaryNode *node);

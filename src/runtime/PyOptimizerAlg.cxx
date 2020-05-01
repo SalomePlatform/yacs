@@ -69,7 +69,7 @@ void PyOptimizerAlgBase::finishProxy()
   OptimizerAlgBase::finishProxy();
 }
 
-void PyOptimizerAlgBase::initializeProxy(const Any *input) throw (YACS::Exception)
+void PyOptimizerAlgBase::initializeProxy(const Any *input)
 {
   GILState gs;
   OptimizerAlgBase::initializeProxy(input);

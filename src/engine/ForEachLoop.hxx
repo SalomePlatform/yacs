@@ -64,9 +64,9 @@ namespace YACS
       void incrRef() const;
       AnySplitOutputPort(const std::string& name, Node *node, TypeCode *type);
       AnySplitOutputPort(const AnySplitOutputPort& other, Node *newHelder);
-      bool addInPort(InPort *inPort) throw(Exception);
+      bool addInPort(InPort *inPort) ;
       void getAllRepresented(std::set<OutPort *>& represented) const;
-      int removeInPort(InPort *inPort, bool forward) throw(Exception);
+      int removeInPort(InPort *inPort, bool forward) ;
       void addRepr(OutPort *repr, InterceptorInputPort *intercptr);
       OutPort *getRepr() const { return _repr; }
       OutputPort *clone(Node *newHelder) const;
@@ -94,7 +94,7 @@ namespace YACS
     private:
       SplitterNode(const std::string& name, TypeCode *typeOfData, ForEachLoopGen *father);
       SplitterNode(const SplitterNode& other, ForEachLoopGen *father);
-      InputPort *getInputPort(const std::string& name) const throw(Exception);
+      InputPort *getInputPort(const std::string& name) const ;
       Node *simpleClone(ComposedNode *father, bool editionOnly) const;
       unsigned getNumberOfElements() const;
       void execute();
@@ -180,17 +180,17 @@ namespace YACS
       void getReadyTasks(std::vector<Task *>& tasks);
       int getNumberOfInputPorts() const;
       //
-      void checkNoCyclePassingThrough(Node *node) throw(Exception);
+      void checkNoCyclePassingThrough(Node *node) ;
       void selectRunnableTasks(std::vector<Task *>& tasks);
       //
       unsigned getExecCurrentId() const { return _execCurrentId; } // for update progress bar on GUI part
       std::list<InputPort *> getSetOfInputPort() const;
       std::list<InputPort *> getLocalInputPorts() const;
       InputPort *edGetSeqOfSamplesPort() { return &_splitterNode._dataPortToDispatch; }
-      InputPort *getInputPort(const std::string& name) const throw(Exception);
-      OutPort *getOutPort(const std::string& name) const throw(Exception);
-      OutputPort *getOutputPort(const std::string& name) const throw(Exception);
-      Node *getChildByShortName(const std::string& name) const throw(Exception);
+      InputPort *getInputPort(const std::string& name) const ;
+      OutPort *getOutPort(const std::string& name) const ;
+      OutputPort *getOutputPort(const std::string& name) const ;
+      Node *getChildByShortName(const std::string& name) const ;
       std::list<OutputPort *> getLocalOutputPorts() const;
       void writeDot(std::ostream &os) const;
       virtual std::string typeName() {return "YACS__ENGINE__ForEachLoop";}
@@ -210,15 +210,15 @@ namespace YACS
       void cleanDynGraph() override;
     protected:
       void checkLinkPossibility(OutPort *start, const std::list<ComposedNode *>& pointsOfViewStart,
-                                InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd) throw(Exception);
+                                InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd) ;
       YACS::Event updateStateOnFinishedEventFrom(Node *node);
       YACS::Event updateStateForInitNodeOnFinishedEventFrom(Node *node, unsigned int id);
       YACS::Event updateStateForWorkNodeOnFinishedEventFrom(Node *node, unsigned int id, bool isNormalFinish);
       YACS::Event updateStateForFinalizeNodeOnFinishedEventFrom(Node *node, unsigned int id);
       YACS::Event updateStateOnFailedEventFrom(Node *node, const Executor *execInst);
       void buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView);
-      void getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(Exception);
-      void releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(Exception);
+      void getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) ;
+      void releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) ;
     protected:
       void pushAllSequenceValues();
       void createOutputOutOfScopeInterceptors(int branchNb);

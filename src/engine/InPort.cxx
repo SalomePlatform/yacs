@@ -47,7 +47,7 @@ int InPort::edGetNumberOfLinks() const
   return _backLinks.size();
 }
 
-void InPort::edRemoveAllLinksLinkedWithMe() throw(YACS::Exception)
+void InPort::edRemoveAllLinksLinkedWithMe() 
 {
   set< std::pair<OutPort *,bool> > temp(_backLinks);//edRemoveLink called after causes invalidation of set iterator.
   for(auto iter : temp)

@@ -61,20 +61,20 @@ namespace YACS
       std::string getName() const;
       std::string getTaskName(Task *task) const;
       DeploymentTree getDeploymentTree() const;
-      DeploymentTree checkDeploymentTree(bool deep) const throw(Exception);
+      DeploymentTree checkDeploymentTree(bool deep) const ;
       std::vector<Task *> getNextTasks(bool& isMore);
       virtual bool isPlacementPredictableB4Run() const = 0;
       void notifyFrom(const Task *sender, YACS::Event event, const Executor *execInst);
-      bool edAddLink(OutPort *start, InPort *end) throw(Exception);
-      virtual bool edAddDFLink(OutPort *start, InPort *end) throw(Exception);
+      bool edAddLink(OutPort *start, InPort *end) ;
+      virtual bool edAddDFLink(OutPort *start, InPort *end) ;
       //Node* DISOWNnode is a SWIG notation to indicate that the ownership of the node is transfered to C++
-      virtual bool edAddChild(Node *DISOWNnode) throw(Exception);
-      virtual void edRemoveChild(Node *node) throw(Exception);
-      bool edAddLink(OutGate *start, InGate *end) throw(Exception);
-      bool edAddCFLink(Node *nodeS, Node *nodeE) throw(Exception);
-      void edRemoveCFLink(Node *nodeS, Node *nodeE) throw(Exception);
-      void edRemoveLink(OutPort *start, InPort *end) throw(Exception);
-      void edRemoveLink(OutGate *start, InGate *end) throw(Exception);
+      virtual bool edAddChild(Node *DISOWNnode) ;
+      virtual void edRemoveChild(Node *node) ;
+      bool edAddLink(OutGate *start, InGate *end) ;
+      bool edAddCFLink(Node *nodeS, Node *nodeE) ;
+      void edRemoveCFLink(Node *nodeS, Node *nodeE) ;
+      void edRemoveLink(OutPort *start, InPort *end) ;
+      void edRemoveLink(OutGate *start, InGate *end) ;
       virtual bool isRepeatedUnpredictablySeveralTimes() const { return false; }
       virtual bool isLoop() const { return false; }
       virtual std::list<Node *> edGetDirectDescendants() const =  0;
@@ -83,8 +83,8 @@ namespace YACS
       std::list<Node *> getAllRecursiveNodes();
       virtual std::list<Node *> getAllRecursiveConstituents(); // first implementation
       std::list<ProgressWeight> getProgressWeight() const;
-      std::string getInPortName(const InPort *) const throw (Exception);
-      std::string getOutPortName(const OutPort *) const throw (Exception);
+      std::string getInPortName(const InPort *) const ;
+      std::string getOutPortName(const OutPort *) const ;
       //
       int getNumberOfInputPorts() const;
       int getNumberOfOutputPorts() const;
@@ -96,28 +96,28 @@ namespace YACS
       std::set<InPort *> getAllInPortsComingFromOutsideOfCurrentScope() const;
       std::list<InputDataStreamPort *> getSetOfInputDataStreamPort() const;
       std::list<OutputDataStreamPort *> getSetOfOutputDataStreamPort() const;
-      OutPort *getOutPort(const std::string& name) const throw(Exception);
-      InputPort *getInputPort(const std::string& name) const throw(Exception);
-      OutputPort *getOutputPort(const std::string& name) const throw(Exception);
-      InputDataStreamPort *getInputDataStreamPort(const std::string& name) const throw(Exception);
-      OutputDataStreamPort *getOutputDataStreamPort(const std::string& name) const throw(Exception);
+      OutPort *getOutPort(const std::string& name) const ;
+      InputPort *getInputPort(const std::string& name) const ;
+      OutputPort *getOutputPort(const std::string& name) const ;
+      InputDataStreamPort *getInputDataStreamPort(const std::string& name) const ;
+      OutputDataStreamPort *getOutputDataStreamPort(const std::string& name) const ;
       std::vector< std::pair<OutPort *, InPort *> > getSetOfInternalLinks() const;
       virtual std::vector< std::pair<OutPort *, InPort *> > getSetOfLinksLeavingCurrentScope() const;
-      void checkConsistency(LinkInfo& info) const throw(Exception);
+      void checkConsistency(LinkInfo& info) const ;
       virtual std::vector< std::pair<InPort *, OutPort *> > getSetOfLinksComingInCurrentScope() const;
       virtual std::string typeName() {return "YACS__ENGINE__ComposedNode";}
       virtual void edUpdateState();
-      virtual void checkBasicConsistency() const throw(Exception);
+      virtual void checkBasicConsistency() const ;
       virtual std::string getErrorReport();
       //
-      ComposedNode *getRootNode() const throw(Exception);
+      ComposedNode *getRootNode() const ;
       bool isNodeAlreadyAggregated(const Node *node) const;
       virtual bool isNameAlreadyUsed(const std::string& name) const;
       Node *isInMyDescendance(Node *nodeToTest) const;
-      std::string getChildName(const Node* node) const throw(Exception);
+      std::string getChildName(const Node* node) const ;
       virtual std::string getMyQualifiedName(const Node *directSon) const;
-      Node *getChildByName(const std::string& name) const throw(Exception);
-      static ComposedNode *getLowestCommonAncestor(Node *node1, Node *node2) throw(Exception);
+      Node *getChildByName(const std::string& name) const ;
+      static ComposedNode *getLowestCommonAncestor(Node *node1, Node *node2) ;
       static std::string getLowestCommonAncestorStr(const std::string& node1, const std::string& node2);
       void loaded();
       void connected();
@@ -135,31 +135,31 @@ namespace YACS
     protected:
       void edDisconnectAllLinksWithMe();
       static bool splitNamesBySep(const std::string& globalName, const char separator[],
-                                  std::string& firstPart, std::string& lastPart, bool priority) throw(Exception);
-      virtual Node *getChildByShortName(const std::string& name) const throw(Exception) = 0;
+                                  std::string& firstPart, std::string& lastPart, bool priority) ;
+      virtual Node *getChildByShortName(const std::string& name) const  = 0;
       YACS::Event updateStateFrom(Node *node, YACS::Event event, const Executor *execInst);//update the state of this. Precondition : node->_father == this
       virtual YACS::Event updateStateOnStartEventFrom(Node *node);//transition 3 doc P.R
       virtual YACS::Event updateStateOnFinishedEventFrom(Node *node) = 0;//transition 9 doc P.R.
       virtual YACS::Event updateStateOnFailedEventFrom(Node *node, const Executor *execInst);//transition 9 doc P.R.
       virtual void checkLinkPossibility(OutPort *start, const std::list<ComposedNode *>& pointsOfViewStart,
-                                        InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd) throw(Exception);
+                                        InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd) ;
       virtual void buildDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView);
       virtual void buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView);
-      virtual void getDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView) throw(Exception);
-      virtual void getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(Exception);
-      virtual void releaseDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView) throw(Exception);
-      virtual void releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(Exception);
-      virtual void checkNoCyclePassingThrough(Node *node) throw(Exception) = 0;
-      void checkInMyDescendance(Node *nodeToTest) const throw(Exception);
+      virtual void getDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView) ;
+      virtual void getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) ;
+      virtual void releaseDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView) ;
+      virtual void releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) ;
+      virtual void checkNoCyclePassingThrough(Node *node)  = 0;
+      void checkInMyDescendance(Node *nodeToTest) const ;
       template <class PORT>
-      std::string getPortName(const PORT * port) const throw (Exception);
+      std::string getPortName(const PORT * port) const ;
       //For CF Computations
-      void checkNoCrossHierachyWith(Node *node) const throw (Exception);
+      void checkNoCrossHierachyWith(Node *node) const ;
       virtual void performCFComputations(LinkInfo& info) const;
       virtual void destructCFComputations(LinkInfo& info) const;
       Node *getLowestNodeDealingAll(const std::list<OutPort *>& ports) const;
       void checkLinksCoherenceRegardingControl(const std::vector<OutPort *>& starts,
-                                               InputPort *end, LinkInfo& info) const throw(Exception);
+                                               InputPort *end, LinkInfo& info) const ;
       virtual void checkControlDependancy(OutPort *start, InPort *end, bool cross,
                                           std::map < ComposedNode *,  std::list < OutPort * >, SortHierarc >& fw,
                                           std::vector<OutPort *>& fwCross,
@@ -175,7 +175,7 @@ namespace YACS
     };
 
     template <class PORT>
-    std::string ComposedNode::getPortName(const PORT * port) const throw (Exception)
+    std::string ComposedNode::getPortName(const PORT * port) const 
     {
       Node *node = port->getNode();
       std::string portName = port->getName();  

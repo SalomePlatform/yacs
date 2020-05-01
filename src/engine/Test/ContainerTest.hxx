@@ -34,7 +34,7 @@ namespace YACS
       std::string getPlacementInfo() const;
       // implementation of compulsary methods
       bool isAlreadyStarted(const Task *askingNode) const;
-      void start(const Task *askingNode) throw(Exception);
+      void start(const Task *askingNode) ;
       Container *clone() const;
       Container *cloneAlways() const;
       //
@@ -52,7 +52,7 @@ namespace YACS
       std::string getFullPlacementId(const Task *askingNode) const { return ""; }
       static void initAllContainers();
     protected:
-      void checkCapabilityToDealWith(const ComponentInstance *inst) const throw(Exception);
+      void checkCapabilityToDealWith(const ComponentInstance *inst) const ;
     protected:
       bool _alreadyStarted;
       unsigned _myCounter;
@@ -67,7 +67,7 @@ namespace YACS
       std::string getKind() const;
       // implementation of compulsary methods
       bool isAlreadyStarted(const Task *askingNode) const;
-      void start(const Task *askingNode) throw(Exception);
+      void start(const Task *askingNode) ;
       Container *clone() const;
       Container *cloneAlways() const;
       //
@@ -85,7 +85,7 @@ namespace YACS
       std::string getFullPlacementId(const Task *askingNode) const { return ""; }
       static void initAllContainers();
     protected:
-      void checkCapabilityToDealWith(const ComponentInstance *inst) const throw(Exception);
+      void checkCapabilityToDealWith(const ComponentInstance *inst) const ;
     protected:
       bool _alreadyStarted;
       unsigned _myCounter;

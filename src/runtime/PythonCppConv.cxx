@@ -38,7 +38,7 @@ namespace YACS
       return convertPyObjectNeutral(t, data);
     }
 
-    void PyCpp::put(const void *data)  throw(ConversionException)
+    void PyCpp::put(const void *data) 
     {
       put((PyObject *)data);
     }
@@ -48,7 +48,7 @@ namespace YACS
      *   \param data : python object
      */
 
-    void PyCpp::put(PyObject *data)  throw(ConversionException)
+    void PyCpp::put(PyObject *data) 
     {
       YACS::ENGINE::Any *a;
       //Do not need to take the Python GIL as put is called from Python node

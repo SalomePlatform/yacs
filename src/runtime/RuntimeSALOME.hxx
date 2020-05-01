@@ -122,103 +122,103 @@ namespace YACS
 
       virtual InputPort* adapt(InputPort* source,
                                const std::string& impl,
-                               TypeCode * type,bool init=false) throw (ConversionException);
+                               TypeCode * type,bool init=false);
 
       virtual InputPort* adapt(InPropertyPort* source,
                                const std::string& impl,
-                               TypeCode * type,bool init=false) throw (ConversionException);
+                               TypeCode * type,bool init=false);
 
       virtual InputPort* adaptNeutral(InputPort* source,
                                       const std::string& impl,
-                                      TypeCode * type,bool init) throw (ConversionException);
+                                      TypeCode * type,bool init);
 
       virtual InputPort* adapt(InputCorbaPort* source,
                                const std::string& impl,
-                               TypeCode * type,bool init) throw (ConversionException);
+                               TypeCode * type,bool init);
 
       virtual InputPort* adaptCorbaToCorba(InputCorbaPort* source,
-                                           TypeCode * type) throw (ConversionException);
+                                           TypeCode * type);
   
       virtual InputPort* adaptCorbaToNeutral(InputCorbaPort* source,
-                                             TypeCode * type) throw (ConversionException);
+                                             TypeCode * type);
 
       virtual InputPort* adaptCorbaToPython(InputCorbaPort* source,
-                                            TypeCode * type) throw (ConversionException);
+                                            TypeCode * type);
 
       virtual InputPort* adaptCorbaToCpp(InputCorbaPort* source,
-                                         TypeCode * type) throw (ConversionException);
+                                         TypeCode * type);
 
       virtual InputPort* adaptCorbaToXml(InputCorbaPort* source,
-                                         TypeCode * type) throw (ConversionException);
+                                         TypeCode * type);
 
       virtual InputPort* adapt(InputPyPort* source,
                                const std::string& impl,
-                               TypeCode * type,bool init) throw (ConversionException);
+                               TypeCode * type,bool init);
 
       virtual InputPort* adaptPythonToCorba(InputPyPort* source,
-                                            TypeCode * type) throw (ConversionException);
+                                            TypeCode * type);
       
       virtual InputPort* adaptPythonToNeutral(InputPyPort* source,
-                                              TypeCode * type) throw (ConversionException);
+                                              TypeCode * type);
 
       virtual InputPort* adaptPythonToPython(InputPyPort* source,
-                                             TypeCode * type,bool init) throw (ConversionException);
+                                             TypeCode * type,bool init);
       
       virtual InputPort* adaptPythonToXml(InputPyPort* source,
-                                          TypeCode * type) throw (ConversionException);
+                                          TypeCode * type);
 
       virtual InputPort* adaptPythonToCpp(InputPyPort* source,
-                                          TypeCode * type) throw (ConversionException);
+                                          TypeCode * type);
 
       virtual InputPort* adapt(InputCppPort* source,
                                const std::string& impl,
-                               TypeCode * type,bool init) throw (ConversionException);
+                               TypeCode * type,bool init);
                                
       virtual InputPort* adaptCppToCorba(InputCppPort* source,
-                                            TypeCode * type) throw (ConversionException);
+                                            TypeCode * type);
       
       virtual InputPort* adaptCppToNeutral(InputCppPort* source,
-                                              TypeCode * type) throw (ConversionException);
+                                              TypeCode * type);
 
       virtual InputPort* adaptCppToPython(InputCppPort* source,
-                                             TypeCode * type) throw (ConversionException);
+                                             TypeCode * type);
       
       virtual InputPort* adaptCppToXml(InputCppPort* source,
-                                          TypeCode * type) throw (ConversionException);
+                                          TypeCode * type);
 
       virtual InputPort* adaptCppToCpp(InputCppPort* source,
-                                          TypeCode * type) throw (ConversionException);
+                                          TypeCode * type);
 
       virtual InputPort* adapt(InputXmlPort* source,
                                const std::string& impl,
-                               TypeCode * type,bool init) throw (ConversionException);
+                               TypeCode * type,bool init);
 
       virtual InputPort* adaptXmlToCorba(InputXmlPort* source,
-                                         TypeCode * type) throw (ConversionException);
+                                         TypeCode * type);
 
       virtual InputPort* adaptXmlToPython(InputXmlPort* inport,
-                                          TypeCode * type) throw (ConversionException);
+                                          TypeCode * type);
 
       virtual InputPort* adaptXmlToCpp(InputXmlPort* inport,
-                                          TypeCode * type) throw (ConversionException);
+                                          TypeCode * type);
 
       virtual InputPort* adaptXmlToNeutral(InputXmlPort* inport,
-                                          TypeCode * type) throw (ConversionException);
+                                          TypeCode * type);
       virtual InputPort* adaptXmlToXml(InputXmlPort* inport,
-                                TypeCode * type,bool init) throw (ConversionException);
+                                TypeCode * type,bool init);
 
 
       virtual InputPort* adaptNeutralToXml(InputPort* inport,
-                                           TypeCode * type) throw (ConversionException);
+                                           TypeCode * type);
 
       virtual InputPort* adaptNeutralToPython(InputPort* inport,
-                                              TypeCode * type) throw (ConversionException);
+                                              TypeCode * type);
 
       virtual InputPort* adaptNeutralToCorba(InputPort* inport,
-                                             TypeCode * type) throw (ConversionException);
+                                             TypeCode * type);
 
       virtual InputPort* adaptNeutralToCpp(InputPort* inport,
-                                             TypeCode * type) throw (ConversionException);
+                                             TypeCode * type);
 
       virtual void* convertNeutral(TypeCode * type, Any *data);
       virtual std::string convertNeutralAsString(TypeCode * type, Any *data);

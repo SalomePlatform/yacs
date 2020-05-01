@@ -394,8 +394,8 @@ public:
   ENGINE::Node * getNode() { return _node; }
 
   // Those two methods should never be called
-  bool edAddLink(ENGINE::OutPort *start, ENGINE::InPort *end) throw(Exception) { YASSERT(false); }
-  bool edAddDFLink(ENGINE::OutPort *start, ENGINE::InPort *end) throw(Exception) { YASSERT(false); }
+  bool edAddLink(ENGINE::OutPort *start, ENGINE::InPort *end)  { YASSERT(false); }
+  bool edAddDFLink(ENGINE::OutPort *start, ENGINE::InPort *end)  { YASSERT(false); }
 
 protected:
   ENGINE::Node * _node;

@@ -111,7 +111,7 @@ bool SalomeHPContainer::isAlreadyStarted(const Task *askingNode) const
   return helper->isAlreadyStarted(askingNode);
 }
 
-void SalomeHPContainer::start(const Task *askingNode) throw(YACS::Exception)
+void SalomeHPContainer::start(const Task *askingNode) 
 {
   SalomeContainerMonoHelper *helper(_launchModeType.getHelperOfTaskThreadSafe(this,askingNode));
   SalomeContainerToolsDecorator sctDeco(&_sct,this->getPG(),&_launchModeType,askingNode,this->getNumberOfCoresPerWorker());
@@ -228,7 +228,7 @@ std::map<std::string,std::string> SalomeHPContainer::getResourceProperties(const
   return _sct.getResourceProperties(name);
 }
 
-void SalomeHPContainer::checkCapabilityToDealWith(const ComponentInstance *inst) const throw(YACS::Exception)
+void SalomeHPContainer::checkCapabilityToDealWith(const ComponentInstance *inst) const 
 {
   if(inst->getKind()!=SalomeHPComponent::KIND)
     throw Exception("SalomeHPContainer::checkCapabilityToDealWith : SalomeContainer is not able to deal with this type of ComponentInstance.");

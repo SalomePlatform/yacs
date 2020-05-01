@@ -42,11 +42,11 @@ namespace YACS
       std::set<InPort *> edSetInPort() const;
       bool isAlreadyLinkedWith(InPort *withp) const;
       std::string getNameOfTypeOfCurrentInstance() const;
-      void edRemoveAllLinksLinkedWithMe() throw(Exception);
+      void edRemoveAllLinksLinkedWithMe() ;
       TypeOfChannel getTypeOfChannel() const;
       void getAllRepresented(std::set<OutPort *>& represented) const;
-      bool addInPort(InPort *inPort) throw(Exception);
-      int removeInPort(InPort *inPort, bool forward) throw(Exception);
+      bool addInPort(InPort *inPort) ;
+      int removeInPort(InPort *inPort, bool forward) ;
     public:
       void getHumanReprOfIncompleteCases(std::ostream& stream) const;
     private://Specific part
@@ -55,7 +55,7 @@ namespace YACS
       CollectorSwOutPort(Switch *master, InPort *port);
       CollectorSwOutPort(const CollectorSwOutPort& other, Switch *master);
       void addPotentialProducerForMaster(OutPort *port);
-      bool checkManagementOfPort(OutPort *port) throw(Exception);
+      bool checkManagementOfPort(OutPort *port) ;
     private:
       InPort *_consumer;
       std::string _className;
@@ -103,12 +103,12 @@ namespace YACS
       void init(bool start=true);
       //Node* DISOWNnode is a SWIG notation to indicate that the ownership of the node is transfered to C++
       Node *edSetDefaultNode(Node *DISOWNnode);
-      Node *edReleaseDefaultNode() throw(Exception);
-      Node *edReleaseCase(int caseId) throw(Exception);
+      Node *edReleaseDefaultNode() ;
+      Node *edReleaseCase(int caseId) ;
       Node *edGetNode(int caseId);
-      Node *edSetNode(int caseId, Node *DISOWNnode) throw(Exception);
+      Node *edSetNode(int caseId, Node *DISOWNnode) ;
       void edChangeCase(int oldCase, int newCase);
-      virtual bool edAddChild(Node *DISOWNnode) throw(Exception);
+      virtual bool edAddChild(Node *DISOWNnode) ;
       int getMaxCase();
       void getReadyTasks(std::vector<Task *>& tasks);
       std::list<Node *> edGetDirectDescendants() const;
@@ -118,16 +118,16 @@ namespace YACS
       int getMaxLevelOfParallelism() const;
       void getWeightRegardingDPL(ComplexWeight *weight);
       void partitionRegardingDPL(const PartDefinition *pd, std::map<ComposedNode *, YACS::BASES::AutoRefCnt<PartDefinition> >& zeMap);
-      void edRemoveChild(Node *node) throw(Exception);
+      void edRemoveChild(Node *node) ;
       std::list<InputPort *> getSetOfInputPort() const;
       std::list<InputPort *> getLocalInputPorts() const;
       YACS::StatesForNode getEffectiveState() const;
       YACS::StatesForNode getEffectiveState(const Node* node) const;
-      OutPort *getOutPort(const std::string& name) const throw(Exception);
-      InputPort* getInputPort(const std::string& name) const throw(Exception);
-      Node *getChildByShortName(const std::string& name) const throw(Exception);
+      OutPort *getOutPort(const std::string& name) const ;
+      InputPort* getInputPort(const std::string& name) const ;
+      Node *getChildByShortName(const std::string& name) const ;
       std::string getMyQualifiedName(const Node *directSon) const;
-      std::string getCaseId(const Node *node) const throw(Exception);
+      std::string getCaseId(const Node *node) const ;
       virtual void accept(Visitor *visitor);
       int getRankOfNode(Node *node) const;
       virtual std::string typeName() {return "YACS__ENGINE__Switch";}
@@ -137,17 +137,17 @@ namespace YACS
       Node *simpleClone(ComposedNode *father, bool editionOnly=true) const;
       std::set<InPort *> getAllInPortsComingFromOutsideOfCurrentScope() const;
       void checkLinkPossibility(OutPort *start, const std::list<ComposedNode *>& pointsOfViewStart,
-                                InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd) throw(Exception);
+                                InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd) ;
       void buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView);
-      void getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(Exception);
-      void releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(Exception);
+      void getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) ;
+      void releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) ;
       void checkCFLinks(const std::list<OutPort *>& starts, InputPort *end, unsigned char& alreadyFed, bool direction, LinkInfo& info) const;
       void checkControlDependancy(OutPort *start, InPort *end, bool cross,
                                   std::map < ComposedNode *,  std::list < OutPort * > >& fw,
                                   std::vector<OutPort *>& fwCross,
                                   std::map< ComposedNode *, std::list < OutPort *> >& bw,
                                   LinkInfo& info) const;
-      void checkNoCyclePassingThrough(Node *node) throw(Exception);
+      void checkNoCyclePassingThrough(Node *node) ;
     private:
       int getNbOfCases() const;
       static std::string getRepresentationOfCase(int i);
