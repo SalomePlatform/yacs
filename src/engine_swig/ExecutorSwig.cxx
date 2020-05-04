@@ -37,7 +37,7 @@ void ExecutorSwig::RunPy(Scheduler *graph,int debug, bool isPyThread, bool froms
   if (isPyThread) _save = PyEval_SaveThread(); // allow Python threads when embedded in a Python thread
   try
     {
-      RunB(graph, debug, fromscratch);
+      RunW(graph, debug, fromscratch);
     }
   catch (YACS::Exception& e)
     {

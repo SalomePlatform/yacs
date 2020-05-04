@@ -179,6 +179,14 @@ public:
   void btest(); // ignore resources
 };
 
+/**
+ * General test with 150 tasks of 3 types:
+ *   - 50 tasks which need 4 cores for 2s each
+ *   - 50 tasks which need 1 core for 1s each
+ *   - 50 tasks which need no core but take 2s each
+ * We use 2 resources: 10 cores and 18 cores
+ * We verify the global time of execution.
+ */
 void MyTest::atest()
 {
   constexpr std::size_t resourcesNumber = 2;
@@ -266,6 +274,10 @@ void MyTest::atest()
 
 }
 
+/**
+ * Test the case of tasks which need no resources and can be run whithout
+ * waiting.
+ */
 void MyTest::btest()
 {
   Checker<1, 1> check;

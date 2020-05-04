@@ -1703,7 +1703,7 @@ NewTask::NewTask(Executor& executor, YACS::ENGINE::Task* yacsTask)
 , _yacsTask(yacsTask)
 {
   Container * yacsContainer = yacsTask->getContainer();
-  if(yacsContainer != nullptr && !yacsTask->canAcceptImposedResource())
+  if(yacsContainer != nullptr && yacsTask->canAcceptImposedResource())
   {
     _type.ignoreResources = false;
     _type.name = yacsContainer->getName();
