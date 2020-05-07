@@ -465,22 +465,33 @@ std::vector< std::pair<std::string,int> > RuntimeSALOME::getCatalogOfComputeNode
   if(CORBA::is_nil(resManager))
     throw Exception("SalomeContainerToolsSpreadOverTheResDecorator::getParameters : Internal error ! The entry attached to the res manager in NS does not have right type !");
   std::vector< std::pair<std::string,int> > ret;
+  Engines::ResourceParameters params;
+  params.name = "";
+  params.hostname = "";
+  params.OS = "";
+  params.nb_proc = 0;
+  params.mem_mb = 0;
+  params.cpu_clock = 0;
+  params.nb_node = 0;
+  params.nb_proc_per_node = 0;
+  params.policy = "";
+  params.can_launch_batch_jobs = false;
+  params.can_run_containers = true;
+  params.componentList.length(0);
+  Engines::ResourceList_var resourceList;
+  resourceList = resManager->GetFittingResources(params);
+  ret.reserve(resourceList->length());
+  for(int i = 0; i<resourceList->length(); i++)
   {
-    Engines::ResourceList *rl(0);
-    Engines::IntegerList *il(0);
-    resManager->ListAllAvailableResources(rl,il);
-    int sz(rl->length());
-    if(il->length()!=sz)
-      throw Exception("SalomeContainerToolsSpreadOverTheResDecorator::getParameters : Internal error ! Invalid size !");
-    ret.resize(sz);
-    for(int i=0;i<sz;i++)
-      {
-        std::string s((*rl)[i]);
-        ret[i]=std::pair<std::string,int>(s,(*il)[i]);
-      }
-    delete rl;
-    delete il;
+    const char* resource_name = resourceList[i];
+    std::string std_resource_name = resource_name;
+    Engines::ResourceDefinition_var resource_definition
+                             = resManager->GetResourceDefinition(resource_name);
+    int nb_cores = resource_definition->nb_node *
+                   resource_definition->nb_proc_per_node;
+    ret.push_back(std::pair<std::string,int>(resource_name, nb_cores));
   }
+
   return ret;
 }
 

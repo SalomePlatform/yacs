@@ -1682,6 +1682,8 @@ void loadResources(WorkloadManager::WorkloadManager& wm)
     id++;
     newResource.nbCores = res.second;
     wm.addResource(newResource);
+    std::cerr << "Add resource " << newResource.name << " with "
+              << newResource.nbCores << " cores." << std::endl;
   }
 }
 
@@ -1788,7 +1790,7 @@ void Executor::newRun(Scheduler *graph,int debug, bool fromScratch)
   WorkloadManager::WorkloadManager wlm(algo);
   loadResources(wlm);
   wlm.start();
-  
+
   while (_toContinue)
     {
       DEBTRACE("--- executor main loop");

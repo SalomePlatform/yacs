@@ -47,6 +47,18 @@ std::string Container::getDiscreminantStrOfThis(const Task *askingNode) const
   return oss.str();
 }
 
+void Container::start(const Task *askingNode,
+                      const std::string& resource_name,
+                      const std::string& container_name)
+{
+  return start(askingNode);
+}
+
+bool Container::canAcceptImposedResource()
+{
+  return false;
+}
+
 /*!
  * If \a val is equal to true the current container 'this' is not destined to be deeply copied on clone call.
  * If \a val is equal to false the current container 'this' is destined to be deeply copied on clone call.

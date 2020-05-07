@@ -102,6 +102,9 @@ void PythonEntry::commonRemoteLoadPart1(InlineNode *reqNode)
         {
           try
           {
+            if(!_imposedResource.empty() && !_imposedContainer.empty())
+              container->start(reqNode, _imposedResource, _imposedContainer);
+            else
               container->start(reqNode);
           }
           catch(Exception& e)
@@ -722,6 +725,21 @@ void PythonNode::shutdown(int level)
     }
 }
 
+void PythonNode::imposeResource(const std::string& resource_name,
+                                const std::string& container_name)
+{
+  if(!resource_name.empty() && !container_name.empty())
+  {
+    _imposedResource = resource_name;
+    _imposedContainer = container_name;
+  }
+}
+
+bool PythonNode::canAcceptImposedResource()
+{
+  return _container != nullptr && _container->canAcceptImposedResource();
+}
+
 Node *PythonNode::simpleClone(ComposedNode *father, bool editionOnly) const
 {
   return new PythonNode(*this,father);
@@ -1330,5 +1348,20 @@ void PyFuncNode::shutdown(int level)
       _pynode=Engines::PyNode::_nil();
       _container->shutdown(level);
     }
+}
+
+void PyFuncNode::imposeResource(const std::string& resource_name,
+                                const std::string& container_name)
+{
+  if(!resource_name.empty() && !container_name.empty())
+  {
+    _imposedResource = resource_name;
+    _imposedContainer = container_name;
+  }
+}
+
+bool PyFuncNode::canAcceptImposedResource()
+{
+  return _container != nullptr && _container->canAcceptImposedResource();
 }
 

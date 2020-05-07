@@ -221,9 +221,29 @@ Engines::Container_ptr SalomeContainer::getContainerPtr(const Task *askingNode) 
 /*!
  * \param inst the component instance
  */
-void SalomeContainer::start(const Task *askingNode) 
+void SalomeContainer::start(const Task *askingNode)
 {
   SalomeContainerTools::Start(_componentNames,_launchModeType,_sct,_shutdownLevel,this,askingNode);
+}
+
+void SalomeContainer::start(const Task *askingNode,
+                            const std::string& resource_name,
+                            const std::string& container_name)
+{
+  if(canAcceptImposedResource())
+  {
+    SalomeContainerTools tempSct = _sct;
+    tempSct.setProperty("name", resource_name);
+    tempSct.setProperty("container_name", container_name);
+    SalomeContainerTools::Start(_componentNames,_launchModeType,tempSct,_shutdownLevel,this,askingNode);
+  }
+  else
+    start(askingNode);
+}
+
+bool SalomeContainer::canAcceptImposedResource()
+{
+  return _launchModeType->getType() == SalomeContainerMultiHelper::TYPE_NAME;
 }
 
 void SalomeContainer::shutdown(int level)

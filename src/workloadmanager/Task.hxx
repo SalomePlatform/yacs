@@ -61,7 +61,7 @@ namespace WorkloadManager
   {
     ContainerType type;
     Resource resource;
-    unsigned int index; // worker index on the resource for this type
+    unsigned int index=0; // worker index on the resource for this type
   };
 
   /**

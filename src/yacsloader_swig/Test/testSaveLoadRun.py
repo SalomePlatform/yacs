@@ -1511,7 +1511,7 @@ dd=range(10)""")
     n1.edAddChild(n10)
     n10.setScript("""
 import time
-time.sleep(2)
+time.sleep(4)
 o2=2*i1
 """)
     i1=n10.edAddInputPort("i1",ti)
@@ -1542,7 +1542,7 @@ o2=2*i1
     myRun=threading.Thread(None, ex.RunW, None, (p,0))
     myRun.start()
     import time
-    time.sleep(5)
+    time.sleep(7)
     SALOMERuntime.schemaSaveState(p, ex, xmlStateFileName)
     a,b,c=n1.getPassedResults(ex)
     myRun.join()

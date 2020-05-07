@@ -51,7 +51,11 @@ namespace YACS
       std::string getKind() const;
       bool isAlreadyStarted(const Task *askingNode) const;
       Engines::Container_ptr getContainerPtr(const Task *askingNode) const;
-      void start(const Task *askingNode) ;
+      void start(const Task *askingNode) override;
+      void start(const Task *askingNode,
+                 const std::string& resource_name,
+                 const std::string& container_name) override;
+      bool canAcceptImposedResource() override;
       Container *clone() const;
       Container *cloneAlways() const;
       std::string getPlacementId(const Task *askingNode) const;

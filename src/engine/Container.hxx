@@ -51,6 +51,10 @@ namespace YACS
       virtual std::string getDiscreminantStrOfThis(const Task *askingNode) const;
       virtual bool isAlreadyStarted(const Task *askingNode) const = 0;
       virtual void start(const Task *askingNode)  = 0;
+      virtual void start(const Task *askingNode,
+                         const std::string& resource_name,
+                         const std::string& container_name);
+      virtual bool canAcceptImposedResource();
       virtual std::string getPlacementId(const Task *askingNode) const = 0;
       virtual std::string getFullPlacementId(const Task *askingNode) const = 0;
       //Edition only methods

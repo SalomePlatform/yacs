@@ -55,6 +55,8 @@ namespace YACS
       PyObject *_pyfuncSer;
       PyObject *_pyfuncUnser;
       PyObject *_pyfuncSimpleSer;
+      std::string _imposedResource;
+      std::string _imposedContainer;
     public:
       static const char SCRIPT_FOR_SIMPLE_SERIALIZATION[];
     };
@@ -81,6 +83,9 @@ namespace YACS
       virtual void executeRemote();
       virtual void executeLocal();
       virtual void shutdown(int level);
+      void imposeResource(const std::string& resource_name,
+                          const std::string& container_name) override;
+      bool canAcceptImposedResource()override;
       std::string getContainerLog();
       PythonNode* cloneNode(const std::string& name);
       virtual std::string typeName() { return "YACS__ENGINE__PythonNode"; }
@@ -125,6 +130,9 @@ namespace YACS
       virtual void executeRemote();
       virtual void executeLocal();
       virtual void shutdown(int level);
+      void imposeResource(const std::string& resource_name,
+                          const std::string& container_name) override;
+      bool canAcceptImposedResource()override;
       std::string getContainerLog();
       PyFuncNode* cloneNode(const std::string& name);
       virtual std::string typeName() { return "YACS__ENGINE__PyFuncNode"; }
