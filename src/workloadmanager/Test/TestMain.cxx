@@ -34,7 +34,7 @@
 #include "../WorkloadManager.hxx"
 #include "../DefaultAlgorithm.hxx"
 
-constexpr bool ACTIVATE_DEBUG_LOG = true;
+constexpr bool ACTIVATE_DEBUG_LOG = false;
 template<typename... Ts>
 void DEBUG_LOG(Ts... args)
 {

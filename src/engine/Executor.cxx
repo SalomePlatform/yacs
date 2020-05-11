@@ -1682,8 +1682,6 @@ void loadResources(WorkloadManager::WorkloadManager& wm)
     id++;
     newResource.nbCores = res.second;
     wm.addResource(newResource);
-    std::cerr << "Add resource " << newResource.name << " with "
-              << newResource.nbCores << " cores." << std::endl;
   }
 }
 
@@ -1709,7 +1707,11 @@ NewTask::NewTask(Executor& executor, YACS::ENGINE::Task* yacsTask)
   {
     _type.ignoreResources = false;
     _type.name = yacsContainer->getName();
-    _type.neededCores = 1; // TODO: use the actual value
+    std::string nb_procs_str = yacsContainer->getProperty("nb_parallel_procs");
+    float needed_cores = 0.0;
+    if(!nb_procs_str.empty())
+      needed_cores = std::stof(nb_procs_str);
+    _type.neededCores = needed_cores;
   }
   else
   {

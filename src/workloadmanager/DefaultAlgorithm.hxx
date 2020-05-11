@@ -75,9 +75,11 @@ private:
     bool operator==(const Resource& other)const
     { return _resource == other;}
     const Resource& resource()const { return _resource;}
+    float COST_FOR_0_CORE_TASKS = 1.0 / 4096.0 ;
   private:
     Resource _resource;
     float _load;
+    float _loadCost;
     std::list<ResourceInfoForContainer> _ctypes;
   };
   

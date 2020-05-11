@@ -170,6 +170,7 @@ bool DefaultAlgorithm::ResourceInfoForContainer::isContainerRunning
 DefaultAlgorithm::ResourceLoadInfo::ResourceLoadInfo(const Resource& r)
 : _resource(r)
 , _load(0.0)
+, _loadCost(0.0)
 , _ctypes()
 {
 }
@@ -189,7 +190,7 @@ bool DefaultAlgorithm::ResourceLoadInfo::isAllocPossible
 float DefaultAlgorithm::ResourceLoadInfo::cost
                                 (const ContainerType& ctype)const
 {
-  return _load * 100.0 / float(_resource.nbCores);
+  return _loadCost * 100.0 / float(_resource.nbCores);
 }
 
 unsigned int DefaultAlgorithm::ResourceLoadInfo::alloc
@@ -206,6 +207,10 @@ unsigned int DefaultAlgorithm::ResourceLoadInfo::alloc
     it--;
   }
   _load += ctype.neededCores;
+  if(ctype.neededCores == 0)
+    _loadCost += COST_FOR_0_CORE_TASKS;
+  else
+    _loadCost += ctype.neededCores;
   return it->alloc();
 }
 
@@ -213,6 +218,10 @@ void DefaultAlgorithm::ResourceLoadInfo::free
                                 (const ContainerType& ctype, int index)
 {
   _load -= ctype.neededCores;
+  if(ctype.neededCores == 0)
+    _loadCost -= COST_FOR_0_CORE_TASKS;
+  else
+    _loadCost -= ctype.neededCores;
   std::list<ResourceInfoForContainer>::iterator it = std::find(_ctypes.begin(),
                                                                _ctypes.end(),
                                                                ctype);

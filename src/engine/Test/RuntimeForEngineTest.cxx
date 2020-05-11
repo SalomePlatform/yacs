@@ -115,13 +115,7 @@ void RuntimeForEngineTest::setRuntime()
 
 std::vector< std::pair<std::string,int> > RuntimeForEngineTest::getCatalogOfComputeNodes() const
 {
-  std::vector< std::pair<std::string,int> > result(1);
-  std::pair<std::string,int> localhost;
-  localhost.first = "localhost";
-  localhost.second = 8;
-  result[0] = localhost;
-  return result;
-//  throw Exception("RuntimeForEngineTest::getCatalogOfComputeNodes : not implemented !");
+  return std::vector< std::pair<std::string,int> >();
 }
 
 ElementaryNode* RuntimeForEngineTest::createNode(const string& implementation, const string& name) 
