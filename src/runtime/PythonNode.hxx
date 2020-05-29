@@ -46,10 +46,11 @@ namespace YACS
       virtual const char *getSerializationScript() const = 0;
       //
       void commonRemoteLoad(InlineNode *reqNode);
-      void commonRemoteLoadPart1(InlineNode *reqNode);
-      Engines::Container_var commonRemoteLoadPart2(InlineNode *reqNode, bool& isInitializeRequested);
-      void commonRemoteLoadPart3(InlineNode *reqNode, Engines::Container_ptr objContainer, bool isInitializeRequested);
+      void loadRemoteContainer(InlineNode *reqNode);
+      Engines::Container_var loadPythonAdapter(InlineNode *reqNode, bool& isInitializeRequested);
+      void loadRemoteContext(InlineNode *reqNode, Engines::Container_ptr objContainer, bool isInitializeRequested);
       static std::string GetContainerLog(const std::string& mode, Container *container, const Task *askingTask);
+      bool hasImposedResource()const;
     protected:
       PyObject *_context;
       PyObject *_pyfuncSer;
@@ -71,6 +72,10 @@ namespace YACS
       void assignRemotePyInterpretor(Engines::PyNodeBase_var remoteInterp);
       Engines::PyNodeBase_var getRemoteInterpreterHandle();
       const char *getSerializationScript() const  { return SCRIPT_FOR_SERIALIZATION; }
+      // A kernel container may manage several python contexts identified by
+      // their name (PyNode and PyScript node). This function returns  the name
+      // of the context used by this object. See SALOME_Component.idl in KERNEL.
+      std::string pythonEntryName()const;
     public:
       PythonNode(const PythonNode& other, ComposedNode *father);
       PythonNode(const std::string& name);
@@ -86,6 +91,8 @@ namespace YACS
       void imposeResource(const std::string& resource_name,
                           const std::string& container_name) override;
       bool canAcceptImposedResource()override;
+      bool keepContext()const;
+      void setKeepContext(bool keep);
       std::string getContainerLog();
       PythonNode* cloneNode(const std::string& name);
       virtual std::string typeName() { return "YACS__ENGINE__PythonNode"; }
@@ -102,6 +109,7 @@ namespace YACS
       static const char SCRIPT_FOR_SERIALIZATION[];
       static const char REMOTE_NAME[];
       static const char DPL_INFO_NAME[];
+      static const char KEEP_CONTEXT_PROPERTY[];
     protected:
       bool _autoSqueeze = false;
       Engines::PyScriptNode_var _pynode;
