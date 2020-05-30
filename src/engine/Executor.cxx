@@ -1881,3 +1881,15 @@ void Executor::newRun(Scheduler *graph,int debug, bool fromScratch)
   }
   DEBTRACE("End of RunB thread");  
 }
+
+void Executor::RunW(Scheduler *graph,int debug, bool fromScratch)
+{
+  std::string str_value = graph->getProperty("executor");
+  if(str_value == "WorkloadManager"
+     || str_value == "WORKLOADMANAGER"
+     || str_value == "workloadmanager"
+     || str_value == "WorkLoadManager")
+    newRun(graph, debug, fromScratch);
+  else
+    RunB(graph, debug, fromScratch);
+}

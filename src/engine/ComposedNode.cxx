@@ -1501,6 +1501,17 @@ void ComposedNode::accept(Visitor *visitor)
     }
 }
 
+void ComposedNode::setProperty(const std::string& name,const std::string& value)
+{
+  Node::setProperty(name, value);
+}
+
+std::string ComposedNode::getProperty(const std::string& name)
+{
+  return Node::getProperty(name);
+}
+
+
 //! redefined on derived class of ComposedNode. by default a ComposedNode has no port by itself
 std::list<InputPort *> ComposedNode::getLocalInputPorts() const
 {

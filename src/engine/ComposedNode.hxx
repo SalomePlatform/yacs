@@ -124,6 +124,8 @@ namespace YACS
       void accept(Visitor *visitor);
       virtual void cleanNodes();
       virtual std::string getProgress() const { return "0"; }
+      void setProperty(const std::string& name,const std::string& value)override;
+      std::string getProperty(const std::string& name)override;
     protected:
       struct SortHierarc
       {

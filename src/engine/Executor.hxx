@@ -99,11 +99,7 @@ namespace YACS
       Executor();
       virtual ~Executor();
       void RunA(Scheduler *graph,int debug=0, bool fromScratch=true);
-      void RunW(Scheduler *graph,int debug=0, bool fromScratch=true)
-      {
-        //RunB(graph, debug, fromScratch);
-        newRun(graph, debug, fromScratch);
-      }
+      void RunW(Scheduler *graph,int debug=0, bool fromScratch=true);
       void RunB(Scheduler *graph,int debug=0, bool fromScratch=true);
       void newRun(Scheduler *graph,int debug=0, bool fromScratch=true);
       void setKeepGoingProperty(bool newVal) { _keepGoingOnFail=newVal; }

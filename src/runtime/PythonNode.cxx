@@ -76,7 +76,7 @@ const char PyFuncNode::SCRIPT_FOR_SERIALIZATION[]="import pickle\n"
     "  args=pickle.loads(st)\n"
     "  return args\n";
 
-const char PythonNode::KEEP_CONTEXT_PROPERTY[]="KEEP_CONTEXT";
+const char PythonNode::KEEP_CONTEXT_PROPERTY[]="keep_context";
 
 PythonEntry::PythonEntry():_context(0),_pyfuncSer(0),_pyfuncUnser(0),_pyfuncSimpleSer(0)
 {
@@ -259,7 +259,6 @@ void PythonEntry::loadRemoteContext(InlineNode *reqNode, Engines::Container_ptr 
     }
 }
 
-// TODO: verify removing
 std::string PythonEntry::GetContainerLog(const std::string& mode, Container *container, const Task *askingTask)
 {
   if(mode=="local")
@@ -755,25 +754,20 @@ std::string PythonNode::pythonEntryName()const
 
 bool PythonNode::keepContext()const
 {
-  std::string str_value = const_cast<PythonNode*>(this)->getProperty(KEEP_CONTEXT_PROPERTY);
-  const char* yes_values[] = {"YES", "Yes", "yes", "TRUE", "True", "true", "1",
-                              "ON", "on", "On"};
   bool found = false;
-  for(const char* v : yes_values)
-    if(str_value == v)
-    {
-      found = true;
-      break;
-    }
+  if(_container)
+  {
+    std::string str_value = _container->getProperty(KEEP_CONTEXT_PROPERTY);
+    const char* yes_values[] = {"YES", "Yes", "yes", "TRUE", "True", "true", "1",
+                                "ON", "on", "On"};
+    for(const char* v : yes_values)
+      if(str_value == v)
+      {
+        found = true;
+        break;
+      }
+  }
   return found;
-}
-
-void PythonNode::setKeepContext(bool keep)
-{
-  if(keep)
-    setProperty(KEEP_CONTEXT_PROPERTY, "true");
-  else
-    setProperty(KEEP_CONTEXT_PROPERTY, "false");
 }
 
 Node *PythonNode::simpleClone(ComposedNode *father, bool editionOnly) const

@@ -92,7 +92,6 @@ namespace YACS
                           const std::string& container_name) override;
       bool canAcceptImposedResource()override;
       bool keepContext()const;
-      void setKeepContext(bool keep);
       std::string getContainerLog();
       PythonNode* cloneNode(const std::string& name);
       virtual std::string typeName() { return "YACS__ENGINE__PythonNode"; }
