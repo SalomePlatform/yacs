@@ -78,7 +78,7 @@ class TestEdit(unittest.TestCase):
 
 if __name__ == '__main__':
   dir_test = tempfile.mkdtemp(suffix=".yacstest")
-  file_test = os.join(dir_test,"UnitTestsResult")
+  file_test = os.path.join(dir_test,"UnitTestsResult")
   with open(file_test, 'a') as f:
       f.write("  --- TEST src/yacsloader: testWorkloadManager.py\n")
       suite = unittest.makeSuite(TestEdit)
