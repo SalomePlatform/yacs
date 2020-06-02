@@ -101,7 +101,7 @@ namespace YACS
       void RunA(Scheduler *graph,int debug=0, bool fromScratch=true);
       void RunW(Scheduler *graph,int debug=0, bool fromScratch=true);
       void RunB(Scheduler *graph,int debug=0, bool fromScratch=true);
-      void newRun(Scheduler *graph,int debug=0, bool fromScratch=true);
+      void runWlm(Scheduler *graph,int debug=0, bool fromScratch=true);
       void setKeepGoingProperty(bool newVal) { _keepGoingOnFail=newVal; }
       bool getKeepGoingProperty() const { return _keepGoingOnFail; }
       void setDPLScopeSensitive(bool newVal) { _DPLScopeSensitive=newVal; }

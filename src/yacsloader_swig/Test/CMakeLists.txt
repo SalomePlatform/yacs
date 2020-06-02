@@ -46,6 +46,7 @@ IF(NOT WIN32)
     testProgress.py
     testExecForEachGeoMesh.py
     async_plugin.py
+    testWorkloadManager.py
    )
   INSTALL(PROGRAMS ${LOCAL_TEST_FILES}
         DESTINATION ${LOCAL_TEST_DIR})

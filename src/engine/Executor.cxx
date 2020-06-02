@@ -1691,6 +1691,7 @@ public:
   NewTask(Executor& executor, YACS::ENGINE::Task* yacsTask);
   const WorkloadManager::ContainerType& type()const override;
   void run(const WorkloadManager::RunInfo& runInfo)override;
+  bool isAccepted(const WorkloadManager::Resource& r)override;
 private:
   WorkloadManager::ContainerType _type;
   Executor& _executor;
@@ -1736,9 +1737,19 @@ void NewTask::run(const WorkloadManager::RunInfo& runInfo)
   delete this; // provisoire
 }
 
-void Executor::newRun(Scheduler *graph,int debug, bool fromScratch)
+bool NewTask::isAccepted(const WorkloadManager::Resource& r)
 {
-  DEBTRACE("Executor::newRun debug: "<< graph->getName() <<" "<< debug<<" fromScratch: "<<fromScratch);
+  Container * yacsContainer = _yacsTask->getContainer();
+  std::string hostname = yacsContainer->getProperty("hostname");
+  bool accept = true;
+  if(!hostname.empty())
+    accept = (hostname == r.name);
+  return accept;
+}
+
+void Executor::runWlm(Scheduler *graph,int debug, bool fromScratch)
+{
+  DEBTRACE("Executor::runWlm debug: "<< graph->getName() <<" "<< debug<<" fromScratch: "<<fromScratch);
   { // --- Critical section
     YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForSchedulerUpdate);
     _mainSched = graph;
@@ -1889,7 +1900,7 @@ void Executor::RunW(Scheduler *graph,int debug, bool fromScratch)
      || str_value == "WORKLOADMANAGER"
      || str_value == "workloadmanager"
      || str_value == "WorkLoadManager")
-    newRun(graph, debug, fromScratch);
+    runWlm(graph, debug, fromScratch);
   else
     RunB(graph, debug, fromScratch);
 }

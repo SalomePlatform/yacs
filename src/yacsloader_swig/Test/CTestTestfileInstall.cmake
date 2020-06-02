@@ -30,4 +30,10 @@ IF(NOT WIN32)
                                     LABELS "${COMPONENT_NAME}"
 				    )
 
+  SET(TEST_NAME ${COMPONENT_NAME}_WorkloadManager_swig)
+  ADD_TEST(${TEST_NAME} ${SALOME_TEST_DRIVER} ${TIMEOUT} testWorkloadManager.py)
+  SET_TESTS_PROPERTIES(${TEST_NAME} PROPERTIES
+                                    LABELS "${COMPONENT_NAME}"
+				    )
+
 ENDIF()
