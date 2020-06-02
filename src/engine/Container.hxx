@@ -55,6 +55,8 @@ namespace YACS
                          const std::string& resource_name,
                          const std::string& container_name);
       virtual bool canAcceptImposedResource();
+      virtual bool storeContext();
+      virtual void setStoreContext(bool v);
       virtual std::string getPlacementId(const Task *askingNode) const = 0;
       virtual std::string getFullPlacementId(const Task *askingNode) const = 0;
       //Edition only methods
@@ -84,6 +86,7 @@ namespace YACS
       virtual void shutdown(int level) = 0;
       static const char KIND_ENTRY[];
       static const char AOC_ENTRY[];
+      static const char STORE_CONTEXT_PROPERTY[];
     protected:
       std::string _name;
       mutable bool _isAttachedOnCloning;

@@ -76,8 +76,6 @@ const char PyFuncNode::SCRIPT_FOR_SERIALIZATION[]="import pickle\n"
     "  args=pickle.loads(st)\n"
     "  return args\n";
 
-const char PythonNode::KEEP_CONTEXT_PROPERTY[]="keep_context";
-
 PythonEntry::PythonEntry():_context(0),_pyfuncSer(0),_pyfuncUnser(0),_pyfuncSimpleSer(0)
 {
 }
@@ -551,7 +549,7 @@ void PythonNode::executeRemote()
         squeezeMemoryRemote();
   }
   //
-  if(!keepContext())
+  if(!storeContext())
   {
     if(!CORBA::is_nil(_pynode))
       {
@@ -746,27 +744,17 @@ bool PythonNode::canAcceptImposedResource()
 
 std::string PythonNode::pythonEntryName()const
 {
-  if(keepContext())
+  if(storeContext())
     return "DEFAULT_NAME_FOR_UNIQUE_PYTHON_NODE_ENTRY";
   else
     return getName();
 }
 
-bool PythonNode::keepContext()const
+bool PythonNode::storeContext()const
 {
   bool found = false;
   if(_container)
-  {
-    std::string str_value = _container->getProperty(KEEP_CONTEXT_PROPERTY);
-    const char* yes_values[] = {"YES", "Yes", "yes", "TRUE", "True", "true", "1",
-                                "ON", "on", "On"};
-    for(const char* v : yes_values)
-      if(str_value == v)
-      {
-        found = true;
-        break;
-      }
-  }
+    found = _container->storeContext();
   return found;
 }
 

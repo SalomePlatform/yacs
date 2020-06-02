@@ -36,6 +36,7 @@ FormContainer::FormContainer(QWidget *parent):FormContainerBase(parent),cb_type(
   FormContainer::FillPanel(0); // --- set widgets before signal connexion to avoid false modif detection
   connect(cb_type, SIGNAL(activated(const QString&)),this, SLOT(onModifyType(const QString&)));
   connect(ch_aoc,SIGNAL(stateChanged(int)),this,SLOT(onModifyAOC(int)));
+  connect(ch_pycache,SIGNAL(stateChanged(int)),this,SLOT(onModifyStorePyCache(int)));
 }
 
 FormContainer::~FormContainer()
@@ -47,7 +48,10 @@ void FormContainer::FillPanel(YACS::ENGINE::Container *container)
   DEBTRACE("FormContainer::FillPanel");
   FormContainerBase::FillPanel(container);
   if(container)
+  {
     ch_aoc->setCheckState(container->isAttachedOnCloning()?Qt::Checked:Qt::Unchecked);
+    ch_pycache->setCheckState(container->storeContext()?Qt::Checked:Qt::Unchecked);
+  }
   cb_type->clear();
   cb_type->addItem("mono");
   cb_type->addItem("multi");
@@ -89,6 +93,24 @@ void FormContainer::onModifyAOC(int val)
   std::ostringstream oss; oss << prop2;
   _properties[YACS::ENGINE::Container::AOC_ENTRY]=oss.str();
   _container->setAttachOnCloningStatus(val2);
+  if(prop!=val2)
+    onModified();
+}
+
+void FormContainer::onModifyStorePyCache(int val)
+{
+  if (!_container)
+    return;
+  bool val2(false);
+  if(val==Qt::Unchecked)
+    val2=false;
+  if(val==Qt::Checked)
+    val2=true;
+  bool prop = _container->storeContext();
+  int prop2((int)val2);
+  std::ostringstream oss; oss << prop2;
+  //_properties[YACS::ENGINE::Container::AOC_ENTRY]=oss.str();
+  _container->setStoreContext(val2);
   if(prop!=val2)
     onModified();
 }
