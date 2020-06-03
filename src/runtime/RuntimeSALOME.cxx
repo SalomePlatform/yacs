@@ -456,14 +456,14 @@ std::vector< std::pair<std::string,int> > RuntimeSALOME::getCatalogOfComputeNode
   }
   catch(SALOME_Exception& e)
   {
-    throw Exception("SalomeContainerToolsSpreadOverTheResDecorator::getParameters : Unable to contact the SALOME Naming Service");
+    throw Exception("RuntimeSALOME::getCatalogOfComputeNodes : Unable to contact the SALOME Naming Service");
   }
   CORBA::Object_var obj(namingService.Resolve(SALOME_ResourcesManager::_ResourcesManagerNameInNS));
   if(CORBA::is_nil(obj))
-    throw Exception("SalomeContainerToolsSpreadOverTheResDecorator::getParameters : Unable to access to the resource manager !");
+    throw Exception("RuntimeSALOME::getCatalogOfComputeNodes : Unable to access to the resource manager !");
   Engines::ResourcesManager_var resManager(Engines::ResourcesManager::_narrow(obj));
   if(CORBA::is_nil(resManager))
-    throw Exception("SalomeContainerToolsSpreadOverTheResDecorator::getParameters : Internal error ! The entry attached to the res manager in NS does not have right type !");
+    throw Exception("RuntimeSALOME::getCatalogOfComputeNodes : Internal error ! The entry attached to the res manager in NS does not have right type !");
   std::vector< std::pair<std::string,int> > ret;
   Engines::ResourceParameters params;
   params.name = "";
@@ -478,18 +478,27 @@ std::vector< std::pair<std::string,int> > RuntimeSALOME::getCatalogOfComputeNode
   params.can_launch_batch_jobs = false;
   params.can_run_containers = true;
   params.componentList.length(0);
-  Engines::ResourceList_var resourceList;
-  resourceList = resManager->GetFittingResources(params);
-  ret.reserve(resourceList->length());
-  for(int i = 0; i<resourceList->length(); i++)
+  try
   {
-    const char* resource_name = resourceList[i];
-    std::string std_resource_name = resource_name;
-    Engines::ResourceDefinition_var resource_definition
-                             = resManager->GetResourceDefinition(resource_name);
-    int nb_cores = resource_definition->nb_node *
-                   resource_definition->nb_proc_per_node;
-    ret.push_back(std::pair<std::string,int>(resource_name, nb_cores));
+    Engines::ResourceList_var resourceList;
+    resourceList = resManager->GetFittingResources(params);
+    ret.reserve(resourceList->length());
+    for(int i = 0; i<resourceList->length(); i++)
+    {
+      const char* resource_name = resourceList[i];
+      std::string std_resource_name = resource_name;
+      Engines::ResourceDefinition_var resource_definition
+                              = resManager->GetResourceDefinition(resource_name);
+      int nb_cores = resource_definition->nb_node *
+                     resource_definition->nb_proc_per_node;
+      ret.push_back(std::pair<std::string,int>(resource_name, nb_cores));
+    }
+  }
+  catch(SALOME::SALOME_Exception& e)
+  {
+    std::string message;
+    message=e.details.text.in();
+    throw Exception(message);
   }
 
   return ret;

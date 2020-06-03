@@ -1,0 +1,132 @@
+<?xml version='1.0' encoding='iso-8859-1' ?>
+<proc name="newSchema_1">
+   <property name="executor" value="workloadmanager"/>
+   <type name="string" kind="string"/>
+   <struct name="Engines/dataref">
+      <member name="ref" type="string"/>
+   </struct>
+   <type name="bool" kind="bool"/>
+   <sequence name="boolvec" content="bool"/>
+   <type name="double" kind="double"/>
+   <sequence name="dblevec" content="double"/>
+   <objref name="file" id="file"/>
+   <type name="int" kind="int"/>
+   <sequence name="intvec" content="int"/>
+   <struct name="stringpair">
+      <member name="name" type="string"/>
+      <member name="value" type="string"/>
+   </struct>
+   <sequence name="propvec" content="stringpair"/>
+   <objref name="pyobj" id="python:obj:1.0"/>
+   <sequence name="seqboolvec" content="boolvec"/>
+   <sequence name="seqdblevec" content="dblevec"/>
+   <sequence name="seqint" content="int"/>
+   <sequence name="seqintvec" content="intvec"/>
+   <sequence name="seqpyobj" content="pyobj"/>
+   <sequence name="stringvec" content="string"/>
+   <sequence name="seqstringvec" content="stringvec"/>
+   <container name="DefaultContainer">
+      <property name="container_kind" value="Salome"/>
+      <property name="attached_on_cloning" value="0"/>
+      <property name="container_name" value="FactoryServer"/>
+      <property name="name" value="localhost"/>
+   </container>
+   <container name="c1">
+      <property name="container_kind" value="Salome"/>
+      <property name="attached_on_cloning" value="0"/>
+      <property name="nb_parallel_procs" value="1"/>
+      <property name="type" value="multi"/>
+   </container>
+   <container name="c2">
+      <property name="container_kind" value="Salome"/>
+      <property name="attached_on_cloning" value="0"/>
+      <property name="nb_parallel_procs" value="4"/>
+      <property name="type" value="multi"/>
+   </container>
+   <inline name="Begin">
+      <script><code><![CDATA[import time
+vals = [ i for i in range(40)]
+nbbranches = len(vals)
+t0=time.time()
+]]></code></script>
+      <load container="DefaultContainer"/>
+      <outport name="t0" type="pyobj"/>
+      <outport name="vals" type="intvec"/>
+      <outport name="nbbranches" type="int"/>
+   </inline>
+   <inline name="End">
+      <script><code><![CDATA[import time
+tf=time.time()
+r=int(tf-t0)
+]]></code></script>
+      <load container="DefaultContainer"/>
+      <inport name="t0" type="pyobj"/>
+      <outport name="r" type="int"/>
+   </inline>
+   <foreach name="ForEach1" nbranch="1" loopWeight="-1" type="int">
+      <remote name="PyScript6" elementaryWeight="-1">
+         <script><code><![CDATA[import time
+time.sleep(1)
+]]></code></script>
+         <load container="c1"/>
+         <inport name="v" type="int"/>
+      </remote>
+   </foreach>
+   <foreach name="ForEach2" nbranch="1" loopWeight="-1" type="int">
+      <remote name="PyScript7" elementaryWeight="-1">
+         <script><code><![CDATA[import time
+time.sleep(1)
+]]></code></script>
+         <load container="c2"/>
+         <inport name="v" type="int"/>
+      </remote>
+   </foreach>
+   <control> <fromnode>Begin</fromnode> <tonode>ForEach1</tonode> </control>
+   <control> <fromnode>Begin</fromnode> <tonode>ForEach2</tonode> </control>
+   <control> <fromnode>Begin</fromnode> <tonode>End</tonode> </control>
+   <control> <fromnode>ForEach1</fromnode> <tonode>End</tonode> </control>
+   <control> <fromnode>ForEach2</fromnode> <tonode>End</tonode> </control>
+   <datalink control="false">
+      <fromnode>Begin</fromnode> <fromport>t0</fromport>
+      <tonode>End</tonode> <toport>t0</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>Begin</fromnode> <fromport>vals</fromport>
+      <tonode>ForEach2</tonode> <toport>SmplsCollection</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>Begin</fromnode> <fromport>vals</fromport>
+      <tonode>ForEach1</tonode> <toport>SmplsCollection</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>Begin</fromnode> <fromport>nbbranches</fromport>
+      <tonode>ForEach1</tonode> <toport>nbBranches</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>Begin</fromnode> <fromport>nbbranches</fromport>
+      <tonode>ForEach2</tonode> <toport>nbBranches</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>ForEach1</fromnode> <fromport>evalSamples</fromport>
+      <tonode>ForEach1.PyScript6</tonode> <toport>v</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>ForEach2</fromnode> <fromport>evalSamples</fromport>
+      <tonode>ForEach2.PyScript7</tonode> <toport>v</toport>
+   </datalink>
+   <parameter>
+      <tonode>ForEach2</tonode><toport>nbBranches</toport>
+      <value><int>1</int></value>
+   </parameter>
+   <parameter>
+      <tonode>ForEach1</tonode><toport>nbBranches</toport>
+      <value><int>1</int></value>
+   </parameter>
+   <presentation name="Begin" x="9" y="86" width="158" height="117" expanded="1" expx="9" expy="86" expWidth="158" expHeight="117" shownState="0"/>
+   <presentation name="End" x="402.5" y="85" width="158" height="63" expanded="1" expx="402.5" expy="85" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="ForEach1.PyScript6" x="9.5" y="88" width="158" height="63" expanded="1" expx="9.5" expy="88" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="ForEach2" x="204" y="313.5" width="175" height="159" expanded="1" expx="204" expy="313.5" expWidth="175" expHeight="159" shownState="0"/>
+   <presentation name="ForEach2.PyScript7" x="13" y="92" width="158" height="63" expanded="1" expx="13" expy="92" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="ForEach1" x="201.5" y="146" width="171.5" height="155" expanded="1" expx="201.5" expy="146" expWidth="171.5" expHeight="155" shownState="0"/>
+   <presentation name="__ROOT__" x="0" y="0" width="564.5" height="476.5" expanded="1" expx="0" expy="0" expWidth="564.5" expHeight="476.5" shownState="0"/>
+</proc>

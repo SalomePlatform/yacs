@@ -25,6 +25,7 @@ import loader
 import unittest
 import tempfile
 import os
+import salome
 
 class TestEdit(unittest.TestCase):
 
@@ -33,48 +34,27 @@ class TestEdit(unittest.TestCase):
         self.r = pilot.getRuntime()
         self.l = loader.YACSLoader()
         self.e = pilot.ExecutorSwig()
-        pass
+        salome.salome_init()
+        resourceManager = salome.lcc.getResourcesManager()
+        resource_definition = resourceManager.GetResourceDefinition("localhost")
+        resource_definition.nb_node = 16
+        resourceManager.AddResource(resource_definition, False, "")
+        #resource_definition = resourceManager.GetResourceDefinition("localhost")
+        #self.assertEqual(resource_definition.nb_node, 16)
 
     def test1(self):
-      """ Test the conservation of the python context between two nodes sharing
-          the same container.
-          Schema: n1 -> n2
-      """
-      runtime=self.r
-      executor=self.e
-      proc=runtime.createProc("MySchema")
-      ti=proc.createType("int","int")
-      cont=proc.createContainer("MyContainer","Salome")
-      # type "multi" : the workload manager chooses the resource
-      # type "mono" : the workload manager does not choose the resource
-      cont.setProperty("type","multi")
-      # number of cores used by the container
-      cont.setProperty("nb_parallel_procs", "1")
-      n1=runtime.createScriptNode("","n1")
-      n2=runtime.createScriptNode("","n2")
-      n1.setExecutionMode("remote")
-      n2.setExecutionMode("remote")
-      n1.setContainer(cont)
-      n2.setContainer(cont)
-      n1.setScript("v=42")
-      res_port=n2.edAddOutputPort("v", ti)
-      proc.edAddChild(n1)
-      proc.edAddChild(n2)
-      proc.edAddCFLink(n1,n2)
-      # set the default execution mode using the workload manager
-      proc.setProperty("executor", "workloadmanager")
-      # reuse the same python context for every execution
-      cont.setStoreContext(True)
-      #proc.saveSchema("mini_wlm.xml")
-      executor=pilot.ExecutorSwig()
-      # default run method of the executor which uses the property "executor"
-      # in order to choose the actual run method
-      executor.RunW(proc,0)
-      # you can also impose the executor, ignoring the property "executor"
-      #executor.RunB(proc,0) # use the "historical" executor
-      #executor.runWlm(proc,0) # use the workload manager based executor
-      
-      self.assertEqual(res_port.getPyObj(), 42)
+        """ Two parallel foreach-s with different containers
+        """
+        proc = self.l.load("samples/wlm_2foreach.xml")
+        self.e.RunW(proc,0)
+        res_port = proc.getChildByName("End").getOutputPort("r")
+        # theoretical time should be 15s
+        execution_time = res_port.getPyObj()
+        # lower time means some resources are overloaded
+        self.assertTrue(execution_time > 13)
+        # The containers need some time to be launched.
+        # We need some room for that.
+        self.assertTrue(execution_time < 20)
 
 if __name__ == '__main__':
   dir_test = tempfile.mkdtemp(suffix=".yacstest")
