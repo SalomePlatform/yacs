@@ -1419,8 +1419,7 @@ void Executor::loadTask(Task *task, const WorkloadManager::RunInfo& runInfo)
   try
     {
       std::ostringstream container_name;
-      container_name << runInfo.resource.name << "-"
-                     << runInfo.type.name << "-" << runInfo.index;
+      container_name << runInfo.type.name << "-" << runInfo.index;
       task->imposeResource(runInfo.resource.name, container_name.str());
       traceExec(task, "load", ComputePlacement(task));
       task->load();

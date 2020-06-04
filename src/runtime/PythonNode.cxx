@@ -549,7 +549,7 @@ void PythonNode::executeRemote()
         squeezeMemoryRemote();
   }
   //
-  if(!storeContext())
+  if(!isUsingPythonCache())
   {
     if(!CORBA::is_nil(_pynode))
       {
@@ -744,17 +744,17 @@ bool PythonNode::canAcceptImposedResource()
 
 std::string PythonNode::pythonEntryName()const
 {
-  if(storeContext())
+  if(isUsingPythonCache())
     return "DEFAULT_NAME_FOR_UNIQUE_PYTHON_NODE_ENTRY";
   else
     return getName();
 }
 
-bool PythonNode::storeContext()const
+bool PythonNode::isUsingPythonCache()const
 {
   bool found = false;
   if(_container)
-    found = _container->storeContext();
+    found = _container->isUsingPythonCache();
   return found;
 }
 

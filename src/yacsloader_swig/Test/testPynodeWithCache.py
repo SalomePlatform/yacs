@@ -68,7 +68,7 @@ class TestEdit(unittest.TestCase):
       # if no property is set, the old executor is used
       proc.setProperty("executor", "workloadmanager")
       # reuse the same python context for every execution
-      cont.setStoreContext(True)
+      cont.usePythonCache(True)
       # save & reload
       schema_file = os.path.join(dir_test,"pynode_with_cache1.xml")
       proc.saveSchema(schema_file)
@@ -107,7 +107,7 @@ class TestEdit(unittest.TestCase):
       proc.edAddChild(n2)
       proc.edAddCFLink(n1,n2)
       # reuse the same python context for every execution
-      cont.setStoreContext(True)
+      cont.usePythonCache(True)
       # save & reload
       schema_file = os.path.join(dir_test,"pynode_with_cache2.xml")
       proc.saveSchema(schema_file)

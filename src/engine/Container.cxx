@@ -32,7 +32,7 @@ const char Container::KIND_ENTRY[]="container_kind";
 
 const char Container::AOC_ENTRY[]="attached_on_cloning";
 
-const char Container::STORE_CONTEXT_PROPERTY[]="store_context";
+const char Container::USE_PYCACHE_PROPERTY[]="use_py_cache";
 
 Container::Container():_isAttachedOnCloning(false),_proc(0)
 {
@@ -106,11 +106,11 @@ void Container::setProperties(const std::map<std::string,std::string>& propertie
     setProperty((*it).first,(*it).second);
 }
 
-bool Container::storeContext()
+bool Container::isUsingPythonCache()
 {
   bool found = false;
   std::string str_value;
-  str_value = getProperty(STORE_CONTEXT_PROPERTY);
+  str_value = getProperty(USE_PYCACHE_PROPERTY);
   const char* yes_values[] = {"YES", "Yes", "yes", "TRUE", "True", "true", "1",
                               "ON", "on", "On"};
   for(const char* v : yes_values)
@@ -122,11 +122,11 @@ bool Container::storeContext()
   return found;
 }
 
-void Container::setStoreContext(bool v)
+void Container::usePythonCache(bool v)
 {
   if(v)
-    setProperty(STORE_CONTEXT_PROPERTY, "1");
+    setProperty(USE_PYCACHE_PROPERTY, "1");
   else
-    setProperty(STORE_CONTEXT_PROPERTY, "0");
+    setProperty(USE_PYCACHE_PROPERTY, "0");
 }
 

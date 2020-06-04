@@ -113,13 +113,6 @@
           </property>
          </widget>
         </item>
-        <item>
-         <widget class="QCheckBox" name="ch_pycache">
-          <property name="text">
-           <string>Store python cache</string>
-          </property>
-         </widget>
-        </item>
        </layout>
       </item>
      </layout>

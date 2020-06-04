@@ -28,8 +28,8 @@ sleep 3
 export TESTCOMPONENT_ROOT_DIR=`pwd`/../runtime
 
 #python3 -m unittest discover
-MODULES_TO_TEST=testEdit testExec testFEDyn testFEDyn2 testLoader testProgress \
-testRefcount testResume testSave testSaveLoadRun  testValidationChecks
+MODULES_TO_TEST="testEdit testExec testLoader testProgress testRefcount \
+testResume testSave testSaveLoadRun testValidationChecks"
 
 python3 -m unittest $MODULES_TO_TEST
 ret=$?

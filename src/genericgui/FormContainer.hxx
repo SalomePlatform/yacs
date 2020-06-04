@@ -43,7 +43,6 @@ public:
 public slots:
   void onModifyType(const QString &text);
   void onModifyAOC(int val);
-  void onModifyStorePyCache(int val);
 private:
   QComboBox *cb_type;
 };

@@ -74,6 +74,13 @@
            <widget class="QLineEdit" name="le_workdir"/>
           </item>
           <item row="3" column="0" colspan="3">
+            <widget class="QCheckBox" name="ch_pycache">
+              <property name="text">
+              <string>Use python cache</string>
+              </property>
+            </widget>
+          </item>
+          <item row="4" column="0" colspan="3">
            <widget class="QGroupBox" name="groupBox_2">
             <property name="title">
              <string>Parallel parameters</string>
@@ -145,7 +152,7 @@
             </layout>
            </widget>
           </item>
-          <item row="4" column="1">
+          <item row="5" column="1">
            <spacer name="verticalSpacer">
             <property name="orientation">
              <enum>Qt::Vertical</enum>

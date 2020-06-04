@@ -67,7 +67,7 @@ public slots:
   void onModifyProcRes(const QString &text);
   void onModifyCompoList(const QString &text);
   void onModifyResourceList(const QString &text);
-
+  void onModifyUsePyCache(int val);
 
 protected:
   bool _advanced;

@@ -53,7 +53,24 @@ class TestEdit(unittest.TestCase):
         # lower time means some resources are overloaded
         self.assertTrue(execution_time > 13)
         # The containers need some time to be launched.
-        # We need some room for that.
+        # We need some delay to add to the 15s.
+        self.assertTrue(execution_time < 20)
+
+    def test2(self):
+        """ Two parallel foreach-s with different containers and python nodes
+            using cache.
+        """
+        proc = self.l.load("samples/wlm_2foreach_with_cache.xml")
+        self.e.RunW(proc,0)
+        ok = proc.getChildByName("End").getOutputPort("ok")
+        self.assertTrue(ok)
+        total_time = proc.getChildByName("End").getOutputPort("total_time")
+        # theoretical time should be 16s
+        execution_time = total_time.getPyObj()
+        # lower time means some resources are overloaded
+        self.assertTrue(execution_time > 14)
+        # The containers need some time to be launched.
+        # We need some delay to add to the 15s.
         self.assertTrue(execution_time < 20)
 
 if __name__ == '__main__':
