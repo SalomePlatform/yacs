@@ -30,6 +30,7 @@
 #include "ServiceNode.hxx"
 #include "ComposedNode.hxx"
 
+#include "WlmTask.hxx"
 #include "workloadmanager/WorkloadManager.hxx"
 #include "workloadmanager/DefaultAlgorithm.hxx"
 
@@ -1664,88 +1665,6 @@ void Executor::makeDatastreamConnections(Task *task)
   traceExec(task, "state:"+Node::getStateName(task->getState()),ComputePlacement(task));
 }
 
-#include "Runtime.hxx"
-static
-void loadResources(WorkloadManager::WorkloadManager& wm)
-{
-  Runtime *r(getRuntime());
-  if(!r)
-    throw YACS::Exception("loadResources : no runtime  !");
-  std::vector< std::pair<std::string,int> > data(r->getCatalogOfComputeNodes());
-  int id = 0;
-  for(const std::pair<std::string,int>& res : data)
-  {
-    WorkloadManager::Resource newResource;
-    newResource.name = res.first;
-    newResource.id = id;
-    id++;
-    newResource.nbCores = res.second;
-    wm.addResource(newResource);
-  }
-}
-
-class NewTask : public WorkloadManager::Task
-{
-public:
-  NewTask(Executor& executor, YACS::ENGINE::Task* yacsTask);
-  const WorkloadManager::ContainerType& type()const override;
-  void run(const WorkloadManager::RunInfo& runInfo)override;
-  bool isAccepted(const WorkloadManager::Resource& r)override;
-private:
-  WorkloadManager::ContainerType _type;
-  Executor& _executor;
-  YACS::ENGINE::Task * _yacsTask;
-};
-
-NewTask::NewTask(Executor& executor, YACS::ENGINE::Task* yacsTask)
-: _type()
-, _executor(executor)
-, _yacsTask(yacsTask)
-{
-  Container * yacsContainer = yacsTask->getContainer();
-  if(yacsContainer != nullptr && yacsTask->canAcceptImposedResource())
-  {
-    _type.ignoreResources = false;
-    _type.name = yacsContainer->getName();
-    std::string nb_procs_str = yacsContainer->getProperty("nb_parallel_procs");
-    float needed_cores = 0.0;
-    if(!nb_procs_str.empty())
-      needed_cores = std::stof(nb_procs_str);
-    _type.neededCores = needed_cores;
-  }
-  else
-  {
-    _type.ignoreResources = true;
-    _type.name = "test";
-    _type.neededCores = 0;
-  }
-  _type.id = 0;
-}
-
-const WorkloadManager::ContainerType& NewTask::type()const
-{
-  return _type;
-}
-
-void NewTask::run(const WorkloadManager::RunInfo& runInfo)
-{
-  _executor.loadTask(_yacsTask, runInfo);
-  _executor.makeDatastreamConnections(_yacsTask);
-  YACS::Event ev = _executor.runTask(_yacsTask);
-  _executor.endTask(_yacsTask, ev);
-  delete this; // provisoire
-}
-
-bool NewTask::isAccepted(const WorkloadManager::Resource& r)
-{
-  Container * yacsContainer = _yacsTask->getContainer();
-  std::string hostname = yacsContainer->getProperty("hostname");
-  bool accept = true;
-  if(!hostname.empty())
-    accept = (hostname == r.name);
-  return accept;
-}
-
 void Executor::runWlm(Scheduler *graph,int debug, bool fromScratch)
 {
   DEBTRACE("Executor::runWlm debug: "<< graph->getName() <<" "<< debug<<" fromScratch: "<<fromScratch);
@@ -1800,7 +1719,7 @@ void Executor::runWlm(Scheduler *graph,int debug, bool fromScratch)
 
   WorkloadManager::DefaultAlgorithm algo;
   WorkloadManager::WorkloadManager wlm(algo);
-  loadResources(wlm);
+  WlmTask::loadResources(wlm);
   wlm.start();
 
   while (_toContinue)
@@ -1829,7 +1748,7 @@ void Executor::runWlm(Scheduler *graph,int debug, bool fromScratch)
         for(Task * task : _tasks)
         {
           beginTask(task);
-          NewTask* newTask = new NewTask(*this, task);
+          WlmTask* newTask = new WlmTask(*this, task);
           wlm.addTask(newTask);
         }
       }

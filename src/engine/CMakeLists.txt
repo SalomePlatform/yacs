@@ -116,6 +116,7 @@ SET(YACSlibEngine_HEADERS
   PlayGround.hxx
   ObserverAsPlugin.hxx
   NbBranches.hxx
+  WlmTask.hxx
   )
 
 # --- sources ---
@@ -194,6 +195,7 @@ SET(YACSlibEngine_SOURCES
   PlayGround.cxx
   ComplexWeight.cxx
   ObserverAsPlugin.cxx
+  WlmTask.cxx
   )
 SET(YACSlibEngine_HEADERS ${YACSlibEngine_HEADERS} PARENT_SCOPE)  # Make it visible to src/engine_swig to handle dependencies
 
