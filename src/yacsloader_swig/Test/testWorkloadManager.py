@@ -34,11 +34,20 @@ class TestEdit(unittest.TestCase):
         self.r = pilot.getRuntime()
         self.l = loader.YACSLoader()
         self.e = pilot.ExecutorSwig()
+        # We need a catalog which contains only one resource named "localhost"
+        # with 16 cores. The modifications made here are not saved to the
+        # catalog file.
         salome.salome_init()
         resourceManager = salome.lcc.getResourcesManager()
         resource_definition = resourceManager.GetResourceDefinition("localhost")
         resource_definition.nb_node = 16
         resourceManager.AddResource(resource_definition, False, "")
+        resource_required = salome.ResourceParameters()
+        resource_required.can_run_containers = True
+        res_list = resourceManager.GetFittingResources(resource_required)
+        for r in res_list:
+          if r != "localhost":
+            resourceManager.RemoveResource(r, False, "")
         #resource_definition = resourceManager.GetResourceDefinition("localhost")
         #self.assertEqual(resource_definition.nb_node, 16)
 
@@ -52,7 +61,7 @@ class TestEdit(unittest.TestCase):
         execution_time = res_port.getPyObj()
         # lower time means some resources are overloaded
         self.assertTrue(execution_time > 13)
-        # The containers need some time to be launched.
+        # The containers may need some time to be launched.
         # We need some delay to add to the 15s.
         self.assertTrue(execution_time < 20)
 
@@ -69,8 +78,8 @@ class TestEdit(unittest.TestCase):
         execution_time = total_time.getPyObj()
         # lower time means some resources are overloaded
         self.assertTrue(execution_time > 14)
-        # The containers need some time to be launched.
-        # We need some delay to add to the 15s.
+        # The containers may need some time to be launched.
+        # We need some delay to add to the 16s.
         self.assertTrue(execution_time < 20)
 
 if __name__ == '__main__':
