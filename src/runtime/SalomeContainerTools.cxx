@@ -396,27 +396,33 @@ void SalomeContainerToolsBase::Start(const std::vector<std::string>& compoNames,
         }
     }
 
-  if(CORBA::is_nil(trueCont))
+  int nbTries=0;
+  while(CORBA::is_nil(trueCont))
+  {
     try
-  {
-        // --- GiveContainer is used in batch mode to retreive launched containers,
-        //     and is equivalent to StartContainer when not in batch.
-        trueCont=contManager->GiveContainer(myparams);
-  }
-  catch( const SALOME::SALOME_Exception& ex )
-  {
-      std::string msg="SalomeContainer::start : Unable to launch container in Salome : ";
-      msg += '\n';
-      msg += ex.details.text.in();
-      throw Exception(msg);
-  }
-  catch(CORBA::COMM_FAILURE&)
-  {
-      throw Exception("SalomeContainer::start : Unable to launch container in Salome : CORBA Comm failure detected");
-  }
-  catch(CORBA::Exception&)
-  {
-      throw Exception("SalomeContainer::start : Unable to launch container in Salome : Unexpected CORBA failure detected");
+    {
+          // --- GiveContainer is used in batch mode to retreive launched containers,
+          //     and is equivalent to StartContainer when not in batch.
+          trueCont=contManager->GiveContainer(myparams);
+    }
+    catch( const SALOME::SALOME_Exception& ex )
+    {
+        std::string msg="SalomeContainer::start : Unable to launch container in Salome : ";
+        msg += '\n';
+        msg += ex.details.text.in();
+        throw Exception(msg);
+    }
+    catch(CORBA::COMM_FAILURE&)
+    {
+      std::cerr << "SalomeContainer::start : CORBA Comm failure detected. Make another try!" << std::endl;
+      nbTries++;
+      if(nbTries > 5)
+        throw Exception("SalomeContainer::start : Unable to launch container in Salome : CORBA Comm failure detected");
+    }
+    catch(CORBA::Exception&)
+    {
+        throw Exception("SalomeContainer::start : Unable to launch container in Salome : Unexpected CORBA failure detected");
+    }
   }
 
   if(CORBA::is_nil(trueCont))

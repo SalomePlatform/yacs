@@ -402,7 +402,7 @@ void PythonNode::executeRemote()
 {
   DEBTRACE( "++++++++++++++ PyNode::executeRemote: " << getName() << " ++++++++++++++++++++" );
   if(!_pyfuncSer)
-    throw Exception("DistributedPythonNode badly loaded");
+    throw Exception("PythonNode badly loaded");
   //
   if(dynamic_cast<HomogeneousPoolContainer *>(getContainer()))
     {
