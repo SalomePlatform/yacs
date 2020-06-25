@@ -50,7 +50,7 @@ namespace YACS
       Engines::Container_var loadPythonAdapter(InlineNode *reqNode, bool& isInitializeRequested);
       void loadRemoteContext(InlineNode *reqNode, Engines::Container_ptr objContainer, bool isInitializeRequested);
       static std::string GetContainerLog(const std::string& mode, Container *container, const Task *askingTask);
-      bool hasImposedResource()const;
+      virtual bool hasImposedResource()const;
     protected:
       PyObject *_context;
       PyObject *_pyfuncSer;
@@ -91,6 +91,7 @@ namespace YACS
       void imposeResource(const std::string& resource_name,
                           const std::string& container_name) override;
       bool canAcceptImposedResource()override;
+      bool hasImposedResource()const override;
       bool isUsingPythonCache()const;
       std::string getContainerLog();
       PythonNode* cloneNode(const std::string& name);
@@ -139,6 +140,7 @@ namespace YACS
       void imposeResource(const std::string& resource_name,
                           const std::string& container_name) override;
       bool canAcceptImposedResource()override;
+      bool hasImposedResource()const override;
       std::string getContainerLog();
       PyFuncNode* cloneNode(const std::string& name);
       virtual std::string typeName() { return "YACS__ENGINE__PyFuncNode"; }

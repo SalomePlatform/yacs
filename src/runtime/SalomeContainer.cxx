@@ -230,12 +230,18 @@ void SalomeContainer::start(const Task *askingNode,
                             const std::string& resource_name,
                             const std::string& container_name)
 {
-  if(canAcceptImposedResource())
+  if(canAcceptImposedResource()
+    && askingNode != nullptr
+    && askingNode->hasImposedResource())
   {
     SalomeContainerTools tempSct = _sct;
     tempSct.setProperty("name", resource_name);
     tempSct.setProperty("container_name", container_name);
-    SalomeContainerTools::Start(_componentNames,_launchModeType,tempSct,_shutdownLevel,this,askingNode);
+    //SalomeContainerTools::Start(_componentNames,_launchModeType,tempSct,_shutdownLevel,this,askingNode);
+    // components are not supported yet on this kind of start
+    std::vector<std::string> noComponentNames;
+    int shutdownLevel = 999;
+    SalomeContainerTools::Start(noComponentNames,_launchModeType,tempSct,shutdownLevel,this,askingNode);
   }
   else
     start(askingNode);

@@ -55,6 +55,7 @@ namespace YACS
       virtual void imposeResource(const std::string& resource_name,
                                   const std::string& container_name) {}
       virtual bool canAcceptImposedResource() { return false;}
+      virtual bool hasImposedResource()const { return false;}
       virtual ~Task();
     };
   }

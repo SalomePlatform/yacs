@@ -96,22 +96,22 @@ void PythonEntry::loadRemoteContainer(InlineNode *reqNode)
   bool isContAlreadyStarted(false);
   if(container)
     {
-      isContAlreadyStarted=container->isAlreadyStarted(reqNode);
-      if(!isContAlreadyStarted)
+      try
+      {
+        if(hasImposedResource())
+          container->start(reqNode, _imposedResource, _imposedContainer);
+        else
         {
-          try
-          {
-            if(hasImposedResource())
-              container->start(reqNode, _imposedResource, _imposedContainer);
-            else
-              container->start(reqNode);
-          }
-          catch(Exception& e)
-          {
-              reqNode->setErrorDetails(e.what());
-              throw e;
-          }
+          isContAlreadyStarted=container->isAlreadyStarted(reqNode);
+          if(!isContAlreadyStarted)
+            container->start(reqNode);
         }
+      }
+      catch(Exception& e)
+      {
+          reqNode->setErrorDetails(e.what());
+          throw e;
+      }
     }
   else
     {
@@ -740,6 +740,11 @@ void PythonNode::imposeResource(const std::string& resource_name,
 bool PythonNode::canAcceptImposedResource()
 {
   return _container != nullptr && _container->canAcceptImposedResource();
+}
+
+bool PythonNode::hasImposedResource()const
+{
+  return PythonEntry::hasImposedResource();
 }
 
 std::string PythonNode::pythonEntryName()const
@@ -1382,3 +1387,9 @@ bool PyFuncNode::canAcceptImposedResource()
 {
   return _container != nullptr && _container->canAcceptImposedResource();
 }
+
+bool PyFuncNode::hasImposedResource()const
+{
+  return PythonEntry::hasImposedResource();
+}
+

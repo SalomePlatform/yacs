@@ -29,6 +29,7 @@
 
 #include <map>
 #include <string>
+#include <mutex>
 
 namespace YACS
 {
@@ -89,7 +90,9 @@ namespace YACS
       static const char TYPE_NAME[];
       static const char DFT_LAUNCH_MODE[];
     private:
-      std::map<const ComponentInstance *,Engines::Container_var> _trueContainers;
+      std::map<const ComponentInstance *,Engines::Container_var> _containersForComponents;
+      std::map<const Task *,Engines::Container_var> _containersForTasks;
+      mutable std::mutex _data_mutex;
     };
   }
 }
