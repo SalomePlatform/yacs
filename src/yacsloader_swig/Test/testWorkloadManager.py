@@ -51,6 +51,10 @@ class TestEdit(unittest.TestCase):
         #resource_definition = resourceManager.GetResourceDefinition("localhost")
         #self.assertEqual(resource_definition.nb_node, 16)
 
+    def tearDown(self):
+        cm = salome.lcc.getContainerManager()
+        cm.ShutdownContainers()
+
     def test1(self):
         """ Two parallel foreach-s with different containers
         """
@@ -81,6 +85,16 @@ class TestEdit(unittest.TestCase):
         # The containers may need some time to be launched.
         # We need some delay to add to the 16s.
         self.assertTrue(execution_time < 20)
+
+    def test3(self):
+        """ Launch 8 independent nodes in parallel.
+        """
+        proc = self.l.load("samples/wlm_8nodes.xml")
+        self.e.RunW(proc,0)
+        ok = proc.getChildByName("End").getOutputPort("ok")
+        if not ok :
+          err_message = proc.getChildByName("End").getOutputPort("err_message")
+          self.fail(err_message)
 
 if __name__ == '__main__':
   dir_test = tempfile.mkdtemp(suffix=".yacstest")

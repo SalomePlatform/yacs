@@ -33,14 +33,14 @@
    </container>
    <container name="c1">
       <property name="container_kind" value="Salome"/>
-      <property name="attached_on_cloning" value="0"/>
+      <property name="attached_on_cloning" value="1"/>
       <property name="nb_parallel_procs" value="1"/>
       <property name="type" value="multi"/>
       <property name="use_py_cache" value="1"/>
    </container>
    <container name="c2">
       <property name="container_kind" value="Salome"/>
-      <property name="attached_on_cloning" value="0"/>
+      <property name="attached_on_cloning" value="1"/>
       <property name="nb_parallel_procs" value="4"/>
       <property name="type" value="multi"/>
       <property name="use_py_cache" value="1"/>
@@ -98,7 +98,6 @@ if s_expected != s2:
 #print(r1)
 #print(r2)
 ]]></code></script>
-      <load container="DefaultContainer"/>
       <inport name="t0" type="pyobj"/>
       <inport name="r1" type="seqpyobj"/>
       <inport name="r2" type="seqpyobj"/>
@@ -163,11 +162,11 @@ time.sleep(1)
    </datalink>
    <datalink control="false">
       <fromnode>Begin</fromnode> <fromport>nbbranches</fromport>
-      <tonode>ForEach2</tonode> <toport>nbBranches</toport>
+      <tonode>ForEach1</tonode> <toport>nbBranches</toport>
    </datalink>
    <datalink control="false">
       <fromnode>Begin</fromnode> <fromport>nbbranches</fromport>
-      <tonode>ForEach1</tonode> <toport>nbBranches</toport>
+      <tonode>ForEach2</tonode> <toport>nbBranches</toport>
    </datalink>
    <datalink control="false">
       <fromnode>ForEach1</fromnode> <fromport>evalSamples</fromport>
@@ -193,11 +192,11 @@ time.sleep(1)
       <tonode>ForEach2</tonode><toport>nbBranches</toport>
       <value><int>1</int></value>
    </parameter>
-   <presentation name="Begin" x="9" y="86" width="158" height="117" expanded="1" expx="9" expy="86" expWidth="158" expHeight="117" shownState="0"/>
    <presentation name="End" x="402.5" y="85" width="158" height="144" expanded="1" expx="402.5" expy="85" expWidth="158" expHeight="144" shownState="0"/>
    <presentation name="ForEach1.PyNode1" x="9.5" y="88" width="158" height="63" expanded="1" expx="9.5" expy="88" expWidth="158" expHeight="63" shownState="0"/>
-   <presentation name="ForEach2.PyNode2" x="13" y="92" width="158" height="63" expanded="1" expx="13" expy="92" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="Begin" x="9" y="86" width="158" height="117" expanded="1" expx="9" expy="86" expWidth="158" expHeight="117" shownState="0"/>
    <presentation name="ForEach1" x="201.5" y="146" width="171.5" height="155" expanded="1" expx="201.5" expy="146" expWidth="171.5" expHeight="155" shownState="0"/>
    <presentation name="ForEach2" x="204" y="313.5" width="175" height="159" expanded="1" expx="204" expy="313.5" expWidth="175" expHeight="159" shownState="0"/>
+   <presentation name="ForEach2.PyNode2" x="13" y="92" width="158" height="63" expanded="1" expx="13" expy="92" expWidth="158" expHeight="63" shownState="0"/>
    <presentation name="__ROOT__" x="0" y="0" width="564.5" height="476.5" expanded="1" expx="0" expy="0" expWidth="564.5" expHeight="476.5" shownState="0"/>
 </proc>
