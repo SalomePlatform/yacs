@@ -209,7 +209,7 @@ void  SceneBlocItem::getNodesInfo(YACS::ENGINE::ComposedNode *cnode)
 
   // --- Create edges (i.e. links)
 
-  Agnode_t* aNode;
+  Agnode_t* aNode = NULL;
   for (aNode = agfstnode(_graph); aNode; aNode = agnxtnode(_graph, aNode))
   {
     string aNodeName = agnameof(aNode);
