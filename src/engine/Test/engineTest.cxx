@@ -39,7 +39,11 @@
 #include <list>
 #include <vector>
 #include <string.h>
+#ifdef WIN32
+#include <stdlib.h>
+#else
 #include <unistd.h>
+#endif
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -1001,10 +1005,16 @@ void EngineTest::RecursiveBlocs_multipleRecursion()
         DEBTRACE("     output port name for graphe = " << _nodeMap["graphe"]->getOutPortName(*it));
       }
     YACS::ENGINE::VisitorSaveState vst(_compoMap["graphe"]);
+#ifdef WIN32
+      std::string logDir=getenv("SALOME_TMP_DIR");
+      logDir += "\\";
+#else
     std::string logDir = std::string("/tmp/")+ getlogin();
     std::string cmd = "mkdir -p " + logDir;
     system( cmd.c_str() );
-    vst.openFileDump(logDir + std::string("/RecursiveBlocs_multipleRecursion_dumpState.xml"));
+	logDir += "/";
+#endif
+    vst.openFileDump(logDir + std::string("RecursiveBlocs_multipleRecursion_dumpState.xml"));
     _compoMap["graphe"]->accept(&vst);
     vst.closeFileDump();
   }
