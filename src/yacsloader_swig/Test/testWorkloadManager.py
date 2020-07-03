@@ -60,6 +60,7 @@ class TestEdit(unittest.TestCase):
         """
         proc = self.l.load("samples/wlm_2foreach.xml")
         self.e.RunW(proc,0)
+        self.assertEqual(proc.getState(),pilot.DONE)
         res_port = proc.getChildByName("End").getOutputPort("r")
         # theoretical time should be 15s
         execution_time = res_port.getPyObj()
@@ -75,6 +76,7 @@ class TestEdit(unittest.TestCase):
         """
         proc = self.l.load("samples/wlm_2foreach_with_cache.xml")
         self.e.RunW(proc,0)
+        self.assertEqual(proc.getState(),pilot.DONE)
         ok = proc.getChildByName("End").getOutputPort("ok")
         self.assertTrue(ok)
         total_time = proc.getChildByName("End").getOutputPort("total_time")
@@ -91,6 +93,7 @@ class TestEdit(unittest.TestCase):
         """
         proc = self.l.load("samples/wlm_8nodes.xml")
         self.e.RunW(proc,0)
+        self.assertEqual(proc.getState(),pilot.DONE)
         ok = proc.getChildByName("End").getOutputPort("ok")
         if not ok :
           err_message = proc.getChildByName("End").getOutputPort("err_message")
