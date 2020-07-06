@@ -1,4 +1,4 @@
-// Copyright (C) 2006-2019  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2020  CEA/DEN, EDF R&D
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -209,7 +209,7 @@ void  SceneBlocItem::getNodesInfo(YACS::ENGINE::ComposedNode *cnode)
 
   // --- Create edges (i.e. links)
 
-  Agnode_t* aNode;
+  Agnode_t* aNode = NULL;
   for (aNode = agfstnode(_graph); aNode; aNode = agnxtnode(_graph, aNode))
   {
     string aNodeName = agnameof(aNode);

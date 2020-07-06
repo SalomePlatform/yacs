@@ -1,4 +1,4 @@
-// Copyright (C) 2006-2019  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2020  CEA/DEN, EDF R&D
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -30,6 +30,7 @@
 
 #include "PyStdout.hxx"
 #include <iostream>
+#include <memory>
 #include <sstream>
 #include <fstream>
 
@@ -411,7 +412,8 @@ void PythonNode::executeRemote()
       _pynode->assignNewCompiledCode(getScript().c_str());
     }
   //
-  Engines::pickledArgs_var serializationInputCorba(new Engines::pickledArgs);
+  std::unique_ptr<Engines::pickledArgs> serializationInputCorba(new Engines::pickledArgs);
+  AutoPyRef serializationInput;
   {
       AutoGIL agil;
       PyObject *args(0),*ob(0);
@@ -432,17 +434,15 @@ void PythonNode::executeRemote()
       PyObject_Print(args,stderr,Py_PRINT_RAW);
       std::cerr << endl;
 #endif
-      PyObject *serializationInput(PyObject_CallFunctionObjArgs(_pyfuncSer,args,NULL));
+      serializationInput.set(PyObject_CallFunctionObjArgs(_pyfuncSer,args,nullptr));
       Py_DECREF(args);
       //The pickled string may contain NULL characters so use PyString_AsStringAndSize
       char *serializationInputC(0);
       Py_ssize_t len;
       if (PyBytes_AsStringAndSize(serializationInput, &serializationInputC, &len))
         throw Exception("DistributedPythonNode problem in python pickle");
-      serializationInputCorba->length(len);
-      for(int i=0; i < len ; i++)
-        serializationInputCorba[i]=serializationInputC[i];
-      Py_DECREF(serializationInput);
+      // no copy here. The C byte array of Python is taken  as this into CORBA sequence to avoid copy
+      serializationInputCorba.reset(new Engines::pickledArgs(len,len,reinterpret_cast<CORBA::Octet *>(serializationInputC),0));
   }
 
   //get the list of output argument names
@@ -463,37 +463,54 @@ void PythonNode::executeRemote()
   // Execute in remote Python node
   //===========================================================================
   DEBTRACE( "-----------------starting remote python invocation-----------------" );
-  Engines::pickledArgs_var resultCorba;
+  std::unique_ptr<Engines::pickledArgs> resultCorba;
   try
     {
       //pass outargsname and dict serialized
-      resultCorba=_pynode->execute(myseq,serializationInputCorba);
+      _pynode->executeFirst(*(serializationInputCorba.get()));
+      //serializationInput and serializationInputCorba are no more needed for server. Release it.
+      serializationInputCorba.reset(nullptr); serializationInput.set(nullptr);
+      resultCorba.reset(_pynode->executeSecond(myseq));
     }
   catch( const SALOME::SALOME_Exception& ex )
     {
-      std::string msg="Exception on remote python invocation";
-      msg += '\n';
-      msg += ex.details.text.in();
-      _errorDetails=msg;
-      throw Exception(msg);
+      std::ostringstream msg; msg << "Exception on remote python invocation" << std::endl << ex.details.text.in() << std::endl;
+      msg << "PyScriptNode CORBA ref : ";
+      {
+        CORBA::ORB_ptr orb(getSALOMERuntime()->getOrb());
+        if(!CORBA::is_nil(orb))
+        {
+          CORBA::String_var IOR(orb->object_to_string(_pynode));
+          msg << IOR;
+        }
+      }
+      msg << std::endl;
+      _errorDetails=msg.str();
+      throw Exception(msg.str());
     }
+//   if(!CORBA::is_nil(_pynode))
+//     {
+//       _pynode->UnRegister();
+//     }
+//   _pynode = Engines::PyScriptNode::_nil();
+//   //
+//   bool dummy;
+//   Engines::Container_var cont(GetContainerObj(this,dummy));
+//   cont->removePyScriptNode(getName().c_str());
   DEBTRACE( "-----------------end of remote python invocation-----------------" );
   //===========================================================================
   // Get results, unpickle and put them in output ports
   //===========================================================================
-  char *resultCorbaC=new char[resultCorba->length()+1];
-  resultCorbaC[resultCorba->length()]='\0';
-  for(int i=0;i<resultCorba->length();i++)
-    resultCorbaC[i]=resultCorba[i];
-
+  auto length(resultCorba->length());
+  char *resultCorbaC(reinterpret_cast<char *>(resultCorba->get_buffer()));
   {
       AutoGIL agil;
       PyObject *args(0),*ob(0);
-      PyObject* resultPython=PyBytes_FromStringAndSize(resultCorbaC,resultCorba->length());
-      delete [] resultCorbaC;
+      PyObject* resultPython=PyMemoryView_FromMemory(resultCorbaC,length,PyBUF_READ);
       args = PyTuple_New(1);
       PyTuple_SetItem(args,0,resultPython);
       PyObject *finalResult=PyObject_CallObject(_pyfuncUnser,args);
+      resultCorba.reset(nullptr);
       Py_DECREF(args);
 
       if (finalResult == NULL)

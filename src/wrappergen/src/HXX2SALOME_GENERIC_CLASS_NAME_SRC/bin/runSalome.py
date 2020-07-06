@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (C) 2006-2019  CEA/DEN, EDF R&D
+# Copyright (C) 2006-2020  CEA/DEN, EDF R&D
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -180,7 +180,8 @@ class Server:
 
 class CatalogServer(Server):
     SCMD1=['SALOME_ModuleCatalog_Server','-common']
-    SCMD2=['-personal','${HOME}/Salome/resources/CatalogModulePersonnel.xml']
+    home_dir=os.path.expanduser("~")
+    SCMD2=['-personal',os.path.join(home_dir,'Salome', 'resources', 'CatalogModulePersonnel.xml')]
 
     def setpath(self,liste_modules):
         cata_path=[]

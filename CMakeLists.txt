@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2019  CEA/DEN, EDF R&D
+# Copyright (C) 2012-2020  CEA/DEN, EDF R&D
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -21,12 +21,6 @@ INCLUDE(CMakeDependentOption)
 
 PROJECT(SalomeYACS C CXX)
 
-# Ensure a proper linker behavior:
-CMAKE_POLICY(SET CMP0003 NEW)
-IF(WIN32)
-  CMAKE_POLICY(SET CMP0020 OLD) # disable automatic linking to qtmain.lib 
-ENDIF(WIN32)
-
 # Versioning
 # ===========
 # Project name, upper case
@@ -44,7 +38,7 @@ SET(${PROJECT_NAME_UC}_VERSION_DEV 1)
 SET(CONFIGURATION_ROOT_DIR $ENV{CONFIGURATION_ROOT_DIR} CACHE PATH "Path to the Salome CMake configuration files")
 IF(EXISTS ${CONFIGURATION_ROOT_DIR})
   LIST(APPEND CMAKE_MODULE_PATH "${CONFIGURATION_ROOT_DIR}/cmake")
-  INCLUDE(SalomeMacros)
+  INCLUDE(SalomeMacros NO_POLICY_SCOPE)
 ELSE()
   MESSAGE(FATAL_ERROR "We absolutely need the Salome CMake configuration files, please define CONFIGURATION_ROOT_DIR !")
 ENDIF()
@@ -55,7 +49,6 @@ OPTION(SALOME_YACS_USE_KERNEL "Use SALOME KERNEL" ON)
 IF( SALOME_YACS_USE_KERNEL )
   SET(KERNEL_ROOT_DIR $ENV{KERNEL_ROOT_DIR} CACHE PATH "Path to the Salome KERNEL")
   IF( EXISTS ${KERNEL_ROOT_DIR} )
-    LIST(APPEND CMAKE_MODULE_PATH "${KERNEL_ROOT_DIR}/salome_adm/cmake_files")
     FIND_PACKAGE(SalomeKERNEL REQUIRED)
     KERNEL_WITH_CORBA() # check whether KERNEL builded with CORBA
     ADD_DEFINITIONS(${KERNEL_DEFINITIONS} -DSALOME_KERNEL)
@@ -66,8 +59,6 @@ IF( SALOME_YACS_USE_KERNEL )
   SALOME_LOG_OPTIONAL_PACKAGE(SalomeKERNEL SALOME_YACS_USE_KERNEL)
 ELSE( SALOME_YACS_USE_KERNEL )
   MESSAGE(STATUS "Option SALOME_YACS_USE_KERNEL is set to OFF, so YACS will be built without CORBA!!!")
-  LIST(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/adm/cmake")
-  INCLUDE(SalomeMacros)
 ENDIF( SALOME_YACS_USE_KERNEL )
 
 # Find SALOME GUI (optional)
@@ -77,7 +68,6 @@ CMAKE_DEPENDENT_OPTION(SALOME_BUILD_GUI "Build GUI of YACS" ON
 IF(SALOME_BUILD_GUI)
   SET(GUI_ROOT_DIR $ENV{GUI_ROOT_DIR} CACHE PATH "Path to the Salome GUI")
   IF(EXISTS ${GUI_ROOT_DIR})
-    LIST(APPEND CMAKE_MODULE_PATH "${GUI_ROOT_DIR}/adm_local/cmake_files")
     FIND_PACKAGE(SalomeGUI)
     SALOME_GUI_WITH_CORBA() # check whether GUI builded with CORBA
     SALOME_GUI_MODE(SALOME_USE_QXGRAPHVIEWER) # check whether GUI is built with the QxGraphViewer
@@ -89,11 +79,9 @@ ENDIF(SALOME_BUILD_GUI)
 
 # Platform setup
 # ==============
-INCLUDE(SalomeSetupPlatform)   # From SalomeMacros
+INCLUDE(SalomeSetupPlatform)   # From CONFIGURATION
 # Always build libraries as shared objects:
 SET(BUILD_SHARED_LIBS TRUE)
-# Local macros:
-LIST(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/adm/cmake")
 
 # additional preprocessor / compiler flags
 ADD_DEFINITIONS(-DCMAKE_BUILD)
