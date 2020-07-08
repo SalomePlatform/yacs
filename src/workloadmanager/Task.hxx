@@ -19,11 +19,13 @@
 #ifndef _TASK_H_
 #define _TASK_H_
 
+#include "YACSlibWorkloadmanagerExport.hxx"
+
 #include <string>
 
 namespace WorkloadManager
 {
-  struct ContainerType
+  struct YACSLIBWLM_EXPORT ContainerType
   {
     // parameters needed by WorkloadManager
     float neededCores = 0.0;
@@ -42,7 +44,7 @@ namespace WorkloadManager
     }
   };
   
-  struct Resource
+  struct YACSLIBWLM_EXPORT Resource
   {
     unsigned int nbCores = 0; // needed by WorkloadManager
     // parameters for client use, used by WorkloadManager to distinguish objects
@@ -57,7 +59,7 @@ namespace WorkloadManager
     }
   };
   
-  struct RunInfo
+  struct YACSLIBWLM_EXPORT RunInfo
   {
     ContainerType type;
     Resource resource;
@@ -67,7 +69,7 @@ namespace WorkloadManager
   /**
   * @todo write docs
   */
-  class Task
+  class YACSLIBWLM_EXPORT Task
   {
   public:
     virtual ~Task(){};

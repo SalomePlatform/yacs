@@ -18,6 +18,8 @@
 //
 #ifndef WORKLOADMANAGER_H
 #define WORKLOADMANAGER_H
+#include "YACSlibWorkloadmanagerExport.hxx"
+
 #include <mutex>
 #include <future>
 #include <condition_variable> // notifications
@@ -29,7 +31,7 @@
 
 namespace WorkloadManager
 {
-  class WorkloadManager
+  class YACSLIBWLM_EXPORT WorkloadManager
   {
   public:
     WorkloadManager(WorkloadAlgorithm& algo);

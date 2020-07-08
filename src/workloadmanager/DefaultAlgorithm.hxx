@@ -19,6 +19,7 @@
 #ifndef ALGORITHMIMPLEMENT_H
 #define ALGORITHMIMPLEMENT_H
 
+#include "YACSlibWorkloadmanagerExport.hxx"
 #include "WorkloadAlgorithm.hxx"
 #include <set>
 #include <map>
@@ -29,7 +30,7 @@ namespace WorkloadManager
 /**
  * @todo write docs
  */
-class DefaultAlgorithm : public WorkloadAlgorithm
+class YACSLIBWLM_EXPORT DefaultAlgorithm : public WorkloadAlgorithm
 {
 public:
   void addTask(Task* t)override;

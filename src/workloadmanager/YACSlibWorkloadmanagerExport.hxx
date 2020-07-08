@@ -1,4 +1,4 @@
-// Copyright (C) 2020  CEA/DEN, EDF R&D
+// Copyright (C) 2006-2020  CEA/DEN, EDF R&D
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -16,29 +16,23 @@
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-#ifndef WORKLOADALGORITHM_H
-#define WORKLOADALGORITHM_H
 
-#include "YACSlibWorkloadmanagerExport.hxx"
-#include "Task.hxx"
+#ifndef _YACSLIBWORKLOADMANAGEREXPORT_HXX_
+#define _YACSLIBWORKLOADMANAGEREXPORT_HXX_
 
-namespace WorkloadManager
-{
-class YACSLIBWLM_EXPORT WorkloadAlgorithm
-{
-public:
-  struct LaunchInfo
-  {
-    bool taskFound=false;
-    RunInfo worker;
-    Task* task=nullptr;
-  };
+#ifdef WIN32
+#  if defined YACSlibWorkloadManager_EXPORTS
+#    define YACSLIBWLM_EXPORT __declspec( dllexport )
+#  else
+#    define YACSLIBWLM_EXPORT __declspec( dllimport )
+#  endif
+#else
+#  define YACSLIBWLM_EXPORT
+#endif
 
-  virtual void addTask(Task* t)=0;
-  virtual void addResource(const Resource& r)=0;
-  virtual LaunchInfo chooseTask()=0;
-  virtual void liberate(const LaunchInfo& info)=0;
-  virtual bool empty()const =0;
-};
-}
-#endif // WORKLOADALGORITHM_H
+#ifdef WIN32
+#pragma warning(disable:4251) // Warning DLL Interface ...
+#pragma warning(disable:4290) // Warning Exception ...
+#endif
+
+#endif
