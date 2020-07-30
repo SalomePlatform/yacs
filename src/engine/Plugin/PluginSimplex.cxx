@@ -96,7 +96,7 @@ void PluginSimplex::takeDecision()
     rien = solv->next();
 }
 
-void PluginSimplex::initialize(const Any *input) 
+void PluginSimplex::initialize(const Any *input)
 {
 }
 

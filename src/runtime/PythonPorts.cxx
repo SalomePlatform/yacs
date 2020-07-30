@@ -194,7 +194,7 @@ PyObject * InputPyPort::getPyObj() const
   return _data;
 }
 
-void *InputPyPort::get() const 
+void *InputPyPort::get() const
 {
   return (void*) _data;
 }

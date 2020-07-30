@@ -1427,7 +1427,7 @@ void Executor::loadTask(Task *task, const WorkloadManager::RunInfo& runInfo)
       traceExec(task, "initService", ComputePlacement(task));
       task->initService();
     }
-  catch(Exception& ex) 
+  catch(Exception& ex)
     {
       std::cerr << ex.what() << std::endl;
       {//Critical section
@@ -1437,7 +1437,7 @@ void Executor::loadTask(Task *task, const WorkloadManager::RunInfo& runInfo)
         traceExec(task, "state:"+Node::getStateName(task->getState()), ComputePlacement(task));
       }//End of critical section
     }
-  catch(...) 
+  catch(...)
     {
       std::cerr << "Load failed" << std::endl;
       {//Critical section
@@ -1492,9 +1492,6 @@ void Executor::endTask(Task *task, YACS::Event ev)
   }
   _numberOfRunningTasks--;
   _runningTasks.erase(task);
-  DEBTRACE("_numberOfRunningTasks: " << _numberOfRunningTasks 
-            << " _execMode: " << _execMode
-            << " _executorState: " << _executorState);
   if ((_numberOfRunningTasks == 0) && (_execMode != YACS::CONTINUE)) // no more running tasks
     {
       if (_executorState == YACS::WAITINGTASKS)
@@ -1544,7 +1541,7 @@ YACS::Event  Executor::runTask(Task *task)
       message += ex.what();
       traceExec(task, message,ComputePlacement(task));
     }
-  catch(...) 
+  catch(...)
     {
       // Execution has failed
       std::cerr << "Execution has failed: unknown reason" << std::endl;
@@ -1559,7 +1556,7 @@ YACS::Event  Executor::runTask(Task *task)
       task->disconnectService();
       traceExec(task, "disconnectService",ComputePlacement(task));
     }
-  catch(...) 
+  catch(...)
     {
       // Disconnect has failed
       std::cerr << "disconnect has failed" << std::endl;
@@ -1596,7 +1593,7 @@ void Executor::makeDatastreamConnections(Task *task)
         task->connected();
       }//End of critical section
     }
-  catch(Exception& ex) 
+  catch(Exception& ex)
     {
       std::cerr << ex.what() << std::endl;
       try
@@ -1604,7 +1601,7 @@ void Executor::makeDatastreamConnections(Task *task)
           (task)->disconnectService();
           traceExec(task, "disconnectService",ComputePlacement(task));
         }
-      catch(...) 
+      catch(...)
         {
           // Disconnect has failed
           traceExec(task, "disconnectService failed, ABORT",ComputePlacement(task));
@@ -1615,7 +1612,7 @@ void Executor::makeDatastreamConnections(Task *task)
         _mainSched->notifyFrom(task,YACS::ABORT,this);
       }//End of critical section
     }
-  catch(...) 
+  catch(...)
     {
       std::cerr << "Problem in connectService" << std::endl;
       try
@@ -1623,7 +1620,7 @@ void Executor::makeDatastreamConnections(Task *task)
           (task)->disconnectService();
           traceExec(task, "disconnectService",ComputePlacement(task));
         }
-      catch(...) 
+      catch(...)
         {
           // Disconnect has failed
           traceExec(task, "disconnectService failed, ABORT",ComputePlacement(task));
@@ -1808,7 +1805,6 @@ void Executor::runWlm(Scheduler *graph,int debug, bool fromScratch)
     YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForTrace);
     _trace.close();
   }
-  DEBTRACE("End of RunB thread");  
 }
 
 void Executor::RunW(Scheduler *graph,int debug, bool fromScratch)

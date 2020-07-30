@@ -173,7 +173,7 @@ void Bloc::exUpdateState()
  * If node name already used in bloc, throw exception.
  * Publish inputPorts in current bloc and ancestors.
  */
-bool Bloc::edAddChild(Node *node) 
+bool Bloc::edAddChild(Node *node)
 {
   if(isNodeAlreadyAggregated(node))
     {
@@ -217,7 +217,7 @@ bool Bloc::edAddChild(Node *node)
  * @exception If 'node' is NOT the son of 'this'.
  */
 
-void Bloc::edRemoveChild(Node *node) 
+void Bloc::edRemoveChild(Node *node)
 {
   StaticDefinedComposedNode::edRemoveChild(node);
   list<Node *>::iterator iter=find(_setOfNode.begin(),_setOfNode.end(),node);
@@ -276,7 +276,7 @@ std::vector< std::list<Node *> > Bloc::splitIntoIndependantGraph() const
   return ret;
 }
 
-Node *Bloc::getChildByShortName(const std::string& name) const 
+Node *Bloc::getChildByShortName(const std::string& name) const
 {
   for (list<Node *>::const_iterator iter = _setOfNode.begin(); iter != _setOfNode.end(); iter++)
     if ((*iter)->getName() == name)
@@ -335,7 +335,7 @@ bool insertNodeChildrenInSet(Node *node, std::set<Node *>& nodeSet)
  *        \b WARNING : When using this method 'node' has to be checked in order to be part of direct children of 'this'. 
  *
  */
-void Bloc::checkNoCyclePassingThrough(Node *node) 
+void Bloc::checkNoCyclePassingThrough(Node *node)
 {
   set<Node *> currentNodesToTest;
   //don't insert node to test in set. 

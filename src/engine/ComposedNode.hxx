@@ -177,7 +177,7 @@ namespace YACS
     };
 
     template <class PORT>
-    std::string ComposedNode::getPortName(const PORT * port) const 
+    std::string ComposedNode::getPortName(const PORT * port) const
     {
       Node *node = port->getNode();
       std::string portName = port->getName();  

@@ -27,7 +27,7 @@ using namespace YACS::ENGINE;
 using namespace std;
 
 
-void NeutralCorbaInt::put(const void *data) 
+void NeutralCorbaInt::put(const void *data)
 {
   put((YACS::ENGINE::Any *)data);
 }
@@ -37,7 +37,7 @@ void NeutralCorbaInt::put(const void *data)
  *   \param data : YACS::ENGINE::Any object
  */
 
-void NeutralCorbaInt::put(YACS::ENGINE::Any *data) 
+void NeutralCorbaInt::put(YACS::ENGINE::Any *data)
 {
   CORBA::Any *a =convertNeutralCorba(edGetType(),data);
   _port->put(a);
@@ -45,7 +45,7 @@ void NeutralCorbaInt::put(YACS::ENGINE::Any *data)
   delete a;
 }
 
-void NeutralCorbaBool::put(const void *data) 
+void NeutralCorbaBool::put(const void *data)
 {
   put((YACS::ENGINE::Any *)data);
 }
@@ -55,7 +55,7 @@ void NeutralCorbaBool::put(const void *data)
  *   \param data : YACS::ENGINE::Any object
  */
 
-void NeutralCorbaBool::put(YACS::ENGINE::Any *data) 
+void NeutralCorbaBool::put(YACS::ENGINE::Any *data)
 {
   CORBA::Any *a =convertNeutralCorba(edGetType(),data);
   _port->put(a);
@@ -64,7 +64,7 @@ void NeutralCorbaBool::put(YACS::ENGINE::Any *data)
 }
 
 
-void NeutralCorbaDouble::put(const void *data) 
+void NeutralCorbaDouble::put(const void *data)
 {
   put((YACS::ENGINE::Any *)data);
 }
@@ -74,7 +74,7 @@ void NeutralCorbaDouble::put(const void *data)
  *   \param data : YACS::ENGINE::Any object
  */
 
-void NeutralCorbaDouble::put(YACS::ENGINE::Any *data) 
+void NeutralCorbaDouble::put(YACS::ENGINE::Any *data)
 {
   CORBA::Any *a =convertNeutralCorba(edGetType(),data);
   _port->put(a);

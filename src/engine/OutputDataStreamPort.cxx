@@ -84,7 +84,6 @@ string OutputDataStreamPort::getNameOfTypeOfCurrentInstance() const
 }
 
 bool OutputDataStreamPort::edAddInputDataStreamPort(InputDataStreamPort *port)
- 
 {
   DEBTRACE("OutputDataStreamPort::edAddInputDataStreamPort");
   if(!isAlreadyInSet(port))
@@ -105,7 +104,7 @@ bool OutputDataStreamPort::edAddInputDataStreamPort(InputDataStreamPort *port)
     return false;
 }
 
-int OutputDataStreamPort::edRemoveInputDataStreamPort(InputDataStreamPort *inPort, bool forward) 
+int OutputDataStreamPort::edRemoveInputDataStreamPort(InputDataStreamPort *inPort, bool forward)
 {
   if(forward)
     {
@@ -130,7 +129,7 @@ int OutputDataStreamPort::edRemoveInputDataStreamPort(InputDataStreamPort *inPor
     }
 }
 
-bool OutputDataStreamPort::addInPort(InPort *inPort) 
+bool OutputDataStreamPort::addInPort(InPort *inPort)
 {
   DEBTRACE("OutputDataStreamPort::addInPort");
   if(inPort->getNameOfTypeOfCurrentInstance()!=InputDataStreamPort::NAME)
@@ -142,7 +141,7 @@ bool OutputDataStreamPort::addInPort(InPort *inPort)
   return edAddInputDataStreamPort(static_cast<InputDataStreamPort*>(inPort));
 }
 
-void OutputDataStreamPort::edRemoveAllLinksLinkedWithMe() 
+void OutputDataStreamPort::edRemoveAllLinksLinkedWithMe()
 {
   set<InputDataStreamPort *>::iterator iter;
   set<InputDataStreamPort *> vec(_setOfInputDataStreamPort);
@@ -151,7 +150,7 @@ void OutputDataStreamPort::edRemoveAllLinksLinkedWithMe()
   _setOfInputDataStreamPort.clear();
 }
 
-int OutputDataStreamPort::removeInPort(InPort *inPort, bool forward) 
+int OutputDataStreamPort::removeInPort(InPort *inPort, bool forward)
 {
   DEBTRACE("OutputDataStreamPort::removeInPort");
   if(inPort->getNameOfTypeOfCurrentInstance()!=InputDataStreamPort::NAME && !forward)

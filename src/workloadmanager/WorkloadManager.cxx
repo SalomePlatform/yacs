@@ -33,19 +33,19 @@ namespace WorkloadManager
   , _algo(algo)
   {
   }
-  
+
   WorkloadManager::~WorkloadManager()
   {
     stop();
   }
-  
+
   void WorkloadManager::addResource(const Resource& r)
   {
     std::unique_lock<std::mutex> lock(_data_mutex);
     _algo.addResource(r);
     _startCondition.notify_one();
   }
-  
+
   void WorkloadManager::addTask(Task* t)
   {
     std::unique_lock<std::mutex> lock(_data_mutex);

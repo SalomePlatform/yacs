@@ -92,7 +92,7 @@ YACS::ENGINE::Any * InputCppPort::getCppObj() const
   return _data;
 }
 
-void *InputCppPort::get() const 
+void *InputCppPort::get() const
 {
   return (void*) _data;
 }

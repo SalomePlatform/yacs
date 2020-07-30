@@ -168,7 +168,7 @@ std::string CppContainer::getFullPlacementId(const Task *askingNode) const
   return "/";
 }
 
-void CppContainer::checkCapabilityToDealWith(const ComponentInstance *inst) const 
+void CppContainer::checkCapabilityToDealWith(const ComponentInstance *inst) const
 {
   if(inst->getKind()!=CppComponent::KIND)
     throw Exception("CppContainer::checkCapabilityToDealWith : CppContainer is not able to deal with this type of ComponentInstance.");

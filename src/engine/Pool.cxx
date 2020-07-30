@@ -137,7 +137,7 @@ void Pool::destroyCurrentCase()
  * corrupted 'this'.
  *
  */
-void Pool::checkConsistency() 
+void Pool::checkConsistency()
 {
   // First check unicity of ids.
   std::set<int> ids;
@@ -157,7 +157,7 @@ void Pool::checkConsistency()
 /*!
  * \throw See the \b throw case of pushOutSampleAt method.
  */
-void Pool::setCurrentId(int id) 
+void Pool::setCurrentId(int id)
 {
   std::list< std::pair<int, ExpData> >::iterator iter;
   for(iter=_container.begin();iter!=_container.end();iter++)
@@ -178,7 +178,7 @@ void Pool::setCurrentId(int id)
  *        has destroyed a case id different from its id.
  *
  */
-void Pool::putOutSampleAt(int id, Any *outValue) 
+void Pool::putOutSampleAt(int id, Any *outValue)
 {
   std::list< std::pair<int, ExpData> >::iterator iter;
   for(iter=_container.begin();iter!=_container.end();iter++)

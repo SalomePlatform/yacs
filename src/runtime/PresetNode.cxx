@@ -81,7 +81,7 @@ void PresetNode::setData(OutputPort* port, const std::string& data)
   outp->setData(data);
 }
 
-void PresetNode::checkBasicConsistency() const 
+void PresetNode::checkBasicConsistency() const
 {
   DEBTRACE("PresetNode::checkBasicConsistency");
   if (! _setOfInputPort.empty())

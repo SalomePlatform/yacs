@@ -216,7 +216,7 @@ void MyTest::atest()
 
   DEBUG_LOG("Number of tasks: ", tasksNumber);
   for(int type_id = 0; type_id < typesNumber; type_id++)
-    DEBUG_LOG("Tasks from ", type_id * tasksNumber / typesNumber, 
+    DEBUG_LOG("Tasks from ", type_id * tasksNumber / typesNumber,
               " to ", (type_id + 1) * tasksNumber / typesNumber,
               " are of type ", check.types[type_id].name);
 

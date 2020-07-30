@@ -50,7 +50,7 @@ void LinkInfo::startCollapseTransac()
   _level++;
 }
 
-void LinkInfo::endCollapseTransac() 
+void LinkInfo::endCollapseTransac()
 {
   if(--_level==0)
     {
@@ -83,7 +83,7 @@ void LinkInfo::pushWarnLink(OutPort *semStart, InPort *end, WarnReason reason)
   _collapse[reason].back().push_back(pair<OutPort *,InPort *>(semStart,end));
 }
 
-void LinkInfo::pushErrLink(OutPort *semStart, InPort *end, ErrReason reason) 
+void LinkInfo::pushErrLink(OutPort *semStart, InPort *end, ErrReason reason)
 {
   if(reason==E_NEVER_SET_INPUTPORT)
     _unsetInPort.push_back(end);
@@ -96,7 +96,7 @@ void LinkInfo::pushErrLink(OutPort *semStart, InPort *end, ErrReason reason)
       throw Exception(getErrRepr());
 }
 
-void LinkInfo::pushErrSwitch(CollectorSwOutPort *collector) 
+void LinkInfo::pushErrSwitch(CollectorSwOutPort *collector)
 {
   _errorsOnSwitchCases.push_back(collector);
   if(_level==0)
@@ -109,7 +109,7 @@ void LinkInfo::pushUselessCFLink(Node *start, Node *end)
   _uselessLinks.insert(pair<Node *,Node *>(start,end));
 }
 
-void LinkInfo::takeDecision() const 
+void LinkInfo::takeDecision() const
 {
   if(!_errors.empty())
     throw Exception(getErrRepr());

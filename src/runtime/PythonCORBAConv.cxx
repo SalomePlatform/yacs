@@ -42,7 +42,7 @@ using namespace std;
 /*!Convert a PyObject (integer) to CORBA::Any (integer)
  * It's only a wrapper around put(PyObject *data)
  */
-void PyCorbaInt::put(const void *data) 
+void PyCorbaInt::put(const void *data)
 {
   put((PyObject *)data);
 }
@@ -51,7 +51,7 @@ void PyCorbaInt::put(const void *data)
 /*!
  *   \param data : python object
  */
-void PyCorbaInt::put(PyObject *data) 
+void PyCorbaInt::put(PyObject *data)
 {
   CORBA::Any *a= convertPyObjectCorba(_port->edGetType(),data);
   YACS::ENGINE::InterpreterSaveThread _loc;
@@ -65,7 +65,7 @@ void PyCorbaInt::put(PyObject *data)
  *
  *   \param data : python object
  */
-void PyCorbaBool::put(const void *data) 
+void PyCorbaBool::put(const void *data)
 {
   put((PyObject *)data);
 }
@@ -76,7 +76,7 @@ void PyCorbaBool::put(const void *data)
  *
  *   \param data : python object
  */
-void PyCorbaBool::put(PyObject *data) 
+void PyCorbaBool::put(PyObject *data)
 {
   CORBA::Any *a= convertPyObjectCorba(_port->edGetType(),data);
   YACS::ENGINE::InterpreterSaveThread _loc;
@@ -85,7 +85,7 @@ void PyCorbaBool::put(PyObject *data)
   delete a;
 }
 
-void PyCorbaString::put(const void *data) 
+void PyCorbaString::put(const void *data)
 {
   put((PyObject *)data);
 }
@@ -95,7 +95,7 @@ void PyCorbaString::put(const void *data)
  *   \param data : python object
  */
 
-void PyCorbaString::put(PyObject *data) 
+void PyCorbaString::put(PyObject *data)
 {
   CORBA::Any *a= convertPyObjectCorba(_port->edGetType(),data);
   YACS::ENGINE::InterpreterSaveThread _loc;
@@ -104,7 +104,7 @@ void PyCorbaString::put(PyObject *data)
 }
 
 
-void PyCorbaDouble::put(const void *data) 
+void PyCorbaDouble::put(const void *data)
 {
   put((PyObject *)data);
 }
@@ -114,7 +114,7 @@ void PyCorbaDouble::put(const void *data)
  *   \param data : python object
  */
 
-void PyCorbaDouble::put(PyObject *data) 
+void PyCorbaDouble::put(PyObject *data)
 {
   CORBA::Any *a= convertPyObjectCorba(_port->edGetType(),data);
   YACS::ENGINE::InterpreterSaveThread _loc;
@@ -136,12 +136,12 @@ PyCorbaSequence::PyCorbaSequence(InputCorbaPort* p)
  *   \param data : python object
  */
 
-void PyCorbaSequence::put(const void *data) 
+void PyCorbaSequence::put(const void *data)
 {
   put((PyObject *)data);
 }
 
-void PyCorbaSequence::put(PyObject *data) 
+void PyCorbaSequence::put(PyObject *data)
 {
   DEBTRACE("data refcnt: " << data->ob_refcnt);
 #ifdef _DEVDEBUG_
@@ -178,12 +178,12 @@ PyCorbaObjref::PyCorbaObjref(InputCorbaPort* p)
  *   \param data : python object
  */
 
-void PyCorbaObjref::put(const void *data) 
+void PyCorbaObjref::put(const void *data)
 {
   put((PyObject *)data);
 }
 
-void PyCorbaObjref::put(PyObject *data) 
+void PyCorbaObjref::put(PyObject *data)
 {
   DEBTRACE("data refcnt: " << data->ob_refcnt);
 #ifdef _DEVDEBUG_
@@ -205,7 +205,7 @@ PyCorbaStruct::PyCorbaStruct(InputCorbaPort* p)
 {
 }
 
-void PyCorbaStruct::put(const void *data) 
+void PyCorbaStruct::put(const void *data)
 {
   put((PyObject *)data);
 }
@@ -214,7 +214,7 @@ void PyCorbaStruct::put(const void *data)
 /*!
  *   \param data : python object
  */
-void PyCorbaStruct::put(PyObject *data) 
+void PyCorbaStruct::put(PyObject *data)
 {
   DEBTRACE("data refcnt: " << data->ob_refcnt);
 #ifdef _DEVDEBUG_

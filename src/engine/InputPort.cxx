@@ -145,7 +145,7 @@ void InputPort::edRemoveManInit()
 }
 
 //! Check basically that this port has one chance to be specified on time. It's a necessary condition \b not \b sufficient at all.
-void InputPort::checkBasicConsistency() const 
+void InputPort::checkBasicConsistency() const
 {
   if(!_canBeNull && !edIsManuallyInitialized() && _backLinks.size()==0 )
     {
@@ -192,7 +192,7 @@ ProxyPort::~ProxyPort()
     */
 }
 
-void ProxyPort::edRemoveAllLinksLinkedWithMe() 
+void ProxyPort::edRemoveAllLinksLinkedWithMe()
 {
   _port->edRemoveAllLinksLinkedWithMe();
 }

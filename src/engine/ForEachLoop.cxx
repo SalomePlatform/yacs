@@ -107,7 +107,7 @@ AnySplitOutputPort::AnySplitOutputPort(const AnySplitOutputPort& other, Node *ne
 {
 }
 
-bool AnySplitOutputPort::addInPort(InPort *inPort) 
+bool AnySplitOutputPort::addInPort(InPort *inPort)
 {
   bool ret=OutputPort::addInPort(inPort);
   if(_repr)
@@ -123,7 +123,7 @@ void AnySplitOutputPort::getAllRepresented(std::set<OutPort *>& represented) con
     _repr->getAllRepresented(represented);
 }
 
-int AnySplitOutputPort::removeInPort(InPort *inPort, bool forward) 
+int AnySplitOutputPort::removeInPort(InPort *inPort, bool forward)
 {
   bool ret=OutputPort::removeInPort(inPort,forward);
   if(_repr)
@@ -219,7 +219,7 @@ SplitterNode::SplitterNode(const SplitterNode& other, ForEachLoopGen *father):El
 {
 }
 
-InputPort *SplitterNode::getInputPort(const std::string& name) const 
+InputPort *SplitterNode::getInputPort(const std::string& name) const
 {
   if(name==NAME_OF_SEQUENCE_INPUT)
     return (InputPort *)&_dataPortToDispatch;
@@ -672,7 +672,7 @@ int ForEachLoopGen::getNumberOfInputPorts() const
   return DynParaLoop::getNumberOfInputPorts()+1;
 }
 
-void ForEachLoopGen::checkNoCyclePassingThrough(Node *node) 
+void ForEachLoopGen::checkNoCyclePassingThrough(Node *node)
 {
   //TO DO
 }
@@ -695,7 +695,7 @@ std::list<InputPort *> ForEachLoopGen::getLocalInputPorts() const
   return ret;
 }
 
-InputPort *ForEachLoopGen::getInputPort(const std::string& name) const 
+InputPort *ForEachLoopGen::getInputPort(const std::string& name) const
 {
   if(name==SplitterNode::NAME_OF_SEQUENCE_INPUT)
     return (InputPort *)&_splitterNode._dataPortToDispatch;
@@ -703,7 +703,7 @@ InputPort *ForEachLoopGen::getInputPort(const std::string& name) const
     return DynParaLoop::getInputPort(name);
 }
 
-OutputPort *ForEachLoopGen::getOutputPort(const std::string& name) const 
+OutputPort *ForEachLoopGen::getOutputPort(const std::string& name) const
 {
   for(vector<AnySplitOutputPort *>::const_iterator iter=_outGoingPorts.begin();iter!=_outGoingPorts.end();iter++)
     {
@@ -713,7 +713,7 @@ OutputPort *ForEachLoopGen::getOutputPort(const std::string& name) const
   return DynParaLoop::getOutputPort(name);
 }
 
-OutPort *ForEachLoopGen::getOutPort(const std::string& name) const 
+OutPort *ForEachLoopGen::getOutPort(const std::string& name) const
 {
   for(vector<AnySplitOutputPort *>::const_iterator iter=_outGoingPorts.begin();iter!=_outGoingPorts.end();iter++)
     {
@@ -723,7 +723,7 @@ OutPort *ForEachLoopGen::getOutPort(const std::string& name) const
   return DynParaLoop::getOutPort(name);
 }
 
-Node *ForEachLoopGen::getChildByShortName(const std::string& name) const 
+Node *ForEachLoopGen::getChildByShortName(const std::string& name) const
 {
   if(name==NAME_OF_SPLITTERNODE)
     return (Node *)&_splitterNode;
@@ -957,7 +957,7 @@ void ForEachLoopGen::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPo
     throw Exception("ForEachLoopGen::buildDelegateOf : not implemented for DS because not specified");
 }
 
-void ForEachLoopGen::getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) 
+void ForEachLoopGen::getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView)
 {
   string typeOfPortInstance=(port.first)->getNameOfTypeOfCurrentInstance();
   if(typeOfPortInstance==OutputPort::NAME)
@@ -978,7 +978,7 @@ void ForEachLoopGen::getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort
     throw Exception("ForEachLoopGen::getDelegateOf : not implemented because not specified");
 }
 
-void ForEachLoopGen::releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) 
+void ForEachLoopGen::releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView)
 {
   string typeOfPortInstance=portDwn->getNameOfTypeOfCurrentInstance();
   if(typeOfPortInstance==OutputPort::NAME)
@@ -1075,7 +1075,7 @@ void ForEachLoopGen::createOutputOutOfScopeInterceptors(int branchNb)
 }
 
 void ForEachLoopGen::checkLinkPossibility(OutPort *start, const std::list<ComposedNode *>& pointsOfViewStart,
-                                       InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd) 
+                                       InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd)
 {
   DynParaLoop::checkLinkPossibility(start, pointsOfViewStart, end, pointsOfViewEnd);
   if(end->getNode() == &_splitterNode)

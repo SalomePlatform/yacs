@@ -18,7 +18,7 @@
 #
 
 SET(_link_LIBRARIES
-  ${CPPUNIT_LIBRARIES} 
+  ${CPPUNIT_LIBRARIES}
   ${PTHREAD_LIBRARIES}
   YACSlibWorkloadmanager
 )

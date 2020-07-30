@@ -100,7 +100,6 @@ YACS::ENGINE::TypeCode * OptimizerAlgSyncExample::getTCForAlgoResult() const
  *  future to initialize an algorithm with custom data.
  */
 void OptimizerAlgSyncExample::initialize(const YACS::ENGINE::Any *input)
- 
 {
   std::cout << "Algo initialize, input = " << input->getIntValue() << std::endl;
 }

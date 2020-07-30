@@ -99,7 +99,7 @@ void PluginOptEvTest1::takeDecision()
   _idTest++;
 }
 
-void PluginOptEvTest1::initialize(const Any *input) 
+void PluginOptEvTest1::initialize(const Any *input)
 {
 }
 

@@ -61,7 +61,7 @@ private:
     std::set<unsigned int> _runningContainers; // 0 to max possible containers on this resource
     unsigned int _firstFreeContainer;
   };
-  
+
   class ResourceLoadInfo
   {
   public:
@@ -83,7 +83,7 @@ private:
     float _loadCost;
     std::list<ResourceInfoForContainer> _ctypes;
   };
-  
+
 private:
   std::list<ResourceLoadInfo> _resources;
   std::list<Task*> _waitingTasks;

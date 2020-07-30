@@ -54,8 +54,8 @@ namespace YACS
       int _nbCores;
       mutable std::vector<bool> _occupied;
     };
-    
-    
+
+
     class ResourceIterator : public std::iterator<
                         std::input_iterator_tag,     // iterator_category
                         Resource,                    // value_type

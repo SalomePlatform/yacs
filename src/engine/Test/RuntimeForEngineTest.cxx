@@ -61,7 +61,7 @@ InputPort *TestElemInputPort::clone(Node *newHelder) const
   return new TestElemInputPort(*this,newHelder);
 }
 
-void *TestElemInputPort::get() const 
+void *TestElemInputPort::get() const
 {
   stringstream msg;
   msg << "Not implemented (" << __FILE__ << ":" << __LINE__ << ")";
@@ -118,7 +118,7 @@ std::vector< std::pair<std::string,int> > RuntimeForEngineTest::getCatalogOfComp
   return std::vector< std::pair<std::string,int> >();
 }
 
-ElementaryNode* RuntimeForEngineTest::createNode(const string& implementation, const string& name) 
+ElementaryNode* RuntimeForEngineTest::createNode(const string& implementation, const string& name)
 {
   return new TestElemNode(name);
 }

@@ -157,7 +157,7 @@ namespace YACS
      */
 
     template<class PORT>
-    PORT *ElementaryNode::getPort(const std::string& name, const std::list<PORT *>& setOfPorts) const 
+    PORT *ElementaryNode::getPort(const std::string& name, const std::list<PORT *>& setOfPorts) const
     {
       for(typename std::list<PORT *>::const_iterator iter=setOfPorts.begin();iter!=setOfPorts.end();iter++)
         {
@@ -176,7 +176,7 @@ namespace YACS
      */
 
     template<class PORT, class ENUMTYPE>
-    PORT *ElementaryNode::edAddPort(const std::string& portName, std::list<PORT *>& setOfPorts, ENUMTYPE type) 
+    PORT *ElementaryNode::edAddPort(const std::string& portName, std::list<PORT *>& setOfPorts, ENUMTYPE type)
     {
       checkValidityOfPortName(portName);
       if(isPortNameAlreadyExist<PORT>(portName, setOfPorts))
@@ -190,7 +190,7 @@ namespace YACS
     }
 
     template<class PORT, class ENUMTYPE>
-    bool ElementaryNode::edCheckAddPort(const std::string& portName, std::list<PORT *>& setOfPorts, ENUMTYPE type) 
+    bool ElementaryNode::edCheckAddPort(const std::string& portName, std::list<PORT *>& setOfPorts, ENUMTYPE type)
     {
       checkValidityOfPortName(portName);
       if(isPortNameAlreadyExist<PORT>(portName, setOfPorts))
@@ -206,7 +206,7 @@ namespace YACS
      */
 
     template<class PORT>
-    void ElementaryNode::edRemovePortTypedFromSet(PORT *port, std::list<PORT *>& setOfPorts) 
+    void ElementaryNode::edRemovePortTypedFromSet(PORT *port, std::list<PORT *>& setOfPorts)
     {
       if(!isPortNameAlreadyExist<PORT>(port->getName(), setOfPorts))
         throw Exception("Port is not part of the list : unable to remove it");

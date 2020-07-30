@@ -33,7 +33,7 @@ public:
   const WorkloadManager::ContainerType& type()const override;
   void run(const WorkloadManager::RunInfo& runInfo)override;
   bool isAccepted(const WorkloadManager::Resource& r)override;
-  
+
   static void loadResources(WorkloadManager::WorkloadManager& wm);
 private:
   WorkloadManager::ContainerType _type;

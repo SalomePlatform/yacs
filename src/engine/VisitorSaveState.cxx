@@ -72,7 +72,7 @@ VisitorSaveState::~VisitorSaveState()
     }
 }
 
-void VisitorSaveState::openFileDump(const std::string& xmlDump) 
+void VisitorSaveState::openFileDump(const std::string& xmlDump)
 {
   _out.open(xmlDump.c_str(), ios::out);
   if (!_out)

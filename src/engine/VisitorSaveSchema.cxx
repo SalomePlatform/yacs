@@ -71,7 +71,7 @@ VisitorSaveSchema::~VisitorSaveSchema()
     }
 }
 
-void VisitorSaveSchema::openFileSchema(std::string xmlSchema) 
+void VisitorSaveSchema::openFileSchema(std::string xmlSchema)
 {
   _out.open(xmlSchema.c_str(), ios::out);
   if (!_out)
@@ -161,7 +161,7 @@ void VisitorSaveSchema::visitForEachLoopDyn(ForEachLoopDyn *node)
   if (node->edGetSamplePort())
     _out << " type=\"" << node->edGetSamplePort()->edGetType()->name() << "\"";
   _out << ">" << endl;
-  
+
   writeProperties(node);
   node->DynParaLoop::accept(this);
   writeSimpleDataLinks(node);

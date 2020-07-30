@@ -94,7 +94,7 @@ void StudyInNode::execute()
   DEBTRACE("+++++++ end StudyInNode::execute +++++++++++" );
 }
 
-void StudyInNode::checkBasicConsistency() const 
+void StudyInNode::checkBasicConsistency() const
 {
   DEBTRACE("StudyInNode::checkBasicConsistency");
   if (! _setOfInputPort.empty())
@@ -231,7 +231,7 @@ void StudyOutNode::execute()
   DEBTRACE("+++++++ end StudyOutNode::execute +++++++++++" );
 }
 
-void StudyOutNode::checkBasicConsistency() const 
+void StudyOutNode::checkBasicConsistency() const
 {
   DEBTRACE("StudyOutNode::checkBasicConsistency");
   if (! _setOfOutputPort.empty())

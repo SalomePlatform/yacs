@@ -60,7 +60,7 @@ bool NbBranches::isMultiplicitySpecified(unsigned& value) const
     {
       value=_nbOfBranches.getIntValue();
       return true;
-    }   
+    }
   return false;
 }
 

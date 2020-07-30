@@ -77,7 +77,7 @@ bool InputToyPort::edIsManuallyInitialized() const
   return _initData!=0;
 }
 
-void *InputToyPort::get() const 
+void *InputToyPort::get() const
 {
   return (void *)_data;
 }
@@ -221,7 +221,7 @@ int ToyNode::getNumberOfOutputPorts() const
   return ElementaryNode::getNumberOfInputPorts()+1;
 }
 
-OutputPort *ToyNode::getOutputPort(const std::string& name) const 
+OutputPort *ToyNode::getOutputPort(const std::string& name) const
 {
   if(name==NAME_FOR_NB)
     return (OutputPort *)&_nbOfInputsPort;
@@ -337,7 +337,7 @@ std::list<InputPort *> SeqToyNode::getSetOfInputPort() const
   return ret;
 }
 
-InputPort *SeqToyNode::getInputPort(const std::string& name) const 
+InputPort *SeqToyNode::getInputPort(const std::string& name) const
 {
   if(name==NAME_NBOFELTS_INSEQ_INPRT)
     return (InputPort *)&_inIntValue;
@@ -357,7 +357,7 @@ std::list<OutputPort *> SeqToyNode::getSetOfOutputPort() const
   return ret;
 }
 
-OutputPort *SeqToyNode::getOutputPort(const std::string& name) const 
+OutputPort *SeqToyNode::getOutputPort(const std::string& name) const
 {
   if(name==NAME_SEQ_OUTPRT)
     return (OutputPort *)&_seqOut;
@@ -587,7 +587,7 @@ bool InputLimitPort::edIsManuallyInitialized() const
   return _initData!=0;
 }
 
-void *InputLimitPort::get() const 
+void *InputLimitPort::get() const
 {
   if(!_data)
     {
@@ -717,7 +717,7 @@ std::list<OutputPort *> LimitNode::getSetOfOutputPort() const
   return ret;
 }
 
-InputPort *LimitNode::getInputPort(const std::string& name) const 
+InputPort *LimitNode::getInputPort(const std::string& name) const
 {
   if(name==NAME_FOR_SWPORT)
     return (InputPort *)&_entry;
@@ -725,7 +725,7 @@ InputPort *LimitNode::getInputPort(const std::string& name) const
     return ElementaryNode::getInputPort(name);
 }
 
-OutputPort *LimitNode::getOutputPort(const std::string& name) const 
+OutputPort *LimitNode::getOutputPort(const std::string& name) const
 {
   if(name==NAME_FOR_SWPORT)
     return (OutputPort *)&_switchPort;

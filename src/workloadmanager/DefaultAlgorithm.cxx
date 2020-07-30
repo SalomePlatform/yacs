@@ -180,7 +180,7 @@ bool DefaultAlgorithm::ResourceLoadInfo::isSupported
 {
   return ctype.neededCores <= _resource.nbCores ;
 }
-                                          
+
 bool DefaultAlgorithm::ResourceLoadInfo::isAllocPossible
                                 (const ContainerType& ctype)const
 {

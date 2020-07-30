@@ -35,7 +35,7 @@ namespace YACS
       return convertNeutralCorba(t, data);
     }
 
-    void CppCorba::put(const void *data) 
+    void CppCorba::put(const void *data)
     {
       put((Any *)data);
     }
@@ -45,7 +45,7 @@ namespace YACS
      *   \param data : python object
      */
 
-    void CppCorba::put(Any *data) 
+    void CppCorba::put(Any *data)
     {
       CORBA::Any* a = convertCppCorba(edGetType(), data);
       _port->put(a);

@@ -165,7 +165,7 @@ int ElementaryNode::getNumberOfOutputPorts() const
   return _setOfOutputPort.size();
 }
 
-InputPort *ElementaryNode::getInputPort(const std::string& name) const 
+InputPort *ElementaryNode::getInputPort(const std::string& name) const
 {
   try {
     return Node::getInputPort(name);
@@ -174,7 +174,7 @@ InputPort *ElementaryNode::getInputPort(const std::string& name) const
   return getPort<InputPort>(name,_setOfInputPort);
 }
 
-OutputPort *ElementaryNode::getOutputPort(const std::string& name) const 
+OutputPort *ElementaryNode::getOutputPort(const std::string& name) const
 {
   return getPort<OutputPort>(name,_setOfOutputPort);
 }
@@ -236,12 +236,12 @@ std::vector< std::pair<InPort *, OutPort *> > ElementaryNode::getSetOfLinksComin
   return ret;
 }
 
-InputDataStreamPort *ElementaryNode::getInputDataStreamPort(const std::string& name) const 
+InputDataStreamPort *ElementaryNode::getInputDataStreamPort(const std::string& name) const
 {
   return getPort<InputDataStreamPort>(name,_setOfInputDataStreamPort);
 }
 
-OutputDataStreamPort *ElementaryNode::getOutputDataStreamPort(const std::string& name) const 
+OutputDataStreamPort *ElementaryNode::getOutputDataStreamPort(const std::string& name) const
 {
   return getPort<OutputDataStreamPort>(name,_setOfOutputDataStreamPort);
 }
@@ -520,7 +520,7 @@ void ElementaryNode::getReadyTasks(std::vector<Task *>& tasks)
  * remove port from node at edition. Ports are typed.
  */
 
-void ElementaryNode::edRemovePort(Port *port) 
+void ElementaryNode::edRemovePort(Port *port)
 {
   DEBTRACE("ElementaryNode::edRemovePort ");
   if(port->getNode()!=this)
@@ -568,13 +568,13 @@ list<ProgressWeight> ElementaryNode::getProgressWeight() const
   return ret;
 }
 
-Node *ElementaryNode::getChildByName(const std::string& name) const 
+Node *ElementaryNode::getChildByName(const std::string& name) const
 {
   string what("ElementaryNode does not agregate any nodes particullary node with name "); what+=name;
   throw Exception(what);
 }
 
-void ElementaryNode::checkBasicConsistency() const 
+void ElementaryNode::checkBasicConsistency() const
 {
   DEBTRACE("ElementaryNode::checkBasicConsistency");
   list<InputPort *>::const_iterator iter;
@@ -600,7 +600,7 @@ InputPort *ElementaryNode::createInputPort(const std::string& inputPortName, Typ
  * WARNING: CHECK CASE OF BLOC: ONLY INPUT PORTS NOT INTERNALLY CONNECTED MUST BE VISIBLE.
  */
 
-InputPort *ElementaryNode::edAddInputPort(const std::string& inputPortName, TypeCode* type) 
+InputPort *ElementaryNode::edAddInputPort(const std::string& inputPortName, TypeCode* type)
 {
 
   // Cannot create an InputPort defined with InPropertyPort name.
@@ -669,7 +669,7 @@ OutputPort *ElementaryNode::createOutputPort(const std::string& outputPortName, 
  * for now, publication is done the same way as input ports
  */ 
 
-OutputPort *ElementaryNode::edAddOutputPort(const std::string& outputPortName, TypeCode* type) 
+OutputPort *ElementaryNode::edAddOutputPort(const std::string& outputPortName, TypeCode* type)
 {
   OutputPort *ret =0;
   if (edCheckAddPort<OutputPort, TypeCode*>(outputPortName,_setOfOutputPort,type))
@@ -691,7 +691,7 @@ InputDataStreamPort *ElementaryNode::createInputDataStreamPort(const std::string
   return getRuntime()->createInputDataStreamPort(inputPortDSName, this, type);
 }
 
-InputDataStreamPort *ElementaryNode::edAddInputDataStreamPort(const std::string& inputPortDSName, TypeCode* type) 
+InputDataStreamPort *ElementaryNode::edAddInputDataStreamPort(const std::string& inputPortDSName, TypeCode* type)
 {
   InputDataStreamPort *ret = 0;
   if (edCheckAddPort<InputDataStreamPort, TypeCode*>(inputPortDSName,_setOfInputDataStreamPort,type))
@@ -708,7 +708,7 @@ OutputDataStreamPort *ElementaryNode::createOutputDataStreamPort(const std::stri
   return getRuntime()->createOutputDataStreamPort(outputPortDSName, this, type);
 }
 
-OutputDataStreamPort *ElementaryNode::edAddOutputDataStreamPort(const std::string& outputPortDSName, TypeCode* type) 
+OutputDataStreamPort *ElementaryNode::edAddOutputDataStreamPort(const std::string& outputPortDSName, TypeCode* type)
 {
   OutputDataStreamPort *ret = 0;
   if (edCheckAddPort<OutputDataStreamPort, TypeCode*>(outputPortDSName,_setOfOutputDataStreamPort,type))
@@ -724,7 +724,7 @@ OutputDataStreamPort *ElementaryNode::edAddOutputDataStreamPort(const std::strin
  * get the input port name used by the current node (see composed nodes)
  */
 
-string ElementaryNode::getInPortName(const InPort * inPort) const 
+string ElementaryNode::getInPortName(const InPort * inPort) const
 {
   Node *node = inPort->getNode();
   if ( node != this ) 
@@ -735,7 +735,7 @@ string ElementaryNode::getInPortName(const InPort * inPort) const
   return inPort->getName();
 }
 
-string ElementaryNode::getOutPortName(const OutPort *outPort) const 
+string ElementaryNode::getOutPortName(const OutPort *outPort) const
 {
   Node *node = outPort->getNode();
   if ( node != this ) 

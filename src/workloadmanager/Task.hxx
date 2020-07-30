@@ -43,7 +43,7 @@ namespace WorkloadManager
              (id == other.id && name < other.name);
     }
   };
-  
+
   struct YACSLIBWLM_EXPORT Resource
   {
     unsigned int nbCores = 0; // needed by WorkloadManager
@@ -58,7 +58,7 @@ namespace WorkloadManager
              (id == other.id && name < other.name);
     }
   };
-  
+
   struct YACSLIBWLM_EXPORT RunInfo
   {
     ContainerType type;

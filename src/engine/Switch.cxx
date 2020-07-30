@@ -60,7 +60,7 @@ std::string CollectorSwOutPort::getNameOfTypeOfCurrentInstance() const
   return _className;
 }
 
-void CollectorSwOutPort::edRemoveAllLinksLinkedWithMe() 
+void CollectorSwOutPort::edRemoveAllLinksLinkedWithMe()
 {
   map<int, OutPort *>::iterator pt;
   if(_consumer)
@@ -80,7 +80,7 @@ void CollectorSwOutPort::getAllRepresented(std::set<OutPort *>& represented) con
     ((*pt).second)->getAllRepresented(represented);
 }
 
-bool CollectorSwOutPort::addInPort(InPort *inPort) 
+bool CollectorSwOutPort::addInPort(InPort *inPort)
 {
   if(_currentProducer)
     {//a specific link is beeing done
@@ -93,7 +93,7 @@ bool CollectorSwOutPort::addInPort(InPort *inPort)
       (*iter).second->addInPort(inPort);
 }
 
-int CollectorSwOutPort::removeInPort(InPort *inPort, bool forward) 
+int CollectorSwOutPort::removeInPort(InPort *inPort, bool forward)
 {
   if(_currentProducer)
     {
@@ -180,7 +180,7 @@ bool CollectorSwOutPort::removePotentialProducerForMaster()
   return _potentialProducers.empty();
 }
 
-bool CollectorSwOutPort::checkManagementOfPort(OutPort *port) 
+bool CollectorSwOutPort::checkManagementOfPort(OutPort *port)
 {
   for(map<int, OutPort *>::iterator iter=_potentialProducers.begin();iter!=_potentialProducers.end();iter++)
     if((*iter).second==port)
@@ -425,7 +425,7 @@ void Switch::partitionRegardingDPL(const PartDefinition *pd, std::map<ComposedNo
     (*it).second->partitionRegardingDPL(pd,zeMap);
 }
 
-void Switch::edRemoveChild(Node *node) 
+void Switch::edRemoveChild(Node *node)
 {
   map< int , Node * >::iterator iter=_mapOfNode.begin();
   for(;iter!=_mapOfNode.end();iter++)
@@ -452,7 +452,7 @@ std::list<InputPort *> Switch::getLocalInputPorts() const
   ret.push_back((InputPort *)&_condition);
   return ret;
 }
-OutPort *Switch::getOutPort(const std::string& name) const 
+OutPort *Switch::getOutPort(const std::string& name) const
 {
   for(map<InPort *, CollectorSwOutPort * >::const_iterator iter=_outPortsCollector.begin();iter!=_outPortsCollector.end();iter++)
     if(name==(*iter).second->getName())
@@ -463,14 +463,14 @@ OutPort *Switch::getOutPort(const std::string& name) const
   return StaticDefinedComposedNode::getOutPort(name);
 }
 
-InputPort *Switch::getInputPort(const std::string& name) const 
+InputPort *Switch::getInputPort(const std::string& name) const
 {
   if(name==SELECTOR_INPUTPORT_NAME)
     return (InputPort *)&_condition;
   return StaticDefinedComposedNode::getInputPort(name);
 }
 
-Node *Switch::getChildByShortName(const std::string& name) const 
+Node *Switch::getChildByShortName(const std::string& name) const
 {
   if(name==DEFAULT_NODE_NAME)
     {
@@ -497,12 +497,12 @@ Node *Switch::edSetDefaultNode(Node *node)
   return edSetNode(ID_FOR_DEFAULT_NODE,node);
 }
 
-Node *Switch::edReleaseDefaultNode() 
+Node *Switch::edReleaseDefaultNode()
 {
   return edReleaseCase(ID_FOR_DEFAULT_NODE);
 }
 
-Node *Switch::edReleaseCase(int caseId) 
+Node *Switch::edReleaseCase(int caseId)
 {
   map< int , Node * >::iterator iter=_mapOfNode.find(caseId);
   if(iter==_mapOfNode.end())
@@ -534,7 +534,7 @@ Node *Switch::edGetNode(int caseId)
  *           0 is returned if caseId is a new ID.
  *  \b WARNING : 'node' is held by 'this' after call, whereas returned node is no more held. 
  */
-Node *Switch::edSetNode(int caseId, Node *node) 
+Node *Switch::edSetNode(int caseId, Node *node)
 {
   if(!node)
     throw Exception("Switch::edSetNode : null node cannot be set as a case in switch node");
@@ -625,7 +625,7 @@ list<ProgressWeight> Switch::getProgressWeight() const
   return ret;
 }
 
-bool Switch::edAddChild(Node *node) 
+bool Switch::edAddChild(Node *node)
 {
   int aCase = getMaxCase() + 1;
   DEBTRACE(aCase);
@@ -682,13 +682,13 @@ void Switch::checkControlDependancy(OutPort *start, InPort *end, bool cross,
   throw Exception("Switch::checkControlDependancy : a link was dectected between 2 cases of a switch. Impossible !");
 }
 
-void Switch::checkNoCyclePassingThrough(Node *node) 
+void Switch::checkNoCyclePassingThrough(Node *node)
 {
   throw Exception("Switch::checkNoCyclePassingThrough : uncorrect control flow link relative to switch");
 }
 
 void Switch::checkLinkPossibility(OutPort *start, const std::list<ComposedNode *>& pointsOfViewStart,
-                                  InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd) 
+                                  InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd)
 {
   throw Exception("Switch::checkLinkPossibility : A link between 2 different cases of a same Switch requested -> Impossible");
 }
@@ -710,7 +710,7 @@ void Switch::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *fina
   port.first=newCollector;
 }
 
-void Switch::getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) 
+void Switch::getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView)
 {
   map<InPort *, CollectorSwOutPort * >::iterator iter=_outPortsCollector.find(finalTarget);
   if(iter==_outPortsCollector.end())
@@ -724,7 +724,7 @@ void Switch::getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalT
   port.first=(*iter).second;
 }
 
-void Switch::releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) 
+void Switch::releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView)
 {
   set<OutPort *> repr;
   portDwn->getAllRepresented(repr);
@@ -811,7 +811,7 @@ std::string Switch::getMyQualifiedName(const Node *directSon) const
   return id;
 }
 
-std::string Switch::getCaseId(const Node *node) const 
+std::string Switch::getCaseId(const Node *node) const
 {
   const char sep='_';
   map<int, Node*>::const_iterator iter;

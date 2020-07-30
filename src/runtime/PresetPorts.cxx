@@ -63,7 +63,7 @@ void OutputPresetPort::setData(std::string data)
   modified();
 }
 
-void OutputPresetPort::checkBasicConsistency() const 
+void OutputPresetPort::checkBasicConsistency() const
 {
   DEBTRACE("OutputPresetPort::checkBasicConsistency " << _storeData);
   if (_storeData.empty())

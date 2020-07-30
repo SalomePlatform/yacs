@@ -53,7 +53,7 @@ const char *InputXmlPort::getXml() const
   return _data.c_str();
 }
 
-void *InputXmlPort::get() const 
+void *InputXmlPort::get() const
 {
   return (void *) _data.c_str();
 }
@@ -139,7 +139,7 @@ void OutputXmlPort::put(const void *data)
   put((const char*)data);
 }
 
-void OutputXmlPort::put(const char *data) 
+void OutputXmlPort::put(const char *data)
 {
   DEBTRACE(data);
   InputPort *p;

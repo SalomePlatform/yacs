@@ -112,7 +112,7 @@ Container *SalomeContainer::cloneAlways() const
   return new SalomeContainer(*this);
 }
 
-void SalomeContainer::checkCapabilityToDealWith(const ComponentInstance *inst) const 
+void SalomeContainer::checkCapabilityToDealWith(const ComponentInstance *inst) const
 {
   if(inst->getKind()!=SalomeComponent::KIND)
     throw Exception("SalomeContainer::checkCapabilityToDealWith : SalomeContainer is not able to deal with this type of ComponentInstance.");
