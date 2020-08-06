@@ -549,9 +549,11 @@ void FormAdvParamContainer::onModifyUsePyCache(int val)
   if(val==Qt::Checked)
     val2=true;
   bool prop = _container->isUsingPythonCache();
-  int prop2((int)val2);
-  std::ostringstream oss; oss << prop2;
-  _container->usePythonCache(val2);
   if(prop!=val2)
+  {
+    _container->usePythonCache(val2);
+    map<string,string> properties = _container->getProperties();
+    _properties[Container::USE_PYCACHE_PROPERTY] = properties[Container::USE_PYCACHE_PROPERTY];
     onModified();
+  }
 }
