@@ -342,10 +342,7 @@ PythonNode::PythonNode(const std::string& name):InlineNode(name)
 
 PythonNode::~PythonNode()
 {
-  if(!CORBA::is_nil(_pynode))
-    {
-      _pynode->UnRegister();
-    }
+  freeKernelPynode();
 }
 
 void PythonNode::checkBasicConsistency() const
@@ -568,11 +565,7 @@ void PythonNode::executeRemote()
   //
   if(!isUsingPythonCache())
   {
-    if(!CORBA::is_nil(_pynode))
-      {
-        _pynode->UnRegister();
-      }
-    _pynode = Engines::PyScriptNode::_nil();
+    freeKernelPynode();
     bool dummy;
     Engines::Container_var cont(GetContainerObj(this,dummy));
     cont->removePyScriptNode(getName().c_str());
@@ -738,8 +731,7 @@ void PythonNode::shutdown(int level)
   if(_mode=="local")return;
   if(_container)
     {
-      if(!CORBA::is_nil(_pynode)) _pynode->UnRegister();
-      _pynode=Engines::PyScriptNode::_nil();
+      freeKernelPynode();
       _container->shutdown(level);
     }
 }
@@ -780,6 +772,22 @@ bool PythonNode::isUsingPythonCache()const
   return found;
 }
 
+void PythonNode::freeKernelPynode()
+{
+  if(!CORBA::is_nil(_pynode))
+  {
+    try
+    {
+      _pynode->UnRegister();
+    }
+    catch(...)
+    {
+      DEBTRACE("Trouble when pynode->UnRegister!")
+    }
+    _pynode = Engines::PyScriptNode::_nil();
+  }
+}
+
 Node *PythonNode::simpleClone(ComposedNode *father, bool editionOnly) const
 {
   return new PythonNode(*this,father);
@@ -787,8 +795,7 @@ Node *PythonNode::simpleClone(ComposedNode *father, bool editionOnly) const
 
 void PythonNode::createRemoteAdaptedPyInterpretor(Engines::Container_ptr objContainer)
 {
-  if(!CORBA::is_nil(_pynode))
-    _pynode->UnRegister();
+  freeKernelPynode();
   _pynode=objContainer->createPyScriptNode(pythonEntryName().c_str(),getScript().c_str());
   _pynode->Register();
 }
@@ -812,7 +819,7 @@ void PythonNode::assignRemotePyInterpretor(Engines::PyNodeBase_var remoteInterp)
     Engines::PyScriptNode_var tmpp(Engines::PyScriptNode::_narrow(remoteInterp));
     if(!_pynode->_is_equivalent(tmpp))
     {
-      _pynode->UnRegister();
+      freeKernelPynode();
       _pynode=Engines::PyScriptNode::_narrow(remoteInterp);
     }
   }

@@ -103,6 +103,7 @@ namespace YACS
     protected:
       void squeezeMemory();
       void squeezeMemoryRemote();
+      void freeKernelPynode();
     public:
       static const char KIND[];
       static const char IMPL_NAME[];

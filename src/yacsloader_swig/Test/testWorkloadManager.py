@@ -27,6 +27,7 @@ import tempfile
 import os
 import salome
 
+NB_NODE=16
 class TestEdit(unittest.TestCase):
 
     def setUp(self):
@@ -40,7 +41,7 @@ class TestEdit(unittest.TestCase):
         salome.salome_init()
         resourceManager = salome.lcc.getResourcesManager()
         resource_definition = resourceManager.GetResourceDefinition("localhost")
-        resource_definition.nb_node = 16
+        resource_definition.nb_node = NB_NODE
         resourceManager.AddResource(resource_definition, False, "")
         resource_required = salome.ResourceParameters()
         resource_required.can_run_containers = True
@@ -48,8 +49,8 @@ class TestEdit(unittest.TestCase):
         for r in res_list:
           if r != "localhost":
             resourceManager.RemoveResource(r, False, "")
-        #resource_definition = resourceManager.GetResourceDefinition("localhost")
-        #self.assertEqual(resource_definition.nb_node, 16)
+        resource_definition = resourceManager.GetResourceDefinition("localhost")
+        self.assertEqual(resource_definition.nb_node, NB_NODE)
 
     def tearDown(self):
         cm = salome.lcc.getContainerManager()
@@ -65,10 +66,12 @@ class TestEdit(unittest.TestCase):
         # theoretical time should be 15s
         execution_time = res_port.getPyObj()
         # lower time means some resources are overloaded
-        self.assertTrue(execution_time > 13)
+        msg = "Execution time is too short : {}s".format(execution_time)
+        self.assertTrue(execution_time > 13, msg)
         # The containers may need some time to be launched.
         # We need some delay to add to the 15s.
-        self.assertTrue(execution_time < 20)
+        msg = "Execution time is too long : {}s".format(execution_time)
+        self.assertTrue(execution_time < 25, msg)
 
     def test2(self):
         """ Two parallel foreach-s with different containers and python nodes
@@ -83,10 +86,17 @@ class TestEdit(unittest.TestCase):
         # theoretical time should be 16s
         execution_time = total_time.getPyObj()
         # lower time means some resources are overloaded
-        self.assertTrue(execution_time > 14)
+        msg = "Execution time is too short : {}s".format(execution_time)
+        self.assertTrue(execution_time > 14, msg)
         # The containers may need some time to be launched.
         # We need some delay to add to the 16s.
-        self.assertTrue(execution_time < 20)
+        msg = "Execution time is too long : {}s".format(execution_time)
+        self.assertTrue(execution_time < 26, msg)
+        coeff_cont = proc.getChildByName("End").getOutputPort("coeff_cont").getPyObj()
+        msg = "coeff_cont too low:"+str(coeff_cont)
+        self.assertTrue(coeff_cont >= NB_NODE, msg)
+        msg = "coeff_cont too high:"+str(coeff_cont)
+        self.assertTrue(coeff_cont <= 2*NB_NODE, msg)
 
     def test3(self):
         """ Launch 8 independent nodes in parallel.
@@ -96,7 +106,7 @@ class TestEdit(unittest.TestCase):
         self.assertEqual(proc.getState(),pilot.DONE)
         ok = proc.getChildByName("End").getOutputPort("ok")
         if not ok :
-          err_message = proc.getChildByName("End").getOutputPort("err_message")
+          err_message = proc.getChildByName("End").getOutputPort("err_message").getPyObj()
           self.fail(err_message)
 
 if __name__ == '__main__':
