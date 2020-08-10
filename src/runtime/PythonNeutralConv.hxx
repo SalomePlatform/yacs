@@ -33,8 +33,8 @@ namespace YACS
     {
     public:
       PyNeutral(InputPort* p);
-      virtual void put(const void *data)  throw(ConversionException);
-      void put(PyObject *data) throw(ConversionException);
+      virtual void put(const void *data) ;
+      void put(PyObject *data);
     };
   }
 }

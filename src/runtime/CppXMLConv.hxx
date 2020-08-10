@@ -32,8 +32,8 @@ namespace YACS
     {
     public:
       CppXml(InputXmlPort* p);
-      virtual void put(const void *data) throw(ConversionException);
-      void put(YACS::ENGINE::Any *data) throw(ConversionException);
+      virtual void put(const void *data);
+      void put(YACS::ENGINE::Any *data);
     };
     int isAdaptableXmlCpp(const TypeCode *t1, const TypeCode *t2);
   }

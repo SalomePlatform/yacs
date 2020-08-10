@@ -99,7 +99,7 @@ void *ConditionInputPort::get() const
   return (void *)_value;
 }
 
-void ConditionInputPort::put(const void *data) throw(ConversionException)
+void ConditionInputPort::put(const void *data)
 {
   put((Any*)data);
 }
@@ -111,7 +111,7 @@ void ConditionInputPort::releaseData()
   _value=nullptr;
 }
 
-void ConditionInputPort::put(Any *data) throw(ConversionException)
+void ConditionInputPort::put(Any *data)
 {
   ConditionInputPort::releaseData();
   _value=data;

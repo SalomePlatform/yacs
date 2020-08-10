@@ -37,8 +37,8 @@ namespace YACS
     {
     public:
       CppCpp(InputCppPort* p);
-      virtual void put(const void *data) throw(ConversionException);
-      void put(Any *data) throw(ConversionException);
+      virtual void put(const void *data);
+      void put(Any *data);
     };
 
   }

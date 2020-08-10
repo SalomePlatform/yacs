@@ -71,7 +71,7 @@ VisitorSaveSchema::~VisitorSaveSchema()
     }
 }
 
-void VisitorSaveSchema::openFileSchema(std::string xmlSchema) throw(YACS::Exception)
+void VisitorSaveSchema::openFileSchema(std::string xmlSchema)
 {
   _out.open(xmlSchema.c_str(), ios::out);
   if (!_out)
@@ -146,6 +146,29 @@ void VisitorSaveSchema::visitForEachLoop(ForEachLoop *node)
   _out << indent(depth) << "</foreach>" << endl;
   endCase(node);
   DEBTRACE("END visitForEachLoop " << _root->getChildName(node));
+}
+
+void VisitorSaveSchema::visitForEachLoopDyn(ForEachLoopDyn *node)
+{
+  DEBTRACE("START visitForEachLoopDyn " << _root->getChildName(node));
+  beginCase(node);
+  int depth = depthNode(node);
+
+  _out << indent(depth) << "<foreachdyn name=\"" << node->getName() << "\"";
+  if (node->getState() == YACS::DISABLED)
+    _out << " state=\"disabled\"";
+  _out << " loopWeight=\"" << node->getWeight()->getSimpleLoopWeight() << "\"";
+  if (node->edGetSamplePort())
+    _out << " type=\"" << node->edGetSamplePort()->edGetType()->name() << "\"";
+  _out << ">" << endl;
+
+  writeProperties(node);
+  node->DynParaLoop::accept(this);
+  writeSimpleDataLinks(node);
+  writeSimpleStreamLinks(node);
+  _out << indent(depth) << "</foreachdyn>" << endl;
+  endCase(node);
+  DEBTRACE("END visitForEachLoopDyn " << _root->getChildName(node));
 }
 
 void VisitorSaveSchema::visitOptimizerLoop(OptimizerLoop *node)
@@ -848,7 +871,7 @@ void VisitorSaveSchema::writeSimpleDataLinks(ComposedNode *node)
 
   for (list<Node*>::iterator ic = setOfChildren.begin(); ic != setOfChildren.end(); ++ic)
     // add "splitter" node of ForEachLoop nodes to the set of children
-    if ( dynamic_cast<ForEachLoop*>( *ic ) )
+    if ( dynamic_cast<ForEachLoopGen*>( *ic ) )
       {
         Node *nodeToInsert=(*ic)->getChildByName(ForEachLoop::NAME_OF_SPLITTERNODE);
         if(find(setOfChildrenPlusSplitters.begin(),setOfChildrenPlusSplitters.end(),nodeToInsert)==setOfChildrenPlusSplitters.end())
@@ -878,13 +901,13 @@ void VisitorSaveSchema::writeSimpleDataLinks(ComposedNode *node)
                   DEBTRACE( "BINGO!" );
 
                   string fromName;
-                  if ( dynamic_cast<SplitterNode*>(from) && dynamic_cast<ForEachLoop*>(from->getFather()) )
+                  if ( dynamic_cast<SplitterNode*>(from) && dynamic_cast<ForEachLoopGen*>(from->getFather()) )
                     fromName = from->getFather()->getName();
                   else
                     fromName = node->getChildName(from);
 
                   string childName;
-                  if ( dynamic_cast<SplitterNode*>(to) && dynamic_cast<ForEachLoop*>(to->getFather()) )
+                  if ( dynamic_cast<SplitterNode*>(to) && dynamic_cast<ForEachLoopGen*>(to->getFather()) )
                     childName = node->getChildName(to->getFather());
                   else
                     childName = node->getChildName(to);

@@ -46,12 +46,12 @@ namespace YACS
     /*!
      *   \param data : C++ value received 
      */
-    void CppPy::put(const void *data) throw(ConversionException)
+    void CppPy::put(const void *data)
     {
       put((Any *) data);
     }
 
-    void CppPy::put(Any *data) throw(ConversionException)
+    void CppPy::put(Any *data)
     {
       DEBTRACE(" CppPython::put(Any *data)");
       PyObject *ob;

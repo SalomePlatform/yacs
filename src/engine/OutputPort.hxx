@@ -54,18 +54,18 @@ namespace YACS
       bool isAlreadyInSet(InputPort *inputPort) const;
       bool isConnected() const;
       std::string getNameOfTypeOfCurrentInstance() const;
-      int removeInPort(InPort *inPort, bool forward) throw(Exception);
-      virtual bool edAddInputPort(InputPort *phyPort) throw(Exception);
-      virtual bool edAddInPropertyPort(InPropertyPort *phyPort) throw(Exception);
-      virtual int edRemoveInputPort(InputPort *inputPort, bool forward) throw(Exception);
-      bool addInPort(InPort *inPort) throw(Exception);
-      void edRemoveAllLinksLinkedWithMe() throw(Exception);//entry point for forward port deletion
+      int removeInPort(InPort *inPort, bool forward) ;
+      virtual bool edAddInputPort(InputPort *phyPort) ;
+      virtual bool edAddInPropertyPort(InPropertyPort *phyPort) ;
+      virtual int edRemoveInputPort(InputPort *inputPort, bool forward) ;
+      bool addInPort(InPort *inPort) ;
+      void edRemoveAllLinksLinkedWithMe() ;//entry point for forward port deletion
       virtual void exInit();
-      virtual void checkBasicConsistency() const throw(Exception);
+      virtual void checkBasicConsistency() const ;
       virtual OutputPort *clone(Node *newHelder) const = 0;
       virtual std::string dump();
 
-      virtual void put(const void *data) throw(ConversionException);
+      virtual void put(const void *data);
       virtual std::string typeName() {return "YACS__ENGINE__OutputPort";}
 
     protected:

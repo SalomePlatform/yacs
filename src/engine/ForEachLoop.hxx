@@ -17,8 +17,7 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-#ifndef __FOREACHLOOP_HXX__
-#define __FOREACHLOOP_HXX__
+#pragma once
 
 #include "YACSlibEngineExport.hxx"
 #include "ElementaryNode.hxx"
@@ -32,6 +31,7 @@ namespace YACS
   namespace ENGINE
   {
     class ForEachLoop;
+    class ForEachLoopGen;
     class SplitterNode;
     class AnySplitOutputPort;
     class TypeCode;
@@ -39,7 +39,7 @@ namespace YACS
 
     class InterceptorInputPort : public AnyInputPort
     {
-      friend class ForEachLoop;
+      friend class ForEachLoopGen;
       friend class SplitterNode;
     private:
       AnySplitOutputPort *_repr;
@@ -53,7 +53,7 @@ namespace YACS
 
     class AnySplitOutputPort : public OutputPort
     {
-      friend class ForEachLoop;
+      friend class ForEachLoopGen;
       friend class SplitterNode;
     private:
       OutPort *_repr;
@@ -64,9 +64,9 @@ namespace YACS
       void incrRef() const;
       AnySplitOutputPort(const std::string& name, Node *node, TypeCode *type);
       AnySplitOutputPort(const AnySplitOutputPort& other, Node *newHelder);
-      bool addInPort(InPort *inPort) throw(Exception);
+      bool addInPort(InPort *inPort) ;
       void getAllRepresented(std::set<OutPort *>& represented) const;
-      int removeInPort(InPort *inPort, bool forward) throw(Exception);
+      int removeInPort(InPort *inPort, bool forward) ;
       void addRepr(OutPort *repr, InterceptorInputPort *intercptr);
       OutPort *getRepr() const { return _repr; }
       OutputPort *clone(Node *newHelder) const;
@@ -74,7 +74,7 @@ namespace YACS
 
     class YACSLIBENGINE_EXPORT SeqAnyInputPort : public AnyInputPort
     {
-      friend class ForEachLoop;
+      friend class ForEachLoopGen;
       friend class SplitterNode;
     public:
       unsigned getNumberOfElements() const;
@@ -88,13 +88,13 @@ namespace YACS
 
     class SplitterNode : public ElementaryNode
     {
-      friend class ForEachLoop;
+      friend class ForEachLoopGen;
     private:
       static const char NAME_OF_SEQUENCE_INPUT[];
     private:
-      SplitterNode(const std::string& name, TypeCode *typeOfData, ForEachLoop *father);
-      SplitterNode(const SplitterNode& other, ForEachLoop *father);
-      InputPort *getInputPort(const std::string& name) const throw(Exception);
+      SplitterNode(const std::string& name, TypeCode *typeOfData, ForEachLoopGen *father);
+      SplitterNode(const SplitterNode& other, ForEachLoopGen *father);
+      InputPort *getInputPort(const std::string& name) const ;
       Node *simpleClone(ComposedNode *father, bool editionOnly) const;
       unsigned getNumberOfElements() const;
       void execute();
@@ -106,12 +106,12 @@ namespace YACS
 
     class FakeNodeForForEachLoop : public ElementaryNode
     {
-      friend class ForEachLoop;
+      friend class ForEachLoopGen;
     private:
-      ForEachLoop *_loop;
+      ForEachLoopGen *_loop;
       bool _normalFinish;
     private:
-      FakeNodeForForEachLoop(ForEachLoop *loop, bool normalFinish);
+      FakeNodeForForEachLoop(ForEachLoopGen *loop, bool normalFinish);
       FakeNodeForForEachLoop(const FakeNodeForForEachLoop& other);
       Node *simpleClone(ComposedNode *father, bool editionOnly) const;
       void exForwardFailed();
@@ -150,7 +150,7 @@ namespace YACS
 
     class Executor;
 
-    class YACSLIBENGINE_EXPORT ForEachLoop : public DynParaLoop
+    class YACSLIBENGINE_EXPORT ForEachLoopGen : public DynParaLoop
     {
       friend class SplitterNode;
       friend class FakeNodeForForEachLoop;
@@ -171,28 +171,27 @@ namespace YACS
       std::vector< std::vector<AnyInputPort *> > _execOutGoingPorts;
       ForEachLoopPassedData *_passedData;
     public:
-      ForEachLoop(const std::string& name, TypeCode *typeOfDataSplitted);
-      ForEachLoop(const ForEachLoop& other, ComposedNode *father, bool editionOnly);
-      ~ForEachLoop();
+      ForEachLoopGen(const std::string& name, TypeCode *typeOfDataSplitted, std::unique_ptr<NbBranchesAbstract>&& branchManager);
+      ForEachLoopGen(const ForEachLoopGen& other, ComposedNode *father, bool editionOnly);
+      ~ForEachLoopGen();
       void init(bool start=true);
       void exUpdateState();
       void exUpdateProgress();
       void getReadyTasks(std::vector<Task *>& tasks);
       int getNumberOfInputPorts() const;
       //
-      void checkNoCyclePassingThrough(Node *node) throw(Exception);
+      void checkNoCyclePassingThrough(Node *node) ;
       void selectRunnableTasks(std::vector<Task *>& tasks);
       //
       unsigned getExecCurrentId() const { return _execCurrentId; } // for update progress bar on GUI part
       std::list<InputPort *> getSetOfInputPort() const;
       std::list<InputPort *> getLocalInputPorts() const;
       InputPort *edGetSeqOfSamplesPort() { return &_splitterNode._dataPortToDispatch; }
-      InputPort *getInputPort(const std::string& name) const throw(Exception);
-      OutPort *getOutPort(const std::string& name) const throw(Exception);
-      OutputPort *getOutputPort(const std::string& name) const throw(Exception);
-      Node *getChildByShortName(const std::string& name) const throw(Exception);
+      InputPort *getInputPort(const std::string& name) const ;
+      OutPort *getOutPort(const std::string& name) const ;
+      OutputPort *getOutputPort(const std::string& name) const ;
+      Node *getChildByShortName(const std::string& name) const ;
       std::list<OutputPort *> getLocalOutputPorts() const;
-      void accept(Visitor *visitor);
       void writeDot(std::ostream &os) const;
       virtual std::string typeName() {return "YACS__ENGINE__ForEachLoop";}
       virtual void resetState(int level);
@@ -210,17 +209,16 @@ namespace YACS
      const TypeCode* getOutputPortType(const std::string& portName)const;
       void cleanDynGraph() override;
     protected:
-      Node *simpleClone(ComposedNode *father, bool editionOnly=true) const;
       void checkLinkPossibility(OutPort *start, const std::list<ComposedNode *>& pointsOfViewStart,
-                                InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd) throw(Exception);
+                                InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd) ;
       YACS::Event updateStateOnFinishedEventFrom(Node *node);
       YACS::Event updateStateForInitNodeOnFinishedEventFrom(Node *node, unsigned int id);
       YACS::Event updateStateForWorkNodeOnFinishedEventFrom(Node *node, unsigned int id, bool isNormalFinish);
       YACS::Event updateStateForFinalizeNodeOnFinishedEventFrom(Node *node, unsigned int id);
       YACS::Event updateStateOnFailedEventFrom(Node *node, const Executor *execInst);
       void buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView);
-      void getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(Exception);
-      void releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(Exception);
+      void getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) ;
+      void releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) ;
     protected:
       void pushAllSequenceValues();
       void createOutputOutOfScopeInterceptors(int branchNb);
@@ -233,7 +231,28 @@ namespace YACS
       static void InterceptorizeNameOfPort(std::string& portName);
       static const char INTERCEPTOR_STR[];
     };
+
+    class YACSLIBENGINE_EXPORT ForEachLoop : public ForEachLoopGen
+    {
+    public:
+      ForEachLoop(const std::string& name, TypeCode *typeOfDataSplitted):ForEachLoopGen(name,typeOfDataSplitted,std::unique_ptr<NbBranchesAbstract>(new NbBranches(this))) { }
+      ForEachLoop(const ForEachLoop& other, ComposedNode *father, bool editionOnly):ForEachLoopGen(other,father,editionOnly) { }
+      ~ForEachLoop() { }
+      void accept(Visitor *visitor);
+    protected:
+      Node *simpleClone(ComposedNode *father, bool editionOnly=true) const;
+    };
+
+    class YACSLIBENGINE_EXPORT ForEachLoopDyn : public ForEachLoopGen
+    {
+    public:
+      ForEachLoopDyn(const std::string& name, TypeCode *typeOfDataSplitted):ForEachLoopGen(name,typeOfDataSplitted,std::unique_ptr<NbBranchesAbstract>(new NoNbBranches)) { }
+      ForEachLoopDyn(const ForEachLoopDyn& other, ComposedNode *father, bool editionOnly):ForEachLoopGen(other,father,editionOnly) { }
+      ~ForEachLoopDyn() { }
+      void accept(Visitor *visitor);
+    protected:
+      Node *simpleClone(ComposedNode *father, bool editionOnly=true) const;
+    };
   }
 } 
 
-#endif

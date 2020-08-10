@@ -62,7 +62,7 @@ void InputCppPort::edRemoveManInit()
   InputPort::edRemoveManInit();
 }
 
-void InputCppPort::put(const void *data) throw(ConversionException)
+void InputCppPort::put(const void *data)
 {
   put((YACS::ENGINE::Any *)data);
 }
@@ -74,7 +74,7 @@ void InputCppPort::releaseData()
   _data=nullptr;
 }
 
-void InputCppPort::put(YACS::ENGINE::Any *data) throw(ConversionException)
+void InputCppPort::put(YACS::ENGINE::Any *data)
 {
   releaseData();
   _data=data;
@@ -92,7 +92,7 @@ YACS::ENGINE::Any * InputCppPort::getCppObj() const
   return _data;
 }
 
-void *InputCppPort::get() const throw(YACS::Exception)
+void *InputCppPort::get() const
 {
   return (void*) _data;
 }
@@ -166,12 +166,12 @@ OutputCppPort::OutputCppPort(const OutputCppPort& other, Node *newHelder):Output
 {
 }
 
-void OutputCppPort::put(const void *data) throw(ConversionException)
+void OutputCppPort::put(const void *data)
 {
   put((YACS::ENGINE::Any *)data);
 }
 
-void OutputCppPort::put(YACS::ENGINE::Any *data) throw(ConversionException)
+void OutputCppPort::put(YACS::ENGINE::Any *data)
 {
   InputPort *p;
   if(_data)

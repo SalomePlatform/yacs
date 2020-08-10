@@ -37,7 +37,7 @@ namespace YACS
       OutputPort *clone(Node *newHelder) const;
       void setData(std::string data);
       std::string getData();
-      virtual void checkBasicConsistency() const throw(Exception);
+      virtual void checkBasicConsistency() const ;
       virtual std::string dump();
       virtual std::string getAsString();
       virtual PyObject* getPyObj();

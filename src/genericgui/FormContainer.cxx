@@ -47,7 +47,9 @@ void FormContainer::FillPanel(YACS::ENGINE::Container *container)
   DEBTRACE("FormContainer::FillPanel");
   FormContainerBase::FillPanel(container);
   if(container)
+  {
     ch_aoc->setCheckState(container->isAttachedOnCloning()?Qt::Checked:Qt::Unchecked);
+  }
   cb_type->clear();
   cb_type->addItem("mono");
   cb_type->addItem("multi");

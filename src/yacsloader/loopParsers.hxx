@@ -61,7 +61,7 @@ struct looptypeParser:parser
   virtual void remote (ENGINE::InlineNode* const& n);
   virtual void node (ENGINE::InlineNode* const& n);
   virtual void forloop (ENGINE::ForLoop* const& b);
-  virtual void foreach (ENGINE::ForEachLoop* const& b);
+  virtual void foreach (ENGINE::ForEachLoopGen* const& b);
   virtual void optimizer (ENGINE::OptimizerLoop* const& b);
   virtual void while_ (ENGINE::WhileLoop* const& b);
   virtual void switch_ (ENGINE::Switch* const& b);
@@ -181,7 +181,7 @@ void looptypeParser<T>::forloop (ENGINE::ForLoop* const& b)
       currentProc->nodeMap[fullname]=b;
     }
 template <class T>
-void looptypeParser<T>::foreach (ENGINE::ForEachLoop* const& b)
+void looptypeParser<T>::foreach (ENGINE::ForEachLoopGen* const& b)
     {
       DEBTRACE("loop_foreach" << b->getName())
       _cnode->edSetNode(b);
@@ -394,8 +394,8 @@ public:
   ENGINE::Node * getNode() { return _node; }
 
   // Those two methods should never be called
-  bool edAddLink(ENGINE::OutPort *start, ENGINE::InPort *end) throw(Exception) { YASSERT(false); }
-  bool edAddDFLink(ENGINE::OutPort *start, ENGINE::InPort *end) throw(Exception) { YASSERT(false); }
+  bool edAddLink(ENGINE::OutPort *start, ENGINE::InPort *end)  { YASSERT(false); }
+  bool edAddDFLink(ENGINE::OutPort *start, ENGINE::InPort *end)  { YASSERT(false); }
 
 protected:
   ENGINE::Node * _node;
@@ -490,7 +490,19 @@ namespace YACS
 {
   // Foreach loop specialization
 
-template <class T=ENGINE::ForEachLoop*>
+template<class T>
+T buildFrom(ENGINE::Runtime *theRuntime, const std::string& name, ENGINE::TypeCode *type);
+
+template<>
+ENGINE::ForEachLoop *buildFrom<ENGINE::ForEachLoop *>(ENGINE::Runtime *theRuntime, const std::string& name, ENGINE::TypeCode *type)
+{ return theRuntime->createForEachLoop(name,type); }
+
+template<>
+ENGINE::ForEachLoopDyn *buildFrom<ENGINE::ForEachLoopDyn *>(ENGINE::Runtime *theRuntime, const std::string& name, ENGINE::TypeCode *type)
+{ return theRuntime->createForEachLoopDyn(name,type); }
+
+
+template <class T>
 struct foreachlooptypeParser:dynparalooptypeParser<T>
 {
   static foreachlooptypeParser<T> foreachloopParser;
@@ -556,7 +568,7 @@ struct foreachlooptypeParser:dynparalooptypeParser<T>
           t->incrRef();
         }
       }
-      this->_cnode=theRuntime->createForEachLoop(_name,currentProc->typeMap[_datatype]);
+      this->_cnode=buildFrom<T>(theRuntime,_name,currentProc->typeMap[_datatype]);
       //set number of branches
       if(_nbranch > 0)this->_cnode->edGetNbOfBranchesPort()->edInit(_nbranch);
       if(_weight > 0)this->_cnode->setWeight(_weight);
@@ -580,7 +592,6 @@ struct foreachlooptypeParser:dynparalooptypeParser<T>
 };
 
 template <class T> foreachlooptypeParser<T> foreachlooptypeParser<T>::foreachloopParser;
-
 }
 
 namespace YACS
@@ -697,6 +708,7 @@ void looptypeParser<T>::onStart(const XML_Char* el, const XML_Char** attr)
   this->maxcount("node",1,element);
   this->maxcount("forloop",1,element);
   this->maxcount("foreach",1,element);
+  this->maxcount("foreachdyn",1,element);
   this->maxcount("optimizer",1,element);
   this->maxcount("while",1,element);
   this->maxcount("switch",1,element);
@@ -712,7 +724,8 @@ void looptypeParser<T>::onStart(const XML_Char* el, const XML_Char** attr)
   else if(element == "node")pp=&nodetypeParser<>::nodeParser;
 
   else if(element == "forloop")pp=&forlooptypeParser<>::forloopParser;
-  else if(element == "foreach")pp=&foreachlooptypeParser<>::foreachloopParser;
+  else if(element == "foreach")pp=&foreachlooptypeParser<ENGINE::ForEachLoop *>::foreachloopParser;
+  else if(element == "foreachdyn")pp=&foreachlooptypeParser<ENGINE::ForEachLoopDyn *>::foreachloopParser;
   else if(element == "optimizer")pp=&optimizerlooptypeParser<>::optimizerloopParser;
   else if(element == "while")pp=&whilelooptypeParser<>::whileloopParser;
   else if(element == "switch")pp=&switchtypeParser::switchParser;
@@ -738,7 +751,8 @@ void looptypeParser<T>::onEnd(const char *el,parser* child)
   else if(element == "node")node(((nodetypeParser<>*)child)->post());
 
   else if(element == "forloop")forloop(((forlooptypeParser<>*)child)->post());
-  else if(element == "foreach")foreach(((foreachlooptypeParser<>*)child)->post());
+  else if(element == "foreach")foreach(((foreachlooptypeParser<ENGINE::ForEachLoop *>*)child)->post());
+  else if(element == "foreachdyn")foreach(((foreachlooptypeParser<ENGINE::ForEachLoopDyn *>*)child)->post());
   else if(element == "optimizer")optimizer(((optimizerlooptypeParser<>*)child)->post());
   else if(element == "while")while_(((whilelooptypeParser<>*)child)->post());
   else if(element == "switch")switch_(((switchtypeParser*)child)->post());

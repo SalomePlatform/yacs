@@ -125,7 +125,7 @@ std::string AnyInputPort::getAsString()
   return getRuntime()->convertNeutralAsString(edGetType(),_value);
 }
 
-void AnyInputPort::put(const void *data) throw(ConversionException)
+void AnyInputPort::put(const void *data)
 {
   put((Any *)data);
 }

@@ -135,39 +135,90 @@ SalomeContainerMultiHelper *SalomeContainerMultiHelper::deepCpyOnlyStaticInfo() 
 
 Engines::Container_var SalomeContainerMultiHelper::getContainer(const Task *askingNode) const
 {
+  std::unique_lock<std::mutex> lock(_data_mutex);
   const ComponentInstance *inst(askingNode?askingNode->getComponent():0);
-  std::map<const ComponentInstance *,Engines::Container_var>::const_iterator it(_trueContainers.find(inst));
-  if(it!=_trueContainers.end())
-    return (*it).second;
+  if(inst == nullptr && askingNode != nullptr && askingNode->hasImposedResource())
+  {
+    std::map<const Task *,Engines::Container_var>::const_iterator it(_containersForTasks.find(askingNode));
+    if(it!=_containersForTasks.end())
+      return (*it).second;
+    else
+      return Engines::Container::_nil();
+  }
   else
-    return Engines::Container::_nil();
+  {
+    std::map<const ComponentInstance *,Engines::Container_var>::const_iterator it(_containersForComponents.find(inst));
+    if(it!=_containersForComponents.end())
+      return (*it).second;
+    else
+      return Engines::Container::_nil();
+  }
 }
 
 bool SalomeContainerMultiHelper::isAlreadyStarted(const Task *askingNode) const
 {
+  std::unique_lock<std::mutex> lock(_data_mutex);
   const ComponentInstance *inst(askingNode?askingNode->getComponent():0);
-  if(_trueContainers.count(inst)==0)
-    return false;
+  if(inst == nullptr && askingNode != nullptr && askingNode->hasImposedResource())
+  {
+    return _containersForTasks.count(askingNode) > 0;
+  }
   else
-    return true;
+  {
+    if(_containersForComponents.count(inst)==0)
+      return false;
+    else
+      return true;
+  }
 }
 
 void SalomeContainerMultiHelper::setContainer(const Task *askingNode, Engines::Container_var cont)
 {
+  std::unique_lock<std::mutex> lock(_data_mutex);
   const ComponentInstance *inst(askingNode?askingNode->getComponent():0);
-  _trueContainers[inst]=cont;
+  if(inst == nullptr && askingNode != nullptr && askingNode->hasImposedResource())
+  {
+    _containersForTasks[askingNode] = cont;
+  }
+  else
+  {
+    _containersForComponents[inst]=cont;
 #ifdef REFCNT
     std::map<const ComponentInstance *, Engines::Container_var >::const_iterator it;
-    for(it = _trueContainers.begin(); it != _trueContainers.end(); ++it)
+    for(it = _containersForComponents.begin(); it != _containersForComponents.end(); ++it)
       {
         DEBTRACE(it->second->_PR_getobj()->pd_refCount );
       }
 #endif
+  }
 }
 
 void SalomeContainerMultiHelper::shutdown()
 {
-  for(std::map<const ComponentInstance *, Engines::Container_var >::const_iterator it = _trueContainers.begin(); it != _trueContainers.end(); ++it)
+  std::unique_lock<std::mutex> lock(_data_mutex);
+  for(std::map<const Task *, Engines::Container_var >::const_iterator it = _containersForTasks.begin();
+      it != _containersForTasks.end(); ++it)
+  {
+    try
+    {
+        DEBTRACE("shutdown SALOME container: " );
+        CORBA::String_var containerName=it->second->name();
+        DEBTRACE(containerName);
+        it->second->Shutdown();
+        std::cerr << "shutdown SALOME container: " << containerName << std::endl;
+    }
+    catch(CORBA::Exception&)
+    {
+        DEBTRACE("Unexpected CORBA failure detected." );
+    }
+    catch(...)
+    {
+        DEBTRACE("Unknown exception ignored." );
+    }
+  }
+  _containersForTasks.clear();
+
+  for(std::map<const ComponentInstance *, Engines::Container_var >::const_iterator it = _containersForComponents.begin(); it != _containersForComponents.end(); ++it)
     {
       try
       {
@@ -186,7 +237,7 @@ void SalomeContainerMultiHelper::shutdown()
           DEBTRACE("Unknown exception ignored." );
       }
     }
-  _trueContainers.clear();
+  _containersForComponents.clear();
 }
 
 SalomeContainerMultiHelper::~SalomeContainerMultiHelper()

@@ -78,14 +78,14 @@ namespace YACS
       ~InputPyPort();
       bool edIsManuallyInitialized() const;
       void edRemoveManInit();
-      virtual void put(const void *data) throw(ConversionException);
+      virtual void put(const void *data);
       void releaseData() override;
-      void put(PyObject *data) throw(ConversionException);
+      void put(PyObject *data);
       InputPort *clone(Node *newHelder) const;
       //special typedef PyObj used in SWIG to increment ref count on output
       virtual PyObj * getPyObj() const;
       virtual std::string getAsString();
-      void *get() const throw(Exception);
+      void *get() const ;
       virtual std::string getHumanRepr();
       virtual bool isEmpty();
       virtual void exSaveInit();
@@ -108,9 +108,9 @@ namespace YACS
       OutputPyPort(const std::string& name, Node * node, TypeCode * type);
       OutputPyPort(const OutputPyPort& other, Node *newHelder);
       ~OutputPyPort();
-      virtual void put(const void *data) throw(ConversionException);
-      void putWithoutForward(PyObject *data) throw(ConversionException);
-      void put(PyObject *data) throw(ConversionException);
+      virtual void put(const void *data);
+      void putWithoutForward(PyObject *data);
+      void put(PyObject *data);
       OutputPort *clone(Node *newHelder) const;
       virtual PyObject * get() const;
       //special typedef PyObj used in SWIG to increment ref count on output

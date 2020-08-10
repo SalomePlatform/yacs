@@ -35,8 +35,8 @@ namespace YACS
     {
     public:
       CorbaNeutral(InputPort* p);
-      virtual void put(const void *data) throw(ConversionException);
-      void put(CORBA::Any *data) throw(ConversionException);
+      virtual void put(const void *data);
+      void put(CORBA::Any *data);
     };
   }
 }

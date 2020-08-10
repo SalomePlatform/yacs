@@ -69,7 +69,7 @@ AnyPtr TypeCode::getOrBuildAnyFromZippedData(char *data) const
   return AtomAny::getOrBuildFromData(data,this);
 }
 
-const char * TypeCode::name() const throw(YACS::Exception)
+const char * TypeCode::name() const
 {
   return id();
 }
@@ -79,7 +79,7 @@ const char * TypeCode::shortName() const
   return id();
 }
 
-const char * TypeCode::id() const throw(YACS::Exception)
+const char * TypeCode::id() const
 {
   switch(_kind)
     {
@@ -96,7 +96,7 @@ const char * TypeCode::id() const throw(YACS::Exception)
     }
 }
 
-int TypeCode::isA(const char* id) const throw(YACS::Exception)
+int TypeCode::isA(const char* id) const
 {
   throw Exception("Not implemented for this type");
 }
@@ -171,7 +171,7 @@ unsigned TypeCode::getSizeInByteOfAnyReprInSeq() const
     }
 }
 
-const TypeCode * TypeCode::contentType() const throw(YACS::Exception)
+const TypeCode * TypeCode::contentType() const
 {
   throw Exception("No content type");
 };
@@ -324,12 +324,12 @@ AnyPtr TypeCodeObjref::getOrBuildAnyFromZippedData(char *data) const
   return AtomAny::getOrBuildFromData(data,this);
 }
 
-const char * TypeCodeObjref::id() const throw(YACS::Exception)
+const char * TypeCodeObjref::id() const
 {
   return _repoId.c_str();
 };
 
-const char * TypeCodeObjref::name() const throw(YACS::Exception)
+const char * TypeCodeObjref::name() const
 {
   return _name.c_str();
 }
@@ -354,7 +354,7 @@ TypeCodeObjref::TypeCodeObjref(const char* repositoryId,
  *   \param id :  a given id
  *   \return     1 if true, 0 if false
  */
-int TypeCodeObjref::isA(const char* id) const throw(YACS::Exception)
+int TypeCodeObjref::isA(const char* id) const
 {
   if(_repoId == id)return 1;
   list<TypeCodeObjref *>::const_iterator iter;
@@ -453,12 +453,12 @@ AnyPtr TypeCodeSeq::getOrBuildAnyFromZippedData(char *data) const
   return SequenceAny::getOrBuildFromData(data,this);
 }
 
-const char * TypeCodeSeq::id() const throw(YACS::Exception)
+const char * TypeCodeSeq::id() const
 {
   return _repoId.c_str();
 }
 
-const char * TypeCodeSeq::name() const throw(YACS::Exception)
+const char * TypeCodeSeq::name() const
 {
   return _name.c_str();
 }
@@ -473,7 +473,7 @@ std::string TypeCodeSeq::getPrintStr() const
   return oss.str();
 }
 
-const TypeCode * TypeCodeSeq::contentType() const throw(YACS::Exception)
+const TypeCode * TypeCodeSeq::contentType() const
 {
   return _content;
 }
@@ -559,12 +559,12 @@ AnyPtr TypeCodeArray::getOrBuildAnyFromZippedData(char *data) const
   return ArrayAny::getOrBuildFromData(data,this);
 }
 
-const char * TypeCodeArray::id() const throw(YACS::Exception)
+const char * TypeCodeArray::id() const
 {
   return _repoId.c_str();
 }
 
-const char * TypeCodeArray::name() const throw(YACS::Exception)
+const char * TypeCodeArray::name() const
 {
   return _name.c_str();
 }
@@ -578,7 +578,7 @@ unsigned TypeCodeArray::getStaticLgth() const
   return _staticLgth;
 }
 
-const TypeCode * TypeCodeArray::contentType() const throw(YACS::Exception)
+const TypeCode * TypeCodeArray::contentType() const
 {
   return _content;
 }
@@ -678,12 +678,12 @@ AnyPtr TypeCodeStruct::getOrBuildAnyFromZippedData(char *data) const
   return StructAny::getOrBuildFromData(data,this);
 }
 
-const char * TypeCodeStruct::id() const throw(YACS::Exception)
+const char * TypeCodeStruct::id() const
 {
   return _repoId.c_str();
 };
 
-const char * TypeCodeStruct::name() const throw(YACS::Exception)
+const char * TypeCodeStruct::name() const
 {
   return _name.c_str();
 }
@@ -701,7 +701,7 @@ unsigned TypeCodeStruct::getSizeInByteOfAnyReprInSeq() const
   return ret;
 }
 
-const TypeCode *TypeCodeStruct::contentType() const throw(YACS::Exception)
+const TypeCode *TypeCodeStruct::contentType() const
 {
   const char what[]="Content type is specified by giving a key.";
   throw Exception(what);
@@ -712,7 +712,7 @@ const TypeCode *TypeCodeStruct::contentType() const throw(YACS::Exception)
  *   \param id :  a given id
  *   \return     1 if true, 0 if false
  */
-int TypeCodeStruct::isA(const char* id) const throw(YACS::Exception)
+int TypeCodeStruct::isA(const char* id) const
 {
   if(_repoId == id)return 1;
   return 0;

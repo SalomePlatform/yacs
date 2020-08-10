@@ -47,7 +47,7 @@ namespace YACS
      *   transition method from const void* to Any*
      *   \param data : const void * data
      */
-    void CppCpp::put(const void *data) throw(ConversionException)
+    void CppCpp::put(const void *data)
     {
       put((Any *)data);
     }
@@ -56,7 +56,7 @@ namespace YACS
     /*!
      *   \param data : Any object
      */
-    void CppCpp::put(Any *data) throw(ConversionException)
+    void CppCpp::put(Any *data)
     {
       Any *a = convertCppCpp(edGetType(),data);
       DEBTRACE( "before put refcnt: " << a->getRefCnt() );

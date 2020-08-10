@@ -36,8 +36,8 @@ namespace YACS
     public:
       NeutralCorbaInt(InputCorbaPort* p)
         : ProxyPort(p), DataPort(p->getName(), p->getNode(), p->edGetType()), Port(p->getNode()) {}
-      virtual void put(const void *data) throw(ConversionException);
-      void put(YACS::ENGINE::Any *data) throw(ConversionException);
+      virtual void put(const void *data);
+      void put(YACS::ENGINE::Any *data);
     };
 
     class NeutralCorbaDouble : public ProxyPort
@@ -45,8 +45,8 @@ namespace YACS
     public:
       NeutralCorbaDouble(InputCorbaPort* p)
         : ProxyPort(p), DataPort(p->getName(), p->getNode(), p->edGetType()), Port(p->getNode()) {}
-      virtual void put(const void *data) throw(ConversionException);
-      void put(YACS::ENGINE::Any *data) throw(ConversionException);
+      virtual void put(const void *data);
+      void put(YACS::ENGINE::Any *data);
     };
 
     class NeutralCorbaBool : public ProxyPort
@@ -54,8 +54,8 @@ namespace YACS
     public:
       NeutralCorbaBool(InputCorbaPort* p)
         : ProxyPort(p), DataPort(p->getName(), p->getNode(), p->edGetType()), Port(p->getNode()) {}
-      virtual void put(const void *data) throw(ConversionException);
-      void put(YACS::ENGINE::Any *data) throw(ConversionException);
+      virtual void put(const void *data);
+      void put(YACS::ENGINE::Any *data);
     };
 
     class NeutralCorbaSequence : public ProxyPort
@@ -63,32 +63,32 @@ namespace YACS
     public:
       NeutralCorbaSequence(InputCorbaPort* p)
         : ProxyPort(p), DataPort(p->getName(), p->getNode(), p->edGetType()), Port(p->getNode()) {}
-      virtual void put(const void *data) throw(ConversionException);
-      void put(YACS::ENGINE::Any *data) throw(ConversionException);
+      virtual void put(const void *data);
+      void put(YACS::ENGINE::Any *data);
     };
 
     class NeutralCorbaString : public ProxyPort
     {
     public:
       NeutralCorbaString(InputCorbaPort* p);
-      virtual void put(const void *data) throw(ConversionException);
-      void put(YACS::ENGINE::Any *data) throw(ConversionException);
+      virtual void put(const void *data);
+      void put(YACS::ENGINE::Any *data);
     };
 
     class NeutralCorbaObjref : public ProxyPort
     {
     public:
       NeutralCorbaObjref(InputCorbaPort* p);
-      virtual void put(const void *data) throw(ConversionException);
-      void put(YACS::ENGINE::Any *data) throw(ConversionException);
+      virtual void put(const void *data);
+      void put(YACS::ENGINE::Any *data);
     };
 
     class NeutralCorbaStruct : public ProxyPort
     {
     public:
       NeutralCorbaStruct(InputCorbaPort* p);
-      virtual void put(const void *data) throw(ConversionException);
-      void put(YACS::ENGINE::Any *data) throw(ConversionException);
+      virtual void put(const void *data);
+      void put(YACS::ENGINE::Any *data);
     };
   }
 }

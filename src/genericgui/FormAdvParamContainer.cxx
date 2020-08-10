@@ -64,6 +64,7 @@ FormAdvParamContainer::FormAdvParamContainer(std::map<std::string, std::string>&
   connect(sb_procNode, SIGNAL(valueChanged(const QString&)), this, SLOT(onModifyProcs(const QString&)));
   connect(sb_nbprocpar, SIGNAL(valueChanged(const QString&)), this, SLOT(onModifyProcPar(const QString&)));
   connect(sb_nbproc, SIGNAL(valueChanged(const QString&)), this, SLOT(onModifyProcRes(const QString&)));
+  connect(ch_pycache,SIGNAL(stateChanged(int)),this,SLOT(onModifyUsePyCache(int)));
 }
 
 FormAdvParamContainer::~FormAdvParamContainer()
@@ -112,6 +113,11 @@ void FormAdvParamContainer::FillPanel(const std::string& resource, YACS::ENGINE:
     le_workdir->setText(_properties["workingdir"].c_str());
   else
     le_workdir->setText("");
+
+  if(_container)
+    ch_pycache->setCheckState(_container->isUsingPythonCache()?Qt::Checked:Qt::Unchecked);
+  else
+    ch_pycache->setCheckState(Qt::Unchecked);
 
   if(_properties.count("container_name"))
     le_contname->setText(_properties["container_name"].c_str());
@@ -531,4 +537,23 @@ void FormAdvParamContainer::onModifyResourceList(const QString &text)
   _properties["resource_list"] = text.toStdString();
   if (properties["resource_list"] != text.toStdString())
     onModified();
+}
+
+void FormAdvParamContainer::onModifyUsePyCache(int val)
+{
+  if (!_container)
+    return;
+  bool val2(false);
+  if(val==Qt::Unchecked)
+    val2=false;
+  if(val==Qt::Checked)
+    val2=true;
+  bool prop = _container->isUsingPythonCache();
+  if(prop!=val2)
+  {
+    _container->usePythonCache(val2);
+    map<string,string> properties = _container->getProperties();
+    _properties[Container::USE_PYCACHE_PROPERTY] = properties[Container::USE_PYCACHE_PROPERTY];
+    onModified();
+  }
 }

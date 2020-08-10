@@ -17,8 +17,7 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-#ifndef __SALOMECONTAINERTOOLS_HXX__
-#define __SALOMECONTAINERTOOLS_HXX__
+#pragma once
 
 #include "YACSRuntimeSALOMEExport.hxx"
 #include "SALOMEconfig.h"
@@ -44,97 +43,78 @@ namespace YACS
       virtual std::string getProperty(const std::string& name) const = 0;
       virtual void setProperty(const std::string& name, const std::string& value) = 0;
       virtual const std::map<std::string,std::string>& getProperties() const = 0;
-      virtual void clearProperties() = 0;
       virtual std::map<std::string,std::string> getResourceProperties(const std::string& name) const = 0;
+      virtual void clearProperties() = 0;
       virtual void addToComponentList(const std::string& name) = 0;
       virtual void addToResourceList(const std::string& name) = 0;
       virtual Engines::ContainerParameters getParameters() const = 0;
-      virtual std::string getContainerName() const = 0;
       virtual void setContainerName(const std::string& name) = 0;
       virtual std::string getHostName() const = 0;
       virtual std::string getNotNullContainerName(const Container *contPtr, const Task *askingNode, bool& isEmpty) const = 0;
+      virtual std::string getContainerName() const = 0;
+      virtual int getNumberOfCoresPerWorker() const = 0;
+    public:
+      static void SetContainerNameOf(Engines::ContainerParameters& params, const std::string& name);
     public:
       static void Start(const std::vector<std::string>& compoNames, SalomeContainerHelper *schelp, SalomeContainerToolsBase& sct, int& shutdownLevel, const Container *cont, const Task *askingNode);
       static CORBA::Object_ptr LoadComponent(SalomeContainerHelper *launchModeType, Container *cont, Task *askingNode);
       static CORBA::Object_ptr CreateComponentInstance(Container *cont, Engines::Container_ptr contPtr, const ComponentInstance *inst);
       static std::string GetPlacementId(const SalomeContainerHelper *launchModeType, const Container *cont, const Task *askingNode);
       static std::string GetFullPlacementId(const SalomeContainerHelper *launchModeType, const Container *cont, const Task *askingNode);
-      static void SetContainerNameOf(Engines::ContainerParameters& params, const std::string& name);
-    };
-    
-    class YACSRUNTIMESALOME_EXPORT SalomeContainerToolsInter : public SalomeContainerToolsBase
-    {
-    public:
-      SalomeContainerToolsInter() { }
-      SalomeContainerToolsInter(const SalomeContainerToolsInter& other);
-      std::string getProperty(const std::string& name) const;
-      const std::map<std::string,std::string>& getProperties() const { return _propertyMap; }
-      void clearProperties();
-      std::map<std::string,std::string> getResourceProperties(const std::string& name) const;
-    protected:
-      std::map<std::string,std::string> _propertyMap;
     };
 
-    class YACSRUNTIMESALOME_EXPORT SalomeContainerTools : public SalomeContainerToolsInter
+    class YACSRUNTIMESALOME_EXPORT SalomeContainerTools : public SalomeContainerToolsBase
     {
     public:
       SalomeContainerTools();
       SalomeContainerTools(const SalomeContainerTools& other);
-      int getNumberOfCoresPerWorker() const;
-    public:
-      Engines::ContainerParameters getParameters() const { return _params; }
-      void clearProperties();
-      void setProperty(const std::string& name, const std::string& value);
-      void addToComponentList(const std::string& name);
-      void addToResourceList(const std::string& name);
-      std::string getContainerName() const;
-      void setContainerName(const std::string& name);
-      std::string getHostName() const;
-      std::string getNotNullContainerName(const Container *contPtr, const Task *askingNode, bool& isEmpty) const;
-    protected:
+      ~SalomeContainerTools() { }
+      std::string getProperty(const std::string& name) const override;
+      void setProperty(const std::string& name, const std::string& value) override;
+      const std::map<std::string,std::string>& getProperties() const override { return _propertyMap; }
+      std::map<std::string,std::string> getResourceProperties(const std::string& name) const override;
+      void clearProperties() override;
+      void addToComponentList(const std::string& name) override;
+      void addToResourceList(const std::string& name) override;
+      Engines::ContainerParameters getParameters() const override { return _params; }
+      void setContainerName(const std::string& name) override;
+      std::string getHostName() const override;
+      std::string getNotNullContainerName(const Container *contPtr, const Task *askingNode, bool& isEmpty) const override;
+      std::string getContainerName() const override;
+      int getNumberOfCoresPerWorker() const override;
+    private:
+      std::map<std::string,std::string> _propertyMap;
       Engines::ContainerParameters _params;
     };
 
     class PlayGround;
-    
-    class YACSRUNTIMESALOME_EXPORT SalomeContainerToolsDecoratorBase : public SalomeContainerToolsBase
-    {
-    protected:
-      SalomeContainerToolsDecoratorBase(SalomeContainerToolsBase *sct):_sct(sct) { }
-      SalomeContainerToolsBase *getWorker() { return _sct; }
-      const SalomeContainerToolsBase *getWorker() const { return _sct; }
-    public:
-      std::string getProperty(const std::string& name) const;
-      void setProperty(const std::string& name, const std::string& value);
-      const std::map<std::string,std::string>& getProperties() const;
-      void clearProperties();
-      std::map<std::string,std::string> getResourceProperties(const std::string& name) const;
-      void addToComponentList(const std::string& name);
-      void addToResourceList(const std::string& name);
-      Engines::ContainerParameters getParameters() const;
-      std::string getContainerName() const;
-      void setContainerName(const std::string& name);
-      std::string getHostName() const;
-      std::string getNotNullContainerName(const Container *contPtr, const Task *askingNode, bool& isEmpty) const;
-    private:
-      SalomeContainerToolsBase *_sct;
-    };
-
     class SalomeHPContainerVectOfHelper;
-    
-    class YACSRUNTIMESALOME_EXPORT SalomeContainerToolsSpreadOverTheResDecorator : public SalomeContainerToolsDecoratorBase
+
+    class YACSRUNTIMESALOME_EXPORT SalomeContainerToolsDecorator : public SalomeContainerToolsBase
     {
     public:
-      SalomeContainerToolsSpreadOverTheResDecorator(SalomeContainerToolsBase *sct, const PlayGround *pg, const SalomeHPContainerVectOfHelper *vh, const Task *node):SalomeContainerToolsDecoratorBase(sct),_pg(pg),_vh(vh),_node(node) { }
-      Engines::ContainerParameters getParameters() const;
+      SalomeContainerToolsDecorator(SalomeContainerToolsBase *decorated, const PlayGround *pg, SalomeHPContainerVectOfHelper *vh, const Task *node, int nbCoresPerWorker)
+      :_decorated(decorated),_pg(pg),_vh(vh),_node(node),_nb_cores_per_worker(nbCoresPerWorker) { }
+      std::string getProperty(const std::string& name) const override { return _decorated->getProperty(name); }
+      void setProperty(const std::string& name, const std::string& value) override { return _decorated->setProperty(name,value); }
+      const std::map<std::string,std::string>& getProperties() const override { return _decorated->getProperties(); }
+      std::map<std::string,std::string> getResourceProperties(const std::string& name) const override { return _decorated->getResourceProperties(name); }
+      void clearProperties() override { return _decorated->clearProperties(); }
+      void addToComponentList(const std::string& name) override { return _decorated->addToComponentList(name); }
+      void addToResourceList(const std::string& name) override { return _decorated->addToResourceList(name); }
+      // Everything for it
+      Engines::ContainerParameters getParameters() const override;
+      void setContainerName(const std::string& name) override { return _decorated->setContainerName(name); }
+      std::string getHostName() const override { return _decorated->getHostName(); }
+      std::string getNotNullContainerName(const Container *contPtr, const Task *askingNode, bool& isEmpty) const override { return _decorated->getNotNullContainerName(contPtr,askingNode,isEmpty); }
+      std::string getContainerName() const override { return _decorated->getContainerName(); }
+      int getNumberOfCoresPerWorker() const override { return _decorated->getNumberOfCoresPerWorker(); }
     private:
-      static std::string DeduceMachineFrom(const std::vector< std::pair<std::string,int> >& allResInfo, int iPos, int sz, int nbProcPerNode);
-    private:
+      SalomeContainerToolsBase *_decorated;
       const PlayGround *_pg;
-      const SalomeHPContainerVectOfHelper *_vh;
+      SalomeHPContainerVectOfHelper *_vh;
       const Task *_node;
+      int _nb_cores_per_worker;
     };
   }
 }
-
-#endif

@@ -36,10 +36,10 @@ void RuntimeForEngineIntegrationTest::setRuntime()
 
 std::vector< std::pair<std::string,int> > RuntimeForEngineIntegrationTest::getCatalogOfComputeNodes() const
 {
-  throw Exception("RuntimeForEngineIntegrationTest not implemented !");
+  return std::vector< std::pair<std::string,int> >();
 }
 
-ElementaryNode* RuntimeForEngineIntegrationTest::createNode(const std::string& implementation, const std::string& name) throw (YACS::Exception)
+ElementaryNode* RuntimeForEngineIntegrationTest::createNode(const std::string& implementation, const std::string& name)
 {
   if (implementation == ToyNode::MY_IMPL_NAME)
     return new ToyNode(name);
@@ -79,12 +79,12 @@ OutputPort* RuntimeForEngineIntegrationTest::createOutputPort(const std::string&
   throw Exception(msg.str());
 }
 
-InputPort* RuntimeForEngineIntegrationTest::adapt(InputPort* source, const std::string& impl,TypeCode * type,bool init) throw (ConversionException)
+InputPort* RuntimeForEngineIntegrationTest::adapt(InputPort* source, const std::string& impl,TypeCode * type,bool init)
 {
   return new ProxyPort(source);
 }
 
-InputPort* RuntimeForEngineIntegrationTest::adapt(InPropertyPort* source, const std::string& impl, TypeCode * type, bool init) throw (ConversionException)
+InputPort* RuntimeForEngineIntegrationTest::adapt(InPropertyPort* source, const std::string& impl, TypeCode * type, bool init)
 {
   return adapt((InputPort *)source, impl, type, init);
 }

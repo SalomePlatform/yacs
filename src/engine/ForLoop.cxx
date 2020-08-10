@@ -67,7 +67,7 @@ Node *ForLoop::simpleClone(ComposedNode *father, bool editionOnly) const
   return new ForLoop(*this,father,editionOnly);
 }
 
-InputPort* ForLoop::getInputPort(const std::string& name) const throw(YACS::Exception)
+InputPort* ForLoop::getInputPort(const std::string& name) const
 {
     if(name == NAME_OF_NSTEPS_NUMBER)return (InputPort*)&_nbOfTimesPort;
     return Loop::getInputPort(name);
@@ -182,14 +182,14 @@ std::list<InputPort *> ForLoop::getLocalInputPorts() const
   return ret;
 }
 
-OutPort *ForLoop::getOutPort(const std::string& name) const throw(YACS::Exception)
+OutPort *ForLoop::getOutPort(const std::string& name) const
 {
   if(name==NAME_OF_INDEX)
     return (OutPort *)&_indexPort;
   return Loop::getOutPort(name);
 }
 
-OutputPort *ForLoop::getOutputPort(const std::string& name) const throw(YACS::Exception)
+OutputPort *ForLoop::getOutputPort(const std::string& name) const
 {
   if(name==NAME_OF_INDEX)
     return (OutputPort *)&_indexPort;

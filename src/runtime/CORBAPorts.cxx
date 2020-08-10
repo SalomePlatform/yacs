@@ -136,7 +136,7 @@ void InputCorbaPort::edRemoveManInit()
   InputPort::edRemoveManInit();
 }
 
-void InputCorbaPort::put(const void *data) throw (ConversionException)
+void InputCorbaPort::put(const void *data)
 {
   put((CORBA::Any *)data);
 }
@@ -165,7 +165,7 @@ void InputCorbaPort::releaseData()
 {//do nothing - to be implemented
 }
 
-void InputCorbaPort::put(CORBA::Any *data) throw (ConversionException)
+void InputCorbaPort::put(CORBA::Any *data)
 {
 #ifdef REFCNT
   DEBTRACE("refcount CORBA : " << ((omni::TypeCode_base*)data->pd_tc.in())->pd_ref_count);
@@ -193,7 +193,7 @@ InputPort *InputCorbaPort::clone(Node *newHelder) const
   return new InputCorbaPort(*this,newHelder);
 }
 
-void *InputCorbaPort::get() const throw(YACS::Exception)
+void *InputCorbaPort::get() const 
 {
   return (void *)&_data;
 }
@@ -313,12 +313,12 @@ OutputCorbaPort::~OutputCorbaPort()
 #endif
 }
 
-void OutputCorbaPort::put(const void *data) throw (ConversionException)
+void OutputCorbaPort::put(const void *data)
 {
   put((CORBA::Any *)data);
 }
 
-void OutputCorbaPort::put(CORBA::Any *data) throw (ConversionException)
+void OutputCorbaPort::put(CORBA::Any *data)
 {
   InputPort *p;
 

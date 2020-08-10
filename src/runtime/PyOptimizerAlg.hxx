@@ -38,7 +38,7 @@ namespace YACS
       virtual TypeCode *getTCForOutProxy() const;
       virtual TypeCode *getTCForAlgoInitProxy() const;
       virtual TypeCode *getTCForAlgoResultProxy() const;
-      virtual void initializeProxy(const Any *input) throw (Exception);
+      virtual void initializeProxy(const Any *input) ;
       virtual void startProxy();
       virtual void takeDecisionProxy();
       virtual void finishProxy();

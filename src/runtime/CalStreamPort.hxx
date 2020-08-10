@@ -93,10 +93,10 @@ namespace YACS
         void setSchema(const std::string& schema);
         std::string getSchema(){return _schema;};
         void setProperty(const std::string& name, const std::string& value);
-        virtual bool addInPort(InPort *inPort) throw(Exception);
+        virtual bool addInPort(InPort *inPort) ;
         std::string getNameOfTypeOfCurrentInstance() const;
         OutputCalStreamPort * clone(Node *newHelder) const;
-        virtual int removeInPort(InPort *inPort, bool forward) throw(Exception);
+        virtual int removeInPort(InPort *inPort, bool forward) ;
       protected:
         std::string _depend;
         std::string _schema;

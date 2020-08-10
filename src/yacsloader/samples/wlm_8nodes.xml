@@ -1,0 +1,258 @@
+<?xml version='1.0' encoding='iso-8859-1' ?>
+<proc name="wlm_8nodes">
+   <property name="executor" value="workloadmanager"/>
+   <type name="string" kind="string"/>
+   <struct name="Engines/dataref">
+      <member name="ref" type="string"/>
+   </struct>
+   <type name="bool" kind="bool"/>
+   <sequence name="boolvec" content="bool"/>
+   <type name="double" kind="double"/>
+   <sequence name="dblevec" content="double"/>
+   <objref name="file" id="file"/>
+   <type name="int" kind="int"/>
+   <sequence name="intvec" content="int"/>
+   <struct name="stringpair">
+      <member name="name" type="string"/>
+      <member name="value" type="string"/>
+   </struct>
+   <sequence name="propvec" content="stringpair"/>
+   <objref name="pyobj" id="python:obj:1.0"/>
+   <sequence name="seqboolvec" content="boolvec"/>
+   <sequence name="seqdblevec" content="dblevec"/>
+   <sequence name="seqintvec" content="intvec"/>
+   <sequence name="seqpyobj" content="pyobj"/>
+   <sequence name="stringvec" content="string"/>
+   <sequence name="seqstringvec" content="stringvec"/>
+   <container name="DefaultContainer">
+      <property name="container_kind" value="Salome"/>
+      <property name="attached_on_cloning" value="0"/>
+      <property name="container_name" value="FactoryServer"/>
+      <property name="name" value="localhost"/>
+   </container>
+   <container name="cont">
+      <property name="container_kind" value="Salome"/>
+      <property name="attached_on_cloning" value="1"/>
+      <property name="name" value="localhost"/>
+      <property name="type" value="multi"/>
+   </container>
+   <inline name="Begin">
+      <script><code><![CDATA[import time
+t0=time.time()
+time_to_sleep=3
+]]></code></script>
+      <load container="DefaultContainer"/>
+      <outport name="t0" type="pyobj"/>
+      <outport name="time_to_sleep" type="int"/>
+   </inline>
+   <inline name="End">
+      <script><code><![CDATA[import time
+tf=time.time()
+total_time=int(tf-t0)
+err_message = ""
+if total_time < 2 * time_to_sleep:
+    ok = True
+else:
+    ok = False
+    print("Error during the test wlm_8nodes")
+    err_message = "Total time ({}s) exeeds maximum expected time ({}s)"
+    err_message = err_message.format(total_time, 2*time_to_sleep)
+    print(err_message)
+
+names = [n1, n2, n3, n4, n5, n6, n7, n8]
+
+for n in names:
+    if names.count(n) > 1 :
+        ok = False
+        print("Error during the test wlm_8nodes")
+        err_message = "Container name {} found {} times"
+        err_message = err_message.format(n, names.count(n))
+        print(err_message)
+]]></code></script>
+      <load container="DefaultContainer"/>
+      <inport name="t0" type="pyobj"/>
+      <inport name="time_to_sleep" type="int"/>
+      <inport name="n1" type="string"/>
+      <inport name="n2" type="string"/>
+      <inport name="n3" type="string"/>
+      <inport name="n4" type="string"/>
+      <inport name="n5" type="string"/>
+      <inport name="n6" type="string"/>
+      <inport name="n7" type="string"/>
+      <inport name="n8" type="string"/>
+      <outport name="ok" type="bool"/>
+      <outport name="err_message" type="string"/>
+   </inline>
+   <remote name="n1" elementaryWeight="-1">
+      <script><code><![CDATA[import time
+time.sleep(time_to_sleep)
+container_name = my_container.name
+]]></code></script>
+      <load container="cont"/>
+      <inport name="time_to_sleep" type="int"/>
+      <outport name="container_name" type="string"/>
+   </remote>
+   <remote name="n2" elementaryWeight="-1">
+      <script><code><![CDATA[import time
+time.sleep(time_to_sleep)
+container_name = my_container.name
+]]></code></script>
+      <load container="cont"/>
+      <inport name="time_to_sleep" type="int"/>
+      <outport name="container_name" type="string"/>
+   </remote>
+   <remote name="n3" elementaryWeight="-1">
+      <script><code><![CDATA[import time
+time.sleep(time_to_sleep)
+container_name = my_container.name
+]]></code></script>
+      <load container="cont"/>
+      <inport name="time_to_sleep" type="int"/>
+      <outport name="container_name" type="string"/>
+   </remote>
+   <remote name="n4" elementaryWeight="-1">
+      <script><code><![CDATA[import time
+time.sleep(time_to_sleep)
+container_name = my_container.name
+]]></code></script>
+      <load container="cont"/>
+      <inport name="time_to_sleep" type="int"/>
+      <outport name="container_name" type="string"/>
+   </remote>
+   <remote name="n5" elementaryWeight="-1">
+      <script><code><![CDATA[import time
+time.sleep(time_to_sleep)
+container_name = my_container.name
+]]></code></script>
+      <load container="cont"/>
+      <inport name="time_to_sleep" type="int"/>
+      <outport name="container_name" type="string"/>
+   </remote>
+   <remote name="n6" elementaryWeight="-1">
+      <script><code><![CDATA[import time
+time.sleep(time_to_sleep)
+container_name = my_container.name
+]]></code></script>
+      <load container="cont"/>
+      <inport name="time_to_sleep" type="int"/>
+      <outport name="container_name" type="string"/>
+   </remote>
+   <remote name="n7" elementaryWeight="-1">
+      <script><code><![CDATA[import time
+time.sleep(time_to_sleep)
+container_name = my_container.name
+]]></code></script>
+      <load container="cont"/>
+      <inport name="time_to_sleep" type="int"/>
+      <outport name="container_name" type="string"/>
+   </remote>
+   <remote name="n8" elementaryWeight="-1">
+      <script><code><![CDATA[import time
+time.sleep(time_to_sleep)
+container_name = my_container.name
+]]></code></script>
+      <load container="cont"/>
+      <inport name="time_to_sleep" type="int"/>
+      <outport name="container_name" type="string"/>
+   </remote>
+   <control> <fromnode>Begin</fromnode> <tonode>End</tonode> </control>
+   <control> <fromnode>Begin</fromnode> <tonode>n1</tonode> </control>
+   <control> <fromnode>Begin</fromnode> <tonode>n2</tonode> </control>
+   <control> <fromnode>Begin</fromnode> <tonode>n3</tonode> </control>
+   <control> <fromnode>Begin</fromnode> <tonode>n4</tonode> </control>
+   <control> <fromnode>Begin</fromnode> <tonode>n5</tonode> </control>
+   <control> <fromnode>Begin</fromnode> <tonode>n6</tonode> </control>
+   <control> <fromnode>Begin</fromnode> <tonode>n7</tonode> </control>
+   <control> <fromnode>Begin</fromnode> <tonode>n8</tonode> </control>
+   <control> <fromnode>n1</fromnode> <tonode>End</tonode> </control>
+   <control> <fromnode>n2</fromnode> <tonode>End</tonode> </control>
+   <control> <fromnode>n3</fromnode> <tonode>End</tonode> </control>
+   <control> <fromnode>n4</fromnode> <tonode>End</tonode> </control>
+   <control> <fromnode>n5</fromnode> <tonode>End</tonode> </control>
+   <control> <fromnode>n6</fromnode> <tonode>End</tonode> </control>
+   <control> <fromnode>n7</fromnode> <tonode>End</tonode> </control>
+   <control> <fromnode>n8</fromnode> <tonode>End</tonode> </control>
+   <datalink control="false">
+      <fromnode>Begin</fromnode> <fromport>t0</fromport>
+      <tonode>End</tonode> <toport>t0</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>Begin</fromnode> <fromport>time_to_sleep</fromport>
+      <tonode>n1</tonode> <toport>time_to_sleep</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>Begin</fromnode> <fromport>time_to_sleep</fromport>
+      <tonode>n2</tonode> <toport>time_to_sleep</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>Begin</fromnode> <fromport>time_to_sleep</fromport>
+      <tonode>End</tonode> <toport>time_to_sleep</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>Begin</fromnode> <fromport>time_to_sleep</fromport>
+      <tonode>n5</tonode> <toport>time_to_sleep</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>Begin</fromnode> <fromport>time_to_sleep</fromport>
+      <tonode>n4</tonode> <toport>time_to_sleep</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>Begin</fromnode> <fromport>time_to_sleep</fromport>
+      <tonode>n3</tonode> <toport>time_to_sleep</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>Begin</fromnode> <fromport>time_to_sleep</fromport>
+      <tonode>n6</tonode> <toport>time_to_sleep</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>Begin</fromnode> <fromport>time_to_sleep</fromport>
+      <tonode>n8</tonode> <toport>time_to_sleep</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>Begin</fromnode> <fromport>time_to_sleep</fromport>
+      <tonode>n7</tonode> <toport>time_to_sleep</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>n1</fromnode> <fromport>container_name</fromport>
+      <tonode>End</tonode> <toport>n1</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>n2</fromnode> <fromport>container_name</fromport>
+      <tonode>End</tonode> <toport>n2</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>n3</fromnode> <fromport>container_name</fromport>
+      <tonode>End</tonode> <toport>n3</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>n4</fromnode> <fromport>container_name</fromport>
+      <tonode>End</tonode> <toport>n4</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>n5</fromnode> <fromport>container_name</fromport>
+      <tonode>End</tonode> <toport>n5</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>n6</fromnode> <fromport>container_name</fromport>
+      <tonode>End</tonode> <toport>n6</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>n7</fromnode> <fromport>container_name</fromport>
+      <tonode>End</tonode> <toport>n7</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>n8</fromnode> <fromport>container_name</fromport>
+      <tonode>End</tonode> <toport>n8</toport>
+   </datalink>
+   <presentation name="n1" x="199" y="106.806" width="158" height="63" expanded="1" expx="199" expy="106.806" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="n7" x="197.548" y="488.857" width="158" height="63" expanded="1" expx="197.548" expy="488.857" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="End" x="410.5" y="32" width="158" height="306" expanded="1" expx="410.5" expy="32" expWidth="158" expHeight="306" shownState="0"/>
+   <presentation name="Begin" x="4" y="32" width="158" height="90" expanded="1" expx="4" expy="32" expWidth="158" expHeight="90" shownState="0"/>
+   <presentation name="n2" x="197.65" y="170.306" width="158" height="63" expanded="1" expx="197.65" expy="170.306" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="n4" x="199.05" y="297.306" width="158" height="63" expanded="1" expx="199.05" expy="297.306" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="n3" x="196.65" y="233.806" width="158" height="63" expanded="1" expx="196.65" expy="233.806" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="n6" x="197.499" y="424.306" width="158" height="63" expanded="1" expx="197.499" expy="424.306" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="n8" x="197.898" y="552.357" width="158" height="63" expanded="1" expx="197.898" expy="552.357" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="n5" x="196.749" y="360.806" width="158" height="63" expanded="1" expx="196.749" expy="360.806" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="__ROOT__" x="0" y="0" width="572.5" height="619.357" expanded="1" expx="0" expy="0" expWidth="572.5" expHeight="619.357" shownState="0"/>
+</proc>

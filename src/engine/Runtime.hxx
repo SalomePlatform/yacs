@@ -34,7 +34,7 @@ namespace YACS
   namespace ENGINE
   {
     class Runtime;
-    YACSLIBENGINE_EXPORT Runtime* getRuntime() throw(Exception);
+    YACSLIBENGINE_EXPORT Runtime* getRuntime() ;
 
     class Any;
     class InputPort;
@@ -42,6 +42,7 @@ namespace YACS
     class InPropertyPort;
     class ForLoop;
     class ForEachLoop;
+    class ForEachLoopDyn;
     class OptimizerLoop;
     class WhileLoop;
     class Switch;
@@ -66,7 +67,7 @@ namespace YACS
 
     class YACSLIBENGINE_EXPORT Runtime
     {
-      friend Runtime* getRuntime() throw(Exception);
+      friend Runtime* getRuntime() ;
     public:
       virtual void init() { }
       virtual void fini() { }
@@ -89,6 +90,7 @@ namespace YACS
       virtual WhileLoop* createWhileLoop(const std::string& name);
       virtual ForLoop* createForLoop(const std::string& name);
       virtual ForEachLoop* createForEachLoop(const std::string& name,TypeCode * type);
+      virtual ForEachLoopDyn* createForEachLoopDyn(const std::string& name,TypeCode * type);
       virtual OptimizerLoop* createOptimizerLoop(const std::string& name,const std::string& algLib,
                                                  const std::string& factoryName,bool algInitOnFile,
                                                  const std::string& kind="", Proc * procForTypes = NULL);
@@ -117,12 +119,12 @@ namespace YACS
                                                                TypeCode * type);
 
       virtual InputPort* adapt(InputPort* source, const std::string& impl, TypeCode * type,
-                               bool init=false) throw (ConversionException) = 0;
+                               bool init=false) = 0;
 
       virtual InputPort* adapt(InPropertyPort* source,
                                const std::string& impl,
                                TypeCode * type,
-                               bool init=false) throw (ConversionException) = 0;
+                               bool init=false) = 0;
 
       virtual void* convertNeutral(TypeCode * type, Any *data);
       virtual std::string convertNeutralAsString(TypeCode * type, Any *data);

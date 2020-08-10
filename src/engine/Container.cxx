@@ -32,6 +32,8 @@ const char Container::KIND_ENTRY[]="container_kind";
 
 const char Container::AOC_ENTRY[]="attached_on_cloning";
 
+const char Container::USE_PYCACHE_PROPERTY[]="use_py_cache";
+
 Container::Container():_isAttachedOnCloning(false),_proc(0)
 {
 }
@@ -45,6 +47,18 @@ std::string Container::getDiscreminantStrOfThis(const Task *askingNode) const
   const void *ptr(this);
   std::ostringstream oss; oss << ptr;
   return oss.str();
+}
+
+void Container::start(const Task *askingNode,
+                      const std::string& resource_name,
+                      const std::string& container_name)
+{
+  return start(askingNode);
+}
+
+bool Container::canAcceptImposedResource()
+{
+  return false;
 }
 
 /*!
@@ -90,5 +104,29 @@ void Container::setProperties(const std::map<std::string,std::string>& propertie
 {
   for (std::map<std::string,std::string>::const_iterator it=properties.begin();it!=properties.end();++it)
     setProperty((*it).first,(*it).second);
+}
+
+bool Container::isUsingPythonCache()
+{
+  bool found = false;
+  std::string str_value;
+  str_value = getProperty(USE_PYCACHE_PROPERTY);
+  const char* yes_values[] = {"YES", "Yes", "yes", "TRUE", "True", "true", "1",
+                              "ON", "on", "On"};
+  for(const char* v : yes_values)
+    if(str_value == v)
+    {
+      found = true;
+      break;
+    }
+  return found;
+}
+
+void Container::usePythonCache(bool v)
+{
+  if(v)
+    setProperty(USE_PYCACHE_PROPERTY, "1");
+  else
+    setProperty(USE_PYCACHE_PROPERTY, "0");
 }
 

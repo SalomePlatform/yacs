@@ -68,18 +68,18 @@ namespace YACS
       Container *getContainer();
       YACS::StatesForNode getState() const;
       void getReadyTasks(std::vector<Task *>& tasks);
-      void edRemovePort(Port *port) throw(Exception);
+      void edRemovePort(Port *port) ;
       std::list<ElementaryNode *> getRecursiveConstituents() const;
       std::list<ProgressWeight> getProgressWeight() const;
-      Node *getChildByName(const std::string& name) const throw(Exception);
-      virtual void checkBasicConsistency() const throw(Exception);
+      Node *getChildByName(const std::string& name) const ;
+      virtual void checkBasicConsistency() const ;
       ComposedNode *getDynClonerIfExists(const ComposedNode *levelToStop) const;
       int getNumberOfInputPorts() const;
       int getNumberOfOutputPorts() const;
-      std::string getInPortName(const InPort *) const throw (Exception);
-      std::string getOutPortName(const OutPort *) const throw (Exception);
-      InputPort *getInputPort(const std::string& name) const throw(Exception);
-      OutputPort *getOutputPort(const std::string& name) const throw(Exception);
+      std::string getInPortName(const InPort *) const ;
+      std::string getOutPortName(const OutPort *) const ;
+      InputPort *getInputPort(const std::string& name) const ;
+      OutputPort *getOutputPort(const std::string& name) const ;
       std::list<InputPort *> getSetOfInputPort() const { return _setOfInputPort; }
       std::list<OutputPort *> getSetOfOutputPort() const { return _setOfOutputPort; }
       std::list<InputPort *> getLocalInputPorts() const { return _setOfInputPort; }
@@ -90,16 +90,16 @@ namespace YACS
       virtual std::vector< std::pair<InPort *, OutPort *> > getSetOfLinksComingInCurrentScope() const;
       std::list<InputDataStreamPort *> getSetOfInputDataStreamPort() const { return _setOfInputDataStreamPort; }
       std::list<OutputDataStreamPort *> getSetOfOutputDataStreamPort() const { return _setOfOutputDataStreamPort; }
-      InputDataStreamPort *getInputDataStreamPort(const std::string& name) const throw(Exception);
-      OutputDataStreamPort *getOutputDataStreamPort(const std::string& name) const throw(Exception);
+      InputDataStreamPort *getInputDataStreamPort(const std::string& name) const ;
+      OutputDataStreamPort *getOutputDataStreamPort(const std::string& name) const ;
       virtual InputPort *createInputPort(const std::string& inputPortName, TypeCode* type);
       virtual OutputPort *createOutputPort(const std::string& outputPortName, TypeCode* type);
       virtual InputDataStreamPort *createInputDataStreamPort(const std::string& inputPortDSName, TypeCode* type);
       virtual OutputDataStreamPort *createOutputDataStreamPort(const std::string& outputPortDSName, TypeCode* type);
-      virtual InputPort *edAddInputPort(const std::string& inputPortName, TypeCode* type) throw(Exception);
-      virtual OutputPort *edAddOutputPort(const std::string& outputPortName, TypeCode* type) throw(Exception);
-      virtual InputDataStreamPort *edAddInputDataStreamPort(const std::string& inputPortDSName, TypeCode* type) throw(Exception);
-      virtual OutputDataStreamPort *edAddOutputDataStreamPort(const std::string& outputPortDSName, TypeCode* type) throw(Exception);
+      virtual InputPort *edAddInputPort(const std::string& inputPortName, TypeCode* type) ;
+      virtual OutputPort *edAddOutputPort(const std::string& outputPortName, TypeCode* type) ;
+      virtual InputDataStreamPort *edAddInputDataStreamPort(const std::string& inputPortDSName, TypeCode* type) ;
+      virtual OutputDataStreamPort *edAddOutputDataStreamPort(const std::string& outputPortDSName, TypeCode* type) ;
       virtual void edOrderInputPorts(const std::list<InputPort*>& ports);
       virtual void edOrderOutputPorts(const std::list<OutputPort*>& ports);
 
@@ -141,13 +141,13 @@ namespace YACS
       void edDisconnectAllLinksWithMe();
       bool areAllInputPortsValid() const;
       template<class PORT>
-      PORT *getPort(const std::string& name, const std::list<PORT *>& setOfPorts) const throw(Exception);
+      PORT *getPort(const std::string& name, const std::list<PORT *>& setOfPorts) const ;
       template<class PORT, class ENUMTYPE>
-      PORT *edAddPort(const std::string& portName, std::list<PORT *>& setOfPorts, ENUMTYPE type) throw(Exception);
+      PORT *edAddPort(const std::string& portName, std::list<PORT *>& setOfPorts, ENUMTYPE type) ;
       template<class PORT, class ENUMTYPE>
-      bool edCheckAddPort(const std::string& portName, std::list<PORT *>& setOfPorts, ENUMTYPE type) throw(Exception);
+      bool edCheckAddPort(const std::string& portName, std::list<PORT *>& setOfPorts, ENUMTYPE type) ;
       template<class PORT>
-      static void edRemovePortTypedFromSet(PORT *port, std::list<PORT *>& setOfPorts) throw(Exception);
+      static void edRemovePortTypedFromSet(PORT *port, std::list<PORT *>& setOfPorts) ;
       template<class PORT>
       static bool isPortNameAlreadyExist(const std::string& portName, const std::list<PORT *>& setOfPorts);
     };
@@ -157,7 +157,7 @@ namespace YACS
      */
 
     template<class PORT>
-    PORT *ElementaryNode::getPort(const std::string& name, const std::list<PORT *>& setOfPorts) const throw(Exception)
+    PORT *ElementaryNode::getPort(const std::string& name, const std::list<PORT *>& setOfPorts) const
     {
       for(typename std::list<PORT *>::const_iterator iter=setOfPorts.begin();iter!=setOfPorts.end();iter++)
         {
@@ -176,7 +176,7 @@ namespace YACS
      */
 
     template<class PORT, class ENUMTYPE>
-    PORT *ElementaryNode::edAddPort(const std::string& portName, std::list<PORT *>& setOfPorts, ENUMTYPE type) throw(Exception)
+    PORT *ElementaryNode::edAddPort(const std::string& portName, std::list<PORT *>& setOfPorts, ENUMTYPE type)
     {
       checkValidityOfPortName(portName);
       if(isPortNameAlreadyExist<PORT>(portName, setOfPorts))
@@ -190,7 +190,7 @@ namespace YACS
     }
 
     template<class PORT, class ENUMTYPE>
-    bool ElementaryNode::edCheckAddPort(const std::string& portName, std::list<PORT *>& setOfPorts, ENUMTYPE type) throw(Exception)
+    bool ElementaryNode::edCheckAddPort(const std::string& portName, std::list<PORT *>& setOfPorts, ENUMTYPE type)
     {
       checkValidityOfPortName(portName);
       if(isPortNameAlreadyExist<PORT>(portName, setOfPorts))
@@ -206,7 +206,7 @@ namespace YACS
      */
 
     template<class PORT>
-    void ElementaryNode::edRemovePortTypedFromSet(PORT *port, std::list<PORT *>& setOfPorts) throw(Exception)
+    void ElementaryNode::edRemovePortTypedFromSet(PORT *port, std::list<PORT *>& setOfPorts)
     {
       if(!isPortNameAlreadyExist<PORT>(port->getName(), setOfPorts))
         throw Exception("Port is not part of the list : unable to remove it");

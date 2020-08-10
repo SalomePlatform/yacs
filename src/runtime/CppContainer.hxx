@@ -109,7 +109,7 @@ namespace YACS
       virtual ~CppContainer();
       std::string getKind() const;
       bool isAlreadyStarted(const Task *askingNode) const;
-      void start(const Task *askingNode) throw (YACS::Exception);
+      void start(const Task *askingNode);
       void shutdown(int level);
       std::string getPlacementId(const Task *askingNode) const;
       std::string getFullPlacementId(const Task *askingNode) const;
@@ -118,8 +118,8 @@ namespace YACS
       void lock();
       void unLock();
 
-      void checkCapabilityToDealWith(const ComponentInstance *inst) const throw (YACS::Exception);
-      bool loadComponentLibrary(const std::string & componentName) throw (YACS::Exception);
+      void checkCapabilityToDealWith(const ComponentInstance *inst) const;
+      bool loadComponentLibrary(const std::string & componentName);
       CppComponent * createComponentInstance(const std::string & componentName);
       void createInternalInstance(const std::string & componentName, 
                                   void *& obj, RunFunction &r, TerminateFunction &t);

@@ -37,8 +37,8 @@ namespace YACS
     {
     public:
       NeutralXml(InputXmlPort* p);
-      virtual void put(const void *data)  throw(ConversionException);
-      void put(YACS::ENGINE::Any *data) throw(ConversionException);
+      virtual void put(const void *data) ;
+      void put(YACS::ENGINE::Any *data);
     };
   }
 }

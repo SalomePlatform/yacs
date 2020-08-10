@@ -48,7 +48,7 @@ void TestElemInputPort::releaseData()
   throw Exception(msg.str());
 }
 
-void TestElemInputPort::put(const void *data) throw(ConversionException)
+void TestElemInputPort::put(const void *data)
 {
   cerr << _name << endl;
   stringstream msg;
@@ -61,7 +61,7 @@ InputPort *TestElemInputPort::clone(Node *newHelder) const
   return new TestElemInputPort(*this,newHelder);
 }
 
-void *TestElemInputPort::get() const throw(YACS::Exception)
+void *TestElemInputPort::get() const
 {
   stringstream msg;
   msg << "Not implemented (" << __FILE__ << ":" << __LINE__ << ")";
@@ -99,7 +99,7 @@ OutputPort *TestElemOutputPort::clone(Node *newHelder) const
   return new TestElemOutputPort(*this,newHelder);
 }
 
-void TestElemOutputPort::put(const void *data) throw(ConversionException)
+void TestElemOutputPort::put(const void *data)
 {
   cerr << _name << endl;
   stringstream msg;
@@ -115,10 +115,10 @@ void RuntimeForEngineTest::setRuntime()
 
 std::vector< std::pair<std::string,int> > RuntimeForEngineTest::getCatalogOfComputeNodes() const
 {
-  throw Exception("RuntimeForEngineTest::getCatalogOfComputeNodes : not implemented !");
+  return std::vector< std::pair<std::string,int> >();
 }
 
-ElementaryNode* RuntimeForEngineTest::createNode(const string& implementation, const string& name) throw(YACS::Exception)
+ElementaryNode* RuntimeForEngineTest::createNode(const string& implementation, const string& name)
 {
   return new TestElemNode(name);
 }
@@ -133,12 +133,12 @@ OutputPort* RuntimeForEngineTest::createOutputPort(const string& name, const str
   return new TestElemOutputPort(name, node, type);
 }
 
-InputPort* RuntimeForEngineTest::adapt(InputPort* source, const string& impl,TypeCode * type,bool init) throw (ConversionException)
+InputPort* RuntimeForEngineTest::adapt(InputPort* source, const string& impl,TypeCode * type,bool init)
 {
   return new ProxyPort(source);
 }
 
-InputPort* RuntimeForEngineTest::adapt(InPropertyPort* source, const std::string& impl, TypeCode * type, bool init) throw (ConversionException)
+InputPort* RuntimeForEngineTest::adapt(InPropertyPort* source, const std::string& impl, TypeCode * type, bool init)
 {
   return adapt((InputPort *)source,impl,type,init);
 }

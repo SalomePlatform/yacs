@@ -33,8 +33,8 @@ namespace YACS
     public:
       NeutralPyDouble(InputPyPort* p)
         : ProxyPort(p), DataPort(p->getName(), p->getNode(), p->edGetType()), Port(p->getNode()) {}
-      virtual void put(const void *data) throw(ConversionException);
-      void put(YACS::ENGINE::Any *data) throw(ConversionException);
+      virtual void put(const void *data);
+      void put(YACS::ENGINE::Any *data);
     };
 
     class NeutralPyInt : public ProxyPort
@@ -42,8 +42,8 @@ namespace YACS
     public:
       NeutralPyInt(InputPyPort* p)
         : ProxyPort(p), DataPort(p->getName(), p->getNode(), p->edGetType()), Port(p->getNode()) {}
-      virtual void put(const void *data) throw(ConversionException);
-      void put(YACS::ENGINE::Any *data) throw(ConversionException);
+      virtual void put(const void *data);
+      void put(YACS::ENGINE::Any *data);
     };
 
     class NeutralPyString : public ProxyPort
@@ -51,8 +51,8 @@ namespace YACS
     public:
       NeutralPyString(InputPyPort* p)
         : ProxyPort(p), DataPort(p->getName(), p->getNode(), p->edGetType()), Port(p->getNode()) {}
-      virtual void put(const void *data) throw(ConversionException);
-      void put(YACS::ENGINE::Any *data) throw(ConversionException);
+      virtual void put(const void *data);
+      void put(YACS::ENGINE::Any *data);
     };
 
     class NeutralPyBool : public ProxyPort
@@ -60,8 +60,8 @@ namespace YACS
     public:
       NeutralPyBool(InputPyPort* p)
         : ProxyPort(p), DataPort(p->getName(), p->getNode(), p->edGetType()), Port(p->getNode()) {}
-      virtual void put(const void *data) throw(ConversionException);
-      void put(YACS::ENGINE::Any *data) throw(ConversionException);
+      virtual void put(const void *data);
+      void put(YACS::ENGINE::Any *data);
     };
 
     class NeutralPyObjref : public ProxyPort
@@ -69,8 +69,8 @@ namespace YACS
     public:
       NeutralPyObjref(InputPyPort* p)
         : ProxyPort(p), DataPort(p->getName(), p->getNode(), p->edGetType()), Port(p->getNode()) {}
-      virtual void put(const void *data) throw(ConversionException);
-      void put(YACS::ENGINE::Any *data) throw(ConversionException);
+      virtual void put(const void *data);
+      void put(YACS::ENGINE::Any *data);
     };
 
     class NeutralPySequence : public ProxyPort
@@ -78,8 +78,8 @@ namespace YACS
     public:
       NeutralPySequence(InputPyPort* p)
         : ProxyPort(p), DataPort(p->getName(), p->getNode(), p->edGetType()), Port(p->getNode()) {}
-      virtual void put(const void *data) throw(ConversionException);
-      void put(YACS::ENGINE::Any *data) throw(ConversionException);
+      virtual void put(const void *data);
+      void put(YACS::ENGINE::Any *data);
     };
 
     class NeutralPyStruct : public ProxyPort
@@ -87,8 +87,8 @@ namespace YACS
     public:
       NeutralPyStruct(InputPyPort* p)
         : ProxyPort(p), DataPort(p->getName(), p->getNode(), p->edGetType()), Port(p->getNode()) {}
-      virtual void put(const void *data) throw(ConversionException);
-      void put(YACS::ENGINE::Any *data) throw(ConversionException);
+      virtual void put(const void *data);
+      void put(YACS::ENGINE::Any *data);
     };
   }
 }

@@ -112,7 +112,7 @@ Container *SalomeContainer::cloneAlways() const
   return new SalomeContainer(*this);
 }
 
-void SalomeContainer::checkCapabilityToDealWith(const ComponentInstance *inst) const throw(YACS::Exception)
+void SalomeContainer::checkCapabilityToDealWith(const ComponentInstance *inst) const
 {
   if(inst->getKind()!=SalomeComponent::KIND)
     throw Exception("SalomeContainer::checkCapabilityToDealWith : SalomeContainer is not able to deal with this type of ComponentInstance.");
@@ -221,9 +221,35 @@ Engines::Container_ptr SalomeContainer::getContainerPtr(const Task *askingNode) 
 /*!
  * \param inst the component instance
  */
-void SalomeContainer::start(const Task *askingNode) throw(YACS::Exception)
+void SalomeContainer::start(const Task *askingNode)
 {
   SalomeContainerTools::Start(_componentNames,_launchModeType,_sct,_shutdownLevel,this,askingNode);
+}
+
+void SalomeContainer::start(const Task *askingNode,
+                            const std::string& resource_name,
+                            const std::string& container_name)
+{
+  if(canAcceptImposedResource()
+    && askingNode != nullptr
+    && askingNode->hasImposedResource())
+  {
+    SalomeContainerTools tempSct = _sct;
+    tempSct.setProperty("name", resource_name);
+    tempSct.setProperty("container_name", container_name);
+    //SalomeContainerTools::Start(_componentNames,_launchModeType,tempSct,_shutdownLevel,this,askingNode);
+    // components are not supported yet on this kind of start
+    std::vector<std::string> noComponentNames;
+    int shutdownLevel = 999;
+    SalomeContainerTools::Start(noComponentNames,_launchModeType,tempSct,shutdownLevel,this,askingNode);
+  }
+  else
+    start(askingNode);
+}
+
+bool SalomeContainer::canAcceptImposedResource()
+{
+  return _launchModeType->getType() == SalomeContainerMultiHelper::TYPE_NAME;
 }
 
 void SalomeContainer::shutdown(int level)

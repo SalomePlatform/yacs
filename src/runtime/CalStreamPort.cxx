@@ -278,7 +278,7 @@ OutputCalStreamPort *OutputCalStreamPort::clone(Node *newHelder) const
   return new OutputCalStreamPort(*this,newHelder);
 }
 
-bool OutputCalStreamPort::addInPort(InPort *inPort) throw(YACS::Exception)
+bool OutputCalStreamPort::addInPort(InPort *inPort)
 {
   DEBTRACE("OutputCalStreamPort::addInPort " << InputCalStreamPort::NAME );
   if(inPort->getNameOfTypeOfCurrentInstance()!=InputCalStreamPort::NAME)
@@ -300,7 +300,7 @@ bool OutputCalStreamPort::addInPort(InPort *inPort) throw(YACS::Exception)
 }
 
 
-int OutputCalStreamPort::removeInPort(InPort *inPort, bool forward) throw(YACS::Exception)
+int OutputCalStreamPort::removeInPort(InPort *inPort, bool forward)
 {
   DEBTRACE("OutputCalStreamPort::removeInPort");
   if(inPort->getNameOfTypeOfCurrentInstance()!=InputCalStreamPort::NAME && !forward)

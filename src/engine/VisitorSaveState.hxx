@@ -37,11 +37,12 @@ namespace YACS
     public:
       VisitorSaveState(ComposedNode *root);
       virtual ~VisitorSaveState();
-      void openFileDump(const std::string& xmlDump) throw(Exception);
+      void openFileDump(const std::string& xmlDump) ;
       void closeFileDump();
       virtual void visitBloc(Bloc *node);
       virtual void visitElementaryNode(ElementaryNode *node);
-      virtual void visitForEachLoop(ForEachLoop *node);
+      void visitForEachLoop(ForEachLoop *node) override;
+      void visitForEachLoopDyn(ForEachLoopDyn *node) override;
       virtual void visitOptimizerLoop(OptimizerLoop *node);
       virtual void visitDynParaLoop(DynParaLoop *node);
       virtual void visitForLoop(ForLoop *node);

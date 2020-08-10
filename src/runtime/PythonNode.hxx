@@ -46,15 +46,18 @@ namespace YACS
       virtual const char *getSerializationScript() const = 0;
       //
       void commonRemoteLoad(InlineNode *reqNode);
-      void commonRemoteLoadPart1(InlineNode *reqNode);
-      Engines::Container_var commonRemoteLoadPart2(InlineNode *reqNode, bool& isInitializeRequested);
-      void commonRemoteLoadPart3(InlineNode *reqNode, Engines::Container_ptr objContainer, bool isInitializeRequested);
+      void loadRemoteContainer(InlineNode *reqNode);
+      Engines::Container_var loadPythonAdapter(InlineNode *reqNode, bool& isInitializeRequested);
+      void loadRemoteContext(InlineNode *reqNode, Engines::Container_ptr objContainer, bool isInitializeRequested);
       static std::string GetContainerLog(const std::string& mode, Container *container, const Task *askingTask);
+      virtual bool hasImposedResource()const;
     protected:
       PyObject *_context;
       PyObject *_pyfuncSer;
       PyObject *_pyfuncUnser;
       PyObject *_pyfuncSimpleSer;
+      std::string _imposedResource;
+      std::string _imposedContainer;
     public:
       static const char SCRIPT_FOR_SIMPLE_SERIALIZATION[];
     };
@@ -69,11 +72,15 @@ namespace YACS
       void assignRemotePyInterpretor(Engines::PyNodeBase_var remoteInterp);
       Engines::PyNodeBase_var getRemoteInterpreterHandle();
       const char *getSerializationScript() const  { return SCRIPT_FOR_SERIALIZATION; }
+      // A kernel container may manage several python contexts identified by
+      // their name (PyNode and PyScript node). This function returns  the name
+      // of the context used by this object. See SALOME_Component.idl in KERNEL.
+      std::string pythonEntryName()const;
     public:
       PythonNode(const PythonNode& other, ComposedNode *father);
       PythonNode(const std::string& name);
       virtual ~PythonNode();
-      virtual void checkBasicConsistency() const throw(Exception);
+      virtual void checkBasicConsistency() const ;
       virtual void execute();
       virtual void load();
       virtual void loadRemote();
@@ -81,6 +88,11 @@ namespace YACS
       virtual void executeRemote();
       virtual void executeLocal();
       virtual void shutdown(int level);
+      void imposeResource(const std::string& resource_name,
+                          const std::string& container_name) override;
+      bool canAcceptImposedResource()override;
+      bool hasImposedResource()const override;
+      bool isUsingPythonCache()const;
       std::string getContainerLog();
       PythonNode* cloneNode(const std::string& name);
       virtual std::string typeName() { return "YACS__ENGINE__PythonNode"; }
@@ -91,6 +103,7 @@ namespace YACS
     protected:
       void squeezeMemory();
       void squeezeMemoryRemote();
+      void freeKernelPynode();
     public:
       static const char KIND[];
       static const char IMPL_NAME[];
@@ -117,7 +130,7 @@ namespace YACS
       PyFuncNode(const std::string& name);
       virtual ~PyFuncNode();
       virtual void init(bool start=true);
-      virtual void checkBasicConsistency() const throw(Exception);
+      virtual void checkBasicConsistency() const ;
       virtual void execute();
       virtual void load();
       virtual void loadRemote();
@@ -125,6 +138,10 @@ namespace YACS
       virtual void executeRemote();
       virtual void executeLocal();
       virtual void shutdown(int level);
+      void imposeResource(const std::string& resource_name,
+                          const std::string& container_name) override;
+      bool canAcceptImposedResource()override;
+      bool hasImposedResource()const override;
       std::string getContainerLog();
       PyFuncNode* cloneNode(const std::string& name);
       virtual std::string typeName() { return "YACS__ENGINE__PyFuncNode"; }

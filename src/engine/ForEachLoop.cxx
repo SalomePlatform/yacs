@@ -49,11 +49,11 @@ const char FakeNodeForForEachLoop::NAME[]="thisIsAFakeNode";
 
 const char SplitterNode::NAME_OF_SEQUENCE_INPUT[]="SmplsCollection";
 
-const char ForEachLoop::NAME_OF_SPLITTERNODE[]="splitter";
+const char ForEachLoopGen::NAME_OF_SPLITTERNODE[]="splitter";
 
-const int ForEachLoop::NOT_RUNNING_BRANCH_ID=-1;
+const int ForEachLoopGen::NOT_RUNNING_BRANCH_ID=-1;
 
-const char ForEachLoop::INTERCEPTOR_STR[]="_interceptor";
+const char ForEachLoopGen::INTERCEPTOR_STR[]="_interceptor";
 
 InterceptorInputPort::InterceptorInputPort(const std::string& name, Node *node, TypeCode* type):AnyInputPort(name,node,type),
                                                                                                 DataPort(name,node,type),Port(node),
@@ -107,7 +107,7 @@ AnySplitOutputPort::AnySplitOutputPort(const AnySplitOutputPort& other, Node *ne
 {
 }
 
-bool AnySplitOutputPort::addInPort(InPort *inPort) throw(YACS::Exception)
+bool AnySplitOutputPort::addInPort(InPort *inPort)
 {
   bool ret=OutputPort::addInPort(inPort);
   if(_repr)
@@ -123,7 +123,7 @@ void AnySplitOutputPort::getAllRepresented(std::set<OutPort *>& represented) con
     _repr->getAllRepresented(represented);
 }
 
-int AnySplitOutputPort::removeInPort(InPort *inPort, bool forward) throw(YACS::Exception)
+int AnySplitOutputPort::removeInPort(InPort *inPort, bool forward)
 {
   bool ret=OutputPort::removeInPort(inPort,forward);
   if(_repr)
@@ -207,19 +207,19 @@ std::string SeqAnyInputPort::dump()
 }
 
 SplitterNode::SplitterNode(const std::string& name, TypeCode *typeOfData, 
-                           ForEachLoop *father):ElementaryNode(name),
+                           ForEachLoopGen *father):ElementaryNode(name),
                                                 _dataPortToDispatch(NAME_OF_SEQUENCE_INPUT,
                                                                     this,(TypeCodeSeq *)TypeCode::sequenceTc("","",typeOfData))
 {
   _father=father;
 }
 
-SplitterNode::SplitterNode(const SplitterNode& other, ForEachLoop *father):ElementaryNode(other,father),
+SplitterNode::SplitterNode(const SplitterNode& other, ForEachLoopGen *father):ElementaryNode(other,father),
                                                                            _dataPortToDispatch(other._dataPortToDispatch,this)
 {
 }
 
-InputPort *SplitterNode::getInputPort(const std::string& name) const throw(YACS::Exception)
+InputPort *SplitterNode::getInputPort(const std::string& name) const
 {
   if(name==NAME_OF_SEQUENCE_INPUT)
     return (InputPort *)&_dataPortToDispatch;
@@ -229,7 +229,7 @@ InputPort *SplitterNode::getInputPort(const std::string& name) const throw(YACS:
 
 Node *SplitterNode::simpleClone(ComposedNode *father, bool editionOnly) const
 {
-  return new SplitterNode(*this,(ForEachLoop *)father);
+  return new SplitterNode(*this,(ForEachLoopGen *)father);
 }
 
 unsigned SplitterNode::getNumberOfElements() const
@@ -251,14 +251,14 @@ void SplitterNode::init(bool start)
 void SplitterNode::putSplittedValueOnRankTo(int rankInSeq, int branch, bool first)
 {
   Any *valueToDispatch=_dataPortToDispatch.getValueAtRank(rankInSeq);
-  ForEachLoop *fatherTyped=(ForEachLoop *)_father;
+  ForEachLoopGen *fatherTyped=(ForEachLoopGen *)_father;
   fatherTyped->putValueOnBranch(valueToDispatch,branch,first);
   valueToDispatch->decrRef();
 }
 
-FakeNodeForForEachLoop::FakeNodeForForEachLoop(ForEachLoop *loop, bool normalFinish):ElementaryNode(NAME),
-                                                                                     _loop(loop),
-                                                                                     _normalFinish(normalFinish)
+FakeNodeForForEachLoop::FakeNodeForForEachLoop(ForEachLoopGen *loop, bool normalFinish):ElementaryNode(NAME),
+                                                                                        _loop(loop),
+                                                                                        _normalFinish(normalFinish)
 {
   _state=YACS::TOACTIVATE;
   _father=_loop->getFather();
@@ -465,15 +465,16 @@ void ForEachLoopPassedData::assignAlreadyDone(const std::vector<SequenceAny *>& 
     }
 }
 
-ForEachLoop::ForEachLoop(const std::string& name, TypeCode *typeOfDataSplitted):DynParaLoop(name,typeOfDataSplitted),
-                                                                                _splitterNode(NAME_OF_SPLITTERNODE,typeOfDataSplitted,this),
-                                                                                _execCurrentId(0),_nodeForSpecialCases(0),_currentIndex(0),_passedData(0)
+ForEachLoopGen::ForEachLoopGen(const std::string& name, TypeCode *typeOfDataSplitted, std::unique_ptr<NbBranchesAbstract>&& branchManager):
+                                                DynParaLoop(name,typeOfDataSplitted,std::move(branchManager)),
+                                                _splitterNode(NAME_OF_SPLITTERNODE,typeOfDataSplitted,this),
+                                                _execCurrentId(0),_nodeForSpecialCases(0),_currentIndex(0),_passedData(0)
 {
 }
 
-ForEachLoop::ForEachLoop(const ForEachLoop& other, ComposedNode *father, bool editionOnly):DynParaLoop(other,father,editionOnly),
-                                                                                           _splitterNode(other._splitterNode,this),
-                                                                                           _execCurrentId(0),_nodeForSpecialCases(0),_currentIndex(0),_passedData(0)
+ForEachLoopGen::ForEachLoopGen(const ForEachLoopGen& other, ComposedNode *father, bool editionOnly):DynParaLoop(other,father,editionOnly),
+                                                                                                   _splitterNode(other._splitterNode,this),
+                                                                                                   _execCurrentId(0),_nodeForSpecialCases(0),_currentIndex(0),_passedData(0)
 {
   int i=0;
   if(!editionOnly)
@@ -488,12 +489,7 @@ ForEachLoop::ForEachLoop(const ForEachLoop& other, ComposedNode *father, bool ed
       }
 }
 
-Node *ForEachLoop::simpleClone(ComposedNode *father, bool editionOnly) const
-{
-  return new ForEachLoop(*this,father,editionOnly);
-}
-
-ForEachLoop::~ForEachLoop()
+ForEachLoopGen::~ForEachLoopGen()
 {
   cleanDynGraph();
   for(vector<AnySplitOutputPort *>::iterator iter=_outGoingPorts.begin();iter!=_outGoingPorts.end();iter++)
@@ -503,7 +499,7 @@ ForEachLoop::~ForEachLoop()
   delete _passedData;
 }
 
-void ForEachLoop::init(bool start)
+void ForEachLoopGen::init(bool start)
 {
   DynParaLoop::init(start);
   _splitterNode.init(start);
@@ -515,9 +511,9 @@ void ForEachLoop::init(bool start)
     _passedData->init();
 }
 
-void ForEachLoop::exUpdateState()
+void ForEachLoopGen::exUpdateState()
 {
-  DEBTRACE("ForEachLoop::exUpdateState");
+  DEBTRACE("ForEachLoopGen::exUpdateState");
   if(_state == YACS::DISABLED)
     return;
   if(_state == YACS::DONE)
@@ -526,7 +522,8 @@ void ForEachLoop::exUpdateState()
     {
       //internal graph update
       int i;
-      int nbOfBr(_nbOfBranches.getIntValue()),nbOfElts(_splitterNode.getNumberOfElements()),nbOfEltsDone(0);
+      int nbOfElts(_splitterNode.getNumberOfElements()),nbOfEltsDone(0);
+      int nbOfBr(_nbOfBranches->getNumberOfBranches(nbOfElts));
       if(_passedData)
         {
           _passedData->checkCompatibilyWithNb(nbOfElts);
@@ -608,7 +605,7 @@ void ForEachLoop::exUpdateState()
           set< InPort * > portsToSetVals=getAllInPortsComingFromOutsideOfCurrentScope();
           for(auto iter : portsToSetVals)
             {
-              InputPort *curPortCasted=(InputPort *) iter;//Cast granted by ForEachLoop::buildDelegateOf(InPort)
+              InputPort *curPortCasted=(InputPort *) iter;//Cast granted by ForEachLoopGen::buildDelegateOf(InPort)
               if(!curPortCasted->canSafelySqueezeMemory())// this can appear strange ! if not safelySqueeze -> release. Nevertheless it is true.
                 curPortCasted->releaseData();             // these input ports have been incremented with InputPort::put into DynParaLoop::prepareInputsFromOutOfScope. So they can be released now.
             }
@@ -616,7 +613,7 @@ void ForEachLoop::exUpdateState()
       catch(YACS::Exception& ex)
         {
           //ForEachLoop must be put in error and the exception rethrown to notify the caller
-          DEBTRACE( "ForEachLoop::exUpdateState: " << ex.what() );
+          DEBTRACE( "ForEachLoopGen::exUpdateState: " << ex.what() );
           setState(YACS::ERROR);
           setErrorDetails(ex.what());
           exForwardFailed();
@@ -642,13 +639,13 @@ void ForEachLoop::exUpdateState()
     }
 }
 
-void ForEachLoop::exUpdateProgress()
+void ForEachLoopGen::exUpdateProgress()
 {
   // emit notification to all observers registered with the dispatcher on any change of the node's state
   sendEvent("progress");
 }
 
-void ForEachLoop::getReadyTasks(std::vector<Task *>& tasks)
+void ForEachLoopGen::getReadyTasks(std::vector<Task *>& tasks)
 {
   if(!_node)
     return;
@@ -670,35 +667,35 @@ void ForEachLoop::getReadyTasks(std::vector<Task *>& tasks)
     }
 }
 
-int ForEachLoop::getNumberOfInputPorts() const
+int ForEachLoopGen::getNumberOfInputPorts() const
 {
   return DynParaLoop::getNumberOfInputPorts()+1;
 }
 
-void ForEachLoop::checkNoCyclePassingThrough(Node *node) throw(YACS::Exception)
+void ForEachLoopGen::checkNoCyclePassingThrough(Node *node)
 {
   //TO DO
 }
 
-void ForEachLoop::selectRunnableTasks(std::vector<Task *>& tasks)
+void ForEachLoopGen::selectRunnableTasks(std::vector<Task *>& tasks)
 {
 }
 
-std::list<InputPort *> ForEachLoop::getSetOfInputPort() const
+std::list<InputPort *> ForEachLoopGen::getSetOfInputPort() const
 {
   list<InputPort *> ret=DynParaLoop::getSetOfInputPort();
   ret.push_back((InputPort *)&_splitterNode._dataPortToDispatch);
   return ret;
 }
 
-std::list<InputPort *> ForEachLoop::getLocalInputPorts() const
+std::list<InputPort *> ForEachLoopGen::getLocalInputPorts() const
 {
   list<InputPort *> ret=DynParaLoop::getLocalInputPorts();
   ret.push_back((InputPort *)&_splitterNode._dataPortToDispatch);
   return ret;
 }
 
-InputPort *ForEachLoop::getInputPort(const std::string& name) const throw(YACS::Exception)
+InputPort *ForEachLoopGen::getInputPort(const std::string& name) const
 {
   if(name==SplitterNode::NAME_OF_SEQUENCE_INPUT)
     return (InputPort *)&_splitterNode._dataPortToDispatch;
@@ -706,7 +703,7 @@ InputPort *ForEachLoop::getInputPort(const std::string& name) const throw(YACS::
     return DynParaLoop::getInputPort(name);
 }
 
-OutputPort *ForEachLoop::getOutputPort(const std::string& name) const throw(YACS::Exception)
+OutputPort *ForEachLoopGen::getOutputPort(const std::string& name) const
 {
   for(vector<AnySplitOutputPort *>::const_iterator iter=_outGoingPorts.begin();iter!=_outGoingPorts.end();iter++)
     {
@@ -716,7 +713,7 @@ OutputPort *ForEachLoop::getOutputPort(const std::string& name) const throw(YACS
   return DynParaLoop::getOutputPort(name);
 }
 
-OutPort *ForEachLoop::getOutPort(const std::string& name) const throw(YACS::Exception)
+OutPort *ForEachLoopGen::getOutPort(const std::string& name) const
 {
   for(vector<AnySplitOutputPort *>::const_iterator iter=_outGoingPorts.begin();iter!=_outGoingPorts.end();iter++)
     {
@@ -726,7 +723,7 @@ OutPort *ForEachLoop::getOutPort(const std::string& name) const throw(YACS::Exce
   return DynParaLoop::getOutPort(name);
 }
 
-Node *ForEachLoop::getChildByShortName(const std::string& name) const throw(YACS::Exception)
+Node *ForEachLoopGen::getChildByShortName(const std::string& name) const
 {
   if(name==NAME_OF_SPLITTERNODE)
     return (Node *)&_splitterNode;
@@ -741,7 +738,7 @@ Node *ForEachLoop::getChildByShortName(const std::string& name) const throw(YACS
  *  \param node : the child node that has finished
  *  \return the state change
  */
-YACS::Event ForEachLoop::updateStateOnFinishedEventFrom(Node *node)
+YACS::Event ForEachLoopGen::updateStateOnFinishedEventFrom(Node *node)
 {
   DEBTRACE("updateStateOnFinishedEventFrom " << node->getName() << " " << node->getState());
   unsigned int id;
@@ -759,7 +756,7 @@ YACS::Event ForEachLoop::updateStateOnFinishedEventFrom(Node *node)
   return YACS::NOEVENT;
 }
 
-YACS::Event ForEachLoop::updateStateForInitNodeOnFinishedEventFrom(Node *node, unsigned int id)
+YACS::Event ForEachLoopGen::updateStateForInitNodeOnFinishedEventFrom(Node *node, unsigned int id)
 {
   _execNodes[id]->exUpdateState();
   _nbOfEltConsumed++;
@@ -773,7 +770,7 @@ YACS::Event ForEachLoop::updateStateForInitNodeOnFinishedEventFrom(Node *node, u
 /*!
  * \param [in] isNormalFinish - if true
  */
-YACS::Event ForEachLoop::updateStateForWorkNodeOnFinishedEventFrom(Node *node, unsigned int id, bool isNormalFinish)
+YACS::Event ForEachLoopGen::updateStateForWorkNodeOnFinishedEventFrom(Node *node, unsigned int id, bool isNormalFinish)
 {
   _currentIndex++;
   exUpdateProgress();
@@ -807,7 +804,7 @@ YACS::Event ForEachLoop::updateStateForWorkNodeOnFinishedEventFrom(Node *node, u
               if(_failedCounter!=0)
                 {// case of keepgoing mode + a failed
                   std::ostringstream oss; oss << "Keep Going mode activated and some errors (" << _failedCounter << ")reported !";
-                  DEBTRACE("ForEachLoop::updateStateOnFinishedEventFrom : "<< oss.str());
+                  DEBTRACE("ForEachLoopGen::updateStateOnFinishedEventFrom : "<< oss.str());
                   setState(YACS::FAILED);
                   return YACS::ABORT;
                 }
@@ -849,7 +846,7 @@ YACS::Event ForEachLoop::updateStateForWorkNodeOnFinishedEventFrom(Node *node, u
           }
           catch(YACS::Exception& ex)
           {
-              DEBTRACE("ForEachLoop::updateStateOnFinishedEventFrom: "<<ex.what());
+              DEBTRACE("ForEachLoopGen::updateStateOnFinishedEventFrom: "<<ex.what());
               //no way to push results : put following nodes in FAILED state
               //TODO could be more fine grain : put only concerned nodes in FAILED state
               exForwardFailed();
@@ -879,7 +876,7 @@ YACS::Event ForEachLoop::updateStateForWorkNodeOnFinishedEventFrom(Node *node, u
   return YACS::NOEVENT;
 }
 
-YACS::Event ForEachLoop::updateStateForFinalizeNodeOnFinishedEventFrom(Node *node, unsigned int id)
+YACS::Event ForEachLoopGen::updateStateForFinalizeNodeOnFinishedEventFrom(Node *node, unsigned int id)
 {
   DEBTRACE("Finalize node finished on branch " << id);
   _unfinishedCounter--;
@@ -896,7 +893,7 @@ YACS::Event ForEachLoop::updateStateForFinalizeNodeOnFinishedEventFrom(Node *nod
     return YACS::NOEVENT;
 }
 
-YACS::Event ForEachLoop::updateStateOnFailedEventFrom(Node *node, const Executor *execInst)
+YACS::Event ForEachLoopGen::updateStateOnFailedEventFrom(Node *node, const Executor *execInst)
 {
   unsigned int id;
   DynParaLoop::TypeOfNode ton(getIdentityOfNotifyerNode(node,id));
@@ -910,13 +907,13 @@ YACS::Event ForEachLoop::updateStateOnFailedEventFrom(Node *node, const Executor
     }
 }
 
-void ForEachLoop::InterceptorizeNameOfPort(std::string& portName)
+void ForEachLoopGen::InterceptorizeNameOfPort(std::string& portName)
 {
   std::replace_if(portName.begin(), portName.end(), std::bind1st(std::equal_to<char>(), '.'), '_');
   portName += INTERCEPTOR_STR;
 }
 
-void ForEachLoop::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView)
+void ForEachLoopGen::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView)
 {
   DynParaLoop::buildDelegateOf(port,finalTarget,pointsOfView);
   string typeOfPortInstance=(port.first)->getNameOfTypeOfCurrentInstance();
@@ -957,10 +954,10 @@ void ForEachLoop::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort 
         }
     }
   else
-    throw Exception("ForEachLoop::buildDelegateOf : not implemented for DS because not specified");
+    throw Exception("ForEachLoopGen::buildDelegateOf : not implemented for DS because not specified");
 }
 
-void ForEachLoop::getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(YACS::Exception)
+void ForEachLoopGen::getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView)
 {
   string typeOfPortInstance=(port.first)->getNameOfTypeOfCurrentInstance();
   if(typeOfPortInstance==OutputPort::NAME)
@@ -971,17 +968,17 @@ void ForEachLoop::getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *f
           break;
       if(iter==_outGoingPorts.end())
         {
-          string what("ForEachLoop::getDelegateOf : Port with name "); what+=port.first->getName(); what+=" not exported by ForEachLoop "; what+=_name; 
+          string what("ForEachLoopGen::getDelegateOf : Port with name "); what+=port.first->getName(); what+=" not exported by ForEachLoop "; what+=_name; 
           throw Exception(what);
         }
       else
         port.first=(*iter);
     }
   else
-    throw Exception("ForEachLoop::getDelegateOf : not implemented because not specified");
+    throw Exception("ForEachLoopGen::getDelegateOf : not implemented because not specified");
 }
 
-void ForEachLoop::releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(YACS::Exception)
+void ForEachLoopGen::releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView)
 {
   string typeOfPortInstance=portDwn->getNameOfTypeOfCurrentInstance();
   if(typeOfPortInstance==OutputPort::NAME)
@@ -1004,16 +1001,16 @@ void ForEachLoop::releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *f
     }
 }
 
-OutPort *ForEachLoop::getDynOutPortByAbsName(int branchNb, const std::string& name)
+OutPort *ForEachLoopGen::getDynOutPortByAbsName(int branchNb, const std::string& name)
 {
   string portName, nodeName;
   splitNamesBySep(name,Node::SEP_CHAR_IN_PORT,nodeName,portName,false);
   Node *staticChild = getChildByName(nodeName);
-  return _execNodes[branchNb]->getOutPort(portName);//It's impossible(garanteed by YACS::ENGINE::ForEachLoop::buildDelegateOf)
+  return _execNodes[branchNb]->getOutPort(portName);//It's impossible(garanteed by YACS::ENGINE::ForEachLoopGen::buildDelegateOf)
   //that a link starting from _initNode goes out of scope of 'this'.
 }
 
-void ForEachLoop::cleanDynGraph()
+void ForEachLoopGen::cleanDynGraph()
 {
   DynParaLoop::cleanDynGraph();
   for(vector< SequenceAny *>::iterator iter3=_execVals.begin();iter3!=_execVals.end();iter3++)
@@ -1025,7 +1022,7 @@ void ForEachLoop::cleanDynGraph()
   _execOutGoingPorts.clear();
 }
 
-void ForEachLoop::storeOutValsInSeqForOutOfScopeUse(int rank, int branchNb)
+void ForEachLoopGen::storeOutValsInSeqForOutOfScopeUse(int rank, int branchNb)
 {
   vector<AnyInputPort *>::iterator iter;
   int i=0;
@@ -1036,7 +1033,7 @@ void ForEachLoop::storeOutValsInSeqForOutOfScopeUse(int rank, int branchNb)
     }
 }
 
-int ForEachLoop::getFinishedId()
+int ForEachLoopGen::getFinishedId()
 {
   if(!_passedData)
     return _splitterNode.getNumberOfElements();
@@ -1044,7 +1041,7 @@ int ForEachLoop::getFinishedId()
     return _passedData->getNumberOfElementsToDo();
 }
 
-void ForEachLoop::prepareSequenceValues(int sizeOfSamples)
+void ForEachLoopGen::prepareSequenceValues(int sizeOfSamples)
 {
   _execVals.resize(_outGoingPorts.size());
   vector<AnySplitOutputPort *>::iterator iter=_outGoingPorts.begin();
@@ -1052,7 +1049,7 @@ void ForEachLoop::prepareSequenceValues(int sizeOfSamples)
     _execVals[i]=SequenceAny::New((*iter)->edGetType()->contentType(),sizeOfSamples);
 }
 
-void ForEachLoop::pushAllSequenceValues()
+void ForEachLoopGen::pushAllSequenceValues()
 {
   vector<AnySplitOutputPort *>::iterator iter=_outGoingPorts.begin();
   int i=0;
@@ -1060,7 +1057,7 @@ void ForEachLoop::pushAllSequenceValues()
     (*iter)->put((const void *)_execVals[i]);
 }
 
-void ForEachLoop::createOutputOutOfScopeInterceptors(int branchNb)
+void ForEachLoopGen::createOutputOutOfScopeInterceptors(int branchNb)
 {
   vector<AnySplitOutputPort *>::iterator iter=_outGoingPorts.begin();
   int i=0;
@@ -1077,35 +1074,30 @@ void ForEachLoop::createOutputOutOfScopeInterceptors(int branchNb)
     }
 }
 
-void ForEachLoop::checkLinkPossibility(OutPort *start, const std::list<ComposedNode *>& pointsOfViewStart,
-                                       InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd) throw(YACS::Exception)
+void ForEachLoopGen::checkLinkPossibility(OutPort *start, const std::list<ComposedNode *>& pointsOfViewStart,
+                                       InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd)
 {
   DynParaLoop::checkLinkPossibility(start, pointsOfViewStart, end, pointsOfViewEnd);
   if(end->getNode() == &_splitterNode)
     throw Exception("Illegal link within a foreach loop: \
 the 'SmplsCollection' port cannot be linked within the scope of the loop.");
-  if(end == &_nbOfBranches)
+  if(end == _nbOfBranches->getPort())
     throw Exception("Illegal link within a foreach loop: \
 the 'nbBranches' port cannot be linked within the scope of the loop.");
 }
 
-std::list<OutputPort *> ForEachLoop::getLocalOutputPorts() const
+std::list<OutputPort *> ForEachLoopGen::getLocalOutputPorts() const
 {
   list<OutputPort *> ret;
   ret.push_back(getOutputPort(NAME_OF_SPLITTED_SEQ_OUT)); 
   return ret;
 }
 
-void ForEachLoop::accept(Visitor *visitor)
-{
-  visitor->visitForEachLoop(this);
-}
-
 //! Dump the node state to a stream
 /*!
  * \param os : the output stream
  */
-void ForEachLoop::writeDot(std::ostream &os) const
+void ForEachLoopGen::writeDot(std::ostream &os) const
 {
   os << "  subgraph cluster_" << getId() << "  {\n" ;
   //only one node in a loop
@@ -1123,7 +1115,7 @@ void ForEachLoop::writeDot(std::ostream &os) const
 }
 
 //! Reset the state of the node and its children depending on the parameter level
-void ForEachLoop::resetState(int level)
+void ForEachLoopGen::resetState(int level)
 {
   if(level==0)return;
   DynParaLoop::resetState(level);
@@ -1131,7 +1123,7 @@ void ForEachLoop::resetState(int level)
   cleanDynGraph();
 }
 
-std::string ForEachLoop::getProgress() const
+std::string ForEachLoopGen::getProgress() const
 {
   int nbElems(getNbOfElementsToBeProcessed());
   std::stringstream aProgress;
@@ -1147,7 +1139,7 @@ std::string ForEachLoop::getProgress() const
  * Only elementary nodes have weight. For each node in the loop, the weight done is multiplied
  * by the number of elements done and the weight total by the number total of elements
  */
-list<ProgressWeight> ForEachLoop::getProgressWeight() const
+list<ProgressWeight> ForEachLoopGen::getProgressWeight() const
 {
   list<ProgressWeight> ret;
   list<Node *> setOfNode=edGetDirectDescendants();
@@ -1166,10 +1158,11 @@ list<ProgressWeight> ForEachLoop::getProgressWeight() const
   return ret;
 }
 
-int ForEachLoop::getNbOfElementsToBeProcessed() const
+int ForEachLoopGen::getNbOfElementsToBeProcessed() const
 {
-  int nbBranches = _nbOfBranches.getIntValue();
-  return _splitterNode.getNumberOfElements()
+  int nbOfElems(_splitterNode.getNumberOfElements());
+  int nbBranches = _nbOfBranches->getNumberOfBranches(nbOfElems);
+  return nbOfElems
          + (_initNode ? nbBranches:0)
          + (_finalizeNode ? nbBranches:0) ;
 }
@@ -1188,7 +1181,7 @@ int ForEachLoop::getNbOfElementsToBeProcessed() const
  *
  * \sa edGetSeqOfSamplesPort
  */
-std::vector<unsigned int> ForEachLoop::getPassedResults(Executor *execut, std::vector<SequenceAny *>& outputs, std::vector<std::string>& nameOfOutputs) const
+std::vector<unsigned int> ForEachLoopGen::getPassedResults(Executor *execut, std::vector<SequenceAny *>& outputs, std::vector<std::string>& nameOfOutputs) const
 {
   YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&(execut->getTheMutexForSchedulerUpdate()));
   if(_execVals.empty())
@@ -1211,14 +1204,14 @@ std::vector<unsigned int> ForEachLoop::getPassedResults(Executor *execut, std::v
  * This method is typically useful for post-mortem relaunch to avoid to recompute already passed cases. This method takes in input exactly the parameters retrieved by
  * getPassedResults method.
  */
-void ForEachLoop::assignPassedResults(const std::vector<unsigned int>& passedIds, const std::vector<SequenceAny *>& passedOutputs, const std::vector<std::string>& nameOfOutputs)
+void ForEachLoopGen::assignPassedResults(const std::vector<unsigned int>& passedIds, const std::vector<SequenceAny *>& passedOutputs, const std::vector<std::string>& nameOfOutputs)
 {
   delete _passedData;
   _failedCounter=0;
   _passedData=new ForEachLoopPassedData(passedIds,passedOutputs,nameOfOutputs);
 }
 
-int ForEachLoop::getFEDeltaBetween(OutPort *start, InPort *end)
+int ForEachLoopGen::getFEDeltaBetween(OutPort *start, InPort *end)
 {
   Node *ns(start->getNode()),*ne(end->getNode());
   ComposedNode *co(getLowestCommonAncestor(ns,ne));
@@ -1226,7 +1219,7 @@ int ForEachLoop::getFEDeltaBetween(OutPort *start, InPort *end)
   Node *work(ns);
   while(work!=co)
     {
-      ForEachLoop *isFE(dynamic_cast<ForEachLoop *>(work));
+      ForEachLoopGen *isFE(dynamic_cast<ForEachLoopGen *>(work));
       if(isFE)
         ret++;
       work=work->getFather();
@@ -1240,7 +1233,7 @@ int ForEachLoop::getFEDeltaBetween(OutPort *start, InPort *end)
  * This method is used to obtain the values already processed by the ForEachLoop.
  * A new ForEachLoopPassedData object is returned. You have to delete it.
  */
-ForEachLoopPassedData* ForEachLoop::getProcessedData()const
+ForEachLoopPassedData* ForEachLoopGen::getProcessedData()const
 {
   std::vector<SequenceAny *> outputs;
   std::vector<std::string> nameOfOutputs;
@@ -1258,7 +1251,7 @@ ForEachLoopPassedData* ForEachLoop::getProcessedData()const
   return new ForEachLoopPassedData(_execVals[0]->getSetItems(), outputs, nameOfOutputs);
 }
 
-void ForEachLoop::setProcessedData(ForEachLoopPassedData* processedData)
+void ForEachLoopGen::setProcessedData(ForEachLoopPassedData* processedData)
 {
   if(_passedData)
     delete _passedData;
@@ -1268,7 +1261,7 @@ void ForEachLoop::setProcessedData(ForEachLoopPassedData* processedData)
 /*!
  * \param portName : "interceptorized" name of port.
  */
-const YACS::ENGINE::TypeCode* ForEachLoop::getOutputPortType(const std::string& portName)const
+const YACS::ENGINE::TypeCode* ForEachLoopGen::getOutputPortType(const std::string& portName)const
 {
   const YACS::ENGINE::TypeCode* ret=NULL;
   vector<AnySplitOutputPort *>::const_iterator it;
@@ -1276,11 +1269,31 @@ const YACS::ENGINE::TypeCode* ForEachLoop::getOutputPortType(const std::string& 
   {
     std::string originalPortName(getPortName(*it));
     //InterceptorizeNameOfPort(originalPortName);
-    DEBTRACE("ForEachLoop::getOutputPortType compare " << portName << " == " << originalPortName);
+    DEBTRACE("ForEachLoopGen::getOutputPortType compare " << portName << " == " << originalPortName);
     if(originalPortName == portName)
     {
       ret = (*it)->edGetType()->contentType();
     }
   }
   return ret;
+}
+
+Node *ForEachLoop::simpleClone(ComposedNode *father, bool editionOnly) const
+{
+  return new ForEachLoop(*this,father,editionOnly);
+}
+
+void ForEachLoop::accept(Visitor *visitor)
+{
+  visitor->visitForEachLoop(this);
+}
+
+void ForEachLoopDyn::accept(Visitor *visitor)
+{
+  visitor->visitForEachLoopDyn(this);
+}
+
+Node *ForEachLoopDyn::simpleClone(ComposedNode *father, bool editionOnly) const
+{
+  return new ForEachLoopDyn(*this,father,editionOnly);
 }

@@ -40,6 +40,7 @@ namespace YACS
     class ForLoop;
     class DynParaLoop;
     class ForEachLoop;
+    class ForEachLoopGen;
     class WhileLoop;
     class Switch;
     class OptimizerLoop;
@@ -642,7 +643,7 @@ namespace YACS
     class SubjectForEachLoop: public SubjectDynParaLoop
     {
     public:
-      SubjectForEachLoop(YACS::ENGINE::ForEachLoop *forEachLoop, Subject *parent);
+      SubjectForEachLoop(YACS::ENGINE::ForEachLoopGen *forEachLoop, Subject *parent);
       virtual ~SubjectForEachLoop();
       virtual void completeChildrenSubjectList(SubjectNode *son);
       virtual void removeNode(SubjectNode * child);
@@ -650,7 +651,7 @@ namespace YACS
       void localclean(Command *command=0);
       virtual TypeOfElem getType(){return FOREACHLOOP;}
     protected:
-      YACS::ENGINE::ForEachLoop *_forEachLoop;
+      YACS::ENGINE::ForEachLoopGen *_forEachLoop;
       SubjectNode* _splitter;
     };
 

@@ -45,7 +45,7 @@ namespace YACS
       void *get() const;
       virtual std::string getAsString();
       virtual bool isEmpty();
-      void put(const void *data) throw(ConversionException);
+      void put(const void *data);
       InputPort *clone(Node *newHelder) const;
       std::string dump();
       virtual std::string typeName() {return "YACS__ENGINE__AnyInputPort";}

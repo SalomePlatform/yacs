@@ -96,7 +96,7 @@ void PluginSimplex::takeDecision()
     rien = solv->next();
 }
 
-void PluginSimplex::initialize(const Any *input) throw(YACS::Exception)
+void PluginSimplex::initialize(const Any *input)
 {
 }
 

@@ -44,12 +44,12 @@ namespace YACS
       ~InputCppPort();
       bool edIsManuallyInitialized() const;
       void edRemoveManInit();
-      virtual void put(const void *data) throw(ConversionException);
-      void put(YACS::ENGINE::Any *data) throw(ConversionException);
+      virtual void put(const void *data);
+      void put(YACS::ENGINE::Any *data);
       void releaseData() override;
       InputPort *clone(Node *newHelder) const;
       virtual YACS::ENGINE::Any * getCppObj() const;
-      void *get() const throw(Exception);
+      void *get() const ;
       virtual bool isEmpty();
       virtual void exSaveInit();
       virtual void exRestoreInit();
@@ -65,8 +65,8 @@ namespace YACS
       OutputCppPort(const std::string& name, Node * node, TypeCode * type);
       OutputCppPort(const OutputCppPort& other, Node *newHelder);
       ~OutputCppPort();
-      virtual void put(const void *data) throw(ConversionException);
-      void put(YACS::ENGINE::Any *data) throw(ConversionException);
+      virtual void put(const void *data);
+      void put(YACS::ENGINE::Any *data);
       OutputPort *clone(Node *newHelder) const;
       virtual YACS::ENGINE::Any * get() const;
       virtual std::string dump();

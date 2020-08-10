@@ -41,12 +41,13 @@ IF(NOT WIN32)
     testResume.py
     testSave.py
     testSaveLoadRun.py
-    testHPDecorator.py
     optim_plugin.py
     testValidationChecks.py
     testProgress.py
     testExecForEachGeoMesh.py
     async_plugin.py
+    testWorkloadManager.py
+    testPynodeWithCache.py
    )
   INSTALL(PROGRAMS ${LOCAL_TEST_FILES}
         DESTINATION ${LOCAL_TEST_DIR})

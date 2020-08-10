@@ -38,7 +38,7 @@ XmlCorba::XmlCorba(InputCorbaPort* p)
 {
 }
 
-void XmlCorba::put(const void *data) throw(ConversionException)
+void XmlCorba::put(const void *data)
 {
   DEBTRACE((const char *)data);
   put((const char *)data);
@@ -48,7 +48,7 @@ void XmlCorba::put(const void *data) throw(ConversionException)
  /*!
   *   \param data : Xml::char *
   */
-void XmlCorba::put(const char *data) throw(ConversionException)
+void XmlCorba::put(const char *data)
 {
   DEBTRACE(data);
   xmlDocPtr doc;

@@ -456,31 +456,51 @@ std::vector< std::pair<std::string,int> > RuntimeSALOME::getCatalogOfComputeNode
   }
   catch(SALOME_Exception& e)
   {
-    throw Exception("SalomeContainerToolsSpreadOverTheResDecorator::getParameters : Unable to contact the SALOME Naming Service");
+    throw Exception("RuntimeSALOME::getCatalogOfComputeNodes : Unable to contact the SALOME Naming Service");
   }
   CORBA::Object_var obj(namingService.Resolve(SALOME_ResourcesManager::_ResourcesManagerNameInNS));
   if(CORBA::is_nil(obj))
-    throw Exception("SalomeContainerToolsSpreadOverTheResDecorator::getParameters : Unable to access to the resource manager !");
+    throw Exception("RuntimeSALOME::getCatalogOfComputeNodes : Unable to access to the resource manager !");
   Engines::ResourcesManager_var resManager(Engines::ResourcesManager::_narrow(obj));
   if(CORBA::is_nil(resManager))
-    throw Exception("SalomeContainerToolsSpreadOverTheResDecorator::getParameters : Internal error ! The entry attached to the res manager in NS does not have right type !");
+    throw Exception("RuntimeSALOME::getCatalogOfComputeNodes : Internal error ! The entry attached to the res manager in NS does not have right type !");
   std::vector< std::pair<std::string,int> > ret;
+  Engines::ResourceParameters params;
+  params.name = "";
+  params.hostname = "";
+  params.OS = "";
+  params.nb_proc = 0;
+  params.mem_mb = 0;
+  params.cpu_clock = 0;
+  params.nb_node = 0;
+  params.nb_proc_per_node = 0;
+  params.policy = "";
+  params.can_launch_batch_jobs = false;
+  params.can_run_containers = true;
+  params.componentList.length(0);
+  try
   {
-    Engines::ResourceList *rl(0);
-    Engines::IntegerList *il(0);
-    resManager->ListAllAvailableResources(rl,il);
-    int sz(rl->length());
-    if(il->length()!=sz)
-      throw Exception("SalomeContainerToolsSpreadOverTheResDecorator::getParameters : Internal error ! Invalid size !");
-    ret.resize(sz);
-    for(int i=0;i<sz;i++)
-      {
-        std::string s((*rl)[i]);
-        ret[i]=std::pair<std::string,int>(s,(*il)[i]);
-      }
-    delete rl;
-    delete il;
+    Engines::ResourceList_var resourceList;
+    resourceList = resManager->GetFittingResources(params);
+    ret.reserve(resourceList->length());
+    for(int i = 0; i<resourceList->length(); i++)
+    {
+      const char* resource_name = resourceList[i];
+      std::string std_resource_name = resource_name;
+      Engines::ResourceDefinition_var resource_definition
+                              = resManager->GetResourceDefinition(resource_name);
+      int nb_cores = resource_definition->nb_node *
+                     resource_definition->nb_proc_per_node;
+      ret.push_back(std::pair<std::string,int>(resource_name, nb_cores));
+    }
   }
+  catch(SALOME::SALOME_Exception& e)
+  {
+    std::string message;
+    message=e.details.text.in();
+    throw Exception(message);
+  }
+
   return ret;
 }
 
@@ -774,7 +794,7 @@ OutputDataStreamPort* RuntimeSALOME::createOutputDataStreamPort(const std::strin
  */
 InputPort* RuntimeSALOME::adapt(InputPort* source,
                                 const std::string& impl,
-                                TypeCode * type,bool init) throw (ConversionException)
+                                TypeCode * type,bool init)
 {
   string imp_source=source->getNode()->getImplementation();
   if(imp_source == PythonNode::IMPL_NAME)
@@ -817,7 +837,7 @@ InputPort* RuntimeSALOME::adapt(InputPort* source,
  */
 InputPort* RuntimeSALOME::adapt(InPropertyPort* source,
                                 const std::string& impl,
-                                TypeCode * type,bool init) throw (ConversionException)
+                                TypeCode * type,bool init)
 {
   return adaptNeutral((InputPort *)source,impl,type,init);
 }
@@ -829,7 +849,7 @@ InputPort* RuntimeSALOME::adapt(InPropertyPort* source,
  *   \return an adaptated input port of type InputCorbaPort
  */
 InputPort* RuntimeSALOME::adaptNeutralToCorba(InputPort* inport,
-                      TypeCode * type) throw (ConversionException)
+                      TypeCode * type)
 {
   // BEWARE : using the generic check
   if(inport->edGetType()->isAdaptable(type))
@@ -854,7 +874,7 @@ InputPort* RuntimeSALOME::adaptNeutralToCorba(InputPort* inport,
  *   \return an adaptated input port of type InputPyPort
  */
 InputPort* RuntimeSALOME::adaptNeutralToPython(InputPort* inport,
-                      TypeCode * type) throw (ConversionException)
+                      TypeCode * type)
 {
   // BEWARE : using the generic check
   if(inport->edGetType()->isAdaptable(type))
@@ -884,7 +904,7 @@ InputPort* RuntimeSALOME::adaptNeutralToPython(InputPort* inport,
  *   \return an input port of type InputXmlPort
  */
 InputPort* RuntimeSALOME::adaptNeutralToXml(InputPort* inport,
-                      TypeCode * type) throw (ConversionException)
+                      TypeCode * type)
 {
   // BEWARE : using the generic check
   if(inport->edGetType()->isAdaptable(type))
@@ -909,7 +929,7 @@ InputPort* RuntimeSALOME::adaptNeutralToXml(InputPort* inport,
  *   \return an input port of type InputCppPort
  */
 InputPort* RuntimeSALOME::adaptNeutralToCpp(InputPort* inport,
-                      TypeCode * type) throw (ConversionException)
+                      TypeCode * type)
 {
   DEBTRACE("RuntimeSALOME::adaptNeutralToCpp(InputPort* inport" );
   if(isAdaptableNeutralCpp(type,inport->edGetType()))
@@ -937,7 +957,7 @@ InputPort* RuntimeSALOME::adaptNeutralToCpp(InputPort* inport,
  */
 InputPort* RuntimeSALOME::adaptNeutral(InputPort* source,
                                        const std::string& impl,
-                                       TypeCode * type,bool init) throw (ConversionException)
+                                       TypeCode * type,bool init)
 {
   if(impl == CppNode::IMPL_NAME)
     {
@@ -976,7 +996,7 @@ InputPort* RuntimeSALOME::adaptNeutral(InputPort* source,
  */
 
 InputPort* RuntimeSALOME::adaptXmlToCorba(InputXmlPort* inport,
-                                          TypeCode * type) throw (ConversionException)
+                                          TypeCode * type)
 {
   if(isAdaptableXmlCorba(type,inport->edGetType()))
     {
@@ -1000,7 +1020,7 @@ InputPort* RuntimeSALOME::adaptXmlToCorba(InputXmlPort* inport,
  *   \return an adaptated input port of type InputPyPort
  */
 InputPort* RuntimeSALOME::adaptXmlToPython(InputXmlPort* inport,
-                      TypeCode * type) throw (ConversionException)
+                      TypeCode * type)
 {
   if(inport->edGetType()->isAdaptable(type))
     {
@@ -1024,7 +1044,7 @@ InputPort* RuntimeSALOME::adaptXmlToPython(InputXmlPort* inport,
  *   \return an adaptated input port of type InputPyPort
  */
 InputPort* RuntimeSALOME::adaptXmlToCpp(InputXmlPort* inport,
-                      TypeCode * type) throw (ConversionException)
+                      TypeCode * type)
 {
   DEBTRACE("RuntimeSALOME::adaptXmlToCpp(InputPort* inport" );
   DEBTRACE(type->kind() << "   " << inport->edGetType()->kind() );
@@ -1050,7 +1070,7 @@ InputPort* RuntimeSALOME::adaptXmlToCpp(InputXmlPort* inport,
  *   \return an adaptated input port of type Neutralxxxx
  */
 InputPort* RuntimeSALOME::adaptXmlToNeutral(InputXmlPort* inport,
-                      TypeCode * type) throw (ConversionException)
+                      TypeCode * type)
 {
   if(inport->edGetType()->isAdaptable(type))
     {
@@ -1072,7 +1092,7 @@ InputPort* RuntimeSALOME::adaptXmlToNeutral(InputXmlPort* inport,
  *   \return an adaptated input port of type Xmlxxxx
  */
 InputPort* RuntimeSALOME::adaptXmlToXml(InputXmlPort* inport,
-                      TypeCode * type,bool init) throw (ConversionException)
+                      TypeCode * type,bool init)
 {
   if(init)
     return new ProxyPort(inport);
@@ -1100,7 +1120,7 @@ InputPort* RuntimeSALOME::adaptXmlToXml(InputXmlPort* inport,
 
 InputPort* RuntimeSALOME::adapt(InputXmlPort* source,
                                 const std::string& impl,
-                                TypeCode * type,bool init) throw (ConversionException)
+                                TypeCode * type,bool init)
 {
   if(impl == CORBANode::IMPL_NAME)
     {
@@ -1139,7 +1159,7 @@ InputPort* RuntimeSALOME::adapt(InputXmlPort* source,
  *   \return an adaptator port of type InputCORBAPort 
  */
 InputPort* RuntimeSALOME::adaptCorbaToCorba(InputCorbaPort* inport,
-                                            TypeCode * type) throw (ConversionException)
+                                            TypeCode * type)
 {
   if(type->isA(inport->edGetType()))
     {
@@ -1171,7 +1191,7 @@ InputPort* RuntimeSALOME::adaptCorbaToCorba(InputCorbaPort* inport,
  */
 
 InputPort* RuntimeSALOME::adaptCorbaToPython(InputCorbaPort* inport,
-                                             TypeCode * type) throw (ConversionException)
+                                             TypeCode * type)
 {
   if(inport->edGetType()->kind() == Double)
     {
@@ -1250,7 +1270,7 @@ InputPort* RuntimeSALOME::adaptCorbaToPython(InputCorbaPort* inport,
  */
 
 InputPort* RuntimeSALOME::adaptCorbaToXml(InputCorbaPort* inport,
-                                          TypeCode * type) throw (ConversionException)
+                                          TypeCode * type)
 {
   // BEWARE : using the generic check
   if(inport->edGetType()->isAdaptable(type))
@@ -1276,7 +1296,7 @@ InputPort* RuntimeSALOME::adaptCorbaToXml(InputCorbaPort* inport,
  */
 
 InputPort* RuntimeSALOME::adaptCorbaToCpp(InputCorbaPort* inport,
-                                          TypeCode * type) throw (ConversionException)
+                                          TypeCode * type)
 {
   DEBTRACE("RuntimeSALOME::adaptCorbaToCpp(InputCorbaPort* inport" );
   if(isAdaptableCorbaCpp(type,inport->edGetType()))
@@ -1302,7 +1322,7 @@ InputPort* RuntimeSALOME::adaptCorbaToCpp(InputCorbaPort* inport,
  */
 
 InputPort* RuntimeSALOME::adaptCorbaToNeutral(InputCorbaPort* inport,
-                                              TypeCode * type) throw (ConversionException)
+                                              TypeCode * type)
 {
   if(inport->edGetType()->kind() == Double)
     {
@@ -1362,7 +1382,7 @@ InputPort* RuntimeSALOME::adaptCorbaToNeutral(InputCorbaPort* inport,
 
 InputPort* RuntimeSALOME::adapt(InputCorbaPort* source,
                                 const std::string& impl,
-                                TypeCode * type,bool init) throw (ConversionException)
+                                TypeCode * type,bool init)
 {
   if(impl == CppNode::IMPL_NAME)
     {
@@ -1407,7 +1427,7 @@ InputPort* RuntimeSALOME::adapt(InputCorbaPort* source,
  */
 
 InputPort* RuntimeSALOME::adaptPythonToPython(InputPyPort* inport,
-                                              TypeCode * type,bool init) throw (ConversionException)
+                                              TypeCode * type,bool init)
 {
   if(init)
     return new PyInit(inport);
@@ -1437,7 +1457,7 @@ InputPort* RuntimeSALOME::adaptPythonToPython(InputPyPort* inport,
  */
 
 InputPort* RuntimeSALOME::adaptPythonToCpp(InputPyPort* inport,
-                                           TypeCode * type) throw (ConversionException)
+                                           TypeCode * type)
 {
   DEBTRACE("RuntimeSALOME::adaptPythonToCpp(InputPyPort* inport" );
   if(isAdaptablePyObjectCpp(type,inport->edGetType()))
@@ -1463,7 +1483,7 @@ InputPort* RuntimeSALOME::adaptPythonToCpp(InputPyPort* inport,
  */
 
 InputPort* RuntimeSALOME::adaptPythonToNeutral(InputPyPort* inport,
-                                               TypeCode * type) throw (ConversionException)
+                                               TypeCode * type)
 {
   if(inport->edGetType()->kind() == Double)
     {
@@ -1521,7 +1541,7 @@ InputPort* RuntimeSALOME::adaptPythonToNeutral(InputPyPort* inport,
  */
 
 InputPort* RuntimeSALOME::adaptPythonToCorba(InputPyPort* inport,
-                                             TypeCode * type) throw (ConversionException)
+                                             TypeCode * type)
 {
   if(inport->edGetType()->kind() == Double)
     {
@@ -1599,7 +1619,7 @@ InputPort* RuntimeSALOME::adaptPythonToCorba(InputPyPort* inport,
  */
 
 InputPort* RuntimeSALOME::adaptPythonToXml(InputPyPort* inport,
-                                          TypeCode * type) throw (ConversionException)
+                                          TypeCode * type)
 {
   // BEWARE : using the generic check
   if(inport->edGetType()->isAdaptable(type))
@@ -1628,7 +1648,7 @@ InputPort* RuntimeSALOME::adaptPythonToXml(InputPyPort* inport,
 
 InputPort* RuntimeSALOME::adapt(InputPyPort* source,
                                 const std::string& impl,
-                                TypeCode * type,bool init) throw (ConversionException)
+                                TypeCode * type,bool init)
 {
   if(impl == CppNode::IMPL_NAME)
     {
@@ -1668,7 +1688,7 @@ InputPort* RuntimeSALOME::adapt(InputPyPort* source,
  */
 
 InputPort* RuntimeSALOME::adaptCppToCorba(InputCppPort* inport,
-                                          TypeCode * type) throw (ConversionException)
+                                          TypeCode * type)
 {
   DEBTRACE("RuntimeSALOME::adaptCppToCorba(InputCppPort* inport)");
   if(isAdaptableCppCorba(type,inport->edGetType()))
@@ -1693,7 +1713,7 @@ InputPort* RuntimeSALOME::adaptCppToCorba(InputCppPort* inport,
  *   \return an adaptated input port of type InputPyPort
  */
 InputPort* RuntimeSALOME::adaptCppToPython(InputCppPort* inport,
-                      TypeCode * type) throw (ConversionException)
+                      TypeCode * type)
 {
   DEBTRACE("RuntimeSALOME::adaptCppToPython(InputCppPort* inport)");
   if(isAdaptableCppPyObject(type,inport->edGetType()))
@@ -1718,7 +1738,7 @@ InputPort* RuntimeSALOME::adaptCppToPython(InputCppPort* inport,
  *   \return an adaptated input port of type InputPyPort
  */
 InputPort* RuntimeSALOME::adaptCppToCpp(InputCppPort* inport,
-                      TypeCode * type) throw (ConversionException)
+                      TypeCode * type)
 {
   DEBTRACE("RuntimeSALOME::adaptCppToCpp(InputPort* inport" );
   DEBTRACE(type->kind() << "   " << inport->edGetType()->kind() );
@@ -1744,7 +1764,7 @@ InputPort* RuntimeSALOME::adaptCppToCpp(InputCppPort* inport,
  *   \return an adaptated input port of type InputPyPort
  */
 InputPort* RuntimeSALOME::adaptCppToNeutral(InputCppPort* inport,
-                      TypeCode * type) throw (ConversionException)
+                      TypeCode * type)
 {
   DEBTRACE("RuntimeSALOME::adaptCppToNeutral(InputPort* inport" );
   DEBTRACE(type->kind() << "   " << inport->edGetType()->kind() );
@@ -1764,7 +1784,7 @@ InputPort* RuntimeSALOME::adaptCppToNeutral(InputCppPort* inport,
 }
 
 InputPort* RuntimeSALOME::adaptCppToXml(InputCppPort* inport,
-                      TypeCode * type) throw (ConversionException)
+                      TypeCode * type)
 {
   DEBTRACE("RuntimeSALOME::adaptCppToXml(InputCppPort* inport" );
   if(isAdaptableCppXml(type,inport->edGetType()))
@@ -1793,7 +1813,7 @@ InputPort* RuntimeSALOME::adaptCppToXml(InputCppPort* inport,
 
 InputPort* RuntimeSALOME::adapt(InputCppPort* source,
                                 const std::string& impl,
-                                TypeCode * type,bool init) throw (ConversionException)
+                                TypeCode * type,bool init)
 {
   DEBTRACE("RuntimeSALOME::adapt(InputCppPort* source)");
   if(impl == CORBANode::IMPL_NAME)

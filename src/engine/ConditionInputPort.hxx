@@ -45,8 +45,8 @@ namespace YACS
       void edNotifyReferencedBy(OutPort *fromPort, bool isLoopProof) override;
       void edNotifyDereferencedBy(OutPort *fromPort);
       void *get() const;
-      virtual void put(const void *data) throw(ConversionException);
-      void put(Any *data) throw(ConversionException);
+      virtual void put(const void *data);
+      void put(Any *data);
       void releaseData() override;
       std::string dump();
       virtual std::string getAsString();

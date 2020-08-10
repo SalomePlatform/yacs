@@ -36,7 +36,7 @@ XmlNeutral::XmlNeutral(InputPort* p)
 {
 }
 
-void XmlNeutral::put(const void *data) throw(ConversionException)
+void XmlNeutral::put(const void *data)
 {
   DEBTRACE(" XmlNeutral::put(const void *data)");
   put((const char *)data);
@@ -47,7 +47,7 @@ void XmlNeutral::put(const void *data) throw(ConversionException)
   *   \param data : Xml::char *
   */
 
-void XmlNeutral::put(const char *data) throw(ConversionException)
+void XmlNeutral::put(const char *data)
 {
   DEBTRACE("XmlNeutral::put " << data);
   xmlDocPtr doc;

@@ -27,22 +27,60 @@
 
 #include <vector>
 #include <string>
+#include <mutex>
 #include <map>
 
 namespace YACS
 {
   namespace ENGINE
   {
-    class PartDefinition;   
+    class PartDefinition;
+
+    class YACSLIBENGINE_EXPORT Resource
+    {
+    public:
+      Resource(const std::string& name, int nbCores):_name(name),_nbCores(nbCores),_occupied(_nbCores,false) { }
+      Resource(const std::pair<std::string,int>& p):_name(p.first),_nbCores(p.second),_occupied(_nbCores,false) { }
+      std::pair<std::string,int> toPair() const { return {_name,_nbCores}; }
+      int nbCores() const { return _nbCores; }
+      std::string name() const { return _name; }
+      std::size_t getNumberOfFreePlace(int nbCoresPerCont) const;
+      std::vector<std::size_t> allocateFor(std::size_t& nbOfPlacesToTake, int nbCoresPerCont) const;
+      void release(std::size_t workerId, int nbCoresPerCont) const;
+      std::size_t getNumberOfWorkers(int nbCoresPerCont) const;
+      void printSelf(std::ostream& oss) const;
+    private:
+      std::string _name;
+      int _nbCores;
+      mutable std::vector<bool> _occupied;
+    };
+
+
+    class ResourceIterator : public std::iterator<
+                        std::input_iterator_tag,     // iterator_category
+                        Resource,                    // value_type
+                        long,                        // difference_type
+                        const Resource*,             // pointer
+                        std::pair<std::string,int> > // reference
+    {
+      const std::vector< Resource > *_vec;
+      std::size_t _num;
+    public:
+      explicit ResourceIterator(const std::vector< Resource > *vec, const std::size_t num) : _vec(vec),_num(num) { }
+      ResourceIterator& operator++() { _num++; return *this; }
+      bool operator==(ResourceIterator other) const { return _num == other._num; }
+      bool operator!=(ResourceIterator other) const { return !(*this == other); }
+      reference operator*() const { return (*_vec)[_num].toPair(); }
+    };
     
     class YACSLIBENGINE_EXPORT PlayGround : public RefCounter
     {
     public:
-      PlayGround(const std::vector< std::pair<std::string,int> >& defOfRes):_data(defOfRes) { checkCoherentInfo(); }
+      PlayGround(const std::vector< std::pair<std::string,int> >& defOfRes):_data(defOfRes.begin(),defOfRes.end()) { checkCoherentInfo(); }
       PlayGround() { }
       std::string printSelf() const;
       void loadFromKernelCatalog();
-      std::vector< std::pair<std::string,int> > getData() const { return _data; }
+      std::vector< std::pair<std::string,int> > getData() const { return std::vector< std::pair<std::string,int> >(ResourceIterator(&_data,0),ResourceIterator(&_data,_data.size())); }
       void setData(const std::vector< std::pair<std::string,int> >& defOfRes);
       int getNumberOfCoresAvailable() const;
       int getMaxNumberOfContainersCanBeHostedWithoutOverlap(int nbCoresPerCont) const;
@@ -56,6 +94,12 @@ namespace YACS
       std::vector<std::size_t> getWorkerIdsFullyFetchedBy(int nbCoresPerComp, const std::vector<bool>& coreFlags) const;
       static std::vector<int> BuildVectOfIdsFromVecBool(const std::vector<bool>& v);
       static std::vector<int> GetIdsMatching(const std::vector<bool>& bigArr, const std::vector<bool>& pat);
+    public:// critical section part
+      std::size_t getNumberOfFreePlace(int nbCoresPerCont) const;
+      std::vector<std::size_t> allocateFor(std::size_t nbOfPlacesToTake, int nbCoresPerCont) const;
+      void release(std::size_t workerId, int nbCoresPerCont) const;
+      std::mutex& getLocker() const { return _locker; }
+      void printMe() const;
     private:
       std::vector< std::pair <const ComplexWeight *, int> > bigToTiny(const std::vector< std::pair <const ComplexWeight *, int> > &weights, std::map<int,int> &saveOrder) const;
 	  std::vector< std::vector<int> > backToOriginalOrder(const std::vector< std::vector<int> > &disorderVec, const std::map<int,int> &saveOrder) const;
@@ -67,7 +111,8 @@ namespace YACS
     private:
       ~PlayGround();
     private:
-      std::vector< std::pair<std::string,int> > _data;
+      mutable std::mutex _locker;
+      std::vector< Resource > _data;
     };
 
     class YACSLIBENGINE_EXPORT PartDefinition : public RefCounter

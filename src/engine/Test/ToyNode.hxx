@@ -36,10 +36,10 @@ namespace YACS
       InputToyPort(const InputToyPort& other, Node *newHelder);
       InputToyPort(const std::string& name, Node *node);
       void releaseData() override;
-      void put(const void *data) throw(ConversionException);
+      void put(const void *data);
       InputPort *clone(Node *newHelder) const;
       bool edIsManuallyInitialized() const;
-      void *get() const throw(Exception);
+      void *get() const ;
       void edRemoveManInit();
       void put(Any *data);
       ~InputToyPort();
@@ -56,7 +56,7 @@ namespace YACS
     public:
       OutputToyPort(const std::string& name, Node *node, TypeCode *type);
       OutputToyPort(const OutputToyPort& other, Node *newHelder);
-      void put(const void *data) throw(ConversionException);
+      void put(const void *data);
       OutputPort *clone(Node *newHelder) const;
       void put(Any *data);
       ~OutputToyPort();
@@ -77,7 +77,7 @@ namespace YACS
       OutputPort *edGetNbOfInputsOutputPort() { return &_nbOfInputsPort; }
       std::list<OutputPort *> getSetOfOutputPort() const;
       int getNumberOfOutputPorts()const;
-      OutputPort *getOutputPort(const std::string& name) const throw(Exception);
+      OutputPort *getOutputPort(const std::string& name) const ;
     protected:
       Node *simpleClone(ComposedNode *father, bool editionOnly) const;
     public:
@@ -126,10 +126,10 @@ namespace YACS
       InputPort *edGetInIntValue() const { return (InputPort *)&_inIntValue; }
       int getNumberOfInputPorts() const;
       std::list<InputPort *> getSetOfInputPort() const;
-      InputPort *getInputPort(const std::string& name) const throw(Exception);
+      InputPort *getInputPort(const std::string& name) const ;
       int getNumberOfOutputPorts() const;
       std::list<OutputPort *> getSetOfOutputPort() const;
-      OutputPort *getOutputPort(const std::string& name) const throw(Exception);
+      OutputPort *getOutputPort(const std::string& name) const ;
     protected:
       Node *simpleClone(ComposedNode *father, bool editionOnly) const;
     public:
@@ -152,10 +152,10 @@ namespace YACS
       InputPort *edGetInValue2() const { return (InputPort *)&_inValue2; }
       int getNumberOfInputPorts() const;
       std::list<InputPort *> getSetOfInputPort() const;
-      InputPort *getInputPort(const std::string& name) const throw(Exception);
+      InputPort *getInputPort(const std::string& name) const ;
       int getNumberOfOutputPorts() const;
       std::list<OutputPort *> getSetOfOutputPort() const;
-      OutputPort *getOutputPort(const std::string& name) const throw(Exception);
+      OutputPort *getOutputPort(const std::string& name) const ;
     protected:
       Node *simpleClone(ComposedNode *father, bool editionOnly) const;
     public:
@@ -179,10 +179,10 @@ namespace YACS
       InputPort *edGetInValue2() const { return (InputPort *)&_inValue2; }
       int getNumberOfInputPorts() const;
       std::list<InputPort *> getSetOfInputPort() const;
-      InputPort *getInputPort(const std::string& name) const throw(Exception);
+      InputPort *getInputPort(const std::string& name) const ;
       int getNumberOfOutputPorts() const;
       std::list<OutputPort *> getSetOfOutputPort() const;
-      OutputPort *getOutputPort(const std::string& name) const throw(Exception);
+      OutputPort *getOutputPort(const std::string& name) const ;
     protected:
       Node *simpleClone(ComposedNode *father, bool editionOnly) const;
     public:
@@ -197,10 +197,10 @@ namespace YACS
     {
       friend class LimitNode;
     public:
-      void put(const void *data) throw(ConversionException);
+      void put(const void *data);
       InputPort *clone(Node *newHelder) const;
       bool edIsManuallyInitialized() const;
-      void *get() const throw(Exception);
+      void *get() const ;
       void edRemoveManInit();
       void releaseData() override;
       void put(Any *data);
@@ -220,7 +220,7 @@ namespace YACS
     {
       friend class LimitNode;
     public:
-      void put(const void *data) throw(ConversionException);
+      void put(const void *data);
       OutputPort *clone(Node *newHelder) const;
       void put(Any *data);
       ~OutputLimitPort();
@@ -249,8 +249,8 @@ namespace YACS
       OutputPort *getCounterPort() { return &_counterPort; }
       std::list<InputPort *> getSetOfInputPort() const;
       std::list<OutputPort *> getSetOfOutputPort() const;
-      InputPort *getInputPort(const std::string& name) const throw(Exception);
-      OutputPort *getOutputPort(const std::string& name) const throw(Exception);
+      InputPort *getInputPort(const std::string& name) const ;
+      OutputPort *getOutputPort(const std::string& name) const ;
       LimitNode(const LimitNode& other, ComposedNode *father);
       LimitNode(const std::string& name);
     protected:

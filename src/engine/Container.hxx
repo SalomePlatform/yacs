@@ -50,7 +50,13 @@ namespace YACS
       //Execution only methods
       virtual std::string getDiscreminantStrOfThis(const Task *askingNode) const;
       virtual bool isAlreadyStarted(const Task *askingNode) const = 0;
-      virtual void start(const Task *askingNode) throw(Exception) = 0;
+      virtual void start(const Task *askingNode)  = 0;
+      virtual void start(const Task *askingNode,
+                         const std::string& resource_name,
+                         const std::string& container_name);
+      virtual bool canAcceptImposedResource();
+      virtual bool isUsingPythonCache();
+      virtual void usePythonCache(bool v);
       virtual std::string getPlacementId(const Task *askingNode) const = 0;
       virtual std::string getFullPlacementId(const Task *askingNode) const = 0;
       //Edition only methods
@@ -64,7 +70,7 @@ namespace YACS
       virtual Container *clone() const = 0;
       virtual Container *cloneAlways() const = 0;
       virtual bool isSupportingRTODefNbOfComp() const;
-      virtual void checkCapabilityToDealWith(const ComponentInstance *inst) const throw(Exception) = 0;
+      virtual void checkCapabilityToDealWith(const ComponentInstance *inst) const  = 0;
       virtual void setProperty(const std::string& name,const std::string& value) = 0;
       virtual std::string getProperty(const std::string& name) const = 0;
       virtual void clearProperties() = 0;
@@ -80,6 +86,7 @@ namespace YACS
       virtual void shutdown(int level) = 0;
       static const char KIND_ENTRY[];
       static const char AOC_ENTRY[];
+      static const char USE_PYCACHE_PROPERTY[];
     protected:
       std::string _name;
       mutable bool _isAttachedOnCloning;

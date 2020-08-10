@@ -31,12 +31,14 @@ ADD_DEFINITIONS(
 INCLUDE_DIRECTORIES(
   ${PTHREAD_INCLUDE_DIR}
   ${PROJECT_SOURCE_DIR}/src/bases
+  ${PROJECT_SOURCE_DIR}/src
   )
 
 # libraries to link to
 SET(_link_LIBRARIES
   ${PTHREAD_LIBRARIES}
   YACSBases
+  YACSlibWorkloadmanager
   )
 
 # --- headers ---
@@ -113,6 +115,8 @@ SET(YACSlibEngine_HEADERS
   SetOfPoints.hxx
   PlayGround.hxx
   ObserverAsPlugin.hxx
+  NbBranches.hxx
+  WlmTask.hxx
   )
 
 # --- sources ---
@@ -156,6 +160,7 @@ SET(YACSlibEngine_SOURCES
   WhileLoop.cxx
   Switch.cxx
   DynParaLoop.cxx
+  NbBranches.cxx
   ForEachLoop.cxx
   OptimizerAlg.cxx
   OptimizerLoop.cxx
@@ -190,6 +195,7 @@ SET(YACSlibEngine_SOURCES
   PlayGround.cxx
   ComplexWeight.cxx
   ObserverAsPlugin.cxx
+  WlmTask.cxx
   )
 SET(YACSlibEngine_HEADERS ${YACSlibEngine_HEADERS} PARENT_SCOPE)  # Make it visible to src/engine_swig to handle dependencies
 

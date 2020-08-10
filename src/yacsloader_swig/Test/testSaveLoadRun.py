@@ -43,10 +43,12 @@ class TestSaveLoadRun(unittest.TestCase):
     p=self.r.createProc("prTest0")
     td=p.createType("double","double")
     ti=p.createType("int","int")
+    pg=pilot.PlayGround()
+    pg.setData([("localhost",4)])
     cont=p.createContainer("gg","HPSalome")
-    cont.setSizeOfPool(4)
     cont.setProperty("name","localhost")
     cont.setProperty("hostname","localhost")
+    cont.setProperty("nb_proc_per_node","1")
     script0="""
 def ff(nb,dbg):
     from math import cos
@@ -111,6 +113,7 @@ print("coucou from script1-%i  -> %s"%(dbg,str(datetime.datetime.now()-ref)))
     ex=pilot.ExecutorSwig()
     self.assertEqual(p.getState(),pilot.READY)
     st=datetime.datetime.now()
+    p.propagePlayGround(pg)
     # 1st exec
     ex.RunW(p,0)
     print("Time spend of test0 to run 1st %s"%(str(datetime.datetime.now()-st)))
@@ -136,11 +139,13 @@ print("coucou from script1-%i  -> %s"%(dbg,str(datetime.datetime.now()-ref)))
     p=self.r.createProc("prTest1")
     td=p.createType("double","double")
     ti=p.createType("int","int")
+    pg=pilot.PlayGround()
+    pg.setData([("localhost",4)])
     cont=p.createContainer("gg","HPSalome")
-    cont.setSizeOfPool(4)
     cont.setProperty("InitializeScriptKey","aa=123.456")
     cont.setProperty("name","localhost")
     cont.setProperty("hostname","localhost")
+    cont.setProperty("nb_proc_per_node","1")
     script0="""
 def ff(nb,dbg):
     from math import cos
@@ -197,6 +202,7 @@ aa+=1.
     p.saveSchema(fname)
     p=l.load(fname)
     self.assertEqual(p.edGetDirectDescendants()[0].getContainer().getProperty("InitializeScriptKey"),"aa=123.456")
+    p.propagePlayGround(pg)
     # 1st exec
     ex=pilot.ExecutorSwig()
     self.assertEqual(p.getState(),pilot.READY)
@@ -247,11 +253,13 @@ o3=0
     ti=p.createType("int","int")
     tdi=p.createSequenceTc("seqint","seqint",ti)
     tdd=p.createSequenceTc("seqdouble","seqdouble",td)
+    pg=pilot.PlayGround()
+    pg.setData([("localhost",4)])
     cont=p.createContainer("gg","HPSalome")
-    cont.setSizeOfPool(4)
     cont.setProperty("InitializeScriptKey","aa=123.456")
     cont.setProperty("name","localhost")
     cont.setProperty("hostname","localhost")
+    cont.setProperty("nb_proc_per_node","1")
     #
     node0=self.r.createFuncNode("Salome","PyFunction0") # PyFuncNode remote
     p.edAddChild(node0)
@@ -293,6 +301,7 @@ o3=0
     # 1st exec
     refExpected=16016013.514623128
     ex=pilot.ExecutorSwig()
+    p.propagePlayGround(pg)
     self.assertEqual(p.getState(),pilot.READY)
     st=datetime.datetime.now()
     ex.RunW(p,0)
@@ -315,14 +324,18 @@ o3=0
 
   def test3(self):
     """ Test that focuses on parallel load of containers."""
-    script0="""def ff():
-    global aa
-    print("%%lf - %%s"%%(aa,str(my_container)))
-    return 100*[%i],0
+    script0="""
+if "aa" not in globals():
+  aa=123.456
+print("%%lf - %%s"%%(aa,str(my_container)))
+o1=100*[%i]
+o2=0
 """
     script1="""from math import cos
 import datetime
 ref=datetime.datetime.now()
+if "aa" not in globals():
+  aa=123.456
 o2=0. ; pas=1./float(i1)
 for i in range(i1):
   for j in range(i1):
@@ -335,24 +348,26 @@ o3=0
 """
     script2="""o9=sum(i8)
 """
-    fname=os.path.join(self.workdir, "TestSaveLoadRun3.xml")
     nbOfNodes=8
     sqrtOfNumberOfTurn=10
     l=loader.YACSLoader()
     p=self.r.createProc("prTest1")
+    p.setProperty("executor","workloadmanager")
     td=p.createType("double","double")
     ti=p.createType("int","int")
     tdi=p.createSequenceTc("seqint","seqint",ti)
     tdd=p.createSequenceTc("seqdouble","seqdouble",td)
-    cont=p.createContainer("gg","HPSalome")
-    cont.setSizeOfPool(8)
-    cont.setProperty("InitializeScriptKey","aa=123.456")
+    cont=p.createContainer("gg","Salome")
     cont.setProperty("name","localhost")
     cont.setProperty("hostname","localhost")
+    # no limit for the number of containers launched
+    cont.setProperty("nb_proc_per_node","0")
+    cont.setProperty("type","multi")
+    cont.usePythonCache(True)
+    cont.attachOnCloning()
     #
-    node0=self.r.createFuncNode("Salome","PyFunction0") # PyFuncNode remote
+    node0=self.r.createScriptNode("Salome","Node0")
     p.edAddChild(node0)
-    node0.setFname("ff")
     node0.setContainer(cont)
     node0.setScript(script0%(sqrtOfNumberOfTurn))
     out0_0=node0.edAddOutputPort("o1",tdi)
@@ -365,7 +380,7 @@ o3=0
     p.edAddLink(out0_0,node1.edGetSeqOfSamplesPort())
     node1.edGetNbOfBranchesPort().edInitInt(16)
     #
-    node2=self.r.createScriptNode("Salome","PyScript3")
+    node2=self.r.createScriptNode("Salome","Node2")
     node1.edAddChild(node2)
     node2.setContainer(cont)
     node2.setScript(script1)
@@ -375,7 +390,7 @@ o3=0
     out1_2=node2.edAddOutputPort("o3",ti)
     node2.setExecutionMode("remote")
     #
-    node3=self.r.createScriptNode("Salome","PyScript7")
+    node3=self.r.createScriptNode("Salome","Node3")
     p.edAddChild(node3)
     node3.setScript(script2)
     p.edAddCFLink(node1,node3)
@@ -383,10 +398,10 @@ o3=0
     o9=node3.edAddOutputPort("o9",td)
     p.edAddLink(out0_2,i8)
     #
+    fname=os.path.join(self.workdir, "t3_new.xml")
     p.saveSchema(fname)
     p=l.load(fname)
-    o9=p.getChildByName("PyScript7").getOutputPort("o9")
-    self.assertTrue(len(p.edGetDirectDescendants()[1].getChildByName("PyScript3").getContainer().getProperty("InitializeScriptKey"))!=0)
+    o9=p.getChildByName("Node3").getOutputPort("o9")
     # 1st exec
     refExpected=11000.008377058712
     ex=pilot.ExecutorSwig()
@@ -409,9 +424,9 @@ o3=0
     self.assertEqual(p.getState(),pilot.DONE)
     self.assertAlmostEqual(refExpected,o9.getPyObj(),5)
     pass
-  
+
   def test4(self):
-    """Non regression test of multi pyScriptNode, pyFuncNode sharing the same HPContainer instance."""
+    """Double foreach."""
     fname=os.path.join(self.workdir, "TestSaveLoadRun4.xml")
     script1="""nb=7
 ii=0
@@ -428,8 +443,14 @@ for i in range(nb):
     l=loader.YACSLoader()
     ex=pilot.ExecutorSwig()
     p=self.r.createProc("pr")
-    cont=p.createContainer("gg","HPSalome")
-    cont.setSizeOfPool(10)
+    p.setProperty("executor","workloadmanager")
+    cont=p.createContainer("gg","Salome")
+    cont.setProperty("name","localhost")
+    cont.setProperty("hostname","localhost")
+    # no limit for the number of containers launched
+    cont.setProperty("nb_proc_per_node","0")
+    cont.setProperty("type","multi")
+    cont.attachOnCloning()
     td=p.createType("int","int")
     td2=p.createSequenceTc("seqint","seqint",td)
     td3=p.createSequenceTc("seqintvec","seqintvec",td2)
@@ -497,6 +518,8 @@ for i in range(nb):
 
   def test5(self):
     """Non regression test 2 of multi pyNode, pyFuncNode sharing the same HPContainer instance."""
+    # TODO : This test is DEPRECATED. HPContainer will be removed.
+    self.skipTest("HPContainer deprecated.")
     fname=os.path.join(self.workdir, "TestSaveLoadRun5.xml")
     script1="""nb=7
 ii=0
@@ -513,8 +536,10 @@ for i in range(nb):
     l=loader.YACSLoader()
     ex=pilot.ExecutorSwig()
     p=self.r.createProc("pr")
+    pg=pilot.PlayGround()
+    pg.setData([("localhost",10)])
     cont=p.createContainer("gg","HPSalome")
-    cont.setSizeOfPool(10)
+    cont.setProperty("nb_proc_per_node","1")
     td=p.createType("int","int")
     td2=p.createSequenceTc("seqint","seqint",td)
     td3=p.createSequenceTc("seqintvec","seqintvec",td2)
@@ -574,6 +599,7 @@ for i in range(nb):
     p.edAddLink(o15,i8)
     p.saveSchema(fname)
     p=l.load(fname)
+    p.propagePlayGround(pg)
     ex = pilot.ExecutorSwig()
     self.assertEqual(p.getState(),pilot.READY)
     ex.RunW(p,0)
@@ -1326,6 +1352,7 @@ for i in i8:
     l=loader.YACSLoader()
     #
     p=self.r.createProc("PROC")
+    p.setProperty("executor","workloadmanager")
     ti=p.createType("int","int")
     tdi=p.createSequenceTc("seqint","seqint",ti)
     # Level0
@@ -1375,11 +1402,16 @@ assert(my_dpl_localization[0][1]>=0 and my_dpl_localization[0][1]<3)
 
     # run remote
     p=l.load(fname)
-    cont=p.createContainer("gg","HPSalome")
-    cont.setSizeOfPool(2)
+    cont=p.createContainer("gg","Salome")
+    cont.setProperty("name","localhost")
+    cont.setProperty("hostname","localhost")
+    # no limit for the number of containers launched
+    cont.setProperty("nb_proc_per_node","0")
+    cont.setProperty("type","multi")
+    #cont.usePythonCache(True)
+    cont.attachOnCloning()
     n1=p.getChildByName("FE0.b0.n1") ; n1.setExecutionMode("remote") ; n1.setContainer(cont)
     n2=p.getChildByName("FE0.b0.FE1.n2") ; n2.setExecutionMode("remote") ; n2.setContainer(cont)
-    
     p.init()
     self.assertEqual(p.getState(),pilot.READY)
     ex.RunW(p,0)
@@ -1393,9 +1425,16 @@ assert(my_dpl_localization[0][1]>=0 and my_dpl_localization[0][1]<3)
       pass
     xmlFileName="test20.xml"
     p=self.r.createProc("test26")
+    p.setProperty("executor","workloadmanager")
     #
-    cont=p.createContainer("gg","HPSalome") # very important ! HP Container needed for the test !
-    cont.setSizeOfPool(8) # important make this figure >= 6
+    cont=p.createContainer("gg","Salome")
+    cont.setProperty("name","localhost")
+    cont.setProperty("hostname","localhost")
+    # no limit for the number of containers launched
+    cont.setProperty("nb_proc_per_node","0")
+    cont.setProperty("type","multi")
+    cont.usePythonCache(True)
+    cont.attachOnCloning()
     #
     po=p.createInterfaceTc("python:obj:1.0","pyobj",[])
     sop=p.createSequenceTc("list[pyobj]","list[pyobj]",po)
@@ -1452,6 +1491,7 @@ dd=range(10)""")
     p.edAddLink(dd,fe0.edGetSeqOfSamplesPort())
     p.edAddLink(fe0.edGetSamplePort(),c1)
     #
+    #xmlFileName="test20.xml"
     #p.saveSchema(xmlFileName)
     p.getChildByName("test26/main.test26/FE0").edGetNbOfBranchesPort().edInitInt(1) # very important 1 !
     #
@@ -1488,7 +1528,7 @@ dd=range(10)""")
     n1.edAddChild(n10)
     n10.setScript("""
 import time
-time.sleep(2)
+time.sleep(4)
 o2=2*i1
 """)
     i1=n10.edAddInputPort("i1",ti)
@@ -1519,7 +1559,7 @@ o2=2*i1
     myRun=threading.Thread(None, ex.RunW, None, (p,0))
     myRun.start()
     import time
-    time.sleep(5)
+    time.sleep(7)
     SALOMERuntime.schemaSaveState(p, ex, xmlStateFileName)
     a,b,c=n1.getPassedResults(ex)
     myRun.join()

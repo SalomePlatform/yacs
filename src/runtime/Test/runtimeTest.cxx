@@ -81,6 +81,32 @@ int RuntimeTest::_ibloc = 0;
 Runtime *RuntimeTest::_myRuntime = 0;
 bool RuntimeTest::endTests = false;
 
+RuntimeForTest::RuntimeForTest()
+: RuntimeSALOME(UsePython+UseCorba+UseXml+UseCpp+UseSalome, 0, nullptr)
+{
+}
+
+RuntimeForTest::~RuntimeForTest()
+{
+}
+
+std::vector< std::pair<std::string,int> >
+RuntimeForTest::getCatalogOfComputeNodes() const
+{
+  std::vector< std::pair<std::string,int> > result(1);
+  std::pair<std::string,int> localhost;
+  localhost.first = "localhost";
+  localhost.second = 8;
+  result[0] = localhost;
+  return result;
+}
+
+void RuntimeForTest::setRuntime()
+{
+  if (! Runtime::_singleton)
+    Runtime::_singleton = new RuntimeForTest;
+}
+
 void RuntimeTest::setUp()
 {
   if (_ltc.size() == 0)
@@ -103,7 +129,7 @@ void RuntimeTest::initRuntimeTypeCode()
 {
   // --- init runtime
   std::cerr << std::endl;
-  RuntimeSALOME::setRuntime();
+  RuntimeForTest::setRuntime();
   _myRuntime = getRuntime();
   
   // --- init typecodes
@@ -1469,7 +1495,7 @@ void RuntimeTest::convertPorts()
     }
 }
 
-void myTestRun(int nIn, int nOut, Any **In, Any **Out) throw (YACS::Exception)
+void myTestRun(int nIn, int nOut, Any **In, Any **Out)
 {
   double x, y;
   cerr << "myTestRun nIn = " << nIn << endl;

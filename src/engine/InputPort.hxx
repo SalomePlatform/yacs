@@ -66,7 +66,7 @@ namespace YACS
       void edInit(Any *value);
       void edInit(const std::string& impl,const void* value);
       virtual void edRemoveManInit();
-      virtual void checkBasicConsistency() const throw(Exception);
+      virtual void checkBasicConsistency() const ;
       virtual void exInit(bool start);
       virtual void exSaveInit() = 0;
       virtual void exRestoreInit() = 0;
@@ -75,7 +75,7 @@ namespace YACS
 
       virtual void *get() const = 0;
       virtual void releaseData() = 0;
-      virtual void put(const void *data) throw(ConversionException) = 0;
+      virtual void put(const void *data) = 0;
       virtual std::string dump();
       virtual std::string getHumanRepr();
       virtual void setStringRef(std::string strRef);
@@ -102,7 +102,7 @@ namespace YACS
       ProxyPort(InputPort* p);
       ~ProxyPort();
       
-      void edRemoveAllLinksLinkedWithMe() throw(Exception);
+      void edRemoveAllLinksLinkedWithMe() ;
       InputPort *clone(Node *newHelder) const;
       void edNotifyReferencedBy(OutPort *fromPort, bool isLoopProof = true) override;
       void edNotifyDereferencedBy(OutPort *fromPort);
@@ -113,7 +113,7 @@ namespace YACS
       InputPort *getPublicRepresentant();
 #endif
       void *get() const;
-      virtual void put(const void *data) throw(ConversionException) ;
+      virtual void put(const void *data) ;
       void releaseData() override;
       int edGetNumberOfLinks() const;
       bool isIntermediate() const { return true; }

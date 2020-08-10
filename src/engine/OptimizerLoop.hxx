@@ -85,25 +85,25 @@ namespace YACS
       InputPort *edGetPortForOutPool() { return &_retPortForOutPool; }
       InputPort *edGetAlgoInitPort() { return &_algoInitPort; }
       OutputPort *edGetAlgoResultPort() { return &_algoResultPort; }
-      InputPort *getInputPort(const std::string& name) const throw(Exception);
+      InputPort *getInputPort(const std::string& name) const ;
       std::list<InputPort *> getSetOfInputPort() const;
       std::list<InputPort *> getLocalInputPorts() const;
       void selectRunnableTasks(std::vector<Task *>& tasks);
       void getReadyTasks(std::vector<Task *>& tasks);
       YACS::Event updateStateOnFinishedEventFrom(Node *node);
-      void checkNoCyclePassingThrough(Node *node) throw(Exception);
+      void checkNoCyclePassingThrough(Node *node) ;
       virtual void accept(Visitor *visitor);
       virtual std::string getSymbol() const { return _symbol; }
       virtual std::string getAlgLib() const ;
       virtual void setAlgorithm(const std::string& alglib,const std::string& symbol,
                                 bool checkLinks=true, Proc * procForTypes = NULL);
-      virtual void checkBasicConsistency() const throw(Exception);
+      virtual void checkBasicConsistency() const ;
       virtual std::string typeName() {return "YACS__ENGINE__OptimizerLoop";}
       int getNumberOfOutputPorts() const;
       std::list<OutputPort *> getSetOfOutputPort() const;
       std::list<OutputPort *> getLocalOutputPorts() const;
-      OutPort *getOutPort(const std::string& name) const throw(Exception);
-      OutputPort *getOutputPort(const std::string& name) const throw(Exception);
+      OutPort *getOutPort(const std::string& name) const ;
+      OutputPort *getOutputPort(const std::string& name) const ;
       YACS::Event finalize();
     protected:
       virtual YACS::Event updateStateOnFailedEventFrom(Node *node, const Executor *execInst);
@@ -116,7 +116,7 @@ namespace YACS
                                   LinkInfo& info) const;
       void checkCFLinks(const std::list<OutPort *>& starts, InputPort *end, unsigned char& alreadyFed, bool direction, LinkInfo& info) const;
       void checkLinkPossibility(OutPort *start, const std::list<ComposedNode *>& pointsOfViewStart,
-                                InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd) throw(Exception);
+                                InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd) ;
     protected:
       void cleanInterceptors();
       void launchMaxOfSamples(bool first);

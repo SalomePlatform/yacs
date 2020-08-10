@@ -58,7 +58,7 @@ namespace YACS
       //! returns type of channel the port will use for data exchange on runtime : DATAFLOW or DATASTREAM.
       virtual TypeOfChannel getTypeOfChannel() const = 0;
       bool isDifferentTypeOf(const DataPort *other) const;
-      virtual void edRemoveAllLinksLinkedWithMe() throw(Exception) = 0;
+      virtual void edRemoveAllLinksLinkedWithMe()  = 0;
       virtual std::string typeName() {return "YACS__ENGINE__DataPort";}
       virtual std::string getAsString();
     public:

@@ -35,8 +35,8 @@ namespace YACS
     {
     public:
       CorbaCpp(InputPort* p);
-      virtual void put(const void *data) throw(ConversionException);
-      void put(CORBA::Any *data) throw(ConversionException);
+      virtual void put(const void *data);
+      void put(CORBA::Any *data);
     };
     int isAdaptableCppCorba(const TypeCode *t1,const TypeCode *t2);
   }

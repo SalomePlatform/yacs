@@ -45,7 +45,7 @@ namespace YACS
     {
     }
 
-    void XmlCpp::put(const void *data) throw(ConversionException)
+    void XmlCpp::put(const void *data)
     {
       DEBTRACE(" XmlCpp::put(const void *data)");
       put((const char *)data);
@@ -56,7 +56,7 @@ namespace YACS
      *   \param data : Xml::char *
      */
 
-    void XmlCpp::put(const char *data) throw(ConversionException)
+    void XmlCpp::put(const char *data)
     {
       DEBTRACE("XmlCpp::put " << data);
       xmlDocPtr doc;

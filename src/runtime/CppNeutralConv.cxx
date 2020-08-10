@@ -43,7 +43,7 @@ namespace YACS
     {
     }
 
-    void CppNeutral::put(const void *data) throw(ConversionException)
+    void CppNeutral::put(const void *data)
     {
       DEBTRACE(" CppNeutral::put(const void *data)");
       put((Any *)data);
@@ -54,7 +54,7 @@ namespace YACS
      *   \param data : Neutral (Any *) value
      */
 
-    void CppNeutral::put(Any *data) throw(ConversionException)
+    void CppNeutral::put(Any *data)
     {
       DEBTRACE("CppNeutral::put " << data);
       Any *ob;

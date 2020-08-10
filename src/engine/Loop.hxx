@@ -44,9 +44,9 @@ namespace YACS
       InputPort4DF2DS(DFToDSForLoop *node, TypeCode* type);
       void getAllRepresentants(std::set<InPort *>& repr) const;
       void releaseData() override;
-      void put(const void *data) throw(ConversionException);
+      void put(const void *data);
       InputPort *clone(Node *newHelder) const;
-      void *get() const throw(Exception);
+      void *get() const ;
       void exRestoreInit();
       void exSaveInit();
       void put(Any *data);
@@ -66,8 +66,8 @@ namespace YACS
       void loopHasOneMoreRef() { _nbOfTimeUsed++; }
       bool loopHasOneLessRef() { return --_nbOfTimeUsed==0; }
       void getReadyTasks(std::vector<Task *>& tasks);
-      InputPort *getInputPort(const std::string& name) const throw(Exception);
-      OutputDataStreamPort *getOutputDataStreamPort(const std::string& name) const throw(Exception);
+      InputPort *getInputPort(const std::string& name) const ;
+      OutputDataStreamPort *getOutputDataStreamPort(const std::string& name) const ;
       Node *simpleClone(ComposedNode *father, bool editionOnly=true) const;
       //run part
       void execute();
@@ -81,7 +81,7 @@ namespace YACS
     public:
       OutputPort4DS2DF(DSToDFForLoop *node, TypeCode *type);
       void getAllRepresented(std::set<OutPort *>& represented) const;
-      void put(const void *data) throw(ConversionException);
+      void put(const void *data);
       OutputPort *clone(Node *newHelder) const;
       void put(Any *data);
       ~OutputPort4DS2DF();
@@ -108,8 +108,8 @@ namespace YACS
       void loopHasOneMoreRef() { _nbOfTimeUsed++; }
       bool loopHasOneLessRef() { return --_nbOfTimeUsed==0; }
       void getReadyTasks(std::vector<Task *>& tasks);
-      OutputPort *getOutputPort(const std::string& name) const throw(Exception);
-      InputDataStreamPort *getInputDataStreamPort(const std::string& name) const throw(Exception);
+      OutputPort *getOutputPort(const std::string& name) const ;
+      InputDataStreamPort *getInputDataStreamPort(const std::string& name) const ;
       //run part
       void execute();
       void load();
@@ -162,14 +162,14 @@ namespace YACS
       int getNbOfTurns() const { return _nbOfTurns; }
       //Node* DISOWNnode is a SWIG notation to indicate that the ownership of the node is transfered to C++
       Node *edSetNode(Node *DISOWNnode);
-      virtual bool edAddChild(Node *DISOWNnode) throw(Exception);
+      virtual bool edAddChild(Node *DISOWNnode) ;
       bool isLoop() const override { return true; }
       Node *edRemoveNode();
-      virtual void checkBasicConsistency() const throw(Exception);
+      virtual void checkBasicConsistency() const ;
       //! Returns the port which value is used to take decision about the continuation of the loop.
       virtual InputPort *getDecisionPort() const = 0;
       void getReadyTasks(std::vector<Task *>& tasks);
-      void edRemoveChild(Node *node) throw(Exception);
+      void edRemoveChild(Node *node) ;
       bool isRepeatedUnpredictablySeveralTimes() const { return true; }
       std::list<Node *> edGetDirectDescendants() const;
       std::list<InputPort *> getSetOfInputPort() const;
@@ -177,21 +177,21 @@ namespace YACS
       int getMaxLevelOfParallelism() const;
       void getWeightRegardingDPL(ComplexWeight *weight);
       void partitionRegardingDPL(const PartDefinition *pd, std::map<ComposedNode *, YACS::BASES::AutoRefCnt<PartDefinition> >& zeMap);
-      Node *getChildByShortName(const std::string& name) const throw(Exception);
-      static TypeCode* MappingDF2DS(TypeCode* type) throw(Exception);
-      static TypeCode* MappingDS2DF(TypeCode* type) throw(Exception);
-      virtual bool edAddDFLink(OutPort *start, InPort *end) throw(Exception);
+      Node *getChildByShortName(const std::string& name) const ;
+      static TypeCode* MappingDF2DS(TypeCode* type) ;
+      static TypeCode* MappingDS2DF(TypeCode* type) ;
+      virtual bool edAddDFLink(OutPort *start, InPort *end) ;
       void writeDot(std::ostream &os) const;
       virtual void accept(Visitor *visitor);
       virtual std::string typeName() {return "YACS__ENGINE__Loop";}
     protected:
       void buildDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView);
       void buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView);
-      void getDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView) throw(Exception);
-      void getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(Exception);
-      void releaseDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView) throw(Exception);
-      void releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(Exception);
-      void checkNoCyclePassingThrough(Node *node) throw(Exception);
+      void getDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView) ;
+      void getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) ;
+      void releaseDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView) ;
+      void releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) ;
+      void checkNoCyclePassingThrough(Node *node) ;
       void checkControlDependancy(OutPort *start, InPort *end, bool cross,
                                   std::map < ComposedNode *,  std::list < OutPort * >, SortHierarc >& fw,
                                   std::vector<OutPort *>& fwCross,

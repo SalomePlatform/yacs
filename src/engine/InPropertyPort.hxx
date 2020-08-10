@@ -59,7 +59,7 @@ namespace YACS
       virtual void exRestoreInit();
       virtual InPropertyPort *clone(Node *newHelder) const;
       virtual void *get() const;
-      virtual void put(const void *data) throw(ConversionException);
+      virtual void put(const void *data);
       virtual void put(YACS::ENGINE::Any *data);
       void releaseData() override;
     protected:

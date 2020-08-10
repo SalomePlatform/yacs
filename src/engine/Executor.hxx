@@ -37,6 +37,12 @@
 #include <string>
 #include <fstream>
 #include <ctime>
+#include <chrono>
+
+namespace WorkloadManager
+{
+  struct RunInfo;
+}
 
 namespace YACS
 {
@@ -88,17 +94,14 @@ namespace YACS
       bool _keepGoingOnFail;
       //! specifies if scope DynParaLoop is active or not. False by default.
       bool _DPLScopeSensitive;
-#ifdef WIN32
-	  DWORD _start;
-#else
-      timeval _start;
-#endif
+      std::chrono::steady_clock::time_point _start;
     public:
       Executor();
       virtual ~Executor();
       void RunA(Scheduler *graph,int debug=0, bool fromScratch=true);
-      void RunW(Scheduler *graph,int debug=0, bool fromScratch=true) { RunB(graph, debug, fromScratch); }
+      void RunW(Scheduler *graph,int debug=0, bool fromScratch=true);
       void RunB(Scheduler *graph,int debug=0, bool fromScratch=true);
+      void runWlm(Scheduler *graph,int debug=0, bool fromScratch=true);
       void setKeepGoingProperty(bool newVal) { _keepGoingOnFail=newVal; }
       bool getKeepGoingProperty() const { return _keepGoingOnFail; }
       void setDPLScopeSensitive(bool newVal) { _DPLScopeSensitive=newVal; }
@@ -125,11 +128,17 @@ namespace YACS
       static int _maxThreads;
       static size_t _threadStackSize;
       YACS::BASES::Mutex& getTheMutexForSchedulerUpdate() { return _mutexForSchedulerUpdate; }
+      ///// new executor !!!!!
+      void loadTask(Task *task, const WorkloadManager::RunInfo& runInfo);
+      YACS::Event runTask(Task *task);
+      void makeDatastreamConnections(Task *task);
+      void beginTask(Task *task);
+      void endTask(Task *task, YACS::Event ev);
+      ////////////
     protected:
       bool checkBreakPoints();
       void waitResume();
       void loadTask(Task *task, const Executor *execInst);
-      void loadTasks(const std::vector<Task *>& tasks, const Executor *execInst);
       void loadParallelTasks(const std::vector<Task *>& tasks, const Executor *execInst);
       void launchTasks(const std::vector<Task*>& tasks);
       void launchTask(Task *task);

@@ -25,20 +25,89 @@
 #include <sstream>
 #include <iomanip>
 #include <numeric>
+#include <iostream>
 #include <algorithm>
 
 using namespace YACS::ENGINE;
 
+std::size_t Resource::getNumberOfFreePlace(int nbCoresPerCont) const
+{
+  std::size_t ret(0),pos(0);
+  while( pos < _occupied.size() )
+    {
+      bool isChunckFree(true);
+      int posInChunck(0);
+      for( ; ( posInChunck < nbCoresPerCont ) && ( pos < _occupied.size() ) ; ++posInChunck, ++pos)
+        if(_occupied[pos])
+          isChunckFree = false;
+      if( isChunckFree && (posInChunck == nbCoresPerCont) )
+        ret++;
+    }
+  return ret;
+}
+
+std::vector<std::size_t> Resource::allocateFor(std::size_t& nbOfPlacesToTake, int nbCoresPerCont) const
+{
+  std::vector<std::size_t> ret;
+  std::size_t pos(0),curWorkerId(0);
+  while( ( pos < _occupied.size() ) && ( nbOfPlacesToTake > 0 ) )
+    {
+      bool isChunckFree(true);
+      int posInChunck(0);
+      for( ; ( posInChunck < nbCoresPerCont ) && ( pos < _occupied.size() ) ; ++posInChunck, ++pos)
+        if(_occupied[pos])
+          isChunckFree = false;
+      if( isChunckFree && (posInChunck == nbCoresPerCont) )
+        {
+          for(int i = 0 ; i < nbCoresPerCont ; ++i)
+            _occupied[pos-nbCoresPerCont+i] = true;
+          ret.push_back(curWorkerId);
+          --nbOfPlacesToTake;
+        }
+      ++curWorkerId;
+    }
+  return ret;
+}
+
+void Resource::release(std::size_t workerId, int nbCoresPerCont) const
+{
+  if(workerId >= this->getNumberOfWorkers(nbCoresPerCont))
+    throw Exception("Resource::release : invalid worker id !");
+  std::size_t pos(workerId*static_cast<std::size_t>(nbCoresPerCont));
+  for(int i = 0 ; i < nbCoresPerCont ; ++i)
+    {
+      if(!_occupied[pos + static_cast<std::size_t>(i)])
+        throw Exception("Resource::release : internal error ! A core is expected to be occupied !");
+      _occupied[pos + static_cast<std::size_t>(i)] = false;
+    }
+}
+
+std::size_t Resource::getNumberOfWorkers(int nbCoresPerCont) const
+{
+  return static_cast<std::size_t>(this->nbCores())/static_cast<std::size_t>(nbCoresPerCont);
+}
+
+void Resource::printSelf(std::ostream& oss) const
+{
+  oss << this->name() << " (" << this->nbCores() << ") : ";
+  for(auto it : this->_occupied)
+    {
+      if(it)
+        oss << "1";
+      else
+        oss << "0";
+    }
+}
 
 std::string PlayGround::printSelf() const
 {
   std::ostringstream oss;
   std::size_t sz(0);
-  for(std::vector< std::pair<std::string,int> >::const_iterator it=_data.begin();it!=_data.end();it++)
-    sz=std::max(sz,(*it).first.length());
-  for(std::vector< std::pair<std::string,int> >::const_iterator it=_data.begin();it!=_data.end();it++)
+  for(auto it : _data)
+    sz=std::max(sz,it.name().length());
+  for(auto it : _data)
     {
-      oss << " - " << std::setw(10) << (*it).first << " : " << (*it).second << std::endl;
+      oss << " - " << std::setw(10) << it.name() << " : " << it.nbCores() << std::endl;
     }
   return oss.str();
 }
@@ -54,15 +123,15 @@ void PlayGround::loadFromKernelCatalog()
 
 void PlayGround::setData(const std::vector< std::pair<std::string,int> >& defOfRes)
 {
-  _data=defOfRes;
+  _data=std::vector<Resource>(defOfRes.begin(),defOfRes.end());
   checkCoherentInfo();
 }
 
 int PlayGround::getNumberOfCoresAvailable() const
 {
   int ret(0);
-  for(std::vector< std::pair<std::string,int> >::const_iterator it=_data.begin();it!=_data.end();it++)
-    ret+=(*it).second;
+  for(auto it : _data)
+    ret+=it.nbCores();
   return ret;
 }
 
@@ -71,8 +140,8 @@ int PlayGround::getMaxNumberOfContainersCanBeHostedWithoutOverlap(int nbCoresPer
   if(nbCoresPerCont<1)
     throw Exception("PlayGround::getMaxNumberOfContainersCanBeHostedWithoutOverlap : invalid nbCoresPerCont. Must be >=1 !");
   int ret(0);
-  for(std::vector< std::pair<std::string,int> >::const_iterator it=_data.begin();it!=_data.end();it++)
-    ret+=(*it).second/nbCoresPerCont;
+  for(auto it : _data)
+    ret+=it.nbCores()/nbCoresPerCont;
   return ret;
 }
 
@@ -80,18 +149,18 @@ std::vector<int> PlayGround::computeOffsets() const
 {
   std::size_t sz(_data.size()),i(0);
   std::vector<int> ret(sz+1); ret[0]=0;
-  for(std::vector< std::pair<std::string,int> >::const_iterator it=_data.begin();it!=_data.end();it++,i++)
-    ret[i+1]=ret[i]+(*it).second;
+  for(auto it=_data.begin();it!=_data.end();it++,i++)
+    ret[i+1]=ret[i]+it->nbCores();
   return ret;
 }
 
 void PlayGround::checkCoherentInfo() const
 {
   std::set<std::string> s;
-  for(std::vector< std::pair<std::string,int> >::const_iterator it=_data.begin();it!=_data.end();it++)
+  for(auto it : _data)
     {
-      s.insert((*it).first);
-      if((*it).second<0)
+      s.insert(it.name());
+      if(it.nbCores()<0)
         throw Exception("Presence of negative int value !");
     }
   if(s.size()!=_data.size())
@@ -110,6 +179,56 @@ std::vector<int> PlayGround::GetIdsMatching(const std::vector<bool>& bigArr, con
         ret.push_back(i);
     }
   return ret;
+}
+
+std::size_t PlayGround::getNumberOfFreePlace(int nbCoresPerCont) const
+{
+  std::size_t ret(0);
+  for(auto res : _data)
+    {
+      ret += res.getNumberOfFreePlace(nbCoresPerCont);
+    }
+  return ret;
+}
+
+std::vector<std::size_t> PlayGround::allocateFor(std::size_t nbOfPlacesToTake, int nbCoresPerCont) const
+{
+  std::vector<std::size_t> ret;
+  std::size_t nbOfPlacesToTakeCpy(nbOfPlacesToTake),offset(0);
+  for(const auto& res : _data)
+    {
+      std::vector<std::size_t> contIdsInRes(res.allocateFor(nbOfPlacesToTakeCpy,nbCoresPerCont));
+      std::for_each(contIdsInRes.begin(),contIdsInRes.end(),[offset](std::size_t& val) { val += offset; });
+      ret.insert(ret.end(),contIdsInRes.begin(),contIdsInRes.end());
+      offset += static_cast<std::size_t>(res.nbCores()/nbCoresPerCont);
+    }
+  if( ( nbOfPlacesToTakeCpy!=0 ) || ( ret.size()!=nbOfPlacesToTake ) )
+    throw Exception("PlayGround::allocateFor : internal error ! Promised place is not existing !");
+  return ret;
+}
+
+void PlayGround::release(std::size_t workerId, int nbCoresPerCont) const
+{
+  std::size_t offset(0);
+  for(const auto& res : _data)
+    {
+      std::size_t nbOfWorker(static_cast<std::size_t>(res.nbCores()/nbCoresPerCont));
+      std::size_t minId(offset),maxId(offset+nbOfWorker);
+      if(workerId>=minId && workerId<maxId)
+        {
+          res.release(workerId-minId,nbCoresPerCont);
+          break;
+        }
+    }
+}
+
+void PlayGround::printMe() const
+{
+  for(auto it : _data)
+  {
+    it.printSelf(std::cout);
+    std::cout << std::endl;
+  }
 }
 
 std::vector<int> PlayGround::BuildVectOfIdsFromVecBool(const std::vector<bool>& v)
@@ -162,16 +281,16 @@ std::vector<std::size_t> PlayGround::getWorkerIdsFullyFetchedBy(int nbCoresPerCo
 {
   std::size_t posBg(0),posWorker(0);
   std::vector<std::size_t> ret;
-  for(std::vector< std::pair<std::string,int> >::const_iterator it=_data.begin();it!=_data.end();it++)
+  for(auto it : _data)
     {
-      int nbWorker((*it).second/nbCoresPerComp);
+      int nbWorker(it.nbCores()/nbCoresPerComp);
       for(int j=0;j<nbWorker;j++,posWorker++)
         {
           std::vector<bool>::const_iterator it2(std::find(coreFlags.begin()+posBg+j*nbCoresPerComp,coreFlags.begin()+posBg+(j+1)*nbCoresPerComp,false));
           if(it2==coreFlags.begin()+posBg+(j+1)*nbCoresPerComp)
             ret.push_back(posWorker);
         }
-      posBg+=(*it).second;
+      posBg+=it.nbCores();
     }
   return ret;
 }
@@ -436,7 +555,7 @@ int PlayGround::fromWorkerIdToResId(int workerId, int nbProcPerNode) const
   std::size_t sz2(_data.size());
   std::vector<int> deltas(sz2+1); deltas[0]=0;
   for(std::size_t i=0;i<sz2;i++)
-    deltas[i+1]=deltas[i]+(_data[i].second)/nbProcPerNode;
+    deltas[i+1]=deltas[i]+(_data[i].nbCores())/nbProcPerNode;
   int zePos(0);
   while(zePos<sz2 && (workerId<deltas[zePos] || workerId>=deltas[zePos+1]))
     zePos++;
@@ -451,7 +570,7 @@ int PlayGround::fromWorkerIdToResId(int workerId, int nbProcPerNode) const
 std::string PlayGround::deduceMachineFrom(int workerId, int nbProcPerNode) const
 {
   int zePos(fromWorkerIdToResId(workerId,nbProcPerNode));
-  return _data[zePos].first;
+  return _data[zePos].name();
 }
 
 /*! 

@@ -34,7 +34,7 @@ CorbaPyDouble::CorbaPyDouble(InputPyPort* p)
     : ProxyPort(p), DataPort(p->getName(), p->getNode(), p->edGetType()), Port(p->getNode()) 
 {}
 
-void CorbaPyDouble::put(const void *data) throw(ConversionException)
+void CorbaPyDouble::put(const void *data)
 {
   put((CORBA::Any *)data);
 }
@@ -43,7 +43,7 @@ void CorbaPyDouble::put(const void *data) throw(ConversionException)
 /*!
  *   \param data : CORBA::Any object
  */
-void CorbaPyDouble::put(CORBA::Any *data) throw(ConversionException)
+void CorbaPyDouble::put(CORBA::Any *data)
 {
   InterpreterUnlocker loc;
   PyObject* ob=convertCorbaPyObject(edGetType(),data);
@@ -57,7 +57,7 @@ CorbaPyInt::CorbaPyInt(InputPyPort* p)
     : ProxyPort(p), DataPort(p->getName(), p->getNode(), p->edGetType()), Port(p->getNode()) 
 {}
 
-void CorbaPyInt::put(const void *data) throw(ConversionException)
+void CorbaPyInt::put(const void *data)
 {
   put((CORBA::Any *)data);
 }
@@ -66,7 +66,7 @@ void CorbaPyInt::put(const void *data) throw(ConversionException)
 /*!
  *   \param data : CORBA::Any object
  */
-void CorbaPyInt::put(CORBA::Any *data) throw(ConversionException)
+void CorbaPyInt::put(CORBA::Any *data)
 {
   InterpreterUnlocker loc;
   PyObject* ob=convertCorbaPyObject(edGetType(),data);
@@ -78,7 +78,7 @@ void CorbaPyInt::put(CORBA::Any *data) throw(ConversionException)
 CorbaPyString::CorbaPyString(InputPyPort* p)
     : ProxyPort(p), DataPort(p->getName(), p->getNode(), p->edGetType()), Port(p->getNode()) 
 {}
-void CorbaPyString::put(const void *data) throw(ConversionException)
+void CorbaPyString::put(const void *data)
 {
   put((CORBA::Any *)data);
 }
@@ -87,7 +87,7 @@ void CorbaPyString::put(const void *data) throw(ConversionException)
 /*!
  *   \param data : CORBA::Any object
  */
-void CorbaPyString::put(CORBA::Any *data) throw(ConversionException)
+void CorbaPyString::put(CORBA::Any *data)
 {
   InterpreterUnlocker loc;
   PyObject* ob=convertCorbaPyObject(edGetType(),data);
@@ -103,7 +103,7 @@ CorbaPyBool::CorbaPyBool(InputPyPort* p)
 /*!Convert a CORBA::Any boolean to a PyObject boolean
  * It's only a wrapper around put(CORBA::Any *data)
  */
-void CorbaPyBool::put(const void *data) throw(ConversionException)
+void CorbaPyBool::put(const void *data)
 {
   put((CORBA::Any *)data);
 }
@@ -112,7 +112,7 @@ void CorbaPyBool::put(const void *data) throw(ConversionException)
 /*!
  *   \param data : CORBA::Any object
  */
-void CorbaPyBool::put(CORBA::Any *data) throw(ConversionException)
+void CorbaPyBool::put(CORBA::Any *data)
 {
   InterpreterUnlocker loc;
   PyObject* ob=convertCorbaPyObject(edGetType(),data);
@@ -125,7 +125,7 @@ CorbaPyObjref::CorbaPyObjref(InputPyPort* p)
     : ProxyPort(p), DataPort(p->getName(), p->getNode(), p->edGetType()), Port(p->getNode()) 
 {}
 
-void CorbaPyObjref::put(const void *data) throw(ConversionException)
+void CorbaPyObjref::put(const void *data)
 {
   put((CORBA::Any *)data);
 }
@@ -134,7 +134,7 @@ void CorbaPyObjref::put(const void *data) throw(ConversionException)
 /*!
  *   \param data : CORBA::Any object
  */
-void CorbaPyObjref::put(CORBA::Any *data) throw(ConversionException)
+void CorbaPyObjref::put(CORBA::Any *data)
 {
   InterpreterUnlocker loc;
   PyObject* ob=convertCorbaPyObject(edGetType(),data);
@@ -153,7 +153,7 @@ CorbaPySequence::CorbaPySequence(InputPyPort* p)
   _dynfactory = getSALOMERuntime()->getDynFactory();
 }
 
-void CorbaPySequence::put(const void *data) throw(ConversionException)
+void CorbaPySequence::put(const void *data)
 {
   put((CORBA::Any *)data);
 }
@@ -162,7 +162,7 @@ void CorbaPySequence::put(const void *data) throw(ConversionException)
 /*!
  *   \param data : CORBA::Any object
  */
-void CorbaPySequence::put(CORBA::Any *data) throw(ConversionException)
+void CorbaPySequence::put(CORBA::Any *data)
 {
   InterpreterUnlocker loc;
   PyObject* ob=convertCorbaPyObject(edGetType(),data);
@@ -180,7 +180,7 @@ CorbaPyStruct::CorbaPyStruct(InputPyPort* p)
 {
 }
 
-void CorbaPyStruct::put(const void *data) throw(ConversionException)
+void CorbaPyStruct::put(const void *data)
 {
   put((CORBA::Any *)data);
 }
@@ -189,7 +189,7 @@ void CorbaPyStruct::put(const void *data) throw(ConversionException)
 /*!
  *   \param data : CORBA::Any object
  */
-void CorbaPyStruct::put(CORBA::Any *data) throw(ConversionException)
+void CorbaPyStruct::put(CORBA::Any *data)
 {
   InterpreterUnlocker loc;
   PyObject* ob=convertCorbaPyObject(edGetType(),data);

@@ -27,7 +27,7 @@ using namespace YACS::ENGINE;
 using namespace std;
 
 
-void NeutralCorbaInt::put(const void *data)  throw(ConversionException)
+void NeutralCorbaInt::put(const void *data)
 {
   put((YACS::ENGINE::Any *)data);
 }
@@ -37,7 +37,7 @@ void NeutralCorbaInt::put(const void *data)  throw(ConversionException)
  *   \param data : YACS::ENGINE::Any object
  */
 
-void NeutralCorbaInt::put(YACS::ENGINE::Any *data)  throw(ConversionException)
+void NeutralCorbaInt::put(YACS::ENGINE::Any *data)
 {
   CORBA::Any *a =convertNeutralCorba(edGetType(),data);
   _port->put(a);
@@ -45,7 +45,7 @@ void NeutralCorbaInt::put(YACS::ENGINE::Any *data)  throw(ConversionException)
   delete a;
 }
 
-void NeutralCorbaBool::put(const void *data)  throw(ConversionException)
+void NeutralCorbaBool::put(const void *data)
 {
   put((YACS::ENGINE::Any *)data);
 }
@@ -55,7 +55,7 @@ void NeutralCorbaBool::put(const void *data)  throw(ConversionException)
  *   \param data : YACS::ENGINE::Any object
  */
 
-void NeutralCorbaBool::put(YACS::ENGINE::Any *data)  throw(ConversionException)
+void NeutralCorbaBool::put(YACS::ENGINE::Any *data)
 {
   CORBA::Any *a =convertNeutralCorba(edGetType(),data);
   _port->put(a);
@@ -64,7 +64,7 @@ void NeutralCorbaBool::put(YACS::ENGINE::Any *data)  throw(ConversionException)
 }
 
 
-void NeutralCorbaDouble::put(const void *data)  throw(ConversionException)
+void NeutralCorbaDouble::put(const void *data)
 {
   put((YACS::ENGINE::Any *)data);
 }
@@ -74,7 +74,7 @@ void NeutralCorbaDouble::put(const void *data)  throw(ConversionException)
  *   \param data : YACS::ENGINE::Any object
  */
 
-void NeutralCorbaDouble::put(YACS::ENGINE::Any *data)  throw(ConversionException)
+void NeutralCorbaDouble::put(YACS::ENGINE::Any *data)
 {
   CORBA::Any *a =convertNeutralCorba(edGetType(),data);
   _port->put(a);
@@ -82,7 +82,7 @@ void NeutralCorbaDouble::put(YACS::ENGINE::Any *data)  throw(ConversionException
   delete a;
 }
 
-void NeutralCorbaSequence::put(const void *data) throw(ConversionException)
+void NeutralCorbaSequence::put(const void *data)
 {
   put((YACS::ENGINE::Any *)data);
 }
@@ -91,7 +91,7 @@ void NeutralCorbaSequence::put(const void *data) throw(ConversionException)
 /*!
  *   \param data : Neutral::Any object
  */
-void NeutralCorbaSequence::put(YACS::ENGINE::Any *data) throw(ConversionException)
+void NeutralCorbaSequence::put(YACS::ENGINE::Any *data)
 {
   CORBA::Any *a =convertNeutralCorba(edGetType(),data);
   _port->put(a);
@@ -103,7 +103,7 @@ NeutralCorbaString::NeutralCorbaString(InputCorbaPort* p):ProxyPort(p), DataPort
 {
 }
 
-void NeutralCorbaString::put(const void *data) throw(ConversionException)
+void NeutralCorbaString::put(const void *data)
 {
   put((YACS::ENGINE::Any *)data);
 }
@@ -112,7 +112,7 @@ void NeutralCorbaString::put(const void *data) throw(ConversionException)
 /*!
  *   \param data : Neutral::Any object
  */
-void NeutralCorbaString::put(YACS::ENGINE::Any *data) throw(ConversionException)
+void NeutralCorbaString::put(YACS::ENGINE::Any *data)
 {
   CORBA::Any *a =convertNeutralCorba(edGetType(),data);
   _port->put(a);
@@ -124,7 +124,7 @@ NeutralCorbaObjref::NeutralCorbaObjref(InputCorbaPort* p):ProxyPort(p), DataPort
 {
 }
 
-void NeutralCorbaObjref::put(const void *data) throw(ConversionException)
+void NeutralCorbaObjref::put(const void *data)
 {
   put((YACS::ENGINE::Any *)data);
 }
@@ -133,7 +133,7 @@ void NeutralCorbaObjref::put(const void *data) throw(ConversionException)
 /*!
  *   \param data : Neutral::Any object
  */
-void NeutralCorbaObjref::put(YACS::ENGINE::Any *data) throw(ConversionException)
+void NeutralCorbaObjref::put(YACS::ENGINE::Any *data)
 {
   CORBA::Any *a =convertNeutralCorba(edGetType(),data);
   _port->put(a);
@@ -147,7 +147,7 @@ NeutralCorbaStruct::NeutralCorbaStruct(InputCorbaPort* p)
 {
 }
 
-void NeutralCorbaStruct::put(const void *data) throw(ConversionException)
+void NeutralCorbaStruct::put(const void *data)
 {
   put((YACS::ENGINE::Any *)data);
 }
@@ -156,7 +156,7 @@ void NeutralCorbaStruct::put(const void *data) throw(ConversionException)
 /*!
  *   \param data : Neutral::Any object
  */
-void NeutralCorbaStruct::put(YACS::ENGINE::Any *data) throw(ConversionException)
+void NeutralCorbaStruct::put(YACS::ENGINE::Any *data)
 {
   CORBA::Any *a =convertNeutralCorba(edGetType(),data);
   _port->put(a);

@@ -54,6 +54,7 @@ namespace YACS
       friend class SplitterNode;
       friend class ComposedNode;
       friend class OptimizerLoop;
+      friend class NbBranches;
       friend class ElementaryNode; //for removeAllLinksWithMe
       friend class CollectorSwOutPort;
       friend class OutputDataStreamPort;
@@ -69,7 +70,7 @@ namespace YACS
     protected:
       InPort(const InPort& other, Node *newHelder);
       InPort(const std::string& name, Node *node, TypeCode* type);
-      void edRemoveAllLinksLinkedWithMe() throw(Exception);
+      void edRemoveAllLinksLinkedWithMe() ;
       virtual void edNotifyReferencedBy(OutPort *fromPort, bool isLoopProof = true);
       virtual void edNotifyDereferencedBy(OutPort *fromPort);
       virtual void getAllRepresentants(std::set<InPort *>& repr) const;

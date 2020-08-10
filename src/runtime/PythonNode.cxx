@@ -77,7 +77,6 @@ const char PyFuncNode::SCRIPT_FOR_SERIALIZATION[]="import pickle\n"
     "  args=pickle.loads(st)\n"
     "  return args\n";
 
-
 PythonEntry::PythonEntry():_context(0),_pyfuncSer(0),_pyfuncUnser(0),_pyfuncSimpleSer(0)
 {
 }
@@ -91,26 +90,29 @@ PythonEntry::~PythonEntry()
   Py_XDECREF(_context);
 }
 
-void PythonEntry::commonRemoteLoadPart1(InlineNode *reqNode)
+void PythonEntry::loadRemoteContainer(InlineNode *reqNode)
 {
   DEBTRACE( "---------------PythonEntry::CommonRemoteLoad function---------------" );
   Container *container(reqNode->getContainer());
   bool isContAlreadyStarted(false);
   if(container)
     {
-      isContAlreadyStarted=container->isAlreadyStarted(reqNode);
-      if(!isContAlreadyStarted)
+      try
+      {
+        if(hasImposedResource())
+          container->start(reqNode, _imposedResource, _imposedContainer);
+        else
         {
-          try
-          {
-              container->start(reqNode);
-          }
-          catch(Exception& e)
-          {
-              reqNode->setErrorDetails(e.what());
-              throw e;
-          }
+          isContAlreadyStarted=container->isAlreadyStarted(reqNode);
+          if(!isContAlreadyStarted)
+            container->start(reqNode);
         }
+      }
+      catch(Exception& e)
+      {
+          reqNode->setErrorDetails(e.what());
+          throw e;
+      }
     }
   else
     {
@@ -129,7 +131,7 @@ Engines::Container_var GetContainerObj(InlineNode *reqNode, bool& isStandardCont
   if(!container)
     throw YACS::Exception("No container specified !");
   SalomeContainer *containerCast0(dynamic_cast<SalomeContainer *>(container));
-  SalomeHPContainerBase *containerCast1(dynamic_cast<SalomeHPContainerBase *>(container));
+  SalomeHPContainer *containerCast1(dynamic_cast<SalomeHPContainer *>(container));
   if(containerCast0)
     {
       isStandardCont = true;
@@ -137,7 +139,8 @@ Engines::Container_var GetContainerObj(InlineNode *reqNode, bool& isStandardCont
     }
   else if(containerCast1)
     {
-      objContainer=containerCast1->getContainerPtr(reqNode);
+      YACS::BASES::AutoCppPtr<SalomeContainerTmpForHP> tmpCont(SalomeContainerTmpForHP::BuildFrom(containerCast1,reqNode));
+      objContainer=tmpCont->getContainerPtr(reqNode);
     }
   else
     throw YACS::Exception("Unrecognized type of container ! Salome one is expected for PythonNode/PyFuncNode !");
@@ -146,28 +149,21 @@ Engines::Container_var GetContainerObj(InlineNode *reqNode, bool& isStandardCont
   return objContainer;
 }
 
-Engines::Container_var PythonEntry::commonRemoteLoadPart2(InlineNode *reqNode, bool& isInitializeRequested)
+Engines::Container_var PythonEntry::loadPythonAdapter(InlineNode *reqNode, bool& isInitializeRequested)
 {
   bool isStandardCont(true);
   Engines::Container_var objContainer(GetContainerObj(reqNode,isStandardCont));
   isInitializeRequested=false;
   try
   {
-      if(isStandardCont)
-        {
-          createRemoteAdaptedPyInterpretor(objContainer);
-        }
-      else
-        {
-          Engines::PyNodeBase_var dftPyScript(retrieveDftRemotePyInterpretorIfAny(objContainer));
-          if(CORBA::is_nil(dftPyScript))
-            {
-              isInitializeRequested=true;
-              createRemoteAdaptedPyInterpretor(objContainer);
-            }
-          else
-            assignRemotePyInterpretor(dftPyScript);
-        }
+    Engines::PyNodeBase_var dftPyScript(retrieveDftRemotePyInterpretorIfAny(objContainer));
+    if(CORBA::is_nil(dftPyScript))
+    {
+      isInitializeRequested=!isStandardCont;
+      createRemoteAdaptedPyInterpretor(objContainer);
+    }
+    else
+      assignRemotePyInterpretor(dftPyScript);
   }
   catch( const SALOME::SALOME_Exception& ex )
   {
@@ -183,7 +179,7 @@ Engines::Container_var PythonEntry::commonRemoteLoadPart2(InlineNode *reqNode, b
   return objContainer;
 }
 
-void PythonEntry::commonRemoteLoadPart3(InlineNode *reqNode, Engines::Container_ptr objContainer, bool isInitializeRequested)
+void PythonEntry::loadRemoteContext(InlineNode *reqNode, Engines::Container_ptr objContainer, bool isInitializeRequested)
 {
   Container *container(reqNode->getContainer());
   Engines::PyNodeBase_var pynode(getRemoteInterpreterHandle());
@@ -299,14 +295,20 @@ std::string PythonEntry::GetContainerLog(const std::string& mode, Container *con
 
 void PythonEntry::commonRemoteLoad(InlineNode *reqNode)
 {
-  commonRemoteLoadPart1(reqNode);
+  loadRemoteContainer(reqNode);
   bool isInitializeRequested;
-  Engines::Container_var objContainer(commonRemoteLoadPart2(reqNode,isInitializeRequested));
-  commonRemoteLoadPart3(reqNode,objContainer,isInitializeRequested);
+  Engines::Container_var objContainer(loadPythonAdapter(reqNode,isInitializeRequested));
+  loadRemoteContext(reqNode,objContainer,isInitializeRequested);
+}
+
+bool PythonEntry::hasImposedResource()const
+{
+  return !_imposedResource.empty() && !_imposedContainer.empty();
 }
 
 PythonNode::PythonNode(const PythonNode& other, ComposedNode *father):InlineNode(other,father),_autoSqueeze(other._autoSqueeze)
 {
+  _pynode = Engines::PyScriptNode::_nil();
   _implementation=IMPL_NAME;
   {
     AutoGIL agil;
@@ -323,6 +325,7 @@ PythonNode::PythonNode(const PythonNode& other, ComposedNode *father):InlineNode
 
 PythonNode::PythonNode(const std::string& name):InlineNode(name)
 {
+  _pynode = Engines::PyScriptNode::_nil();
   _implementation=IMPL_NAME;
   {
     AutoGIL agil;
@@ -339,13 +342,10 @@ PythonNode::PythonNode(const std::string& name):InlineNode(name)
 
 PythonNode::~PythonNode()
 {
-  if(!CORBA::is_nil(_pynode))
-    {
-      _pynode->UnRegister();
-    }
+  freeKernelPynode();
 }
 
-void PythonNode::checkBasicConsistency() const throw(YACS::Exception)
+void PythonNode::checkBasicConsistency() const
 {
   DEBTRACE("checkBasicConsistency");
   InlineNode::checkBasicConsistency();
@@ -400,12 +400,12 @@ void PythonNode::executeRemote()
 {
   DEBTRACE( "++++++++++++++ PyNode::executeRemote: " << getName() << " ++++++++++++++++++++" );
   if(!_pyfuncSer)
-    throw Exception("DistributedPythonNode badly loaded");
+    throw Exception("PythonNode badly loaded");
   //
   if(dynamic_cast<HomogeneousPoolContainer *>(getContainer()))
     {
       bool dummy;
-      commonRemoteLoadPart2(this,dummy);
+      loadPythonAdapter(this,dummy);
       _pynode->assignNewCompiledCode(getScript().c_str());
     }
   //
@@ -485,15 +485,15 @@ void PythonNode::executeRemote()
       _errorDetails=msg.str();
       throw Exception(msg.str());
     }
-  if(!CORBA::is_nil(_pynode))
-    {
-      _pynode->UnRegister();
-    }
-  _pynode = Engines::PyScriptNode::_nil();
-  //
-  bool dummy;
-  Engines::Container_var cont(GetContainerObj(this,dummy));
-  cont->removePyScriptNode(getName().c_str());
+//   if(!CORBA::is_nil(_pynode))
+//     {
+//       _pynode->UnRegister();
+//     }
+//   _pynode = Engines::PyScriptNode::_nil();
+//   //
+//   bool dummy;
+//   Engines::Container_var cont(GetContainerObj(this,dummy));
+//   cont->removePyScriptNode(getName().c_str());
   DEBTRACE( "-----------------end of remote python invocation-----------------" );
   //===========================================================================
   // Get results, unpickle and put them in output ports
@@ -561,6 +561,14 @@ void PythonNode::executeRemote()
       }
       if(_autoSqueeze)
         squeezeMemoryRemote();
+  }
+  //
+  if(!isUsingPythonCache())
+  {
+    freeKernelPynode();
+    bool dummy;
+    Engines::Container_var cont(GetContainerObj(this,dummy));
+    cont->removePyScriptNode(getName().c_str());
   }
   DEBTRACE( "++++++++++++++ ENDOF PyNode::executeRemote: " << getName() << " ++++++++++++++++++++" );
 }
@@ -723,10 +731,61 @@ void PythonNode::shutdown(int level)
   if(_mode=="local")return;
   if(_container)
     {
-      if(!CORBA::is_nil(_pynode)) _pynode->UnRegister();
-      _pynode=Engines::PyScriptNode::_nil();
+      freeKernelPynode();
       _container->shutdown(level);
     }
+}
+
+void PythonNode::imposeResource(const std::string& resource_name,
+                                const std::string& container_name)
+{
+  if(!resource_name.empty() && !container_name.empty())
+  {
+    _imposedResource = resource_name;
+    _imposedContainer = container_name;
+  }
+}
+
+bool PythonNode::canAcceptImposedResource()
+{
+  return _container != nullptr && _container->canAcceptImposedResource();
+}
+
+bool PythonNode::hasImposedResource()const
+{
+  return PythonEntry::hasImposedResource();
+}
+
+std::string PythonNode::pythonEntryName()const
+{
+  if(isUsingPythonCache())
+    return "DEFAULT_NAME_FOR_UNIQUE_PYTHON_NODE_ENTRY";
+  else
+    return getName();
+}
+
+bool PythonNode::isUsingPythonCache()const
+{
+  bool found = false;
+  if(_container)
+    found = _container->isUsingPythonCache();
+  return found;
+}
+
+void PythonNode::freeKernelPynode()
+{
+  if(!CORBA::is_nil(_pynode))
+  {
+    try
+    {
+      _pynode->UnRegister();
+    }
+    catch(...)
+    {
+      DEBTRACE("Trouble when pynode->UnRegister!")
+    }
+    _pynode = Engines::PyScriptNode::_nil();
+  }
 }
 
 Node *PythonNode::simpleClone(ComposedNode *father, bool editionOnly) const
@@ -736,15 +795,14 @@ Node *PythonNode::simpleClone(ComposedNode *father, bool editionOnly) const
 
 void PythonNode::createRemoteAdaptedPyInterpretor(Engines::Container_ptr objContainer)
 {
-  if(!CORBA::is_nil(_pynode))
-    _pynode->UnRegister();
-  _pynode=objContainer->createPyScriptNode(getName().c_str(),getScript().c_str());
+  freeKernelPynode();
+  _pynode=objContainer->createPyScriptNode(pythonEntryName().c_str(),getScript().c_str());
   _pynode->Register();
 }
 
 Engines::PyNodeBase_var PythonNode::retrieveDftRemotePyInterpretorIfAny(Engines::Container_ptr objContainer) const
 {
-  Engines::PyScriptNode_var ret(objContainer->getDefaultPyScriptNode(getName().c_str()));
+  Engines::PyScriptNode_var ret(objContainer->getDefaultPyScriptNode(pythonEntryName().c_str()));
   if(!CORBA::is_nil(ret))
     {
       ret->Register();
@@ -754,18 +812,18 @@ Engines::PyNodeBase_var PythonNode::retrieveDftRemotePyInterpretorIfAny(Engines:
 
 void PythonNode::assignRemotePyInterpretor(Engines::PyNodeBase_var remoteInterp)
 {
-  if(!CORBA::is_nil(_pynode))
+  if(CORBA::is_nil(_pynode))
+    _pynode=Engines::PyScriptNode::_narrow(remoteInterp);
+  else
+  {
+    Engines::PyScriptNode_var tmpp(Engines::PyScriptNode::_narrow(remoteInterp));
+    if(!_pynode->_is_equivalent(tmpp))
     {
-      Engines::PyScriptNode_var tmpp(Engines::PyScriptNode::_narrow(remoteInterp));
-      if(_pynode->_is_equivalent(tmpp))
-        {
-          _pynode->UnRegister();
-          return ;
-        }
+      freeKernelPynode();
+      _pynode=Engines::PyScriptNode::_narrow(remoteInterp);
     }
-  if(!CORBA::is_nil(_pynode))
-    _pynode->UnRegister();
-  _pynode=Engines::PyScriptNode::_narrow(remoteInterp);
+  }
+  _pynode->assignNewCompiledCode(getScript().c_str());
 }
 
 Engines::PyNodeBase_var PythonNode::getRemoteInterpreterHandle()
@@ -901,7 +959,7 @@ void PyFuncNode::init(bool start)
     setState(YACS::TORECONNECT);
 }
 
-void PyFuncNode::checkBasicConsistency() const throw(YACS::Exception)
+void PyFuncNode::checkBasicConsistency() const
 {
   DEBTRACE("checkBasicConsistency");
   InlineFuncNode::checkBasicConsistency();
@@ -1027,7 +1085,7 @@ void PyFuncNode::executeRemote()
   if(dynamic_cast<HomogeneousPoolContainer *>(getContainer()))
     {
       bool dummy;
-      commonRemoteLoadPart2(this,dummy);
+      loadPythonAdapter(this,dummy);
       _pynode->executeAnotherPieceOfCode(getScript().c_str());
     }
   //
@@ -1337,5 +1395,25 @@ void PyFuncNode::shutdown(int level)
       _pynode=Engines::PyNode::_nil();
       _container->shutdown(level);
     }
+}
+
+void PyFuncNode::imposeResource(const std::string& resource_name,
+                                const std::string& container_name)
+{
+  if(!resource_name.empty() && !container_name.empty())
+  {
+    _imposedResource = resource_name;
+    _imposedContainer = container_name;
+  }
+}
+
+bool PyFuncNode::canAcceptImposedResource()
+{
+  return _container != nullptr && _container->canAcceptImposedResource();
+}
+
+bool PyFuncNode::hasImposedResource()const
+{
+  return PythonEntry::hasImposedResource();
 }
 

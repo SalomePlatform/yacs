@@ -186,7 +186,7 @@ DeploymentTree ComposedNode::getDeploymentTree() const
 /*!
  * \param deep if \b true a deep check is perfomed. Typically has to be called by  an executor before any attempt to launch an execution.
  */
-DeploymentTree ComposedNode::checkDeploymentTree(bool deep) const throw(YACS::Exception)
+DeploymentTree ComposedNode::checkDeploymentTree(bool deep) const
 {
   DeploymentTree ret;
   list< ElementaryNode * > tasks=getRecursiveConstituents();
@@ -270,7 +270,7 @@ void ComposedNode::notifyFrom(const Task *sender, //* I : task emitting event
  *  \return    true if a new link has been created, false otherwise.
  */
 
-bool ComposedNode::edAddLink(OutPort *start, InPort *end) throw(YACS::Exception)
+bool ComposedNode::edAddLink(OutPort *start, InPort *end)
 {
   DEBTRACE("ComposedNode::edAddLink");
   set<OutPort *> represented;
@@ -330,7 +330,7 @@ bool ComposedNode::edAddLink(OutPort *start, InPort *end) throw(YACS::Exception)
  * \param end : the InPort to connect
  * \return  true if a new link has been created, false otherwise. 
  */
-bool ComposedNode::edAddDFLink(OutPort *start, InPort *end) throw(YACS::Exception)
+bool ComposedNode::edAddDFLink(OutPort *start, InPort *end)
 {
   Node* n1=start->getNode();
   Node* n2=end->getNode();
@@ -384,7 +384,7 @@ bool ComposedNode::edAddDFLink(OutPort *start, InPort *end) throw(YACS::Exceptio
  *             supporting it.
  * \return  true if a new link has been created, false otherwise. 
  */
-bool ComposedNode::edAddLink(OutGate *start, InGate *end) throw(YACS::Exception)
+bool ComposedNode::edAddLink(OutGate *start, InGate *end)
 {
   Node* n1=start->getNode();
   Node* n2=end->getNode();
@@ -418,13 +418,13 @@ bool ComposedNode::edAddLink(OutGate *start, InGate *end) throw(YACS::Exception)
 /*!
  * Add a controlflow link between two nodes by calling edAddLink on their control ports
  */
-bool ComposedNode::edAddCFLink(Node *nodeS, Node *nodeE) throw(YACS::Exception)
+bool ComposedNode::edAddCFLink(Node *nodeS, Node *nodeE)
 {
   return edAddLink(nodeS->getOutGate(),nodeE->getInGate());
 }
 
 //! Remove a controlflow link.
-void ComposedNode::edRemoveCFLink(Node *nodeS, Node *nodeE) throw(YACS::Exception)
+void ComposedNode::edRemoveCFLink(Node *nodeS, Node *nodeE)
 {
   edRemoveLink(nodeS->getOutGate(),nodeE->getInGate());
 }
@@ -438,7 +438,7 @@ void ComposedNode::edRemoveCFLink(Node *nodeS, Node *nodeE) throw(YACS::Exceptio
  *                        implies DF/DS gateway.
  */
 
-void ComposedNode::edRemoveLink(OutPort *start, InPort *end) throw(YACS::Exception)
+void ComposedNode::edRemoveLink(OutPort *start, InPort *end)
 {
   if(!start->isAlreadyLinkedWith(end))
     throw Exception("ComposedNode::edRemoveLink : unexisting link");
@@ -520,7 +520,7 @@ void ComposedNode::edRemoveLink(OutPort *start, InPort *end) throw(YACS::Excepti
 }
 
 //! Remove a controlflow link.
-void ComposedNode::edRemoveLink(OutGate *start, InGate *end) throw(YACS::Exception)
+void ComposedNode::edRemoveLink(OutGate *start, InGate *end)
 {
   ComposedNode* father=checkHavingCommonFather(start->getNode(),end->getNode());
   if(father!=this)
@@ -528,13 +528,13 @@ void ComposedNode::edRemoveLink(OutGate *start, InGate *end) throw(YACS::Excepti
   start->edRemoveInGate(end);
 }
 
-bool ComposedNode::edAddChild(Node *DISOWNnode) throw(YACS::Exception)
+bool ComposedNode::edAddChild(Node *DISOWNnode)
 {
   return false; // --- reimplemented in derived classes
 }
 
 //! Remove a child node.
-void ComposedNode::edRemoveChild(Node *node) throw(YACS::Exception)
+void ComposedNode::edRemoveChild(Node *node)
 {
   if(!node)
     return;
@@ -559,7 +559,7 @@ void ComposedNode::edRemoveChild(Node *node) throw(YACS::Exception)
  *          separator was not found).
  */
 bool ComposedNode::splitNamesBySep(const std::string& globalName, const char separator[],
-                                   std::string& firstPart, std::string& lastPart, bool priority) throw(YACS::Exception)
+                                   std::string& firstPart, std::string& lastPart, bool priority)
 {
   const string delims(separator);
   string portName, nodeName;
@@ -612,7 +612,7 @@ std::vector< std::pair<OutPort *, InPort *> > ComposedNode::getSetOfLinksLeaving
   return ret;
 }
 
-void ComposedNode::checkConsistency(LinkInfo& info) const throw(YACS::Exception)
+void ComposedNode::checkConsistency(LinkInfo& info) const
 {
   info.clearAll();
   info.setPointOfView((ComposedNode *)this);
@@ -659,7 +659,7 @@ void ComposedNode::checkConsistency(LinkInfo& info) const throw(YACS::Exception)
  * This method check that G1 <- G2 <- G3 <- G1 does not happened.
  * Typically called by methods that set a hierarchy (Bloc::edAddChild, Loop::edSetNode, ...).
  */
-void ComposedNode::checkNoCrossHierachyWith(Node *node) const throw(YACS::Exception)
+void ComposedNode::checkNoCrossHierachyWith(Node *node) const
 {
   ComposedNode *nodeC=dynamic_cast<ComposedNode *>(node);
   if(!nodeC)
@@ -714,7 +714,7 @@ Node *ComposedNode::getLowestNodeDealingAll(const std::list<OutPort *>& ports) c
 /*!
  * call it only for 'starts' to 'end' links \b DEALED by 'this'.
  */
-void ComposedNode::checkLinksCoherenceRegardingControl(const std::vector<OutPort *>& starts, InputPort *end, LinkInfo& info) const throw(YACS::Exception)
+void ComposedNode::checkLinksCoherenceRegardingControl(const std::vector<OutPort *>& starts, InputPort *end, LinkInfo& info) const
 {
   map < ComposedNode *, list<OutPort *>, SortHierarc > outputs;//forward link classical
   vector<OutPort *> outputsCross;//forward link cross
@@ -924,7 +924,7 @@ void ComposedNode::edDisconnectAllLinksWithMe()
     }
 }
 
-ComposedNode *ComposedNode::getRootNode() const throw(YACS::Exception)
+ComposedNode *ComposedNode::getRootNode() const
 {
   if(!_father)
     return (ComposedNode *)this;
@@ -965,7 +965,7 @@ Node *ComposedNode::isInMyDescendance(Node *nodeToTest) const
     return 0;
 }
 
-string ComposedNode::getChildName(const Node* node) const throw(YACS::Exception)
+string ComposedNode::getChildName(const Node* node) const
 {
   string nodeName=node->getQualifiedName();    
   if (!isNodeAlreadyAggregated(node))
@@ -996,7 +996,7 @@ std::string ComposedNode::getMyQualifiedName(const Node *directSon) const
   return directSon->getName();
 }
 
-Node *ComposedNode::getChildByName(const std::string& name) const throw(YACS::Exception)
+Node *ComposedNode::getChildByName(const std::string& name) const
 {
   string potentiallyDirectSonName, remainsPath;
   bool forwardNeeded=ComposedNode::splitNamesBySep(name, SEP_CHAR_BTW_LEVEL,
@@ -1014,7 +1014,7 @@ Node *ComposedNode::getChildByName(const std::string& name) const throw(YACS::Ex
  * \exception Exception : If 'nodeToTest' is NOT in descendance of 'this' AND not equal to 'this'
  * \param nodeToTest : the node to check
  */
-void ComposedNode::checkInMyDescendance(Node *nodeToTest) const throw(YACS::Exception)
+void ComposedNode::checkInMyDescendance(Node *nodeToTest) const
 {
   const char whatC[]=" is not the descendance of node ";
   if(nodeToTest==0)
@@ -1047,7 +1047,7 @@ void ComposedNode::checkInMyDescendance(Node *nodeToTest) const throw(YACS::Exce
  * \return The lowest common ancestor if it exists.
  *
  */
-ComposedNode *ComposedNode::getLowestCommonAncestor(Node *node1, Node *node2) throw(YACS::Exception)
+ComposedNode *ComposedNode::getLowestCommonAncestor(Node *node1, Node *node2)
 {
   const char what[]="The two nodes do not share the same genealogy";
   if(node1==0 || node2==0)
@@ -1197,12 +1197,12 @@ list<ProgressWeight> ComposedNode::getProgressWeight() const
  * get the input port name used by the current node, recursively built with children names.
  */
 
-string ComposedNode::getInPortName(const InPort * inPort) const throw(YACS::Exception)
+string ComposedNode::getInPortName(const InPort * inPort) const
 {
   return getPortName<InPort>(inPort);
 }
 
-string ComposedNode::getOutPortName(const OutPort *outPort) const throw(YACS::Exception)
+string ComposedNode::getOutPortName(const OutPort *outPort) const
 {
   return getPortName<OutPort>(outPort);
 }
@@ -1273,7 +1273,7 @@ list<OutputDataStreamPort *> ComposedNode::getSetOfOutputDataStreamPort() const
   return ret;
 }
 
-OutPort *ComposedNode::getOutPort(const std::string& name) const throw(YACS::Exception)
+OutPort *ComposedNode::getOutPort(const std::string& name) const
 {
   string portName, nodeName;
   if(splitNamesBySep(name,Node::SEP_CHAR_IN_PORT,nodeName,portName,false))
@@ -1294,7 +1294,7 @@ OutPort *ComposedNode::getOutPort(const std::string& name) const throw(YACS::Exc
  * and so the leaf of type ElementaryNode aggregating
  * this InputPort is directly invoked.
  */
-InputPort * ComposedNode::getInputPort(const std::string& name) const throw(YACS::Exception)
+InputPort * ComposedNode::getInputPort(const std::string& name) const
 {
   try {
     return Node::getInputPort(name);
@@ -1319,7 +1319,7 @@ InputPort * ComposedNode::getInputPort(const std::string& name) const throw(YACS
  * Contrary to YACS::ENGINE::ComposedNode::getInputPort, this method is recursive and go 
  * down hierarchy step by step to complete its work.
  */
-OutputPort * ComposedNode::getOutputPort(const std::string& name) const throw(YACS::Exception)
+OutputPort * ComposedNode::getOutputPort(const std::string& name) const
 {
   string portName, nodeName;
   if(splitNamesBySep(name,Node::SEP_CHAR_IN_PORT,nodeName,portName,false))
@@ -1334,7 +1334,7 @@ OutputPort * ComposedNode::getOutputPort(const std::string& name) const throw(YA
     }
 }
 
-InputDataStreamPort *ComposedNode::getInputDataStreamPort(const std::string& name) const throw(YACS::Exception)
+InputDataStreamPort *ComposedNode::getInputDataStreamPort(const std::string& name) const
 {
   string portName, nodeName;
   if(splitNamesBySep(name,Node::SEP_CHAR_IN_PORT,nodeName,portName,true))
@@ -1349,7 +1349,7 @@ InputDataStreamPort *ComposedNode::getInputDataStreamPort(const std::string& nam
     }
 }
 
-OutputDataStreamPort *ComposedNode::getOutputDataStreamPort(const std::string& name) const throw(YACS::Exception)
+OutputDataStreamPort *ComposedNode::getOutputDataStreamPort(const std::string& name) const
 {
   string portName, nodeName;
   if(splitNamesBySep(name,Node::SEP_CHAR_IN_PORT,nodeName,portName,true))
@@ -1445,7 +1445,7 @@ YACS::Event ComposedNode::updateStateOnFailedEventFrom(Node *node, const Executo
 }
 
 void ComposedNode::checkLinkPossibility(OutPort *start, const std::list<ComposedNode *>& pointsOfViewStart,
-                                        InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd) throw(YACS::Exception)
+                                        InPort *end, const std::list<ComposedNode *>& pointsOfViewEnd)
 {
   if((dynamic_cast<DataFlowPort *>(start) || dynamic_cast<DataFlowPort *>(end))
      && (dynamic_cast<DataStreamPort *>(start) || dynamic_cast<DataStreamPort *>(end)))
@@ -1469,19 +1469,19 @@ void ComposedNode::buildDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort
 {
 }
 
-void ComposedNode::getDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView) throw(YACS::Exception)
+void ComposedNode::getDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView)
 {
 }
 
-void ComposedNode::getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(YACS::Exception)
+void ComposedNode::getDelegateOf(std::pair<OutPort *, OutPort *>& port, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView)
 {
 }
 
-void ComposedNode::releaseDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView) throw(YACS::Exception)
+void ComposedNode::releaseDelegateOf(InPort * & port, OutPort *initialStart, const std::list<ComposedNode *>& pointsOfView)
 {
 }
 
-void ComposedNode::releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView) throw(YACS::Exception)
+void ComposedNode::releaseDelegateOf(OutPort *portDwn, OutPort *portUp, InPort *finalTarget, const std::list<ComposedNode *>& pointsOfView)
 {
 }
 
@@ -1500,6 +1500,17 @@ void ComposedNode::accept(Visitor *visitor)
       (*iter)->accept(visitor);
     }
 }
+
+void ComposedNode::setProperty(const std::string& name,const std::string& value)
+{
+  Node::setProperty(name, value);
+}
+
+std::string ComposedNode::getProperty(const std::string& name)
+{
+  return Node::getProperty(name);
+}
+
 
 //! redefined on derived class of ComposedNode. by default a ComposedNode has no port by itself
 std::list<InputPort *> ComposedNode::getLocalInputPorts() const
@@ -1589,7 +1600,7 @@ std::string ComposedNode::getErrorReport()
 
 
 
-void ComposedNode::checkBasicConsistency() const throw(YACS::Exception)
+void ComposedNode::checkBasicConsistency() const
 {
   DEBTRACE("ComposedNode::checkBasicConsistency");
   std::list<InputPort *>::const_iterator iter;

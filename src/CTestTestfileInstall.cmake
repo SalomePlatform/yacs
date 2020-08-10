@@ -35,4 +35,5 @@ SUBDIRS(
     yacsloader
     yacsloader_swig
     py2yacs
+    workloadmanager
     )

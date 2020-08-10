@@ -53,18 +53,18 @@ const char *InputXmlPort::getXml() const
   return _data.c_str();
 }
 
-void *InputXmlPort::get() const throw(YACS::Exception)
+void *InputXmlPort::get() const
 {
   return (void *) _data.c_str();
 }
 
-void InputXmlPort::put(const void *data) throw (ConversionException)
+void InputXmlPort::put(const void *data)
 {
   DEBTRACE("put(void *)");
   put((const char*)data);
 }
 
-void InputXmlPort::put(const char *data) throw (ConversionException)
+void InputXmlPort::put(const char *data)
 {
   DEBTRACE(data);
   _data = data;
@@ -129,17 +129,17 @@ OutputXmlPort::OutputXmlPort(const OutputXmlPort& other, Node *newHelder):Output
 {
 }
 
-const char * OutputXmlPort::get() const throw (ConversionException)
+const char * OutputXmlPort::get() const
 {
   return _data.c_str();
 }
 
-void OutputXmlPort::put(const void *data) throw (ConversionException)
+void OutputXmlPort::put(const void *data)
 {
   put((const char*)data);
 }
 
-void OutputXmlPort::put(const char *data)  throw (ConversionException)
+void OutputXmlPort::put(const char *data)
 {
   DEBTRACE(data);
   InputPort *p;

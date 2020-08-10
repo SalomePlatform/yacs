@@ -52,12 +52,12 @@ namespace YACS
       void getReadyTasks(std::vector<Task *>& tasks);
       void exUpdateState();
       //Node* DISOWNnode is a SWIG notation to indicate that the ownership of the node is transfered to C++
-      bool edAddChild(Node *DISOWNnode) throw(Exception);
-      void edRemoveChild(Node *node) throw(Exception);
+      bool edAddChild(Node *DISOWNnode) ;
+      void edRemoveChild(Node *node) ;
       std::list<Node *> getChildren() const { return _setOfNode; }
       std::list<Node *> edGetDirectDescendants() const { return _setOfNode; }
       std::vector< std::list<Node *> > splitIntoIndependantGraph() const;
-      Node *getChildByShortName(const std::string& name) const throw(Exception);
+      Node *getChildByShortName(const std::string& name) const ;
       virtual void writeDot(std::ostream &os) const;
       void accept(Visitor *visitor);
       template<bool direction>
@@ -70,11 +70,12 @@ namespace YACS
       void removeRecursivelyRedundantCL();
       void partitionRegardingDPL(const PartDefinition *pd, std::map<ComposedNode *, YACS::BASES::AutoRefCnt<PartDefinition> >& zeMap);
       void fitToPlayGround(const PlayGround *pg);
+      void propagePlayGround(const PlayGround *pg);
     protected:
       bool areAllSubNodesFinished() const;
       bool areAllSubNodesDone() const;
       bool isNameAlreadyUsed(const std::string& name) const;
-      void checkNoCyclePassingThrough(Node *node) throw(Exception);
+      void checkNoCyclePassingThrough(Node *node) ;
       std::vector< std::pair<OutGate *, InGate *> > getSetOfInternalCFLinks() const;
       YACS::Event updateStateOnFinishedEventFrom(Node *node);
       YACS::Event updateStateOnFailedEventFrom(Node *node, const Executor *execInst);

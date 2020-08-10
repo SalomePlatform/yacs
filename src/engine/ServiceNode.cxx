@@ -143,7 +143,7 @@ bool ServiceNode::isDeployable() const
 }
 
 //! Associate an existing component instance to this service node \b AND check the consistency regarding the deployment from root node point of view.
-void ServiceNode::setComponent(ComponentInstance* compo) throw(YACS::Exception)
+void ServiceNode::setComponent(ComponentInstance* compo)
 {
   DEBTRACE("ServiceNode::setComponent " << compo);
   if(compo)

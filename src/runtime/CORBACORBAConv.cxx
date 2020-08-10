@@ -34,7 +34,7 @@ CorbaCorba::CorbaCorba(InputCorbaPort* p)
  *   transition method from const void* to CORBA::Any*
  *   \param data : const void * data
  */
-void CorbaCorba::put(const void *data) throw(ConversionException)
+void CorbaCorba::put(const void *data)
 {
   put((CORBA::Any *)data);
 }
@@ -43,7 +43,7 @@ void CorbaCorba::put(const void *data) throw(ConversionException)
 /*!
  *   \param data : CORBA::Any object
  */
-void CorbaCorba::put(CORBA::Any *data) throw(ConversionException)
+void CorbaCorba::put(CORBA::Any *data)
 {
   CORBA::Any *a = convertCorbaCorba(edGetType(),data);
   _port->put(a);

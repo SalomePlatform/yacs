@@ -39,8 +39,8 @@ namespace YACS
     {
     public:
       CorbaPyDouble(InputPyPort* p);
-      virtual void put(const void *data) throw(ConversionException);
-      void put(CORBA::Any *data) throw(ConversionException);
+      virtual void put(const void *data);
+      void put(CORBA::Any *data);
     };
 
 /*! \brief Class for conversion from CORBA Output port to Python Input port
@@ -52,8 +52,8 @@ namespace YACS
     {
     public:
       CorbaPyInt(InputPyPort* p);
-      virtual void put(const void *data) throw(ConversionException);
-      void put(CORBA::Any *data) throw(ConversionException);
+      virtual void put(const void *data);
+      void put(CORBA::Any *data);
     };
 
 /*! \brief Class for conversion from CORBA Output port to Python Input port
@@ -65,8 +65,8 @@ namespace YACS
     {
     public:
       CorbaPyString(InputPyPort* p);
-      virtual void put(const void *data) throw(ConversionException);
-      void put(CORBA::Any *data) throw(ConversionException);
+      virtual void put(const void *data);
+      void put(CORBA::Any *data);
     };
 
 /*! \brief Class for conversion from CORBA Output port to Python Input port
@@ -80,8 +80,8 @@ namespace YACS
     {
     public:
       CorbaPyBool(InputPyPort* p);
-      virtual void put(const void *data) throw(ConversionException);
-      void put(CORBA::Any *data) throw(ConversionException);
+      virtual void put(const void *data);
+      void put(CORBA::Any *data);
     };
 
 /*! \brief Class for conversion from CORBA Output port to Python Input port
@@ -93,8 +93,8 @@ namespace YACS
     {
     public:
       CorbaPyObjref(InputPyPort* p);
-      virtual void put(const void *data) throw(ConversionException);
-      void put(CORBA::Any *data) throw(ConversionException);
+      virtual void put(const void *data);
+      void put(CORBA::Any *data);
     };
 
 /*! \brief Class for conversion from CORBA Output port to Python Input port
@@ -106,8 +106,8 @@ namespace YACS
     {
     public:
       CorbaPySequence(InputPyPort* p);
-      virtual void put(const void *data) throw(ConversionException);
-      void put(CORBA::Any *data) throw(ConversionException);
+      virtual void put(const void *data);
+      void put(CORBA::Any *data);
     protected:
       DynamicAny::DynAnyFactory_ptr _dynfactory;
     };
@@ -121,8 +121,8 @@ namespace YACS
     {
     public:
       CorbaPyStruct(InputPyPort* p);
-      virtual void put(const void *data) throw(ConversionException);
-      void put(CORBA::Any *data) throw(ConversionException);
+      virtual void put(const void *data);
+      void put(CORBA::Any *data);
     };
 
   }

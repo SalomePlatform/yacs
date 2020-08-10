@@ -35,7 +35,7 @@ NeutralXml::NeutralXml(InputXmlPort* p)
 {
 }
 
-void NeutralXml::put(const void *data) throw(ConversionException)
+void NeutralXml::put(const void *data)
 {
   DEBTRACE(" NeutralXml::put(const void *data)");
   put((YACS::ENGINE::Any *)data);
@@ -46,7 +46,7 @@ void NeutralXml::put(const void *data) throw(ConversionException)
   *   \param data : YACS::ENGINE::Any object
   */
 
-void NeutralXml::put(YACS::ENGINE::Any *data) throw(ConversionException)
+void NeutralXml::put(YACS::ENGINE::Any *data)
 {
   DEBTRACE("NeutralXml::put " << data);
   std::string sss = convertNeutralXml(edGetType(),data);

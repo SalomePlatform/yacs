@@ -84,7 +84,7 @@ InPropertyPort::get() const
 }
 
 void
-InPropertyPort::put(const void *data) throw(ConversionException)
+InPropertyPort::put(const void *data)
 {
   put((YACS::ENGINE::Any *)data);
 }

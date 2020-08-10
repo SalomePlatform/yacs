@@ -44,8 +44,8 @@ namespace YACS
       virtual std::set<InPort *> edSetInPort() const = 0;
       virtual bool isAlreadyLinkedWith(InPort *withp) const = 0;
       virtual void getAllRepresented(std::set<OutPort *>& represented) const;
-      virtual bool addInPort(InPort *inPort) throw(Exception) = 0;
-      virtual int removeInPort(InPort *inPort, bool forward) throw(Exception) = 0;
+      virtual bool addInPort(InPort *inPort)  = 0;
+      virtual int removeInPort(InPort *inPort, bool forward)  = 0;
       virtual ~OutPort();
       std::vector<DataPort *> calculateHistoryOfLinkWith(InPort *end);
       virtual std::string typeName() {return "YACS__ENGINE__OutPort";}

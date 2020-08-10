@@ -38,7 +38,7 @@ CorbaXml::CorbaXml(InputXmlPort* p)
  *   \param data : CORBA::Any object as a void * pointer
  */
 
-void CorbaXml::put(const void *data) throw(ConversionException)
+void CorbaXml::put(const void *data)
 {
   put((CORBA::Any *)data);
 }
@@ -47,7 +47,7 @@ void CorbaXml::put(const void *data) throw(ConversionException)
 /*!
  *   \param data : CORBA::Any object
  */
-void CorbaXml::put(CORBA::Any *data) throw(ConversionException)
+void CorbaXml::put(CORBA::Any *data)
 {
   DEBTRACE("CorbaXml::put" );
   std::string sss = convertCorbaXml(edGetType(),data);

@@ -48,7 +48,7 @@ class OptimizerAlgSyncExample : public YACS::ENGINE::OptimizerAlgSync
     virtual YACS::ENGINE::TypeCode *getTCForAlgoInit() const;
     //! returns typecode of type expected as algo result. OwnerShip of returned pointer is held by this.
     virtual YACS::ENGINE::TypeCode *getTCForAlgoResult() const;
-    virtual void initialize(const YACS::ENGINE::Any *input) throw (YACS::Exception);
+    virtual void initialize(const YACS::ENGINE::Any *input);
     virtual void start(); //! Update _pool attribute before performing anything.
     virtual void takeDecision();//! _pool->getCurrentId gives the \b id at the origin of this call.
                                 //! Perform the job of analysing to know what new jobs to do (_pool->pushInSample)
@@ -100,7 +100,6 @@ YACS::ENGINE::TypeCode * OptimizerAlgSyncExample::getTCForAlgoResult() const
  *  future to initialize an algorithm with custom data.
  */
 void OptimizerAlgSyncExample::initialize(const YACS::ENGINE::Any *input)
-  throw (YACS::Exception)
 {
   std::cout << "Algo initialize, input = " << input->getIntValue() << std::endl;
 }

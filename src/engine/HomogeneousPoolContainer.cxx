@@ -40,6 +40,11 @@ void HomogeneousPoolContainer::setAttachOnCloningStatus(bool val) const
     throw Exception("An HomogeneousPoolContainer cannot be detached on cloning #2 !");
 }
 
+void HomogeneousPoolContainer::assignPG(const PlayGround *pg)
+{
+  _pg.takeRef(pg);
+}
+
 void HomogeneousPoolContainer::dettachOnCloning() const
 {
   _isAttachedOnCloning=true;
@@ -61,4 +66,11 @@ HomogeneousPoolContainer::HomogeneousPoolContainer()
 
 HomogeneousPoolContainer::~HomogeneousPoolContainer()
 {
+}
+
+const PlayGround *HomogeneousPoolContainer::getPG() const
+{
+  if(_pg.isNull())
+    throw Exception("HomogeneousPoolContainer::getPG : PlayGround is nullptr !");
+  return _pg;
 }

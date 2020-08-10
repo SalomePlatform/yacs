@@ -58,7 +58,7 @@ const char Runtime::RUNTIME_ENGINE_INTERACTION_IMPL_NAME[]="Neutral";
 
 // singleton creation must be done before by a derived class
 
-Runtime* YACS::ENGINE::getRuntime() throw(Exception)
+Runtime* YACS::ENGINE::getRuntime() 
 {
   if ( !  Runtime::_singleton )
     throw Exception("Runtime is not yet initialized");
@@ -253,6 +253,11 @@ ForEachLoop* Runtime::createForEachLoop(const std::string& name,TypeCode *type)
   ForEachLoop* ret = new ForEachLoop(name,type);
   ret->edGetNbOfBranchesPort()->edInit(1);
   return ret;
+}
+
+ForEachLoopDyn* Runtime::createForEachLoopDyn(const std::string& name,TypeCode * type)
+{
+  return new ForEachLoopDyn(name,type);
 }
 
 OptimizerLoop* Runtime::createOptimizerLoop(const std::string& name,const std::string& algLib,const std::string& factoryName,bool algInitOnFile,

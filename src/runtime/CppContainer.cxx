@@ -85,7 +85,7 @@ bool CppContainer::isAlreadyStarted(const Task *askingNode) const
   return NULL != _trueCont;
 }
 
-void CppContainer::start(const Task *askingNode) throw (YACS::Exception)
+void CppContainer::start(const Task *askingNode)
 {
   _trueCont = LocalContainer::get();
 }
@@ -111,7 +111,7 @@ Container *CppContainer::cloneAlways() const
   return new CppContainer(*this);
 }
 
-bool CppContainer::loadComponentLibrary(const std::string & componentName) throw (YACS::Exception)
+bool CppContainer::loadComponentLibrary(const std::string & componentName)
     {
   if (_trueCont)
     {
@@ -168,7 +168,7 @@ std::string CppContainer::getFullPlacementId(const Task *askingNode) const
   return "/";
 }
 
-void CppContainer::checkCapabilityToDealWith(const ComponentInstance *inst) const throw(YACS::Exception)
+void CppContainer::checkCapabilityToDealWith(const ComponentInstance *inst) const
 {
   if(inst->getKind()!=CppComponent::KIND)
     throw Exception("CppContainer::checkCapabilityToDealWith : CppContainer is not able to deal with this type of ComponentInstance.");

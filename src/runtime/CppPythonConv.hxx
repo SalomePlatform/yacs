@@ -32,8 +32,8 @@ namespace YACS
     {
     public:
       CppPy(InputPyPort* p);
-      virtual void put(const void *data)  throw(ConversionException);
-      virtual void put(Any *a)  throw(ConversionException);
+      virtual void put(const void *data) ;
+      virtual void put(Any *a) ;
     };
     int isAdaptablePyObjectCpp(const TypeCode *t1, const TypeCode *t2);
   }

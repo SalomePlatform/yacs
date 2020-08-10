@@ -96,14 +96,14 @@ namespace YACS
       LinkInfo(unsigned char level);
       void clearAll();
       void startCollapseTransac();
-      void endCollapseTransac() throw(Exception);
+      void endCollapseTransac();
       void setPointOfView(ComposedNode *pov);
       void pushInfoLink(OutPort *semStart, InPort *end, InfoReason reason);
       void pushWarnLink(OutPort *semStart, InPort *end, WarnReason reason);
-      void pushErrLink(OutPort *semStart, InPort *end, ErrReason reason) throw(Exception);
-      void pushErrSwitch(CollectorSwOutPort *collector) throw(Exception);
+      void pushErrLink(OutPort *semStart, InPort *end, ErrReason reason);
+      void pushErrSwitch(CollectorSwOutPort *collector);
       void pushUselessCFLink(Node *start, Node *end);
-      void takeDecision() const throw(Exception);
+      void takeDecision() const;
       //Typically methods for high level use.
       std::string getGlobalRepr() const;
       std::string getInfoRepr() const;

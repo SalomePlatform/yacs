@@ -1,0 +1,204 @@
+<?xml version='1.0' encoding='iso-8859-1' ?>
+<proc name="2foreach_with_cache">
+   <property name="executor" value="workloadmanager"/>
+   <type name="string" kind="string"/>
+   <struct name="Engines/dataref">
+      <member name="ref" type="string"/>
+   </struct>
+   <type name="bool" kind="bool"/>
+   <sequence name="boolvec" content="bool"/>
+   <type name="double" kind="double"/>
+   <sequence name="dblevec" content="double"/>
+   <objref name="file" id="file"/>
+   <type name="int" kind="int"/>
+   <sequence name="intvec" content="int"/>
+   <struct name="stringpair">
+      <member name="name" type="string"/>
+      <member name="value" type="string"/>
+   </struct>
+   <sequence name="propvec" content="stringpair"/>
+   <objref name="pyobj" id="python:obj:1.0"/>
+   <sequence name="seqboolvec" content="boolvec"/>
+   <sequence name="seqdblevec" content="dblevec"/>
+   <sequence name="seqint" content="int"/>
+   <sequence name="seqintvec" content="intvec"/>
+   <sequence name="seqpyobj" content="pyobj"/>
+   <sequence name="stringvec" content="string"/>
+   <sequence name="seqstringvec" content="stringvec"/>
+   <container name="DefaultContainer">
+      <property name="container_kind" value="Salome"/>
+      <property name="attached_on_cloning" value="0"/>
+      <property name="container_name" value="FactoryServer"/>
+      <property name="name" value="localhost"/>
+   </container>
+   <container name="c1">
+      <property name="container_kind" value="Salome"/>
+      <property name="attached_on_cloning" value="1"/>
+      <property name="nb_parallel_procs" value="1"/>
+      <property name="type" value="multi"/>
+      <property name="use_py_cache" value="1"/>
+   </container>
+   <container name="c2">
+      <property name="container_kind" value="Salome"/>
+      <property name="attached_on_cloning" value="1"/>
+      <property name="nb_parallel_procs" value="4"/>
+      <property name="type" value="multi"/>
+      <property name="use_py_cache" value="1"/>
+   </container>
+   <inline name="Begin">
+      <script><code><![CDATA[import time
+vals = [ i for i in range(40)]
+nbbranches = len(vals)
+t0=time.time()
+]]></code></script>
+      <outport name="t0" type="pyobj"/>
+      <outport name="vals" type="intvec"/>
+      <outport name="nbbranches" type="int"/>
+   </inline>
+   <inline name="End">
+      <script><code><![CDATA[import time
+tf=time.time()
+total_time=int(tf-t0)
+
+ok = True
+s_expected = sum(vals)
+
+tr1={}
+for cont_name, s in r1:
+    if cont_name in tr1.keys():
+        v = tr1[cont_name]
+        if s > v:
+            tr1[cont_name] = s
+    else:
+        tr1[cont_name] = s
+
+s1 = sum(tr1.values())
+if s_expected != s1:
+    ok = False
+    print("Error on the first foreach.")
+    print("Expected sum:", s_expected)
+    print("Obtained sum:", s1)
+
+tr2={}
+for cont_name, s in r2:
+    if cont_name in tr2.keys():
+        v = tr2[cont_name]
+        if s > v:
+            tr2[cont_name] = s
+    else:
+        tr2[cont_name] = s
+
+s2 = sum(tr2.values())
+if s_expected != s2:
+    ok = False
+    print("Error on the second foreach.")
+    print("Expected sum:", s_expected)
+    print("Obtained sum:", s2)
+
+coeff_cont = len(tr1) + ( 4 * len(tr2))
+#print(r1)
+#print(r2)
+]]></code></script>
+      <inport name="t0" type="pyobj"/>
+      <inport name="r1" type="seqpyobj"/>
+      <inport name="r2" type="seqpyobj"/>
+      <inport name="vals" type="intvec"/>
+      <outport name="total_time" type="int"/>
+      <outport name="ok" type="bool"/>
+      <outport name="coeff_cont" type="int"/>
+   </inline>
+   <foreach name="ForEach1" nbranch="1" loopWeight="-1" type="int">
+      <remote name="PyNode1" elementaryWeight="-1">
+         <script><code><![CDATA[import time
+if "s" not in globals():
+    # long initialization here to be done only once
+    time.sleep(1)
+    s=0
+s += v
+container_name = my_container.name
+result = (container_name, s)
+time.sleep(1)
+]]></code></script>
+         <load container="c1"/>
+         <inport name="v" type="int"/>
+         <outport name="result" type="pyobj"/>
+      </remote>
+   </foreach>
+   <foreach name="ForEach2" nbranch="1" loopWeight="-1" type="int">
+      <remote name="PyNode2" elementaryWeight="-1">
+         <script><code><![CDATA[import time
+if "s" not in globals():
+    # long initialization here to be done only once
+    time.sleep(1)
+    s=0
+s += v
+container_name = my_container.name
+result = (container_name, s)
+time.sleep(1)
+]]></code></script>
+         <load container="c2"/>
+         <inport name="v" type="int"/>
+         <outport name="result" type="pyobj"/>
+      </remote>
+   </foreach>
+   <control> <fromnode>Begin</fromnode> <tonode>ForEach1</tonode> </control>
+   <control> <fromnode>Begin</fromnode> <tonode>ForEach2</tonode> </control>
+   <control> <fromnode>Begin</fromnode> <tonode>End</tonode> </control>
+   <control> <fromnode>ForEach1</fromnode> <tonode>End</tonode> </control>
+   <control> <fromnode>ForEach2</fromnode> <tonode>End</tonode> </control>
+   <datalink control="false">
+      <fromnode>Begin</fromnode> <fromport>t0</fromport>
+      <tonode>End</tonode> <toport>t0</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>Begin</fromnode> <fromport>vals</fromport>
+      <tonode>ForEach2</tonode> <toport>SmplsCollection</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>Begin</fromnode> <fromport>vals</fromport>
+      <tonode>ForEach1</tonode> <toport>SmplsCollection</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>Begin</fromnode> <fromport>vals</fromport>
+      <tonode>End</tonode> <toport>vals</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>Begin</fromnode> <fromport>nbbranches</fromport>
+      <tonode>ForEach2</tonode> <toport>nbBranches</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>Begin</fromnode> <fromport>nbbranches</fromport>
+      <tonode>ForEach1</tonode> <toport>nbBranches</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>ForEach1</fromnode> <fromport>evalSamples</fromport>
+      <tonode>ForEach1.PyNode1</tonode> <toport>v</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>ForEach2</fromnode> <fromport>evalSamples</fromport>
+      <tonode>ForEach2.PyNode2</tonode> <toport>v</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>ForEach1.PyNode1</fromnode> <fromport>result</fromport>
+      <tonode>End</tonode> <toport>r1</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>ForEach2.PyNode2</fromnode> <fromport>result</fromport>
+      <tonode>End</tonode> <toport>r2</toport>
+   </datalink>
+   <parameter>
+      <tonode>ForEach2</tonode><toport>nbBranches</toport>
+      <value><int>1</int></value>
+   </parameter>
+   <parameter>
+      <tonode>ForEach1</tonode><toport>nbBranches</toport>
+      <value><int>1</int></value>
+   </parameter>
+   <presentation name="ForEach1.PyNode1" x="9.5" y="88" width="158" height="63" expanded="1" expx="9.5" expy="88" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="ForEach2" x="204" y="313.5" width="175" height="159" expanded="1" expx="204" expy="313.5" expWidth="175" expHeight="159" shownState="0"/>
+   <presentation name="ForEach1" x="201.5" y="146" width="171.5" height="155" expanded="1" expx="201.5" expy="146" expWidth="171.5" expHeight="155" shownState="0"/>
+   <presentation name="End" x="402.5" y="85" width="158" height="144" expanded="1" expx="402.5" expy="85" expWidth="158" expHeight="144" shownState="0"/>
+   <presentation name="Begin" x="9" y="86" width="158" height="117" expanded="1" expx="9" expy="86" expWidth="158" expHeight="117" shownState="0"/>
+   <presentation name="ForEach2.PyNode2" x="13" y="92" width="158" height="63" expanded="1" expx="13" expy="92" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="__ROOT__" x="0" y="0" width="564.5" height="476.5" expanded="1" expx="0" expy="0" expWidth="564.5" expHeight="476.5" shownState="0"/>
+</proc>

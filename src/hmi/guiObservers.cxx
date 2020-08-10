@@ -528,8 +528,8 @@ SubjectNode::~SubjectNode()
     try
       {
         // Remove child except if it's the splitter node of a ForEachLoop
-        if (dynamic_cast<ForEachLoop*>(father) == NULL ||
-            getName() != ForEachLoop::NAME_OF_SPLITTERNODE)
+        if (dynamic_cast<ForEachLoopGen*>(father) == NULL ||
+            getName() != ForEachLoopGen::NAME_OF_SPLITTERNODE)
           {
             father->edRemoveChild(_node);
           }
@@ -1445,7 +1445,7 @@ SubjectNode *SubjectComposedNode::addSubjectNode(YACS::ENGINE::Node * node,
       son = new SubjectSwitch(dynamic_cast<YACS::ENGINE::Switch*>(node), this);
       break;
     case FOREACHLOOP:
-      son = new SubjectForEachLoop(dynamic_cast<YACS::ENGINE::ForEachLoop*>(node), this);
+      son = new SubjectForEachLoop(dynamic_cast<YACS::ENGINE::ForEachLoopGen*>(node), this);
       break;
     case OPTIMIZERLOOP:
       son = new SubjectOptimizerLoop(dynamic_cast<YACS::ENGINE::OptimizerLoop*>(node), this);
@@ -1475,9 +1475,9 @@ void SubjectComposedNode::completeChildrenSubjectList(SubjectNode *son)
 void SubjectComposedNode::loadChildren()
 {
   list<Node *> setOfNode= _composedNode->edGetDirectDescendants();
-  if (ForEachLoop *feloop = dynamic_cast<ForEachLoop*>(_composedNode))
+  if (ForEachLoopGen *feloop = dynamic_cast<ForEachLoopGen*>(_composedNode))
     {
-      Node *node2Insert=feloop->getChildByName(ForEachLoop::NAME_OF_SPLITTERNODE);
+      Node *node2Insert=feloop->getChildByName(ForEachLoopGen::NAME_OF_SPLITTERNODE);
       if(find(setOfNode.begin(),setOfNode.end(),node2Insert)==setOfNode.end())
         setOfNode.push_back(node2Insert);
     }
@@ -3394,12 +3394,16 @@ bool SubjectDynParaLoop::hasValue()
 
 std::string SubjectDynParaLoop::getValue()
 {
-  return _dynParaLoop->edGetNbOfBranchesPort()->getAsString();
+  InputPort *port(_dynParaLoop->edGetNbOfBranchesPort());
+  if(port)
+    return port->getAsString();
+  else
+    return std::string();
 }
 
 // ----------------------------------------------------------------------------
 
-SubjectForEachLoop::SubjectForEachLoop(YACS::ENGINE::ForEachLoop *forEachLoop, Subject *parent)
+SubjectForEachLoop::SubjectForEachLoop(YACS::ENGINE::ForEachLoopGen *forEachLoop, Subject *parent)
   : SubjectDynParaLoop(forEachLoop, parent), _forEachLoop(forEachLoop)
 {
   _splitter = 0;
@@ -3741,7 +3745,7 @@ SubjectInputPort::SubjectInputPort(YACS::ENGINE::InputPort *port, Subject *paren
     {
       if (_inputPort->getName() == "select") _destructible = false;
     }
-  else if (ForEachLoop* foreach = dynamic_cast<ForEachLoop*>(node))
+  else if (ForEachLoopGen* foreach = dynamic_cast<ForEachLoopGen*>(node))
     {
       if (_inputPort->getName() == "nbBranches") _destructible = false;
     }

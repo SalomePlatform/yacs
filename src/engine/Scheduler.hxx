@@ -49,6 +49,8 @@ namespace YACS
       virtual bool isPlacementPredictableB4Run() const = 0;
       virtual bool isMultiplicitySpecified(unsigned& value) const = 0;
       virtual void forceMultiplicity(unsigned value) = 0;
+      virtual void setProperty(const std::string& name,const std::string& value)=0;
+      virtual std::string getProperty(const std::string& name)=0;
       virtual ~Scheduler();
     };
   }

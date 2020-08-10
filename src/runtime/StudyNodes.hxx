@@ -36,7 +36,7 @@ namespace YACS
       StudyInNode(const StudyInNode& other, ComposedNode *father);
       virtual void execute();
       virtual void accept(Visitor *visitor);
-      virtual void checkBasicConsistency() const throw(Exception);
+      virtual void checkBasicConsistency() const ;
       virtual void setData(OutputPort* port, const std::string& data);
       virtual OutputPort *createOutputPort(const std::string& outputPortName, TypeCode* type);
       virtual std::string typeName() {return "YACS__ENGINE__StudyInNode";}
@@ -52,7 +52,7 @@ namespace YACS
       StudyOutNode(const StudyOutNode& other, ComposedNode *father);
       virtual void execute();
       virtual void accept(Visitor *visitor);
-      virtual void checkBasicConsistency() const throw(Exception);
+      virtual void checkBasicConsistency() const ;
       virtual void setData(InputPort* port, const std::string& data);
       virtual InputPort *createInputPort(const std::string& inputPortName, TypeCode* type);
       virtual std::string typeName() {return "YACS__ENGINE__StudyOutNode";}

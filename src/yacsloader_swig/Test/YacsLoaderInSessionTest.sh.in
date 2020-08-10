@@ -95,14 +95,7 @@ if [ $ret7 -gt 0 ]; then
   exit $ret7
 fi
 
-python3  @CMAKE_CURRENT_SOURCE_DIR@/testHPDecorator.py
-ret8=$?
-if [ $ret8 -gt 0 ]; then
-  echo "exec status testHPDecorator : " $ret8
-  exit $ret8
-fi
-
-let ret=$ret0+$ret1+$ret2+$ret3+$ret4+$ret5+$ret6+$ret7+$ret8
+let ret=$ret0+$ret1+$ret2+$ret3+$ret4+$ret5+$ret6+$ret7
 
 # --- return unit tests status
 
