@@ -80,6 +80,7 @@ bool CatalogWidget::addCatalogFromFile(std::string fileName)
   Catalog *cataProc = YACS::ENGINE::getSALOMERuntime()->loadCatalog("proc", fileName);
   string aFile = afi.fileName().toStdString();
   addCatalog(cataProc, aFile);
+  return true;
 }
 
 std::map<std::string, YACS::ENGINE::Catalog*> CatalogWidget::getCataMap()
