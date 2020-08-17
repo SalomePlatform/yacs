@@ -59,11 +59,11 @@ namespace WorkloadManager
       std::unique_lock<std::mutex> lock(_data_mutex);
       _stop = false;
     }
-    _otherThreads.emplace_back(std::async([this]
+    _otherThreads.emplace_back(std::async(std::launch::async, [this]
       {
         runTasks();
       }));
-    _otherThreads.emplace_back(std::async([this]
+    _otherThreads.emplace_back(std::async(std::launch::async, [this]
       {
         endTasks();
       }));
@@ -91,7 +91,7 @@ namespace WorkloadManager
       RunningInfo taskInfo;
       while(chooseTaskToRun(taskInfo))
       {
-        _runningTasks.emplace(taskInfo.id, std::async([this, taskInfo]
+        _runningTasks.emplace(taskInfo.id, std::async(std::launch::async, [this, taskInfo]
           {
             runOneTask(taskInfo);
           }));
