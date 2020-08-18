@@ -21,7 +21,7 @@
 #define _YACSLIBWORKLOADMANAGEREXPORT_HXX_
 
 #ifdef WIN32
-#  if defined YACSlibWorkloadManager_EXPORTS
+#  if defined YACSlibWorkloadmanager_EXPORTS
 #    define YACSLIBWLM_EXPORT __declspec( dllexport )
 #  else
 #    define YACSLIBWLM_EXPORT __declspec( dllimport )
