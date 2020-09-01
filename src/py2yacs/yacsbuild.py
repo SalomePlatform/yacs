@@ -1,4 +1,5 @@
-# Copyright (C) 2012-2020  CEA/DEN, EDF R&D
+#!/usr/bin/env python3
+# Copyright (C) 2006-2020  CEA/DEN, EDF R&D
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -17,17 +18,18 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-IF(NOT WIN32)
-  SET(TEST_NAME ${COMPONENT_NAME}_Py2YacsTest)
-  # Need a salome session for this test
-  ADD_TEST(${TEST_NAME} ${SALOME_TEST_DRIVER} ${TIMEOUT} ./TestPy2yacs)
-  SET_TESTS_PROPERTIES(${TEST_NAME} PROPERTIES
-                                    LABELS "${COMPONENT_NAME}"
-                      )
-
-  SET(TEST_NAME ${COMPONENT_NAME}_PyDecorator)
-  ADD_TEST(${TEST_NAME} ${SALOME_TEST_DRIVER} ${TIMEOUT} testDeco.py)
-  SET_TESTS_PROPERTIES(${TEST_NAME} PROPERTIES
-                                    LABELS "${COMPONENT_NAME}"
-                      )
-ENDIF()
+if __name__ == '__main__':
+  import argparse
+  parser = argparse.ArgumentParser(
+    description="Build a YACS schema out of a decorated python script.")
+  parser.add_argument("path", help='Path to the script.')
+  parser.add_argument("mainbloc",
+        help='Name of the function containing the main bloc of the schema.')
+  parser.add_argument("yacsfile", help='Path to the output yacs file.')
+  args = parser.parse_args()
+  import yacsdecorator
+  yacsdecorator.activateYacsMode()
+  import yacstools
+  fn = yacstools.getFunction(args.path, args.mainbloc)
+  fn()
+  yacsdecorator.finalize(args.yacsfile)

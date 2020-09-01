@@ -36,7 +36,7 @@ class FunctionProperties:
     result+= "  Imports:"+ str(self.imports) + "\n"
     return result
 
-class v(ast.NodeVisitor):
+class VisitAST(ast.NodeVisitor):
   def visit_Module(self, node):
     accepted_tokens = ["Import", "ImportFrom", "FunctionDef", "ClassDef"]
     self.global_errors=[]
@@ -140,9 +140,34 @@ def get_properties(text_file):
   except SyntaxError as err:
     import traceback
     return [], ["".join(traceback.format_exception_only(SyntaxError,err))]
-  w=v()
+  w=VisitAST()
   w.visit(bt)
   return w.functions, w.global_errors
+
+def function_properties(python_path, fn_name):
+  """
+  python_path : path to a python file
+  fn_name : name of a function in the file
+  return : properties of the function. see class FunctionProperties
+  """
+  with open(python_path, 'r') as f:
+    text_file = f.read()
+  functions,errors = get_properties(text_file)
+  result = [fn for fn in functions if fn.name == fn_name]
+  if len(result) < 1:
+    raise Exception("Function not found: {}".format(fn_name))
+  result = result[0]
+  error_string = ""
+  #if len(errors) > 0:
+    #error_string += "Global errors in file {}\n".format(python_path)
+    #error_string += '\n'.join(errors)
+    #raise Exception(error_string)
+  if len(result.errors) > 0:
+    error_string += "Errors when parsing function {}\n".format(fn_name)
+    error_string += '\n'.join(result.errors)
+    raise Exception(error_string)
+  return result
+
 
 def main(python_path, yacs_path, function_name="_exec"):
   with open(python_path, 'r') as f:

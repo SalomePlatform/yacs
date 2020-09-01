@@ -57,6 +57,13 @@ INSTALL(FILES ${_py2yacs_headers} DESTINATION ${SALOME_INSTALL_HEADERS})
 
 SET( _py_SCRIPTS
   py2yacs.py
+  yacsdecorator.py
+  yacstools.py
+  )
+
+SET(_py_PROGS
+  yacsbuild.py
   )
 
 SALOME_INSTALL_SCRIPTS("${_py_SCRIPTS}"  ${SALOME_INSTALL_PYTHON})
+SALOME_INSTALL_SCRIPTS("${_py_PROGS}" ${SALOME_INSTALL_SCRIPT_SCRIPTS})

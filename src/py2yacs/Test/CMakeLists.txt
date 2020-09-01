@@ -42,7 +42,7 @@ TARGET_LINK_LIBRARIES(test_py2yacs py2yacslib)
 # For salome test
 IF(NOT WIN32)
   # This test needs a running salome session
-  # TODO: Run the test in a salome session
+  # TODO: Run the test in a salome session with make test
   #ADD_TEST(TestPy2yacs TestPy2yacs)
   #SET_TESTS_PROPERTIES(TestPy2yacs PROPERTIES
   #                     ENVIRONMENT "PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR}:${CMAKE_CURRENT_SOURCE_DIR}/..:$ENV{PYTHONPATH}"
@@ -52,9 +52,16 @@ IF(NOT WIN32)
   SET(LOCAL_TEST_FILES
     bad_parsers.py
     err_py2yacs_invalid.py
+    testforeach.py
+    formule.py
+    )
+  SET(LOCAL_TEST_SCRIPTS
+    testDeco.py
     )
   INSTALL(FILES ${LOCAL_TEST_FILES}
           DESTINATION ${LOCAL_TEST_DIR})
+  INSTALL(PROGRAMS ${LOCAL_TEST_SCRIPTS}
+        DESTINATION ${LOCAL_TEST_DIR})
   INSTALL(FILES CTestTestfileInstall.cmake
           DESTINATION ${LOCAL_TEST_DIR}
           RENAME CTestTestfile.cmake)

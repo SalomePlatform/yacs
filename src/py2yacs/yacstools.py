@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2020  CEA/DEN, EDF R&D
+# Copyright (C) 2006-2020  CEA/DEN, EDF R&D
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -16,18 +16,13 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
-
-IF(NOT WIN32)
-  SET(TEST_NAME ${COMPONENT_NAME}_Py2YacsTest)
-  # Need a salome session for this test
-  ADD_TEST(${TEST_NAME} ${SALOME_TEST_DRIVER} ${TIMEOUT} ./TestPy2yacs)
-  SET_TESTS_PROPERTIES(${TEST_NAME} PROPERTIES
-                                    LABELS "${COMPONENT_NAME}"
-                      )
-
-  SET(TEST_NAME ${COMPONENT_NAME}_PyDecorator)
-  ADD_TEST(${TEST_NAME} ${SALOME_TEST_DRIVER} ${TIMEOUT} testDeco.py)
-  SET_TESTS_PROPERTIES(${TEST_NAME} PROPERTIES
-                                    LABELS "${COMPONENT_NAME}"
-                      )
-ENDIF()
+def getFunction(script_path, function_name):
+  import os
+  import sys
+  import importlib
+  pathname, filename = os.path.split(script_path)
+  sys.path.append(os.path.abspath(pathname))
+  modname = os.path.splitext(filename)[0]
+  module = importlib.import_module(modname)
+  return getattr(module, function_name)
+  
