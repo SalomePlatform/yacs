@@ -220,6 +220,7 @@ void Py2yacsTest::unaccepted_statement()
   verifyWrongPycode(code_py, "f", "not accepted statement");
 }
 
+/* // This is now accepted
 void Py2yacsTest::unaccepted_statement2()
 {
   const char * code_py = "def f(a):\n"
@@ -227,7 +228,7 @@ void Py2yacsTest::unaccepted_statement2()
                          "if __name__ == '__main__':"
                          "  print('toto')\n";
   verifyWrongPycode(code_py, "f", "not accepted statement");
-}
+}*/
 
 void Py2yacsTest::unaccepted_return()
 {

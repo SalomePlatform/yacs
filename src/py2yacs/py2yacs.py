@@ -38,7 +38,7 @@ class FunctionProperties:
 
 class VisitAST(ast.NodeVisitor):
   def visit_Module(self, node):
-    accepted_tokens = ["Import", "ImportFrom", "FunctionDef", "ClassDef"]
+    accepted_tokens = ["Import", "ImportFrom", "FunctionDef", "ClassDef", "If"]
     self.global_errors=[]
     for e in node.body:
       type_name = type(e).__name__
@@ -158,10 +158,10 @@ def function_properties(python_path, fn_name):
     raise Exception("Function not found: {}".format(fn_name))
   result = result[0]
   error_string = ""
-  #if len(errors) > 0:
-    #error_string += "Global errors in file {}\n".format(python_path)
-    #error_string += '\n'.join(errors)
-    #raise Exception(error_string)
+  if len(errors) > 0:
+    error_string += "Global errors in file {}\n".format(python_path)
+    error_string += '\n'.join(errors)
+    raise Exception(error_string)
   if len(result.errors) > 0:
     error_string += "Errors when parsing function {}\n".format(fn_name)
     error_string += '\n'.join(result.errors)

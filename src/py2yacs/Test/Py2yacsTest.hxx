@@ -31,7 +31,7 @@ class Py2yacsTest: public CppUnit::TestFixture
   CPPUNIT_TEST(t5);
   CPPUNIT_TEST(no_multiple_returns);
   CPPUNIT_TEST(unaccepted_statement);
-  CPPUNIT_TEST(unaccepted_statement2);
+  //CPPUNIT_TEST(unaccepted_statement2);
   CPPUNIT_TEST(unaccepted_return);
   CPPUNIT_TEST(unaccepted_return2);
   CPPUNIT_TEST(syntaxError);
@@ -52,7 +52,7 @@ class Py2yacsTest: public CppUnit::TestFixture
     void t5();
     void no_multiple_returns();
     void unaccepted_statement();
-    void unaccepted_statement2();
+    //void unaccepted_statement2();
     void unaccepted_return();
     void unaccepted_return2();
     void syntaxError();
