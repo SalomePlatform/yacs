@@ -18,6 +18,7 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 import sys
+import json
 
 # this is a pointer to the module object instance itself.
 this_module = sys.modules[__name__]
@@ -28,11 +29,12 @@ class OutputPort:
     self.yacs_port = yacs_port
 
 class LeafNodeType:
-  def __init__(self, path, fn_name, inputs, outputs):
+  def __init__(self, path, fn_name, inputs, outputs, container_name):
     self.path = path
     self.fn_name = fn_name
     self.inputs = inputs
     self.outputs = outputs
+    self.container_name = container_name
     self.number = 0
 
   def newName(self):
@@ -48,90 +50,72 @@ class LeafNodeType:
     output_ports = generator.createScriptNode(self, inputs)
     return output_ports
 
-def leaf(f):
-  """
-  Decorator for python scripts.
-  """
-  if this_module._exec_mode == this_module._default_mode:
-    return f
-  co = f.__code__
-  import py2yacs
-  props = py2yacs.function_properties(co.co_filename, co.co_name)
-  nodeType = LeafNodeType(co.co_filename, co.co_name,
-                          props.inputs, props.outputs)
-  def my_func(*args, **kwargs):
-    if len(args) + len(kwargs) != len(nodeType.inputs):
-      mes = "Wrong number of arguments when calling function '{}'.\n".format(
-                                                               nodeType.fn_name)
-      mes += " {} arguments expected and {} arguments found.\n".format(
-                                  len(nodeType.inputs), len(args) + len(kwargs))
-      raise Exception(mes)
-    idx = 0
-    args_dic = {}
-    for a in args:
-      args_dic[nodeType.inputs[idx]] = a
-      idx += 1
-    for k,v in kwargs.items():
-      args_dic[k] = v
-    if len(args_dic) != len(nodeType.inputs):
-      mes="Wrong arguments when calling function {}.\n".format(nodeType.fn_name)
-      raise Exception(mes)
-    return nodeType.createNewNode(args_dic)
-  return my_func
+class ContainerProperties():
+  def __init__(self, name, nb_cores, use_cache):
+    self.name = name
+    self.nb_cores = nb_cores
+    self.use_cache = use_cache
 
-def bloc(f):
-  """
-  Decorator for blocs.
-  """
-  #co = f.__code__
-  #print("bloc :", co.co_name)
-  #print("  file:", co.co_filename)
-  #print("  line:", co.co_firstlineno)
-  #print("  args:", co.co_varnames)
-  return f
+def jsonContainerEncoder(obj):
+  if isinstance(obj, ContainerProperties) :
+    return {
+            "name": obj.name,
+            "nb_cores": obj.nb_cores,
+            "use_cache": obj.use_cache }
+  else:
+    raise TypeError("Cannot serialize object "+str(obj))
 
-def foreach(f):
-  """
-  Decorator to generate foreach blocs
-  """
-  if this_module._exec_mode == this_module._default_mode:
-    return default_foreach(f)
-  elif this_module._exec_mode == this_module._yacs_mode:
-    return yacs_foreach(f)
+def jsonContainerDecoder(dct):
+  if "name" in dct and "nb_cores" in dct and "use_cache" in dct :
+    return ContainerProperties(dct["name"], dct["nb_cores"], dct["use_cache"])
+  return dct
 
-def default_foreach(f):
-  def my_func(lst):
-    result = []
-    for e in lst:
-      result.append(f(e))
-    t_result = result
-    if len(result) > 0 :
-      if type(result[0]) is tuple:
-        # transform the list of tuples in a tuple of lists
-        l_result = []
-        for e in result[0]:
-          l_result.append([])
-        for t in result:
-          idx = 0
-          for e in t:
-            l_result[idx].append(e)
-            idx += 1
-        t_result = tuple(l_result)
-    return t_result
-  return my_func
+class ContainerManager():
+  defaultContainerName = "default_container"
+  def __init__(self):
+    self._containers = []
+    self._defaultContainer = ContainerProperties(
+                                ContainerManager.defaultContainerName, 0, False)
+    self._containers.append(self._defaultContainer)
 
-def yacs_foreach(f):
-  #co = f.__code__
-  #import yacsvisit
-  #props = yacsvisit.main(co.co_filename, co.co_name)
-  def my_func(input_list):
-    fn_name = f.__code__.co_name
-    generator = getGenerator()
-    sample_port = generator.beginForeach(fn_name, input_list)
-    output_list = f(sample_port)
-    output_list = generator.endForeach(output_list)
-    return output_list
-  return my_func
+  def setDefaultContainer(self, nb_cores, use_cache):
+    self._defaultContainer.nb_cores = nb_cores
+    self._defaultContainer.use_cache = use_cache
+
+  def loadFile(self, file_path):
+    with open(file_path, 'r') as json_file:
+      self._containers = json.load(json_file, object_hook=jsonContainerDecoder)
+    try:
+      self._defaultContainer = next(cont for cont in self._containers
+                          if cont.name == ContainerManager.defaultContainerName)
+    except StopIteration:
+      self._defaultContainer = ContainerProperties(
+                                ContainerManager.defaultContainerName, 0, False)
+      self._containers.append(self._defaultContainer)
+
+  def saveFile(self, file_path):
+    with open(file_path, 'w') as json_file:
+      json.dump(self._containers, json_file,
+                indent=2, default=jsonContainerEncoder)
+
+  def addContainer(self, name, nb_cores, use_cache):
+    try:
+      # if the name already exists
+      obj = next(cont for cont in self._containers if cont.name == name)
+      obj.nb_cores = nb_cores
+      obj.use_cache = use_cache
+    except StopIteration:
+      # new container
+      self._containers.append(ContainerProperties(name, nb_cores, use_cache))
+
+  def getContainer(self, name):
+    ret = self._defaultContainer
+    try:
+      ret = next(cont for cont in self._containers if cont.name == name)
+    except StopIteration:
+      # not found
+      pass
+    return ret
 
 class SchemaGenerator():
   """
@@ -148,6 +132,7 @@ class SchemaGenerator():
     self.seqpyobjtype = self.runtime.getTypeCode("seqpyobj")
     self.bloc_stack = [self.proc]
     self.name_index = 0 # used to ensure unique names
+    self.container_manager = ContainerManager()
 
   def newName(self, name):
     new_name = name + "_" + str(self.name_index)
@@ -166,11 +151,12 @@ class SchemaGenerator():
     """
     A new container may be created if it does not already exist for this type.
     """
+    container_properties = self.container_manager.getContainer(container_type)
     if container_type not in self.containers:
-      cont=self.proc.createContainer(container_type,"Salome")
-      #cont.setProperty("nb_proc_per_node","0")
+      cont=self.proc.createContainer(container_properties.name,"Salome")
+      cont.setProperty("nb_parallel_procs", str(container_properties.nb_cores))
       cont.setProperty("type","multi")
-      cont.usePythonCache(False)
+      cont.usePythonCache(container_properties.use_cache)
       cont.attachOnCloning()
       self.containers[container_type] = cont
     return self.containers[container_type]
@@ -220,7 +206,7 @@ study_function = yacstools.getFunction("{file_path}", "{function_name}")
     inputs = leaf.inputs # names
     outputs = leaf.outputs # names
     script = self.createScript(file_path, function_name, inputs, outputs)
-    container = self.getContainer("generic_cont")
+    container = self.getContainer(leaf.container_name)
     new_node = self.runtime.createScriptNode("Salome", node_name)
     new_node.setContainer(container)
     new_node.setExecutionMode("remote")
@@ -254,8 +240,6 @@ study_function = yacstools.getFunction("{file_path}", "{function_name}")
     foreach_name = self.newName(fn_name)
     new_foreach = self.runtime.createForEachLoopDyn(foreach_name,
                                                     self.pyobjtype)
-    #new_foreach = self.runtime.createForEachLoop(foreach_name, self.pyobjtype)
-    #new_foreach.edGetNbOfBranchesPort().edInitInt(1)
     self.bloc_stack[-1].edAddChild(new_foreach)
     bloc_name = "bloc_"+foreach_name
     new_block = self.runtime.createBloc(bloc_name)
@@ -345,6 +329,8 @@ _default_mode = "Default"
 _yacs_mode = "YACS"
 _exec_mode = _default_mode
 
+# Public functions
+
 def getGenerator():
   """
   Get the singleton object.
@@ -360,8 +346,111 @@ def activateYacsMode():
 def activateDefaultMode():
   this_module._exec_mode = this_module._default_mode
 
-def finalize(path):
+def loadContainers(file_path):
+  getGenerator().container_manager.loadFile(file_path)
+
+def export(path):
   if this_module._exec_mode == this_module._yacs_mode :
     getGenerator().dump(path)
+
+# Decorators
+class LeafDecorator():
+  def __init__(self, container_name):
+    self.container_name = container_name
+
+  def __call__(self, f):
+    if this_module._exec_mode == this_module._default_mode:
+      return f
+    co = f.__code__
+    import py2yacs
+    props = py2yacs.function_properties(co.co_filename, co.co_name)
+    nodeType = LeafNodeType(co.co_filename, co.co_name,
+                            props.inputs, props.outputs, self.container_name)
+    def my_func(*args, **kwargs):
+      if len(args) + len(kwargs) != len(nodeType.inputs):
+        mes = "Wrong number of arguments when calling function '{}'.\n".format(
+                                                                nodeType.fn_name)
+        mes += " {} arguments expected and {} arguments found.\n".format(
+                                    len(nodeType.inputs), len(args) + len(kwargs))
+        raise Exception(mes)
+      idx = 0
+      args_dic = {}
+      for a in args:
+        args_dic[nodeType.inputs[idx]] = a
+        idx += 1
+      for k,v in kwargs.items():
+        args_dic[k] = v
+      if len(args_dic) != len(nodeType.inputs):
+        mes="Wrong arguments when calling function {}.\n".format(nodeType.fn_name)
+        raise Exception(mes)
+      return nodeType.createNewNode(args_dic)
+    return my_func
+
+def leaf(arg):
+  """
+  Decorator for python scripts.
+  """
+  if callable(arg):
+    # decorator used without parameters. arg is the function
+    container = ContainerManager.defaultContainerName
+    ret = (LeafDecorator(container))(arg)
+  else:
+    # decorator used with parameter. arg is the container name
+    ret = LeafDecorator(arg)
+  return ret
+
+def bloc(f):
+  """
+  Decorator for blocs.
+  """
+  #co = f.__code__
+  #print("bloc :", co.co_name)
+  #print("  file:", co.co_filename)
+  #print("  line:", co.co_firstlineno)
+  #print("  args:", co.co_varnames)
+  return f
+
+def default_foreach(f):
+  def my_func(lst):
+    result = []
+    for e in lst:
+      result.append(f(e))
+    t_result = result
+    if len(result) > 0 :
+      if type(result[0]) is tuple:
+        # transform the list of tuples in a tuple of lists
+        l_result = []
+        for e in result[0]:
+          l_result.append([])
+        for t in result:
+          idx = 0
+          for e in t:
+            l_result[idx].append(e)
+            idx += 1
+        t_result = tuple(l_result)
+    return t_result
+  return my_func
+
+def yacs_foreach(f):
+  #co = f.__code__
+  #import yacsvisit
+  #props = yacsvisit.main(co.co_filename, co.co_name)
+  def my_func(input_list):
+    fn_name = f.__code__.co_name
+    generator = getGenerator()
+    sample_port = generator.beginForeach(fn_name, input_list)
+    output_list = f(sample_port)
+    output_list = generator.endForeach(output_list)
+    return output_list
+  return my_func
+
+def foreach(f):
+  """
+  Decorator to generate foreach blocs
+  """
+  if this_module._exec_mode == this_module._default_mode:
+    return default_foreach(f)
+  elif this_module._exec_mode == this_module._yacs_mode:
+    return yacs_foreach(f)
 
   

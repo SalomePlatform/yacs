@@ -26,10 +26,15 @@ if __name__ == '__main__':
   parser.add_argument("mainbloc",
         help='Name of the function containing the main bloc of the schema.')
   parser.add_argument("yacsfile", help='Path to the output yacs file.')
+  parser.add_argument("-c", "--containers",
+                      help="File of containers.",
+                      default=None)
   args = parser.parse_args()
   import yacsdecorator
   yacsdecorator.activateYacsMode()
+  if not args.containers is None :
+    yacsdecorator.loadContainers(args.containers)
   import yacstools
   fn = yacstools.getFunction(args.path, args.mainbloc)
   fn()
-  yacsdecorator.finalize(args.yacsfile)
+  yacsdecorator.export(args.yacsfile)

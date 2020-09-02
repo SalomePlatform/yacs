@@ -99,6 +99,63 @@ class TestDeco(unittest.TestCase):
       obtained = proc.getChildByName("output_doublefr_0").getOutputPort("r_0_0").getPyObj()
       self.assertEqual(expected, obtained)
 
+    def test_t4(self):
+      """
+      Using specific containers.
+      """
+      import yacsdecorator
+      cm = yacsdecorator.ContainerManager()
+      cm.addContainer("c1", 1, False)
+      cm.addContainer("c2", 4, True)
+      cm.addContainer(yacsdecorator.ContainerManager.defaultContainerName, 1, False)
+      cont_file = os.path.join(dir_test, "containers_t4.json")
+      cm.saveFile(cont_file)
+      script = """import yacsdecorator
+@yacsdecorator.leaf("c1")
+def f_c1(x,y):
+  s = x + y
+  return s
+
+@yacsdecorator.leaf("c2")
+def f_c2(x,y):
+  p = x * y
+  return p
+
+@yacsdecorator.leaf
+def f_def(x,y):
+  d = x - y
+  return d
+
+@yacsdecorator.bloc
+def main():
+  s1 = f_c1(3,4)
+  p1 = f_c2(5,6)
+  r = f_def(p1, s1)
+"""
+      script_file = os.path.join(dir_test, "script_t4.py")
+      with open(script_file, "w") as f:
+        f.write(script)
+      yacs_build_command = "yacsbuild.py"
+      main_function_name = "main"
+      yacs_schema_file = os.path.join(dir_test, "schema_t4.xml")
+      subprocess.run([yacs_build_command,
+                      script_file, main_function_name, yacs_schema_file,
+                      "-c", cont_file])
+      l = loader.YACSLoader()
+      ex = pilot.ExecutorSwig()
+      proc = l.load(yacs_schema_file)
+      ex.RunW(proc,0)
+      self.assertEqual(proc.getState(),pilot.DONE)
+      c1 = proc.getChildByName("f_c1_0").getContainer()
+      self.assertFalse(c1.isUsingPythonCache())
+      self.assertEqual(c1.getProperty("nb_parallel_procs"), "1")
+      c2 = proc.getChildByName("f_c2_0").getContainer()
+      self.assertTrue(c2.isUsingPythonCache())
+      self.assertEqual(c2.getProperty("nb_parallel_procs"), "4")
+      c3 = proc.getChildByName("f_def_0").getContainer()
+      self.assertFalse(c3.isUsingPythonCache())
+      self.assertEqual(c3.getProperty("nb_parallel_procs"), "1")
+
 if __name__ == '__main__':
   file_test = os.path.join(dir_test,"UnitTestsResult")
   with open(file_test, 'a') as f:
