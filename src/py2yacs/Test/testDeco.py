@@ -26,6 +26,7 @@ import subprocess
 import SALOMERuntime
 import loader
 import pilot
+import salome
 
 dir_test = tempfile.mkdtemp(suffix=".yacstest")
 
@@ -33,6 +34,23 @@ class TestDeco(unittest.TestCase):
 
     def setUp(self):
       SALOMERuntime.RuntimeSALOME_setRuntime()
+      # We need a catalog which contains only one resource named "localhost"
+      # with 16 cores. The modifications made here are not saved to the
+      # catalog file.
+      NB_NODE = 16
+      salome.salome_init()
+      resourceManager = salome.lcc.getResourcesManager()
+      resource_definition = resourceManager.GetResourceDefinition("localhost")
+      resource_definition.nb_node = NB_NODE
+      resourceManager.AddResource(resource_definition, False, "")
+      resource_required = salome.ResourceParameters()
+      resource_required.can_run_containers = True
+      res_list = resourceManager.GetFittingResources(resource_required)
+      for r in res_list:
+        if r != "localhost":
+          resourceManager.RemoveResource(r, False, "")
+      resource_definition = resourceManager.GetResourceDefinition("localhost")
+      self.assertEqual(resource_definition.nb_node, NB_NODE)
 
     def test_t1(self):
       """
@@ -102,6 +120,7 @@ class TestDeco(unittest.TestCase):
     def test_t4(self):
       """
       Using specific containers.
+      This test needs at least 4 cores declared in the catalog of resources.
       """
       import yacsdecorator
       cm = yacsdecorator.ContainerManager()
