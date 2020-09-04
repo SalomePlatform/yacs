@@ -82,7 +82,7 @@ namespace YACS
     };
 
     template<class T, class U>
-    typename YACS::BASES::AutoRefCnt<U> DynamicCast(typename YACS::BASES::AutoRefCnt<T>& autoSubPtr) throw()
+    typename YACS::BASES::AutoRefCnt<U> DynamicCast(typename YACS::BASES::AutoRefCnt<T>& autoSubPtr) noexcept
     {
       T *subPtr(autoSubPtr);
       U *ptr(dynamic_cast<U *>(subPtr));

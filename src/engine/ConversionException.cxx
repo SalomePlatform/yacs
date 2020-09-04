@@ -31,6 +31,6 @@ ConversionException::ConversionException(const std::string& what,bool prefix):Ex
   _what+=what;
 }
 
-ConversionException::~ConversionException() throw ()
+ConversionException::~ConversionException() noexcept
 {
 }

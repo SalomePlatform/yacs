@@ -28,6 +28,7 @@
 #include <iomanip>
 #include <sstream>
 #include <algorithm>    // std::replace_if
+#include <functional>   // std::bind
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -909,7 +910,7 @@ YACS::Event ForEachLoopGen::updateStateOnFailedEventFrom(Node *node, const Execu
 
 void ForEachLoopGen::InterceptorizeNameOfPort(std::string& portName)
 {
-  std::replace_if(portName.begin(), portName.end(), std::bind1st(std::equal_to<char>(), '.'), '_');
+  std::replace_if(portName.begin(), portName.end(), std::bind(std::equal_to<char>(), '.',std::placeholders::_1), '_');
   portName += INTERCEPTOR_STR;
 }
 

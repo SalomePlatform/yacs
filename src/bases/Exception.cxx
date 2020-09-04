@@ -47,11 +47,11 @@ Exception::Exception(const std::string& what,int errNumber):_what(what),errNumbe
 #endif
 }
 
-const char *Exception::what( void ) const throw ()
+const char *Exception::what( void ) const noexcept
 {
   return _what.c_str();
 }
 
-Exception::~Exception() throw ()
+Exception::~Exception() noexcept
 {
 }

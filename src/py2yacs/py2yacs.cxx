@@ -32,11 +32,11 @@ Py2yacsException::Py2yacsException(const std::string& what)
 {
 }
 
-Py2yacsException::~Py2yacsException()throw ()
+Py2yacsException::~Py2yacsException() noexcept
 {
 }
 
-const char * Py2yacsException::what() const throw ()
+const char * Py2yacsException::what() const noexcept
 {
   return _what.c_str();
 }

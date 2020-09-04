@@ -33,7 +33,7 @@ namespace YACS
     {
     public:
       ConversionException(const std::string& what,bool prefix=true);
-      virtual ~ConversionException() throw();
+      virtual ~ConversionException() noexcept;
     private:
       static const char TYPEOFEXCEPTION[];
     };

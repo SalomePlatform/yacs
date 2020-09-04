@@ -38,8 +38,8 @@ class PY2YACSLIB_EXPORT Py2yacsException: std::exception
 {
   public:
     Py2yacsException(const std::string& what);
-    virtual ~Py2yacsException()throw ();
-    virtual const char *what() const throw ();
+    virtual ~Py2yacsException() noexcept;
+    virtual const char *what() const noexcept;
   private:
     std::string _what;
 };
