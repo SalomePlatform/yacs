@@ -33,6 +33,7 @@ SET(_link_LIBRARIES
   ${PTHREAD_LIBRARIES}
   YACSlibEngine 
   YACSBases
+  SALOMEBasics
 )
 
 # additional preprocessor / compiler flags
