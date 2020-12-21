@@ -109,6 +109,14 @@ class TestEdit(unittest.TestCase):
           err_message = proc.getChildByName("End").getOutputPort("err_message").getPyObj()
           self.fail(err_message)
 
+    def test4(self):
+        """ Verify the execution is stoped if no resource can run a task.
+        """
+        proc = self.l.load("samples/wlm_error.xml")
+        self.e.RunW(proc,0)
+        self.assertEqual(proc.getState(),pilot.FAILED)
+        self.assertEqual(proc.getChildByName("ErrorNode").getState(),pilot.ERROR)
+
 if __name__ == '__main__':
   dir_test = tempfile.mkdtemp(suffix=".yacstest")
   file_test = os.path.join(dir_test,"UnitTestsResult")

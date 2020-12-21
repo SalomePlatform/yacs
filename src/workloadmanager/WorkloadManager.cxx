@@ -28,7 +28,7 @@ namespace WorkloadManager
   , _data_mutex()
   , _startCondition()
   , _endCondition()
-  , _stop(false)
+  , _stop(true)
   , _otherThreads()
   , _algo(algo)
   {
@@ -46,6 +46,13 @@ namespace WorkloadManager
     _startCondition.notify_one();
   }
 
+  void WorkloadManager::freezeResources()
+  {
+    std::unique_lock<std::mutex> lock(_data_mutex);
+    _algo.freezeResources();
+    _startCondition.notify_one();
+  }
+
   void WorkloadManager::addTask(Task* t)
   {
     std::unique_lock<std::mutex> lock(_data_mutex);
@@ -57,6 +64,8 @@ namespace WorkloadManager
   {
     {
       std::unique_lock<std::mutex> lock(_data_mutex);
+      if(!_stop)
+        return; // already started
       _stop = false;
     }
     _otherThreads.emplace_back(std::async(std::launch::async, [this]
@@ -74,6 +83,7 @@ namespace WorkloadManager
     {
       std::unique_lock<std::mutex> lock(_data_mutex);
       _stop = true;
+      _algo.freezeResources();
     }
     _startCondition.notify_one();
     _endCondition.notify_one();

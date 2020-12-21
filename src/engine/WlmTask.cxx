@@ -57,10 +57,17 @@ const WorkloadManager::ContainerType& WlmTask::type()const
 
 void WlmTask::run(const WorkloadManager::RunInfo& runInfo)
 {
-  _executor.loadTask(_yacsTask, runInfo);
-  _executor.makeDatastreamConnections(_yacsTask);
-  YACS::Event ev = _executor.runTask(_yacsTask);
-  _executor.endTask(_yacsTask, ev);
+  if(runInfo.isOk)
+  {
+    _executor.loadTask(_yacsTask, runInfo);
+    _executor.makeDatastreamConnections(_yacsTask);
+    YACS::Event ev = _executor.runTask(_yacsTask);
+    _executor.endTask(_yacsTask, ev);
+  }
+  else
+  {
+    _executor.failTask(_yacsTask, runInfo.error_message);
+  }
   delete this; // provisoire
 }
 
@@ -90,6 +97,7 @@ void WlmTask::loadResources(WorkloadManager::WorkloadManager& wm)
     newResource.nbCores = res.second;
     wm.addResource(newResource);
   }
+  wm.freezeResources();
 }
 
 }

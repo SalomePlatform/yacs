@@ -173,10 +173,12 @@ class MyTest: public CppUnit::TestFixture
   CPPUNIT_TEST_SUITE(MyTest);
   CPPUNIT_TEST(atest);
   CPPUNIT_TEST(btest);
+  CPPUNIT_TEST(ctest);
   CPPUNIT_TEST_SUITE_END();
 public:
   void atest();
   void btest(); // ignore resources
+  void ctest(); // no available resource
 };
 
 /**
@@ -303,6 +305,70 @@ void MyTest::btest()
              (end_time - start_time);
   std::chrono::seconds maxExpectedDuration(2);
   CPPUNIT_ASSERT( duration <= maxExpectedDuration);
+}
+
+/**
+ * Test the case of a task which need more cores than any resource has.
+ */
+class ErrorTask : public WorkloadManager::Task
+{
+public:
+  ErrorTask(int nb_cores): WorkloadManager::Task(), _type(), _ok(), _message()
+  {
+    _type.ignoreResources = false;
+    _type.neededCores = nb_cores;
+  }
+
+  const WorkloadManager::ContainerType& type()const override {return _type;}
+
+  void run(const WorkloadManager::RunInfo& c)override
+  {
+    _ok = c.isOk;
+    _message = c.error_message;
+  }
+
+  bool checkState(bool ok, const std::string& message)
+  {
+    return (ok == _ok) && (message == _message);
+  }
+
+private:
+  WorkloadManager::ContainerType _type;
+  bool _ok;
+  std::string _message;
+};
+
+void MyTest::ctest()
+{
+  WorkloadManager::Resource r;
+  r.id = 1;
+  r.name = "r1";
+  r.nbCores = 1;
+  ErrorTask t1(1), t2(10);
+  WorkloadManager::DefaultAlgorithm algo;
+  WorkloadManager::WorkloadManager wlm(algo);
+  wlm.addResource(r);
+  wlm.addTask(&t1);
+  wlm.addTask(&t2);
+  wlm.start();
+  wlm.stop();
+  CPPUNIT_ASSERT(t1.checkState(true, ""));
+  CPPUNIT_ASSERT(t2.checkState(false, "No resource can run this task."));
+  // no error mode: wait for a resource to be added
+  WorkloadManager::DefaultAlgorithm algo_noerror;
+  WorkloadManager::WorkloadManager wlm2(algo_noerror);
+  wlm2.addResource(r);
+  wlm2.addTask(&t1);
+  wlm2.addTask(&t2);
+  wlm2.start();
+  std::this_thread::sleep_for(std::chrono::seconds(1));
+  r.id = 2;
+  r.name = "r2";
+  r.nbCores = 20;
+  wlm2.addResource(r);
+  wlm2.stop();
+  CPPUNIT_ASSERT(t1.checkState(true, ""));
+  CPPUNIT_ASSERT(t2.checkState(true, ""));
 }
 
 CPPUNIT_TEST_SUITE_REGISTRATION(MyTest);

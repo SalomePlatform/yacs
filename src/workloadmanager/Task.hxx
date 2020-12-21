@@ -64,6 +64,8 @@ namespace WorkloadManager
     ContainerType type;
     Resource resource;
     unsigned int index=0; // worker index on the resource for this type
+    bool isOk = true;
+    std::string error_message = "";
   };
 
   /**

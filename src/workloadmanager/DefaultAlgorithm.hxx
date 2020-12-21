@@ -38,6 +38,7 @@ public:
   LaunchInfo chooseTask()override;
   void liberate(const LaunchInfo& info)override;
   bool empty()const override;
+  void freezeResources() override { _resourcesFrozen = true;}
 
 // ----------------------------- PRIVATE ----------------------------- //
 private:
@@ -87,6 +88,7 @@ private:
 private:
   std::list<ResourceLoadInfo> _resources;
   std::list<Task*> _waitingTasks;
+  bool _resourcesFrozen = false;
 };
 }
 #endif // ALGORITHMIMPLEMENT_H

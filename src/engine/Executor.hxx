@@ -134,6 +134,7 @@ namespace YACS
       void makeDatastreamConnections(Task *task);
       void beginTask(Task *task);
       void endTask(Task *task, YACS::Event ev);
+      void failTask(Task *task, const std::string& message);
       ////////////
     protected:
       bool checkBreakPoints();

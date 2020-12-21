@@ -40,6 +40,7 @@ namespace WorkloadManager
     ~WorkloadManager();
     void addTask(Task* t);
     void addResource(const Resource& r);
+    void freezeResources(); //! no more resources can be added
     void start(); //! start execution
     void stop(); //! stop execution
 

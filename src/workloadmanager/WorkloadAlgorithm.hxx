@@ -39,6 +39,7 @@ public:
   virtual LaunchInfo chooseTask()=0;
   virtual void liberate(const LaunchInfo& info)=0;
   virtual bool empty()const =0;
+  virtual void freezeResources()=0;
 };
 }
 #endif // WORKLOADALGORITHM_H

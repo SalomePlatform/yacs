@@ -1509,6 +1509,17 @@ void Executor::endTask(Task *task, YACS::Event ev)
     wakeUp();
 }
 
+void Executor::failTask(Task *task, const std::string& message)
+{
+  ElementaryNode* elemNode = dynamic_cast<ElementaryNode*>(task);
+  if(elemNode != nullptr)
+  {
+    StateLoader(elemNode, YACS::ERROR);
+    elemNode->setErrorDetails(message);
+  }
+  endTask(task, YACS::ABORT);
+}
+
 YACS::Event  Executor::runTask(Task *task)
 {
   { // --- Critical section

@@ -74,6 +74,7 @@ WorkloadAlgorithm::LaunchInfo DefaultAlgorithm::chooseTask()
         if(itResource->isSupported(ctype)
             && (*itTask)->isAccepted(itResource->resource()))
         {
+          isSupported = true;
           if(itResource->isAllocPossible(ctype))
           {
             float thisCost = itResource->cost(ctype);
@@ -90,9 +91,12 @@ WorkloadAlgorithm::LaunchInfo DefaultAlgorithm::chooseTask()
         result.worker.resource = best_resource->resource();
         result.worker.index = best_resource->alloc(ctype);
       }
-      else if(!isSupported)
+      else if(!isSupported && _resourcesFrozen)
       {
-        // TODO: This task can never be run by any available resource.
+        // This task can never be run by any available resource.
+        result.taskFound = true;
+        result.worker.isOk = false;
+        result.worker.error_message = "No resource can run this task.";
       }
     }
     if(result.taskFound)
@@ -110,7 +114,7 @@ WorkloadAlgorithm::LaunchInfo DefaultAlgorithm::chooseTask()
 void DefaultAlgorithm::liberate(const LaunchInfo& info)
 {
   const ContainerType& ctype = info.worker.type;
-  if(!ctype.ignoreResources)
+  if(!ctype.ignoreResources && info.worker.isOk)
   {
     const Resource& r = info.worker.resource;
     unsigned int index = info.worker.index;
