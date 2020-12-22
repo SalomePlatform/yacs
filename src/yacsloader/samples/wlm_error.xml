@@ -1,0 +1,50 @@
+<?xml version='1.0' encoding='iso-8859-1' ?>
+<proc name="NoResourceTest">
+   <property name="executor" value="workloadmanager"/>
+   <type name="string" kind="string"/>
+   <struct name="Engines/dataref">
+      <member name="ref" type="string"/>
+   </struct>
+   <type name="bool" kind="bool"/>
+   <sequence name="boolvec" content="bool"/>
+   <type name="double" kind="double"/>
+   <sequence name="dblevec" content="double"/>
+   <objref name="file" id="file"/>
+   <type name="int" kind="int"/>
+   <sequence name="intvec" content="int"/>
+   <struct name="stringpair">
+      <member name="name" type="string"/>
+      <member name="value" type="string"/>
+   </struct>
+   <sequence name="propvec" content="stringpair"/>
+   <objref name="pyobj" id="python:obj:1.0"/>
+   <sequence name="seqboolvec" content="boolvec"/>
+   <sequence name="seqdblevec" content="dblevec"/>
+   <sequence name="seqintvec" content="intvec"/>
+   <sequence name="seqpyobj" content="pyobj"/>
+   <sequence name="stringvec" content="string"/>
+   <sequence name="seqstringvec" content="stringvec"/>
+   <container name="DefaultContainer">
+      <property name="container_kind" value="Salome"/>
+      <property name="attached_on_cloning" value="0"/>
+      <property name="container_name" value="FactoryServer"/>
+      <property name="name" value="localhost"/>
+   </container>
+   <container name="container1">
+      <property name="container_kind" value="Salome"/>
+      <property name="attached_on_cloning" value="0"/>
+      <property name="nb_parallel_procs" value="100"/>
+      <property name="type" value="multi"/>
+   </container>
+   <remote name="ErrorNode" elementaryWeight="-1">
+      <script><code><![CDATA[]]></code></script>
+      <load container="container1"/>
+   </remote>
+   <inline name="OkNode">
+      <script><code><![CDATA[]]></code></script>
+      <load container="DefaultContainer"/>
+   </inline>
+   <presentation name="OkNode" x="4" y="69" width="158" height="36" expanded="1" expx="4" expy="69" expWidth="158" expHeight="36" shownState="0"/>
+   <presentation name="ErrorNode" x="4" y="32" width="158" height="36" expanded="1" expx="4" expy="32" expWidth="158" expHeight="36" shownState="0"/>
+   <presentation name="__ROOT__" x="0" y="0" width="166" height="109" expanded="1" expx="0" expy="0" expWidth="166" expHeight="109" shownState="0"/>
+</proc>
