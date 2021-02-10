@@ -59,22 +59,6 @@ namespace YACS
 {
   namespace ENGINE
   {
-    void printbin(const std::string& bin)
-      {
-        register char c;
-        for(int i=0;i<bin.length();i++)
-          {
-            c=bin[i];
-            if (c < ' ' || c >= 0x7f) 
-              {
-                fprintf(stderr,"\\x%02x",c & 0xff);
-              }
-            else
-              fprintf(stderr,"%c",c);
-          }
-        fprintf(stderr,"\n");
-      }
-
     std::string getImplName(ImplType impl)
       {
          switch(impl)
