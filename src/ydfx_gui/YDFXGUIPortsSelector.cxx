@@ -34,6 +34,7 @@
 #include <QPaintEvent>
 #include <QApplication>
 #include <QSplitter>
+#include <QPainterPath>
 
 #include <string>
 #include <iostream>
