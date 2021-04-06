@@ -304,8 +304,10 @@ void YDFXGUIRunningButton::runEvaluation()
 {
   if(!getSess()->isLaunched())
     getSess()->launch();
+#if PY_VERSION_HEX < 0x03070000
   if(!PyEval_ThreadsInitialized())
     PyEval_InitThreads();
+#endif
   connect(getThread(),SIGNAL(finished()),this,SLOT(evaluationFinished()));
   setEnabled(false);
   getThread()->start();

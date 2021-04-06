@@ -314,7 +314,9 @@ void RuntimeSALOME::init(long flags, int argc, char* argv[])
               }
               PySys_SetArgv(pyArgc, changed_pyArgv);
             }
+#if PY_VERSION_HEX < 0x03070000
           PyEval_InitThreads(); /* Create (and acquire) the interpreter lock (for threads)*/
+#endif
           PyEval_SaveThread(); /* Release the thread state */
           //here we do not have the Global Interpreter Lock
         }
