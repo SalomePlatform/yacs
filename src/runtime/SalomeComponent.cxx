@@ -25,7 +25,7 @@
 #include "AutoLocker.hxx"
 
 #ifdef SALOME_KERNEL
-#include "SALOME_NamingService.hxx"
+#include "SALOME_NamingService_Wrapper.hxx"
 #include "SALOME_LifeCycleCORBA.hxx"
 #endif
 
@@ -99,7 +99,7 @@ void SalomeComponent::load(Task *askingNode)
     }
   //throw Exception("SalomeComponent::load : no container specified !!! To be implemented in executor to allocate default a Container in case of presenceOfDefaultContainer.");
   //This component has no specified container : use default container policy
-  SALOME_NamingService ns(getSALOMERuntime()->getOrb());
+  SALOME_NamingService_Wrapper ns(getSALOMERuntime()->getOrb());
   SALOME_LifeCycleCORBA LCC(&ns);
   Engines::ContainerParameters params;
   LCC.preSet(params);

@@ -110,9 +110,8 @@
 #include "CalStreamPort.hxx"
 
 #ifdef SALOME_KERNEL
-#include "SALOME_NamingService.hxx"
+#include "SALOME_NamingService_Wrapper.hxx"
 #include "SALOME_LifeCycleCORBA.hxx"
-#include "SALOME_NamingService.hxx"
 #include "SALOME_ResourcesManager.hxx"
 #include "SALOME_ContainerManager.hxx"
 #include "SALOMEconfig.h"
@@ -131,6 +130,12 @@
 
 using namespace std;
 using namespace YACS::ENGINE;
+
+std::unique_ptr<SALOME_NamingService_Container_Abstract> RuntimeSALOME::getNS()
+{
+  std::unique_ptr<SALOME_NamingService_Container_Abstract> ret(new SALOME_NamingService_Wrapper);
+  return ret;
+}
 
 void RuntimeSALOME::setRuntime(long flags, int argc, char* argv[]) // singleton creation (not thread safe!)
 {
@@ -451,7 +456,7 @@ void RuntimeSALOME::fini()
 std::vector< std::pair<std::string,int> > RuntimeSALOME::getCatalogOfComputeNodes() const
 {
   CORBA::ORB_ptr orb(getOrb());
-  SALOME_NamingService namingService;
+  SALOME_NamingService_Wrapper namingService;
   try
   {
     namingService.init_orb(orb);

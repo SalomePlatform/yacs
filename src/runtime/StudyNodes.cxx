@@ -25,7 +25,6 @@
 #include "SalomeProc.hxx"
 
 #include "Basics_Utils.hxx"
-#include "SALOME_NamingService.hxx"
 #include "SALOME_KernelServices.hxx"
 #include "SALOMEDS.hh"
 #include "SALOMEDS_Attributes.hh"

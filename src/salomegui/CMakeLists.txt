@@ -121,3 +121,7 @@ SALOME_CONFIGURE_FILE(resources/YACSCatalog.xml.in
 SALOME_CONFIGURE_FILE(resources/SalomeApp.xml.in 
 		      resources/SalomeApp.xml 
 		      INSTALL ${SALOME_YACS_INSTALL_RES_DATA})
+
+SALOME_CONFIGURE_FILE(resources/SalomeApp.xml.in 
+		      resources/SalomeAppSL.xml 
+          INSTALL ${SALOME_YACS_INSTALL_RES_DATA})

@@ -147,6 +147,7 @@ SET(YACSRuntimeSALOME_HEADERS
   DistributedPythonNode.hxx
   PyOptimizerAlg.hxx
   VisitorSalomeSaveState.hxx
+  SALOME_NamingService_Wrapper.hxx
   )
 
 # --- sources ---
@@ -214,6 +215,7 @@ SET(YACSRuntimeSALOME_SOURCES
   SalomeOptimizerLoop.cxx        
   PyOptimizerAlg.cxx             
   VisitorSalomeSaveState.cxx
+  SALOME_NamingService_Wrapper.cxx
   )
 
 # --- rules ---

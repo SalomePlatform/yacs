@@ -38,7 +38,7 @@
 #include "AutoLocker.hxx"
 
 #ifdef SALOME_KERNEL
-#include "SALOME_NamingService.hxx"
+#include "SALOME_NamingService_Wrapper.hxx"
 #include "SALOME_LifeCycleCORBA.hxx"
 #include "SALOME_Exception.hh"
 #endif
@@ -352,7 +352,7 @@ void SalomeNode::connectService()
   if(_setOfOutputDataStreamPort.size() == 0)return;
 
   CORBA::Object_var objComponent=((SalomeComponent*)_component)->getCompoPtr();
-  SALOME_NamingService NS(getSALOMERuntime()->getOrb()) ;
+  SALOME_NamingService_Wrapper NS(getSALOMERuntime()->getOrb()) ;
   SALOME_LifeCycleCORBA LCC(&NS) ;
   CORBA::Object_var obj = NS.Resolve("/ConnectionManager");
   Engines::ConnectionManager_var manager=Engines::ConnectionManager::_narrow(obj);
@@ -473,7 +473,7 @@ void SalomeNode::disconnectService()
   if(ids.size() == 0)
     return;
 
-  SALOME_NamingService NS(getSALOMERuntime()->getOrb()) ;
+  SALOME_NamingService_Wrapper NS(getSALOMERuntime()->getOrb()) ;
   SALOME_LifeCycleCORBA LCC(&NS) ;
   CORBA::Object_var obj = NS.Resolve("/ConnectionManager");
   Engines::ConnectionManager_var manager=Engines::ConnectionManager::_narrow(obj);

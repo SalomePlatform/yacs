@@ -21,7 +21,7 @@
 #define LISTJOBS_GUI_H
 
 #include <QWidget>
-#include "SALOME_NamingService.hxx"
+#include "SALOME_NamingService_Wrapper.hxx"
 #include "SALOME_Launcher.hh"
 
 // Kind of column

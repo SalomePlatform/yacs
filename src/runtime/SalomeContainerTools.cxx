@@ -19,7 +19,7 @@
 #define _DEVDEBUG_
 #include "SalomeContainerTools.hxx"
 #include "SALOME_LifeCycleCORBA.hxx"
-#include "SALOME_NamingService.hxx"
+#include "SALOME_NamingService_Wrapper.hxx"
 #include "SALOME_ResourcesManager.hxx"
 #include "SALOME_ContainerManager.hxx"
 #include "Container.hxx"
@@ -280,7 +280,7 @@ std::map<std::string,std::string> SalomeContainerTools::getResourceProperties(co
   YACS::ENGINE::RuntimeSALOME* runTime = YACS::ENGINE::getSALOMERuntime();
   CORBA::ORB_ptr orb = runTime->getOrb();
   if (!orb) return properties;
-  SALOME_NamingService namingService(orb);
+  SALOME_NamingService_Wrapper namingService(orb);
   SALOME_LifeCycleCORBA lcc(&namingService);
   CORBA::Object_var obj = namingService.Resolve(SALOME_ResourcesManager::_ResourcesManagerNameInNS);
   if (CORBA::is_nil(obj))
@@ -320,7 +320,7 @@ std::map<std::string,std::string> SalomeContainerTools::getResourceProperties(co
 void SalomeContainerToolsBase::Start(const std::vector<std::string>& compoNames, SalomeContainerHelper *schelp, SalomeContainerToolsBase& sct, int& shutdownLevel, const Container *cont, const Task *askingNode)
 {
   CORBA::ORB_ptr orb(getSALOMERuntime()->getOrb());
-  SALOME_NamingService ns;
+  SALOME_NamingService_Wrapper ns;
   try
   {
       ns.init_orb(orb);

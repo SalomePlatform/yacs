@@ -80,8 +80,8 @@ BatchJobsListDialog::~BatchJobsListDialog(){
 void BatchJobsListDialog::getSalomeLauncher(){
   YACS::ENGINE::RuntimeSALOME* runTime = YACS::ENGINE::getSALOMERuntime();
   CORBA::ORB_ptr orb = runTime->getOrb();
-  SALOME_NamingService* NS = new SALOME_NamingService(orb);
-  CORBA::Object_var obj = NS->Resolve("/SalomeLauncher");
+  SALOME_NamingService_Wrapper NS;
+  CORBA::Object_var obj = NS.Resolve("/SalomeLauncher");
   _salome_launcher = Engines::SalomeLauncher::_narrow(obj);
   if (CORBA::is_nil(_salome_launcher))
     throw YACS::Exception("Salome Launcher not reachable!!");

@@ -36,9 +36,12 @@
 #include <omniORBpy.h>
 #include "Runtime.hxx"
 
-#include<string>
-#include<set>
-      
+#include <memory>
+#include <string>
+#include <set>
+
+class SALOME_NamingService_Container_Abstract;
+
 namespace YACS
 {
   namespace ENGINE
@@ -68,6 +71,9 @@ namespace YACS
         UseSalome = 32
       } FLAGS;
 
+#ifndef SWIG
+      std::unique_ptr<SALOME_NamingService_Container_Abstract> getNS();
+#endif
       // singleton creation
       static void setRuntime(long flags = UsePython+UseCorba+UseXml+UseCpp+UseSalome,
                              int argc = 0, char* argv[] = NULL);

@@ -246,9 +246,6 @@ class YACS(YACS_ORB__POA.YACS_Gen,
                                                          interfaceName, False)
         SALOME_DriverPy.SALOME_DriverPy_i.__init__(self, interfaceName)
 
-        # --- store a naming service interface instance in _naming_service atribute
-        self._naming_service = SALOME_ComponentPy.SALOME_NamingServicePy_i( self._orb )
-
         SALOMERuntime.RuntimeSALOME_setRuntime(1)
         SALOMERuntime.SALOMEDispatcher_setSALOMEDispatcher()
         r=pilot.getRuntime()

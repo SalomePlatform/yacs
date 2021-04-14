@@ -20,6 +20,7 @@
 #include "SalomeResourceModel.hxx"
 #include "RuntimeSALOME.hxx"
 #include "SALOME_ResourcesManager.hxx"
+#include "SALOME_NamingService_Wrapper.hxx"
 #include "SALOME_LifeCycleCORBA.hxx"
 #include <ctime>
 
@@ -53,7 +54,7 @@ std::vector< std::string > SalomeResourceModel::getFittingMachines()const
   CORBA::ORB_ptr orb = runTime->getOrb();
   if (!orb) return resultat;
 
-  SALOME_NamingService namingService(orb);
+  SALOME_NamingService_Wrapper namingService(orb);
   SALOME_LifeCycleCORBA lcc(&namingService);
 
   CORBA::Object_var obj;
@@ -154,7 +155,7 @@ std::string SalomeResourceModel::getDefaultRemoteDir(std::string machine)const
   CORBA::ORB_ptr orb = runTime->getOrb();
   if (!orb) return result;
 
-  SALOME_NamingService namingService(orb);
+  SALOME_NamingService_Wrapper namingService(orb);
   SALOME_LifeCycleCORBA lcc(&namingService);
 
   CORBA::Object_var obj;

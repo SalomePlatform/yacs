@@ -32,7 +32,10 @@
 #include "ObserverAsPlugin.hxx"
 
 #ifdef SALOME_KERNEL
-#include "SALOME_NamingService.hxx"
+#include "KernelBasis.hxx"
+#include "SALOME_Launcher.hxx"
+#include "ServiceUnreachable.hxx"
+#include "SALOME_NamingService_Wrapper.hxx"
 #include "SALOME_ModuleCatalog.hh"
 #include "Basics_Utils.hxx"
 #endif
@@ -294,6 +297,12 @@ bool parse_init_port(const std::string& input, std::string& node, std::string& p
   return true;
 }
 
+void InitializeSSL()
+{
+  setSSLMode(true);
+  KERNEL::getLauncherSA();
+}
+
 int main (int argc, char* argv[])
 {
      
@@ -339,6 +348,8 @@ int main (int argc, char* argv[])
   setsig(SIGTERM,&Handler);
 #endif
 
+  InitializeSSL();
+
   timer("Starting ");
   long flags = RuntimeSALOME::UsePython + RuntimeSALOME::UseCorba + RuntimeSALOME::UseXml + \
                RuntimeSALOME::UseCpp + RuntimeSALOME::UseSalome;
@@ -351,7 +362,7 @@ int main (int argc, char* argv[])
       CORBA::ORB_ptr orb = runTime->getOrb();
       if (orb)
         {
-          SALOME_NamingService namingService(orb);
+          SALOME_NamingService_Wrapper namingService(orb);
           CORBA::Object_var obj = namingService.Resolve("/Kernel/ModulCatalog");
           SALOME_ModuleCatalog::ModuleCatalog_var aModuleCatalog = SALOME_ModuleCatalog::ModuleCatalog::_narrow(obj);
           if (! CORBA::is_nil(aModuleCatalog))

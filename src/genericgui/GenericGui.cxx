@@ -30,7 +30,8 @@
 #include "YACSGuiLoader.hxx"
 #include "ComponentInstance.hxx"
 
-#include "SALOME_NamingService.hxx"
+#include "ServiceUnreachable.hxx"
+#include "SALOME_NamingService_Wrapper.hxx"
 #include "SALOME_ModuleCatalog.hxx"
 #include "SALOME_ModuleCatalog.hh"
 #include "SALOMEDS_Tool.hxx"
@@ -115,7 +116,7 @@ GenericGui::GenericGui(YACS::HMI::SuitWrapper* wrapper, QMainWindow *parent)
       CORBA::ORB_ptr orb = runTime->getOrb();
       if (orb)
         {
-          SALOME_NamingService namingService(orb);
+          SALOME_NamingService_Wrapper namingService(orb);
           CORBA::Object_ptr obj = namingService.Resolve("/Kernel/ModulCatalog");
           SALOME_ModuleCatalog::ModuleCatalog_var aModuleCatalog =
             SALOME_ModuleCatalog::ModuleCatalog::_narrow(obj);
@@ -1003,7 +1004,7 @@ std::list<std::string> GenericGui::getMachineList()
   CORBA::ORB_ptr orb = runTime->getOrb();
   if (!orb) return _machineList;
 
-  SALOME_NamingService namingService(orb);
+  SALOME_NamingService_Wrapper namingService(orb);
   SALOME_LifeCycleCORBA lcc(&namingService);
 
   CORBA::Object_var obj =

@@ -19,7 +19,8 @@
 
 #include <Python.h>
 #include "SALOME_LifeCycleCORBA.hxx"
-#include "SALOME_NamingService.hxx"
+#include "SALOME_NamingService_Wrapper.hxx"
+#include "SALOME_Launcher.hxx"
 
 #include "GuiExecutor.hxx"
 #include "GuiObserver_i.hxx"
@@ -33,6 +34,7 @@
 #include "OutputPort.hxx"
 #include "Executor.hxx"
 
+#include "KernelBasis.hxx"
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -62,6 +64,10 @@ GuiExecutor::GuiExecutor(YACS::ENGINE::Proc* proc)
 
   _loadStateFile = "";
   _breakpointList.clear();
+  if(getSSLMode())
+  {
+    KERNEL::getLauncherSA();
+  }
 }
 
 
@@ -89,13 +95,16 @@ void GuiExecutor::startResumeDataflow(bool initialize)
       DEBTRACE("Create YACS ORB engine!");
       YACS::ENGINE::RuntimeSALOME* runTime = YACS::ENGINE::getSALOMERuntime();
       CORBA::ORB_ptr orb = runTime->getOrb();
-      SALOME_NamingService namingService(orb);
-      SALOME_LifeCycleCORBA lcc(&namingService);
-      ostringstream containerName;
-      containerName << "localhost/YACSContainer";
-      Engines::EngineComponent_var comp = lcc.FindOrLoad_Component(containerName.str().c_str(), "YACS" );
-      _engineRef =YACS_ORB::YACS_Gen::_narrow(comp);
-      YASSERT(!CORBA::is_nil(_engineRef));
+      SALOME_NamingService_Wrapper namingService(orb);
+      //int iii(0); std::cin >> iii;
+      {
+        SALOME_LifeCycleCORBA lcc(&namingService);
+        ostringstream containerName;
+        containerName << "localhost/YACSContainer";
+        Engines::EngineComponent_var comp = lcc.FindOrLoad_Component(containerName.str().c_str(), "YACS" );
+        _engineRef =YACS_ORB::YACS_Gen::_narrow(comp);
+        YASSERT(!CORBA::is_nil(_engineRef));
+      }
     }
 
   checkEndOfDataflow(); // --- to allow change of the _isRunning state

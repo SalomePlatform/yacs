@@ -32,7 +32,6 @@
 #include "ServiceNode.hxx"
 #include "Proc.hxx"
 
-#include "SALOME_NamingService.hxx"
 #include "SALOME_LifeCycleCORBA.hxx"
 #include "SALOME_ContainerManager.hxx"
 #include "Basics_Utils.hxx"

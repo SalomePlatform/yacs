@@ -26,7 +26,6 @@
 #include "CORBANode.hxx"
 
 #ifdef SALOME_KERNEL
-#include "SALOME_NamingService.hxx"
 #include "SALOME_LifeCycleCORBA.hxx"
 #endif
 
