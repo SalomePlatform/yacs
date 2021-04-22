@@ -33,7 +33,7 @@ class SALOME_NamingService_Wrapper : public SALOME_NamingService_Abstract
 public:
   SALOME_NamingService_Wrapper();
   SALOME_NamingService_Wrapper(CORBA::ORB_ptr orb);
-  std::string repr() override { return _effective_ns->repr(); }
+  std::vector< std::string > repr() override { return _effective_ns->repr(); }
   void init_orb(CORBA::ORB_ptr orb=0) override { _effective_ns->init_orb(orb); }
   void Register(CORBA::Object_ptr ObjRef, const char* Path) override { _effective_ns->Register(ObjRef,Path); }
   CORBA::Object_ptr Resolve(const char* Path) override { return _effective_ns->Resolve(Path); }
