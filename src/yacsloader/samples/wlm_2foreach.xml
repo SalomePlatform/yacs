@@ -79,30 +79,57 @@ time.sleep(1)
          <inport name="v" type="int"/>
       </remote>
    </foreach>
+   <inline name="delay">
+      <script><code><![CDATA[import time
+time.sleep(1)
+]]></code></script>
+   </inline>
+   <foreach name="Create_c1_containers" nbranch="8" loopWeight="-1" type="int">
+      <remote name="wait_c1" elementaryWeight="-1">
+         <script><code><![CDATA[import time
+time.sleep(1)
+]]></code></script>
+         <load container="c1"/>
+         <inport name="x" type="int"/>
+      </remote>
+   </foreach>
+   <foreach name="Create_c2_containers" nbranch="3" loopWeight="-1" type="int">
+      <remote name="PyScript5" elementaryWeight="-1">
+         <script><code><![CDATA[import time
+time.sleep(1)
+]]></code></script>
+         <load container="c2"/>
+         <inport name="x" type="int"/>
+      </remote>
+   </foreach>
    <control> <fromnode>Begin</fromnode> <tonode>ForEach1</tonode> </control>
    <control> <fromnode>Begin</fromnode> <tonode>ForEach2</tonode> </control>
    <control> <fromnode>Begin</fromnode> <tonode>End</tonode> </control>
+   <control> <fromnode>Begin</fromnode> <tonode>delay</tonode> </control>
    <control> <fromnode>ForEach1</fromnode> <tonode>End</tonode> </control>
    <control> <fromnode>ForEach2</fromnode> <tonode>End</tonode> </control>
+   <control> <fromnode>delay</fromnode> <tonode>ForEach1</tonode> </control>
+   <control> <fromnode>Create_c1_containers</fromnode> <tonode>Create_c2_containers</tonode> </control>
+   <control> <fromnode>Create_c2_containers</fromnode> <tonode>Begin</tonode> </control>
    <datalink control="false">
       <fromnode>Begin</fromnode> <fromport>t0</fromport>
       <tonode>End</tonode> <toport>t0</toport>
    </datalink>
    <datalink control="false">
       <fromnode>Begin</fromnode> <fromport>vals</fromport>
-      <tonode>ForEach1</tonode> <toport>SmplsCollection</toport>
-   </datalink>
-   <datalink control="false">
-      <fromnode>Begin</fromnode> <fromport>vals</fromport>
       <tonode>ForEach2</tonode> <toport>SmplsCollection</toport>
    </datalink>
    <datalink control="false">
-      <fromnode>Begin</fromnode> <fromport>nbbranches</fromport>
-      <tonode>ForEach2</tonode> <toport>nbBranches</toport>
+      <fromnode>Begin</fromnode> <fromport>vals</fromport>
+      <tonode>ForEach1</tonode> <toport>SmplsCollection</toport>
    </datalink>
    <datalink control="false">
       <fromnode>Begin</fromnode> <fromport>nbbranches</fromport>
       <tonode>ForEach1</tonode> <toport>nbBranches</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>Begin</fromnode> <fromport>nbbranches</fromport>
+      <tonode>ForEach2</tonode> <toport>nbBranches</toport>
    </datalink>
    <datalink control="false">
       <fromnode>ForEach1</fromnode> <fromport>evalSamples</fromport>
@@ -112,19 +139,61 @@ time.sleep(1)
       <fromnode>ForEach2</fromnode> <fromport>evalSamples</fromport>
       <tonode>ForEach2.PyScript7</tonode> <toport>v</toport>
    </datalink>
+   <datalink control="false">
+      <fromnode>Create_c1_containers</fromnode> <fromport>evalSamples</fromport>
+      <tonode>Create_c1_containers.wait_c1</tonode> <toport>x</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>Create_c2_containers</fromnode> <fromport>evalSamples</fromport>
+      <tonode>Create_c2_containers.PyScript5</tonode> <toport>x</toport>
+   </datalink>
+   <parameter>
+      <tonode>ForEach2</tonode><toport>nbBranches</toport>
+      <value><int>1</int></value>
+   </parameter>
+   <parameter>
+      <tonode>Create_c2_containers</tonode><toport>nbBranches</toport>
+      <value><int>3</int></value>
+   </parameter>
+   <parameter>
+      <tonode>Create_c2_containers</tonode><toport>SmplsCollection</toport>
+      <value><array><data>
+<value><int>1</int></value>
+<value><int>2</int></value>
+<value><int>3</int></value>
+</data></array></value>
+   </parameter>
    <parameter>
       <tonode>ForEach1</tonode><toport>nbBranches</toport>
       <value><int>1</int></value>
    </parameter>
    <parameter>
-      <tonode>ForEach2</tonode><toport>nbBranches</toport>
-      <value><int>1</int></value>
+      <tonode>Create_c1_containers</tonode><toport>nbBranches</toport>
+      <value><int>8</int></value>
    </parameter>
-   <presentation name="ForEach1" x="201.5" y="146" width="171.5" height="155" expanded="1" expx="201.5" expy="146" expWidth="171.5" expHeight="155" shownState="0"/>
-   <presentation name="ForEach1.PyScript6" x="9.5" y="88" width="158" height="63" expanded="1" expx="9.5" expy="88" expWidth="158" expHeight="63" shownState="0"/>
+   <parameter>
+      <tonode>Create_c1_containers</tonode><toport>SmplsCollection</toport>
+      <value><array><data>
+<value><int>1</int></value>
+<value><int>2</int></value>
+<value><int>3</int></value>
+<value><int>4</int></value>
+<value><int>5</int></value>
+<value><int>6</int></value>
+<value><int>7</int></value>
+<value><int>8</int></value>
+</data></array></value>
+   </parameter>
+   <presentation name="delay" x="511" y="53" width="158" height="36" expanded="1" expx="511" expy="53" expWidth="158" expHeight="36" shownState="0"/>
    <presentation name="ForEach2.PyScript7" x="13" y="92" width="158" height="63" expanded="1" expx="13" expy="92" expWidth="158" expHeight="63" shownState="0"/>
-   <presentation name="ForEach2" x="204" y="313.5" width="175" height="159" expanded="1" expx="204" expy="313.5" expWidth="175" expHeight="159" shownState="0"/>
-   <presentation name="End" x="402.5" y="85" width="158" height="63" expanded="1" expx="402.5" expy="85" expWidth="158" expHeight="63" shownState="0"/>
-   <presentation name="Begin" x="9" y="86" width="158" height="117" expanded="1" expx="9" expy="86" expWidth="158" expHeight="117" shownState="0"/>
-   <presentation name="__ROOT__" x="0" y="0" width="564.5" height="476.5" expanded="1" expx="0" expy="0" expWidth="564.5" expHeight="476.5" shownState="0"/>
+   <presentation name="ForEach1.PyScript6" x="9.5" y="88" width="158" height="63" expanded="1" expx="9.5" expy="88" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="Begin" x="360.5" y="101.5" width="158" height="117" expanded="1" expx="360.5" expy="101.5" expWidth="158" expHeight="117" shownState="0"/>
+   <presentation name="ForEach2" x="566" y="271" width="175" height="159" expanded="1" expx="566" expy="271" expWidth="175" expHeight="159" shownState="0"/>
+   <presentation name="Create_c1_containers.wait_c1" x="4" y="100" width="158" height="63" expanded="1" expx="4" expy="100" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="Create_c2_containers.PyScript5" x="14" y="99" width="158" height="63" expanded="1" expx="14" expy="99" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="End" x="778.5" y="99" width="158" height="63" expanded="1" expx="778.5" expy="99" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="Create_c2_containers" x="180" y="101" width="176" height="166" expanded="1" expx="180" expy="101" expWidth="176" expHeight="166" shownState="0"/>
+   <presentation name="ForEach1" x="566" y="103.5" width="171.5" height="155" expanded="1" expx="566" expy="103.5" expWidth="171.5" expHeight="155" shownState="0"/>
+   <presentation name="Create_c1_containers" x="4" y="101" width="166" height="167" expanded="1" expx="4" expy="101" expWidth="166" expHeight="167" shownState="0"/>
+   <presentation name="__ROOT__" x="0" y="0" width="940.5" height="434" expanded="1" expx="0" expy="0" expWidth="940.5" expHeight="434" shownState="0"/>
 </proc>

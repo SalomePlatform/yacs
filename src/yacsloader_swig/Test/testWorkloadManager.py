@@ -27,7 +27,7 @@ import tempfile
 import os
 import salome
 
-NB_NODE=16
+NB_NODE=15
 class TestEdit(unittest.TestCase):
 
     def setUp(self):
@@ -71,7 +71,7 @@ class TestEdit(unittest.TestCase):
         # The containers may need some time to be launched.
         # We need some delay to add to the 15s.
         msg = "Execution time is too long : {}s".format(execution_time)
-        self.assertTrue(execution_time < 25, msg)
+        self.assertTrue(execution_time < 20, msg)
 
     def test2(self):
         """ Two parallel foreach-s with different containers and python nodes
@@ -91,7 +91,7 @@ class TestEdit(unittest.TestCase):
         # The containers may need some time to be launched.
         # We need some delay to add to the 16s.
         msg = "Execution time is too long : {}s".format(execution_time)
-        self.assertTrue(execution_time < 26, msg)
+        self.assertTrue(execution_time < 20, msg)
         coeff_cont = proc.getChildByName("End").getOutputPort("coeff_cont").getPyObj()
         msg = "coeff_cont too low:"+str(coeff_cont)
         self.assertTrue(coeff_cont >= NB_NODE, msg)

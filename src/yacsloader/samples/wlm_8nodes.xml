@@ -20,6 +20,7 @@
    <objref name="pyobj" id="python:obj:1.0"/>
    <sequence name="seqboolvec" content="boolvec"/>
    <sequence name="seqdblevec" content="dblevec"/>
+   <sequence name="seqint" content="int"/>
    <sequence name="seqintvec" content="intvec"/>
    <sequence name="seqpyobj" content="pyobj"/>
    <sequence name="stringvec" content="string"/>
@@ -155,6 +156,15 @@ container_name = my_container.name
       <inport name="time_to_sleep" type="int"/>
       <outport name="container_name" type="string"/>
    </remote>
+   <foreach name="Create_containers" nbranch="8" loopWeight="-1" type="int">
+      <remote name="wait_container" elementaryWeight="-1">
+         <script><code><![CDATA[import time
+time.sleep(1)
+]]></code></script>
+         <load container="cont"/>
+         <inport name="x" type="int"/>
+      </remote>
+   </foreach>
    <control> <fromnode>Begin</fromnode> <tonode>End</tonode> </control>
    <control> <fromnode>Begin</fromnode> <tonode>n1</tonode> </control>
    <control> <fromnode>Begin</fromnode> <tonode>n2</tonode> </control>
@@ -172,9 +182,30 @@ container_name = my_container.name
    <control> <fromnode>n6</fromnode> <tonode>End</tonode> </control>
    <control> <fromnode>n7</fromnode> <tonode>End</tonode> </control>
    <control> <fromnode>n8</fromnode> <tonode>End</tonode> </control>
+   <control> <fromnode>Create_containers</fromnode> <tonode>Begin</tonode> </control>
    <datalink control="false">
       <fromnode>Begin</fromnode> <fromport>t0</fromport>
       <tonode>End</tonode> <toport>t0</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>Begin</fromnode> <fromport>time_to_sleep</fromport>
+      <tonode>End</tonode> <toport>time_to_sleep</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>Begin</fromnode> <fromport>time_to_sleep</fromport>
+      <tonode>n7</tonode> <toport>time_to_sleep</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>Begin</fromnode> <fromport>time_to_sleep</fromport>
+      <tonode>n4</tonode> <toport>time_to_sleep</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>Begin</fromnode> <fromport>time_to_sleep</fromport>
+      <tonode>n6</tonode> <toport>time_to_sleep</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>Begin</fromnode> <fromport>time_to_sleep</fromport>
+      <tonode>n5</tonode> <toport>time_to_sleep</toport>
    </datalink>
    <datalink control="false">
       <fromnode>Begin</fromnode> <fromport>time_to_sleep</fromport>
@@ -186,31 +217,11 @@ container_name = my_container.name
    </datalink>
    <datalink control="false">
       <fromnode>Begin</fromnode> <fromport>time_to_sleep</fromport>
-      <tonode>End</tonode> <toport>time_to_sleep</toport>
-   </datalink>
-   <datalink control="false">
-      <fromnode>Begin</fromnode> <fromport>time_to_sleep</fromport>
-      <tonode>n5</tonode> <toport>time_to_sleep</toport>
-   </datalink>
-   <datalink control="false">
-      <fromnode>Begin</fromnode> <fromport>time_to_sleep</fromport>
-      <tonode>n4</tonode> <toport>time_to_sleep</toport>
-   </datalink>
-   <datalink control="false">
-      <fromnode>Begin</fromnode> <fromport>time_to_sleep</fromport>
-      <tonode>n3</tonode> <toport>time_to_sleep</toport>
-   </datalink>
-   <datalink control="false">
-      <fromnode>Begin</fromnode> <fromport>time_to_sleep</fromport>
-      <tonode>n6</tonode> <toport>time_to_sleep</toport>
-   </datalink>
-   <datalink control="false">
-      <fromnode>Begin</fromnode> <fromport>time_to_sleep</fromport>
       <tonode>n8</tonode> <toport>time_to_sleep</toport>
    </datalink>
    <datalink control="false">
       <fromnode>Begin</fromnode> <fromport>time_to_sleep</fromport>
-      <tonode>n7</tonode> <toport>time_to_sleep</toport>
+      <tonode>n3</tonode> <toport>time_to_sleep</toport>
    </datalink>
    <datalink control="false">
       <fromnode>n1</fromnode> <fromport>container_name</fromport>
@@ -244,15 +255,38 @@ container_name = my_container.name
       <fromnode>n8</fromnode> <fromport>container_name</fromport>
       <tonode>End</tonode> <toport>n8</toport>
    </datalink>
-   <presentation name="n1" x="199" y="106.806" width="158" height="63" expanded="1" expx="199" expy="106.806" expWidth="158" expHeight="63" shownState="0"/>
-   <presentation name="n7" x="197.548" y="488.857" width="158" height="63" expanded="1" expx="197.548" expy="488.857" expWidth="158" expHeight="63" shownState="0"/>
-   <presentation name="End" x="410.5" y="32" width="158" height="306" expanded="1" expx="410.5" expy="32" expWidth="158" expHeight="306" shownState="0"/>
-   <presentation name="Begin" x="4" y="32" width="158" height="90" expanded="1" expx="4" expy="32" expWidth="158" expHeight="90" shownState="0"/>
-   <presentation name="n2" x="197.65" y="170.306" width="158" height="63" expanded="1" expx="197.65" expy="170.306" expWidth="158" expHeight="63" shownState="0"/>
-   <presentation name="n4" x="199.05" y="297.306" width="158" height="63" expanded="1" expx="199.05" expy="297.306" expWidth="158" expHeight="63" shownState="0"/>
-   <presentation name="n3" x="196.65" y="233.806" width="158" height="63" expanded="1" expx="196.65" expy="233.806" expWidth="158" expHeight="63" shownState="0"/>
-   <presentation name="n6" x="197.499" y="424.306" width="158" height="63" expanded="1" expx="197.499" expy="424.306" expWidth="158" expHeight="63" shownState="0"/>
-   <presentation name="n8" x="197.898" y="552.357" width="158" height="63" expanded="1" expx="197.898" expy="552.357" expWidth="158" expHeight="63" shownState="0"/>
-   <presentation name="n5" x="196.749" y="360.806" width="158" height="63" expanded="1" expx="196.749" expy="360.806" expWidth="158" expHeight="63" shownState="0"/>
-   <presentation name="__ROOT__" x="0" y="0" width="572.5" height="619.357" expanded="1" expx="0" expy="0" expWidth="572.5" expHeight="619.357" shownState="0"/>
+   <datalink control="false">
+      <fromnode>Create_containers</fromnode> <fromport>evalSamples</fromport>
+      <tonode>Create_containers.wait_container</tonode> <toport>x</toport>
+   </datalink>
+   <parameter>
+      <tonode>Create_containers</tonode><toport>nbBranches</toport>
+      <value><int>8</int></value>
+   </parameter>
+   <parameter>
+      <tonode>Create_containers</tonode><toport>SmplsCollection</toport>
+      <value><array><data>
+<value><int>1</int></value>
+<value><int>2</int></value>
+<value><int>3</int></value>
+<value><int>4</int></value>
+<value><int>5</int></value>
+<value><int>6</int></value>
+<value><int>7</int></value>
+<value><int>8</int></value>
+</data></array></value>
+   </parameter>
+   <presentation name="Create_containers" x="4" y="71" width="167" height="166" expanded="1" expx="4" expy="71" expWidth="167" expHeight="166" shownState="0"/>
+   <presentation name="n1" x="411" y="62.806" width="158" height="63" expanded="1" expx="411" expy="62.806" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="Begin" x="206" y="71.5" width="158" height="90" expanded="1" expx="206" expy="71.5" expWidth="158" expHeight="90" shownState="0"/>
+   <presentation name="Create_containers.wait_container" x="5" y="99" width="158" height="63" expanded="1" expx="5" expy="99" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="n7" x="420.548" y="443.806" width="158" height="63" expanded="1" expx="420.548" expy="443.806" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="n4" x="415.5" y="253.306" width="158" height="63" expanded="1" expx="415.5" expy="253.306" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="n2" x="414.65" y="126.306" width="158" height="63" expanded="1" expx="414.65" expy="126.306" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="n8" x="421.898" y="508.306" width="158" height="63" expanded="1" expx="421.898" expy="508.306" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="End" x="747" y="45" width="158" height="306" expanded="1" expx="747" expy="45" expWidth="158" expHeight="306" shownState="0"/>
+   <presentation name="n3" x="417.5" y="189.806" width="158" height="63" expanded="1" expx="417.5" expy="189.806" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="n5" x="416.5" y="316.806" width="158" height="63" expanded="1" expx="416.5" expy="316.806" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="n6" x="417.499" y="380.306" width="158" height="63" expanded="1" expx="417.499" expy="380.306" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="__ROOT__" x="0" y="0" width="909" height="575.306" expanded="1" expx="0" expy="0" expWidth="909" expHeight="575.306" shownState="0"/>
 </proc>
