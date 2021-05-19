@@ -2470,6 +2470,7 @@ bool CommandSetSwitchSelect::localExecute()
       setErrorMsg(ex);
       return false;
     }
+  return true;
 }
 
 bool CommandSetSwitchSelect::localReverse()
@@ -2492,6 +2493,7 @@ bool CommandSetSwitchSelect::localReverse()
       setErrorMsg(ex);
       return false;
     }
+  return true;
 }
 
 // ----------------------------------------------------------------------------

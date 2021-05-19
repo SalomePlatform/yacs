@@ -82,15 +82,16 @@ void CollectorSwOutPort::getAllRepresented(std::set<OutPort *>& represented) con
 
 bool CollectorSwOutPort::addInPort(InPort *inPort)
 {
+  bool ret = false;
   if(_currentProducer)
     {//a specific link is beeing done
-      bool ret=_currentProducer->addInPort(inPort);
+      ret=_currentProducer->addInPort(inPort);
       _currentProducer=0;
-      return ret;
     }
   else//global links asked
     for(map<int, OutPort *>::iterator iter=_potentialProducers.begin();iter!=_potentialProducers.end();iter++)
-      (*iter).second->addInPort(inPort);
+      ret |= (*iter).second->addInPort(inPort);
+  return ret;
 }
 
 int CollectorSwOutPort::removeInPort(InPort *inPort, bool forward)
@@ -559,6 +560,7 @@ Node *Switch::edSetNode(int caseId, Node *node)
           return ret;
         }
     }
+  return 0;
 }
 
 //! Change the case of a node
