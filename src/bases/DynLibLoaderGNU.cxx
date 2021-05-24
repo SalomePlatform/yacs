@@ -110,6 +110,7 @@ bool DynLibLoaderGNU::unload()
       dlclose(_handleOnLoadedLib);
       _handleOnLoadedLib = NULL;
     }
+  return false;
 }
 
 bool DynLibLoaderGNU::reload()

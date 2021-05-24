@@ -107,8 +107,7 @@ Any *Pool::getOutSample(int id)
   for(iter=_container.begin();iter!=_container.end();iter++)
     if((*iter).first==id)
         return (*iter).second.outValue();
-  if(iter==_container.end())
-    throw YACS::Exception("no current case set in pool");
+  throw YACS::Exception("no current case set in pool");
 }
 
 
