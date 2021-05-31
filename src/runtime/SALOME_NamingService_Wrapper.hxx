@@ -20,6 +20,7 @@
 #pragma once
 
 #include "SALOME_NamingService_Abstract.hxx"
+#include "YACSRuntimeSALOMEExport.hxx"
 
 #include <memory>
 
@@ -28,7 +29,7 @@
  * - NamingService CORBA server (SALOME_NamingService)
  * - NamingService embedded (SALOME_Fake_NamingService)
  */
-class SALOME_NamingService_Wrapper : public SALOME_NamingService_Abstract
+class YACSRUNTIMESALOME_EXPORT SALOME_NamingService_Wrapper : public SALOME_NamingService_Abstract
 {
 public:
   SALOME_NamingService_Wrapper();
