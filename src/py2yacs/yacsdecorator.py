@@ -28,6 +28,42 @@ class OutputPort:
     self.yacs_node = yacs_node
     self.yacs_port = yacs_port
 
+  def IAmAManagedPort(self):
+    """ Type check."""
+    return True
+
+  def linkTo(self, input_port, input_node, generator):
+    generator.proc.edAddLink(self.yacs_port, input_port)
+    generator.addCFLink(self.yacs_node, input_node)
+
+  def getPort(self):
+    return self.yacs_port
+
+  def getNode(self):
+    return self.yacs_node
+
+class OutputPortWithCollector:
+  def __init__(self, output_port):
+    self.output_port = output_port
+    self.connectedInputPorts = []
+
+  def IAmAManagedPort(self):
+    """ Type check."""
+    return True
+
+  def linkTo(self, input_port, input_node, generator):
+    self.output_port.linkTo(input_port, input_node, generator)
+    self.connectedInputPorts.append(input_port)
+
+  def getPort(self):
+    return self.output_port.getPort()
+
+  def getNode(self):
+    return self.output_port.getNode()
+
+  def connectedPorts(self):
+    return self.connectedInputPorts
+
 class LeafNodeType:
   def __init__(self, path, fn_name, inputs, outputs, container_name):
     self.path = path
@@ -130,6 +166,7 @@ class SchemaGenerator():
     self.containers = {}
     self.pyobjtype = self.runtime.getTypeCode("pyobj")
     self.seqpyobjtype = self.runtime.getTypeCode("seqpyobj")
+    self.booltype = self.runtime.getTypeCode("bool")
     self.bloc_stack = [self.proc]
     self.name_index = 0 # used to ensure unique names
     self.container_manager = ContainerManager()
@@ -138,6 +175,13 @@ class SchemaGenerator():
     new_name = name + "_" + str(self.name_index)
     self.name_index += 1
     return new_name
+
+  def isAManagedPort(self, port):
+    try:
+      isManagedPort = port.IAmAManagedPort()
+    except AttributeError:
+      isManagedPort = False
+    return isManagedPort
 
   def getContextName(self):
     context_name = ""
@@ -222,10 +266,8 @@ study_function = yacstools.getFunction("{file_path}", "{function_name}")
     # create links
     for k,v in input_values.items():
       input_port = new_node.getInputPort(k)
-      if isinstance(v, OutputPort):
-        self.proc.edAddLink(v.yacs_port, input_port)
-        self.addCFLink(v.yacs_node, new_node)
-        #self.proc.edAddCFLink(v.yacs_node, new_node)
+      if self.isAManagedPort(v) :
+        v.linkTo(input_port, new_node, self)
       else:
         input_port.edInitPy(v)
     # return output ports
@@ -246,7 +288,11 @@ study_function = yacstools.getFunction("{file_path}", "{function_name}")
     new_foreach.edAddChild(new_block)
     sample_port = new_foreach.edGetSamplePort()
     input_list_port = new_foreach.edGetSeqOfSamplesPort()
-    if isinstance(input_values, OutputPort):
+    try:
+      isManagedPort = input_values.IAmAManagedPort()
+    except AttributeError:
+      isManagedPort = False
+    if self.isAManagedPort(input_values) :
       # we need a conversion node pyobj -> seqpyobj
       conversion_node = self.runtime.createScriptNode("Salome",
                                                       "input_"+foreach_name)
@@ -258,8 +304,7 @@ study_function = yacstools.getFunction("{file_path}", "{function_name}")
       # no script, the same variable for input and output
       conversion_node.setScript("")
       self.bloc_stack[-1].edAddChild(conversion_node)
-      self.proc.edAddLink(input_values.yacs_port, input_port)
-      self.addCFLink(input_values.yacs_node, conversion_node)
+      input_values.linkTo(input_port, conversion_node, self)
       self.proc.edAddLink(output_port, input_list_port)
       # No need to look for ancestors. Both nodes are on the same level.
       self.proc.edAddCFLink(conversion_node, new_foreach)
@@ -288,15 +333,15 @@ study_function = yacstools.getFunction("{file_path}", "{function_name}")
       list_ret = []
       idx_name = 0 # for unique port names
       for port in list_out :
-        if isinstance(port, OutputPort):
-          port_name = port.yacs_port.getName() + "_" + str(idx_name)
-          idx_name += 1
+        if self.isAManagedPort(port):
+          port_name = port.getPort().getName() + "_" + str(idx_name)
           input_port = conversion_node.edAddInputPort(port_name,
                                                       self.seqpyobjtype)
           output_port = conversion_node.edAddOutputPort(port_name,
                                                         self.pyobjtype)
-          self.proc.edAddLink(port.yacs_port, input_port)
+          self.proc.edAddLink(port.getPort(), input_port)
           list_ret.append(OutputPort(conversion_node, output_port))
+          idx_name += 1
         else:
           list_ret.append(port)
       self.proc.edAddCFLink(for_each_node, conversion_node)
@@ -312,16 +357,57 @@ study_function = yacstools.getFunction("{file_path}", "{function_name}")
   def addCFLink(self, node_from, node_to):
     commonAncestor = self.proc.getLowestCommonAncestor(node_from, node_to)
     if node_from.getName() != commonAncestor.getName() :
-      link_from = node_from
-      while link_from.getFather().getName() != commonAncestor.getName() :
-        link_from = link_from.getFather()
-      link_to = node_to
-      while link_to.getFather().getName() != commonAncestor.getName() :
-        link_to = link_to.getFather()
-      self.proc.edAddCFLink(link_from, link_to)
+      while node_from.getFather().getName() != commonAncestor.getName() :
+        node_from = node_from.getFather()
+      while node_to.getFather().getName() != commonAncestor.getName() :
+        node_to = node_to.getFather()
+      self.proc.edAddCFLink(node_from, node_to)
     else:
       # from node is ancestor of to node. No CF link needed.
       pass
+
+  def beginWhileloop(self, fn_name, context):
+    whileloop_name = self.newName("whileloop_"+fn_name)
+    while_node = self.runtime.createWhileLoop(whileloop_name)
+    self.bloc_stack[-1].edAddChild(while_node)
+    if not self.isAManagedPort(context):
+      # create a init node in order to get a port for the context
+      indata_name = "Inputdata_" + whileloop_name
+      indata_node = self.runtime.createScriptNode("Salome", indata_name)
+      indata_inport = indata_node.edAddInputPort("context", self.pyobjtype)
+      indata_outport = indata_node.edAddOutputPort("context", self.pyobjtype)
+      indata_inport.edInitPy(context)
+      context = OutputPort(indata_node, indata_outport)
+      self.bloc_stack[-1].edAddChild(indata_node)
+
+    bloc_name = "bloc_"+whileloop_name
+    new_block = self.runtime.createBloc(bloc_name)
+    while_node.edAddChild(new_block)
+    self.bloc_stack.append(while_node)
+    self.bloc_stack.append(new_block)
+    self.proc.edAddCFLink(context.getNode(), while_node)
+    ret = OutputPortWithCollector(context)
+    return ret
+
+  def endWhileloop(self, condition, collected_context, loop_result):
+    while_node = self.bloc_stack[-2]
+    cport = while_node.edGetConditionPort()
+    # need a conversion node pyobj -> bool
+    conversion_node = self.runtime.createScriptNode("Salome",
+                                                    "while_condition")
+    conversion_node.setExecutionMode("local") # no need for container
+    conversion_node.setScript("")
+    port_name = "val"
+    input_port = conversion_node.edAddInputPort(port_name, self.pyobjtype)
+    output_port = conversion_node.edAddOutputPort(port_name, self.booltype)
+    self.bloc_stack[-1].edAddChild(conversion_node)
+    condition.linkTo(input_port, conversion_node, self)
+    self.proc.edAddLink(output_port, cport)
+    if not loop_result is None:
+      for p in collected_context.connectedPorts():
+        self.proc.edAddLink(loop_result.getPort(), p)
+    self.bloc_stack.pop() # remove the block
+    self.bloc_stack.pop() # remove the while node
 
 _generator = None
 
@@ -453,4 +539,100 @@ def foreach(f):
   elif this_module._exec_mode == this_module._yacs_mode:
     return yacs_foreach(f)
 
-  
+def default_forloop(l, f, context):
+  for e in l:
+    context = f(e, context)
+  return context
+
+def yacs_forloop(l, f, context):
+    # TODO
+    pass
+
+def forloop(l, f, context):
+  """
+  Forloop structure for distributed computations.
+  This shall be used as a regular function, not as a decorator.
+  Parameters:
+  l : list of values to iterate on
+  f : a function which is the body of the loop
+  context : the value of the context for the first iteration.
+  Return: context of the last iteration.
+
+  The f function shall take two parameters. The first is an element of the list
+  and the second is the context returned by the previous iteration.
+  The f function shall return one value, which is the context needed by the next
+  iteration.
+  """
+  if this_module._exec_mode == this_module._default_mode:
+    return default_forloop(l, f, context)
+  elif this_module._exec_mode == this_module._yacs_mode:
+    return yacs_forloop(l, f, context)
+
+def default_whileloop(f, context):
+  cond = True
+  while cond :
+    cond, context = f(context)
+  return context
+
+def yacs_whileloop(f, context):
+  fn_name = f.__code__.co_name
+  generator = getGenerator()
+  managed_context = generator.beginWhileloop(fn_name, context)
+  # managed context extends the context with the list of all input ports
+  # the context is linked to
+  cond, ret = f(managed_context)
+  generator.endWhileloop(cond, managed_context, ret)
+  return ret
+
+def whileloop( f, context):
+  """
+  Whileloop structure for distributed computations.
+  This shall be used as a regular function, not as a decorator.
+  Parameters:
+  f : a function which is the body of the loop
+  context : the value of the context for the first iteration.
+  Return: context of the last iteration.
+
+  The f function shall take one parameter which is the context returned by the
+  previous iteration. It shall return a tuple of two values. The first value
+  should be True or False, to say if the loop shall continue or not. The second
+  is the context used by the next iteration.
+  """
+  if this_module._exec_mode == this_module._default_mode:
+    return default_whileloop(f, context)
+  elif this_module._exec_mode == this_module._yacs_mode:
+    return yacs_whileloop(f, context)
+
+DEFAULT_SWITCH_ID = -1973012217
+
+def default_switch(t, cases, *args, **kwargs):
+  ret = None
+  if t in cases.keys():
+    ret = cases[t](*args, **kwargs)
+  elif DEFAULT_SWITCH_ID in cases.keys():
+    ret = cases[DEFAULT_SWITCH_ID](*args, **kwargs)
+  return ret
+
+def yacs_switch(t, cases, *args, **kwargs):
+  # TODO
+  pass
+
+def switch( t,       # integer value to test
+            cases,   # dic { value: function}
+            *args,   # args to call the function
+            **kwargs # kwargs to call the function
+           ):
+  if this_module._exec_mode == this_module._default_mode:
+    return default_switch(t, cases, *args, **kwargs)
+  elif this_module._exec_mode == this_module._yacs_mode:
+    return yacs_switch(t, cases, *args, **kwargs)
+
+def begin_sequential_bloc():
+  if this_module._exec_mode == this_module._default_mode:
+    return
+  # TODO yacs mode
+
+def end_sequential_bloc():
+  if this_module._exec_mode == this_module._default_mode:
+    return
+  # TODO yacs mode
