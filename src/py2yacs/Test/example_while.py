@@ -34,20 +34,20 @@ def g(a, b):
     cond = r < 100
     return cond, r
 
-@yacsdecorator.bloc
-def while_bloc(context):
+@yacsdecorator.block
+def while_block(context):
     a = f1(context)
     b = f2(context)
     cond, r = g(a,b)
     return cond, r
 
-@yacsdecorator.bloc
+@yacsdecorator.block
 def main():
     v = extra_init()
     x = yacsdecorator.whileloop(while_func, v)
     post(x)
     yacsdecorator.whileloop(while_func, 3)
-    r = yacsdecorator.whileloop(while_bloc, 1)
+    r = yacsdecorator.whileloop(while_block, 1)
     print("r final:", r)
 
 if __name__ == "__main__" :

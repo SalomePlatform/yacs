@@ -167,7 +167,7 @@ class SchemaGenerator():
     self.pyobjtype = self.runtime.getTypeCode("pyobj")
     self.seqpyobjtype = self.runtime.getTypeCode("seqpyobj")
     self.booltype = self.runtime.getTypeCode("bool")
-    self.bloc_stack = [self.proc]
+    self.block_stack = [self.proc]
     self.name_index = 0 # used to ensure unique names
     self.container_manager = ContainerManager()
 
@@ -185,9 +185,9 @@ class SchemaGenerator():
 
   def getContextName(self):
     context_name = ""
-    if len(self.bloc_stack) > 1:
+    if len(self.block_stack) > 1:
       # We are in a block
-      block_path = ".".join([ b.getName() for b in self.bloc_stack[1:] ])
+      block_path = ".".join([ b.getName() for b in self.block_stack[1:] ])
       context_name = block_path + "."
     return context_name
 
@@ -255,7 +255,7 @@ study_function = yacstools.getFunction("{file_path}", "{function_name}")
     new_node.setContainer(container)
     new_node.setExecutionMode("remote")
     new_node.setScript(script)
-    self.bloc_stack[-1].edAddChild(new_node)
+    self.block_stack[-1].edAddChild(new_node)
     # create ports
     for p in inputs:
       new_node.edAddInputPort(p, self.pyobjtype)
@@ -282,9 +282,9 @@ study_function = yacstools.getFunction("{file_path}", "{function_name}")
     foreach_name = self.newName(fn_name)
     new_foreach = self.runtime.createForEachLoopDyn(foreach_name,
                                                     self.pyobjtype)
-    self.bloc_stack[-1].edAddChild(new_foreach)
-    bloc_name = "bloc_"+foreach_name
-    new_block = self.runtime.createBloc(bloc_name)
+    self.block_stack[-1].edAddChild(new_foreach)
+    block_name = "block_"+foreach_name
+    new_block = self.runtime.createBloc(block_name)
     new_foreach.edAddChild(new_block)
     sample_port = new_foreach.edGetSamplePort()
     input_list_port = new_foreach.edGetSeqOfSamplesPort()
@@ -303,20 +303,20 @@ study_function = yacstools.getFunction("{file_path}", "{function_name}")
       conversion_node.setExecutionMode("local") # no need for container
       # no script, the same variable for input and output
       conversion_node.setScript("")
-      self.bloc_stack[-1].edAddChild(conversion_node)
+      self.block_stack[-1].edAddChild(conversion_node)
       input_values.linkTo(input_port, conversion_node, self)
       self.proc.edAddLink(output_port, input_list_port)
       # No need to look for ancestors. Both nodes are on the same level.
       self.proc.edAddCFLink(conversion_node, new_foreach)
     else:
       input_list_port.edInitPy(list(input_values))
-    self.bloc_stack.append(new_foreach)
-    self.bloc_stack.append(new_block)
+    self.block_stack.append(new_foreach)
+    self.block_stack.append(new_block)
     return OutputPort(new_foreach, sample_port)
 
   def endForeach(self, outputs):
-    self.bloc_stack.pop() # remove the block
-    for_each_node = self.bloc_stack.pop() # remove the foreach
+    self.block_stack.pop() # remove the block
+    for_each_node = self.block_stack.pop() # remove the foreach
     converted_ret = None
     if outputs is not None:
       # We need a conversion node seqpyobj -> pyobj
@@ -329,7 +329,7 @@ study_function = yacstools.getFunction("{file_path}", "{function_name}")
                                                       conversion_node_name)
       conversion_node.setExecutionMode("local") # no need for container
       conversion_node.setScript("")
-      self.bloc_stack[-1].edAddChild(conversion_node)
+      self.block_stack[-1].edAddChild(conversion_node)
       list_ret = []
       idx_name = 0 # for unique port names
       for port in list_out :
@@ -369,7 +369,7 @@ study_function = yacstools.getFunction("{file_path}", "{function_name}")
   def beginWhileloop(self, fn_name, context):
     whileloop_name = self.newName("whileloop_"+fn_name)
     while_node = self.runtime.createWhileLoop(whileloop_name)
-    self.bloc_stack[-1].edAddChild(while_node)
+    self.block_stack[-1].edAddChild(while_node)
     if not self.isAManagedPort(context):
       # create a init node in order to get a port for the context
       indata_name = "Inputdata_" + whileloop_name
@@ -378,19 +378,19 @@ study_function = yacstools.getFunction("{file_path}", "{function_name}")
       indata_outport = indata_node.edAddOutputPort("context", self.pyobjtype)
       indata_inport.edInitPy(context)
       context = OutputPort(indata_node, indata_outport)
-      self.bloc_stack[-1].edAddChild(indata_node)
+      self.block_stack[-1].edAddChild(indata_node)
 
-    bloc_name = "bloc_"+whileloop_name
-    new_block = self.runtime.createBloc(bloc_name)
+    block_name = "block_"+whileloop_name
+    new_block = self.runtime.createBloc(block_name)
     while_node.edAddChild(new_block)
-    self.bloc_stack.append(while_node)
-    self.bloc_stack.append(new_block)
+    self.block_stack.append(while_node)
+    self.block_stack.append(new_block)
     self.proc.edAddCFLink(context.getNode(), while_node)
     ret = OutputPortWithCollector(context)
     return ret
 
   def endWhileloop(self, condition, collected_context, loop_result):
-    while_node = self.bloc_stack[-2]
+    while_node = self.block_stack[-2]
     cport = while_node.edGetConditionPort()
     # need a conversion node pyobj -> bool
     conversion_node = self.runtime.createScriptNode("Salome",
@@ -400,14 +400,14 @@ study_function = yacstools.getFunction("{file_path}", "{function_name}")
     port_name = "val"
     input_port = conversion_node.edAddInputPort(port_name, self.pyobjtype)
     output_port = conversion_node.edAddOutputPort(port_name, self.booltype)
-    self.bloc_stack[-1].edAddChild(conversion_node)
+    self.block_stack[-1].edAddChild(conversion_node)
     condition.linkTo(input_port, conversion_node, self)
     self.proc.edAddLink(output_port, cport)
     if not loop_result is None:
       for p in collected_context.connectedPorts():
         self.proc.edAddLink(loop_result.getPort(), p)
-    self.bloc_stack.pop() # remove the block
-    self.bloc_stack.pop() # remove the while node
+    self.block_stack.pop() # remove the block
+    self.block_stack.pop() # remove the while node
 
 _generator = None
 
@@ -485,15 +485,25 @@ def leaf(arg):
     ret = LeafDecorator(arg)
   return ret
 
-def bloc(f):
+def block(f):
   """
-  Decorator for blocs.
+  Decorator for blocks.
   """
   #co = f.__code__
-  #print("bloc :", co.co_name)
+  #print("block :", co.co_name)
   #print("  file:", co.co_filename)
   #print("  line:", co.co_firstlineno)
   #print("  args:", co.co_varnames)
+  return f
+
+def seqblock(f):
+  """
+  Decorator for sequential blocks.
+  """
+  if this_module._exec_mode == this_module._yacs_mode:
+  # TODO create a new block and set a flag to add dependencies between
+  # nodes in the block
+    pass
   return f
 
 def default_foreach(f):
@@ -532,7 +542,7 @@ def yacs_foreach(f):
 
 def foreach(f):
   """
-  Decorator to generate foreach blocs
+  Decorator to generate foreach blocks
   """
   if this_module._exec_mode == this_module._default_mode:
     return default_foreach(f)
@@ -627,12 +637,12 @@ def switch( t,       # integer value to test
   elif this_module._exec_mode == this_module._yacs_mode:
     return yacs_switch(t, cases, *args, **kwargs)
 
-def begin_sequential_bloc():
+def begin_sequential_block():
   if this_module._exec_mode == this_module._default_mode:
     return
   # TODO yacs mode
 
-def end_sequential_bloc():
+def end_sequential_block():
   if this_module._exec_mode == this_module._default_mode:
     return
   # TODO yacs mode

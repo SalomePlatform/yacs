@@ -44,16 +44,16 @@ def post(t):
     s += e
   return s
 
-@yacsdecorator.bloc
-def mainbloc():
+@yacsdecorator.block
+def mainblock():
   return fr(range(10))
 
-@yacsdecorator.bloc
+@yacsdecorator.block
 def maindoublefr():
   vals = [ list(range(x)) for x in range(10)]
   return doublefr(vals)
 
-@yacsdecorator.bloc
+@yacsdecorator.block
 def main():
   vals = jdd()
   result = fr2(vals)

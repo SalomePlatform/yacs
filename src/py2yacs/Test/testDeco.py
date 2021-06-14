@@ -86,11 +86,11 @@ class TestDeco(unittest.TestCase):
       Foreach initialized by value.
       """
       import testforeach
-      expected_1, expected_2 = testforeach.mainbloc()
+      expected_1, expected_2 = testforeach.mainblock()
       yacs_schema_file = os.path.join(dir_test, "schema_t2.xml")
       yacs_build_command = "yacsbuild.py"
       test_script = "testforeach.py"
-      main_function_name = "mainbloc"
+      main_function_name = "mainblock"
       subprocess.run([yacs_build_command,
                       test_script, main_function_name, yacs_schema_file])
       l = loader.YACSLoader()
@@ -149,7 +149,7 @@ def f_def(x,y):
   d = x - y
   return d
 
-@yacsdecorator.bloc
+@yacsdecorator.block
 def main():
   s1 = f_c1(3,4)
   p1 = f_c2(5,6)

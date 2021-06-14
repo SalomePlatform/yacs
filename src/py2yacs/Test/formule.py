@@ -17,7 +17,7 @@ def f3(x, y):
   p = x*y
   return s,p
 
-@yacsdecorator.bloc
+@yacsdecorator.block
 def b1():
   x = f1(x=3,y=4)
   a,b = f3(x, 2)
