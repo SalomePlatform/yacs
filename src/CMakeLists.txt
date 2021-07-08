@@ -22,8 +22,11 @@
 ##
 SET(SUBDIRS_COMMON
   bases engine wrappergen yacsorb salomeloader workloadmanager
-  pmml
   )
+
+IF(SALOME_YACS_USE_EMBEDDED_PMML)
+  LIST(APPEND SUBDIRS_COMMON pmml)
+ENDIF(SALOME_YACS_USE_EMBEDDED_PMML)
 
 ##
 # KERNEL

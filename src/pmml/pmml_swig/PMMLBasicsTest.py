@@ -26,12 +26,16 @@ from PMML import PMMLlib, kANN, kLR
 import unittest
 import os
 import shutil
+import platform
 
 class PMMLBasicsTest(unittest.TestCase):
 
     def setUp(self):
         self.resourcesDir = ".." + os.sep + "Test" + os.sep + "samples" + os.sep ;
-        self.tmpDir = os.sep + "tmp" + os.sep + os.environ['LOGNAME'] + os.sep ;
+        if platform.system() == "Windows" :
+            self.tmpDir = os.environ['TMP'] # %TMP% does exist on WINDOWS
+        else:
+            self.tmpDir = os.sep + "tmp" + os.sep + os.environ['LOGNAME'] + os.sep ;
         self.tmpDir += "PmmlUnitTest";
         self.tmpDir += os.sep ;
         if ( not os.path.exists(self.tmpDir) ):

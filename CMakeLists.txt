@@ -96,6 +96,7 @@ OPTION(SALOME_BUILD_TESTS "Build SALOME YACS tests" ON)
 
 OPTION(SALOME_YACS_USE_SWIG       "Enable Python wrapper"    ON)
 OPTION(SALOME_YACS_USE_DSC        "Use DSC KERNEL extension" ON)
+OPTION(SALOME_YACS_USE_EMBEDDED_PMML "Use YACS PMML implementation" ON)
 
 CMAKE_DEPENDENT_OPTION(SALOME_YACS_USE_PYEDITOR "Use built-in py editor" ON
                        "SALOME_USE_PYVIEWER" OFF)
@@ -167,6 +168,18 @@ ENDIF(SALOME_BUILD_GUI)
 ##
 ## YACS specifics
 ##
+# External PMML
+# =============
+IF(NOT SALOME_YACS_USE_EMBEDDED_PMML)
+  SET(PMML_ROOT_DIR $ENV{PMML_ROOT_DIR} CACHE PATH "Path to PMML")
+  IF(EXISTS ${PMML_ROOT_DIR})
+    LIST(APPEND CMAKE_MODULE_PATH "${PMML_ROOT_DIR}/share")
+    INCLUDE(PMMLlibTargets)
+  ELSE()
+    MESSAGE(FATAL_ERROR "We absolutely need the PMML CMake configuration files, please define PMML_ROOT_DIR !")
+  ENDIF()
+ENDIF(NOT SALOME_YACS_USE_EMBEDDED_PMML)
+
 
 # Detection summary:
 SALOME_PACKAGE_REPORT_AND_CHECK()
