@@ -21,7 +21,7 @@
 #include "YACSEvalSession.hxx"
 #include "YACSEvalSessionInternal.hxx"
 
-#include "AutoGIL.hxx"
+#include "PythonCppUtils.hxx"
 #include "Exception.hxx"
 
 #include <Python.h>
@@ -37,18 +37,18 @@ const char YACSEvalSession::NSPORT_VAR_NAME[]="NSPORT";
 
 YACSEvalSession::YACSEvalSession():_isAttached(false),_isLaunched(false),_isForcedPyThreadSaved(false),_port(-1),_salomeInstanceModule(0),_salomeInstance(0),_internal(new YACSEvalSessionInternal)
 {
-  YACS::ENGINE::AutoGIL gal;
+  AutoGIL gal;
   _salomeInstanceModule=PyImport_ImportModule(const_cast<char *>("salome_instance"));
 }
 
 YACSEvalSession::~YACSEvalSession()
 {
   delete _internal;
-  YACS::ENGINE::AutoGIL gal;
+  AutoGIL gal;
   if(isLaunched() && !isAttached())
     {
-      YACS::ENGINE::AutoPyRef terminateSession(PyObject_GetAttrString(_salomeInstance,const_cast<char *>("stop")));//new
-      YACS::ENGINE::AutoPyRef res(PyObject_CallObject(terminateSession,0));
+      AutoPyRef terminateSession(PyObject_GetAttrString(_salomeInstance,const_cast<char *>("stop")));//new
+      AutoPyRef res(PyObject_CallObject(terminateSession,0));
     }
   Py_XDECREF(_salomeInstance);
   Py_XDECREF(_salomeInstanceModule);
@@ -58,16 +58,16 @@ void YACSEvalSession::launch()
 {
   if(isLaunched())
     return ;
-  YACS::ENGINE::AutoGIL gal;
+  AutoGIL gal;
   PyObject *salomeInstance(PyObject_GetAttrString(_salomeInstanceModule,const_cast<char *>("SalomeInstance")));//new
   PyObject *startMeth(PyObject_GetAttrString(salomeInstance,const_cast<char *>("start")));
   Py_XDECREF(salomeInstance);
-  YACS::ENGINE::AutoPyRef myArgs(PyTuple_New(0));//new
-  YACS::ENGINE::AutoPyRef myKWArgs(PyDict_New());//new
+  AutoPyRef myArgs(PyTuple_New(0));//new
+  AutoPyRef myKWArgs(PyDict_New());//new
   PyDict_SetItemString(myKWArgs,"shutdown_servers",Py_True);//Py_True ref not stolen
   _salomeInstance=PyObject_Call(startMeth,myArgs,myKWArgs);//new
-  YACS::ENGINE::AutoPyRef getPortMeth(PyObject_GetAttrString(_salomeInstance,const_cast<char *>("get_port")));//new
-  YACS::ENGINE::AutoPyRef portPy(PyObject_CallObject(getPortMeth,0));//new
+  AutoPyRef getPortMeth(PyObject_GetAttrString(_salomeInstance,const_cast<char *>("get_port")));//new
+  AutoPyRef portPy(PyObject_CallObject(getPortMeth,0));//new
   _port=PyLong_AsLong(portPy);
   //
   int dummy;
@@ -79,7 +79,7 @@ void YACSEvalSession::launchUsingCurrentSession()
 {
   if(isLaunched())
     return ;
-  YACS::ENGINE::AutoGIL gal;
+  AutoGIL gal;
   _corbaConfigFileName=GetConfigAndPort(_port);
   _isAttached=true; _isLaunched=true;
 }
@@ -110,23 +110,23 @@ std::string YACSEvalSession::getCorbaConfigFileName() const
 std::string YACSEvalSession::GetPathToAdd()
 {
   std::string ret;
-  YACS::ENGINE::AutoGIL gal;
-  YACS::ENGINE::AutoPyRef osPy(PyImport_ImportModule(const_cast<char *>("os")));//new
+  AutoGIL gal;
+  AutoPyRef osPy(PyImport_ImportModule(const_cast<char *>("os")));//new
   PyObject *kernelRootDir(0);// os.environ["KERNEL_ROOT_DIR"]
   {
-    YACS::ENGINE::AutoPyRef environPy(PyObject_GetAttrString(osPy,const_cast<char *>("environ")));//new
-    YACS::ENGINE::AutoPyRef kernelRootDirStr(PyBytes_FromString(const_cast<char *>(KERNEL_ROOT_DIR)));//new
+    AutoPyRef environPy(PyObject_GetAttrString(osPy,const_cast<char *>("environ")));//new
+    AutoPyRef kernelRootDirStr(PyBytes_FromString(const_cast<char *>(KERNEL_ROOT_DIR)));//new
     kernelRootDir=PyObject_GetItem(environPy,kernelRootDirStr);//new
   }
   {
-    YACS::ENGINE::AutoPyRef pathPy(PyObject_GetAttrString(osPy,const_cast<char *>("path")));//new
-    YACS::ENGINE::AutoPyRef joinPy(PyObject_GetAttrString(pathPy,const_cast<char *>("join")));//new
-    YACS::ENGINE::AutoPyRef myArgs(PyTuple_New(4));
+    AutoPyRef pathPy(PyObject_GetAttrString(osPy,const_cast<char *>("path")));//new
+    AutoPyRef joinPy(PyObject_GetAttrString(pathPy,const_cast<char *>("join")));//new
+    AutoPyRef myArgs(PyTuple_New(4));
     Py_XINCREF(kernelRootDir); PyTuple_SetItem(myArgs,0,kernelRootDir);
     PyTuple_SetItem(myArgs,1,PyBytes_FromString(const_cast<char *>("bin")));
     PyTuple_SetItem(myArgs,2,PyBytes_FromString(const_cast<char *>("salome")));
     PyTuple_SetItem(myArgs,3,PyBytes_FromString(const_cast<char *>("appliskel")));
-    YACS::ENGINE::AutoPyRef res(PyObject_CallObject(joinPy,myArgs));
+    AutoPyRef res(PyObject_CallObject(joinPy,myArgs));
     ret=PyBytes_AsString(res);
   }
   Py_XDECREF(kernelRootDir);

@@ -22,7 +22,7 @@
 #include "RuntimeSALOME.hxx"
 #include "Proc.hxx"
 #include "InlineNode.hxx"
-#include "AutoGIL.hxx"
+#include "PythonCppUtils.hxx"
 #include "InputPort.hxx"
 #include "Container.hxx"
 
@@ -180,7 +180,7 @@ void Py2yacs::load(const std::string& python_code)
     _global_errors.clear();
     
     // Py_Initialize();
-    YACS::ENGINE::AutoGIL agil;
+    AutoGIL agil;
     pValue = PyUnicode_FromString(_python_parser_module.c_str());
     pModule = PyImport_Import(pValue);
     Py_DECREF(pValue);

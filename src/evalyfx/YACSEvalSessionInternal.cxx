@@ -22,7 +22,7 @@
 #include "YACSEvalSession.hxx"
 
 #include "PyStdout.hxx"
-#include "AutoGIL.hxx"
+#include "PythonCppUtils.hxx"
 #include "Exception.hxx"
 
 YACSEvalSession::YACSEvalSessionInternal::YACSEvalSessionInternal():_orb(CORBA::ORB::_nil()),_sl(Engines::SalomeLauncher::_nil())
@@ -46,8 +46,8 @@ Engines::SalomeLauncher_var YACSEvalSession::YACSEvalSessionInternal::goFetching
   //
   const char methName[]="goFetchingSalomeLauncherInNS";
   const char fetchPyCmd[]="import salome,CORBA\nsalome.salome_init()\nsl=salome.naming_service.Resolve(\"/SalomeLauncher\")\nif not CORBA.is_nil(sl):\n  return salome.orb.object_to_string(sl)\nelse:\n  raise Exception(\"Impossible to locate salome launcher !\")";
-  YACS::ENGINE::AutoPyRef func(YACS::ENGINE::evalPy(methName,fetchPyCmd));
-  YACS::ENGINE::AutoPyRef val(YACS::ENGINE::evalFuncPyWithNoParams(func));
+  AutoPyRef func(YACS::ENGINE::evalPy(methName,fetchPyCmd));
+  AutoPyRef val(YACS::ENGINE::evalFuncPyWithNoParams(func));
   std::string ior;
   if (PyUnicode_Check(val))
     ior = PyUnicode_AsUTF8(val);

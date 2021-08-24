@@ -21,7 +21,7 @@
 #include "PythonNode.hxx"
 #include "PythonPorts.hxx"
 #include "TypeCode.hxx"
-#include "AutoGIL.hxx"
+#include "PythonCppUtils.hxx"
 #include "Container.hxx"
 #include "SalomeContainer.hxx"
 #include "SalomeHPContainer.hxx"

@@ -23,7 +23,7 @@
 #include "PythonNode.hxx"
 #include "SalomeHPContainer.hxx"
 #include "SalomeContainerTmpForHP.hxx"
-#include "AutoGIL.hxx"
+#include "PythonCppUtils.hxx"
 
 #include "PythonPorts.hxx"
 #include "YacsTrace.hxx"

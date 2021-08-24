@@ -19,7 +19,7 @@
 
 #include "PyStdout.hxx"
 #include "Exception.hxx"
-#include "AutoGIL.hxx"
+#include "PythonCppUtils.hxx"
 
 #include <structmember.h>
 

@@ -33,7 +33,7 @@
 #include <QApplication>
 
 
-#include "AutoGIL.hxx"
+#include "PythonCppUtils.hxx"
 
 #include "YDFXGUIWrap.hxx"
 #include "YDFXGUIPyThreadSaver.hxx"
@@ -45,24 +45,6 @@
 #include <limits>
 
 const char YDFXGUIStatus::OK_STR[]="OK !";
-
-class AutoPyRef
-{
-public:
-  AutoPyRef(PyObject *pyobj=0):_pyobj(pyobj) { }
-  ~AutoPyRef() { release(); }
-  AutoPyRef(const AutoPyRef& other):_pyobj(other._pyobj) { if(_pyobj) Py_XINCREF(_pyobj); }
-  AutoPyRef& operator=(const AutoPyRef& other) { if(_pyobj==other._pyobj) return *this; release(); _pyobj=other._pyobj; Py_XINCREF(_pyobj); return *this; }
-  operator PyObject *() { return _pyobj; }
-  void set(PyObject *pyobj) { if(pyobj==_pyobj) return ; release(); _pyobj=pyobj; }
-  PyObject *get() { return _pyobj; }
-  bool isNull() const { return _pyobj==0; }
-  PyObject *retn() { if(_pyobj) Py_XINCREF(_pyobj); return _pyobj; }
-private:
-  void release() { if(_pyobj) Py_XDECREF(_pyobj); _pyobj=0; }
-private:
-  PyObject *_pyobj;
-};
 
 ////////////////////////////
 
@@ -199,7 +181,7 @@ bool YDFXGUISeqSetterT::executeScript(int& sz)
   std::string txt(toPlainText().toStdString());
   YDFXGUIPyThreadSaver::SaveContext(QApplication::instance()->thread());
   {
-    YACS::ENGINE::AutoGIL gal;
+    AutoGIL gal;
     AutoPyRef code(Py_CompileString(txt.c_str(),TMP_FILENAME, Py_file_input));
     if(code.get() == NULL)
       {

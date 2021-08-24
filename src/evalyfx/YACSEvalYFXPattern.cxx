@@ -43,7 +43,7 @@
 #include "InlineNode.hxx"
 #include "ServiceNode.hxx"
 #include "PyStdout.hxx"
-#include "AutoGIL.hxx"
+#include "PythonCppUtils.hxx"
 
 #include "ResourcesManager.hxx"
 
@@ -886,14 +886,14 @@ std::vector<YACSEvalSeqAny *> YACSEvalYFXGraphGenInteractive::getResults() const
 
 void YACSEvalYFXGraphGenCluster::generateGraph()
 {
-  YACS::ENGINE::AutoGIL agil;
+  AutoGIL agil;
   //
   const char EFXGenFileName[]="EFXGenFileName";
   const char EFXGenContent[]="import getpass,datetime,os\nn=datetime.datetime.now()\nreturn os.path.join(os.path.sep,\"tmp\",\"EvalYFX_%s_%s_%s.xml\"%(getpass.getuser(),n.strftime(\"%d%m%y\"),n.strftime(\"%H%M%S\")))";
   const char EFXGenContent2[]="import getpass,datetime\nn=datetime.datetime.now()\nreturn \"EvalYFX_%s_%s_%s\"%(getpass.getuser(),n.strftime(\"%d%m%y\"),n.strftime(\"%H%M%S\"))";
   //
-  YACS::ENGINE::AutoPyRef func(YACS::ENGINE::evalPy(EFXGenFileName,EFXGenContent));
-  YACS::ENGINE::AutoPyRef val(YACS::ENGINE::evalFuncPyWithNoParams(func));
+  AutoPyRef func(YACS::ENGINE::evalPy(EFXGenFileName,EFXGenContent));
+  AutoPyRef val(YACS::ENGINE::evalFuncPyWithNoParams(func));
   if (PyUnicode_Check(val))
     _locSchemaFile = PyUnicode_AsUTF8(val);
   else
@@ -927,7 +927,7 @@ void YACSEvalYFXGraphGenCluster::generateGraph()
 
 bool YACSEvalYFXGraphGenCluster::go(const YACSEvalExecParams& params, YACSEvalSession *session) const
 {
-  YACS::ENGINE::AutoGIL agil;
+  AutoGIL agil;
   _errors = "";
   getUndergroundGeneratedGraph()->saveSchema(_locSchemaFile);
   YACSEvalListOfResources *rss(getBoss()->getResourcesInternal());
@@ -1017,8 +1017,8 @@ bool YACSEvalYFXGraphGenCluster::go(const YACSEvalExecParams& params, YACSEvalSe
       oss << "f=open(p,\"r\")" << std::endl;
       oss << "return eval(f.read())";
       std::string zeInput(oss.str());
-      YACS::ENGINE::AutoPyRef func(YACS::ENGINE::evalPy("fetch",zeInput));
-      YACS::ENGINE::AutoPyRef val(YACS::ENGINE::evalFuncPyWithNoParams(func));
+      AutoPyRef func(YACS::ENGINE::evalPy("fetch",zeInput));
+      AutoPyRef val(YACS::ENGINE::evalFuncPyWithNoParams(func));
       if(!PyList_Check(val))
         throw YACS::Exception("Fetched file does not contain a list !");
       Py_ssize_t sz(PyList_Size(val));
