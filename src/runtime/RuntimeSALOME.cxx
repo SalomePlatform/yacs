@@ -59,6 +59,7 @@
 #include "SalomeContainer.hxx"
 #include "CppContainer.hxx"
 #include "SalomeHPContainer.hxx"
+#include "PythonCppUtils.hxx"
 
 //Nodes
 #include "PythonNode.hxx"
@@ -246,6 +247,15 @@ RuntimeSALOME::~RuntimeSALOME()
     {
       delete (*pt).second;
     }
+}
+
+void RuntimeSALOME::loadModulCatalog()
+{
+  AutoGIL agil;
+  const char * SCRIPT = "from salome_kernel import list_of_catalogs_regarding_environement\n"
+"import KernelModuleCatalog\n"
+"KernelModuleCatalog.myModuleCatalog( list_of_catalogs_regarding_environement() )\n";
+  PyRun_SimpleString(SCRIPT);
 }
 
 //! CORBA and Python initialization

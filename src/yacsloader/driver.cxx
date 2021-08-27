@@ -361,6 +361,7 @@ int main (int argc, char* argv[])
   try
     {
       YACS::ENGINE::RuntimeSALOME* runTime = YACS::ENGINE::getSALOMERuntime();
+      runTime->loadModulCatalog();
       CORBA::ORB_ptr orb = runTime->getOrb();
       if (orb)
         {

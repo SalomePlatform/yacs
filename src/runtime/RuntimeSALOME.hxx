@@ -233,6 +233,8 @@ namespace YACS
 
       virtual ~RuntimeSALOME(); 
 
+      void loadModulCatalog();
+
       CORBA::ORB_ptr getOrb() const;
       PyObject * getPyOrb() const;
       PyObject * getBuiltins() const;
