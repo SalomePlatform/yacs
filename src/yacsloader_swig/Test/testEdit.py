@@ -196,9 +196,11 @@ def f():
 
 
 if __name__ == '__main__':
+  import tempfile
   import os
-  U = os.getenv('USER')
-  with open("/tmp/" + U + "/UnitTestsResult", 'a') as f:
+  dir_test = tempfile.mkdtemp(suffix=".yacstest")
+  file_test = os.path.join(dir_test,"UnitTestsResult")
+  with open(file_test, 'a') as f:
       f.write("  --- TEST src/yacsloader: testEdit.py\n")
       suite = unittest.makeSuite(TestEdit)
       result=unittest.TextTestRunner(f, descriptions=1, verbosity=1).run(suite)

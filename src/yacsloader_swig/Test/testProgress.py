@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Copyright (C) 2006-2021  CEA/DEN, EDF R&D
 #
 # This library is free software; you can redistribute it and/or
@@ -129,11 +130,13 @@ class TestEdit(unittest.TestCase):
         myRun.join()
         self.assertEqual(p.getState(),pilot.DONE)
         self.assertEqual(p.getGlobalProgressPercent(),100)
-         
+
 if __name__ == '__main__':
+  import tempfile
   import os
-  U = os.getenv('USER')
-  with open("/tmp/" + U + "/UnitTestsResult", 'a') as f:
+  dir_test = tempfile.mkdtemp(suffix=".yacstest")
+  file_test = os.path.join(dir_test,"UnitTestsResult")
+  with open(file_test, 'a') as f:
       f.write("  --- TEST src/yacsloader: testProgress.py\n")
       suite = unittest.makeSuite(TestEdit)
       result=unittest.TextTestRunner(f, descriptions=1, verbosity=3).run(suite)

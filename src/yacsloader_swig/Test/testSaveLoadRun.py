@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Copyright (C) 2006-2021  CEA/DEN, EDF R&D
 #
 # This library is free software; you can redistribute it and/or
@@ -24,6 +25,7 @@ import os
 import pilot
 import SALOMERuntime
 import loader
+import salome
 
 import datetime
 
@@ -32,6 +34,13 @@ class TestSaveLoadRun(unittest.TestCase):
     SALOMERuntime.RuntimeSALOME.setRuntime()
     self.r=SALOMERuntime.getSALOMERuntime()
     self.workdir = tempfile.mkdtemp(suffix=".yacstest")
+    pass
+
+  def tearDown(self):
+    salome.salome_init()
+    cm = salome.lcc.getContainerManager()
+    cm.ShutdownContainers()
+    salome.dsm.shutdownScopes()
     pass
 
   def test0(self):
@@ -1248,6 +1257,11 @@ for i in i8:
     p=self.r.createProc("pr")
     ti=p.createType("int","int")
     cont=p.createContainer("DefaultContainer","Salome")
+    # enable WorkloadManager mode because containers are not registered right
+    # in classical mode (4 containers with the same name are launched at the
+    # same time).
+    p.setProperty("executor", "WorkloadManager")
+    cont.setProperty("type", "multi")
     cont.setProperty("container_name","FactoryServer")
     b=self.r.createBloc("Bloc") ; p.edAddChild(b)
     #
@@ -1677,13 +1691,13 @@ o2=2*i1
     cont1.setProperty("name","localhost")
     cont1.setProperty("hostname","localhost")
     cont1.setProperty("type","multi")
-    cont1.setProperty("container_name","container1@")
+    cont1.setProperty("container_name","container1")
     #
     cont2=p.createContainer("cont2","Salome")
     cont2.setProperty("name","localhost")
     cont2.setProperty("hostname","localhost")
     cont2.setProperty("type","multi")
-    cont2.setProperty("container_name","container2@")
+    cont2.setProperty("container_name","container2")
     #
     td=p.createType("double","double")
     ti=p.createType("int","int")
@@ -1736,7 +1750,8 @@ def str2Obj(strr):
   return pickle.loads(strr)
 
 salome.salome_init()
-dsm=salome.naming_service.Resolve("/DataServerManager")
+#dsm=salome.naming_service.Resolve("/DataServerManager")
+dsm = salome.dsm
 dss,isCreated=dsm.giveADataScopeTransactionCalled(scopeName)
 assert(not isCreated)
 
@@ -1746,6 +1761,7 @@ wk2=dss.waitForKeyInVar(varName,obj2Str("ef"))
 wk2.waitFor()
 assert(str2Obj(dss.waitForMonoThrRev(wk2))==[11,12])""")
     n1.setContainer(cont1)
+    n1.setExecutionMode("remote")
     #
     n2=r.createScriptNode("","n2")
     n2_sn=n2.edAddInputPort("scopeName",ts)
@@ -1765,7 +1781,8 @@ def str2Obj(strr):
   return pickle.loads(strr)
 
 salome.salome_init()
-dsm=salome.naming_service.Resolve("/DataServerManager")
+#dsm=salome.naming_service.Resolve("/DataServerManager") #doesn't work in ssl
+dsm = salome.dsm # works in ssl
 dss,isCreated=dsm.giveADataScopeTransactionCalled(scopeName)
 assert(not isCreated)
 time.sleep(3.)
@@ -1774,6 +1791,7 @@ t1.addKeyValueInVarErrorIfAlreadyExistingNow(obj2Str("cd"),obj2Str([7,8,9,10]))
 t1.addKeyValueInVarErrorIfAlreadyExistingNow(obj2Str("ef"),obj2Str([11,12]))
 """)
     n2.setContainer(cont2)
+    n2.setExecutionMode("remote")
     #
     p.edAddChild(n0)
     p.edAddChild(n1)
@@ -1837,9 +1855,9 @@ t1.addKeyValueInVarErrorIfAlreadyExistingNow(obj2Str("ef"),obj2Str([11,12]))
     pass
 
 if __name__ == '__main__':
-  import os,sys
-  U = os.getenv('USER')
-  with open("/tmp/" + U + "/UnitTestsResult", 'a') as f:
+  dir_test = tempfile.mkdtemp(suffix=".yacstest")
+  file_test = os.path.join(dir_test,"UnitTestsResult")
+  with open(file_test, 'a') as f:
       f.write("  --- TEST src/yacsloader: testSaveLoadRun.py\n")
       suite = unittest.makeSuite(TestSaveLoadRun)
       result=unittest.TextTestRunner(f, descriptions=1, verbosity=1).run(suite)

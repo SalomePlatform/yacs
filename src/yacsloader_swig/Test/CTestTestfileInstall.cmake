@@ -25,21 +25,59 @@ IF(NOT WIN32)
                       )
 
   SET(TEST_NAME ${COMPONENT_NAME}_StdAloneYacsLoaderTest1)
-  ADD_TEST(${TEST_NAME} ${SALOME_TEST_DRIVER} ${TIMEOUT} StdAloneYacsLoaderTest1.py)
+  ADD_TEST(${TEST_NAME} StdAloneYacsLoaderTest1.py)
   SET_TESTS_PROPERTIES(${TEST_NAME} PROPERTIES
                                     LABELS "${COMPONENT_NAME}"
+                                    ENVIRONMENT "SALOME_EMB_SERVANT=1"
                       )
 
   SET(TEST_NAME ${COMPONENT_NAME}_PyNodeWithCache_swig)
-  ADD_TEST(${TEST_NAME} ${SALOME_TEST_DRIVER} ${TIMEOUT} testPynodeWithCache.py)
+  ADD_TEST(${TEST_NAME} testPynodeWithCache.py)
   SET_TESTS_PROPERTIES(${TEST_NAME} PROPERTIES
                                     LABELS "${COMPONENT_NAME}"
+                                    ENVIRONMENT "SALOME_EMB_SERVANT=1"
                       )
 
   SET(TEST_NAME ${COMPONENT_NAME}_WorkloadManager_swig)
-  ADD_TEST(${TEST_NAME} ${SALOME_TEST_DRIVER} ${TIMEOUT} testWorkloadManager.py)
+  ADD_TEST(${TEST_NAME} testWorkloadManager.py)
   SET_TESTS_PROPERTIES(${TEST_NAME} PROPERTIES
                                     LABELS "${COMPONENT_NAME}"
+                                    ENVIRONMENT "SALOME_EMB_SERVANT=1"
+                      )
+
+  SET(TEST_NAME ${COMPONENT_NAME}_Progress_swig)
+  ADD_TEST(${TEST_NAME} testProgress.py)
+  SET_TESTS_PROPERTIES(${TEST_NAME} PROPERTIES
+                                    LABELS "${COMPONENT_NAME}"
+                                    ENVIRONMENT "SALOME_EMB_SERVANT=1"
+                      )
+
+  SET(TEST_NAME ${COMPONENT_NAME}_Refcount_swig)
+  ADD_TEST(${TEST_NAME} testRefcount.py)
+  SET_TESTS_PROPERTIES(${TEST_NAME} PROPERTIES
+                                    LABELS "${COMPONENT_NAME}"
+                                    ENVIRONMENT "SALOME_EMB_SERVANT=1"
+                      )
+
+  SET(TEST_NAME ${COMPONENT_NAME}_Resume_swig)
+  ADD_TEST(${TEST_NAME} testResume.py)
+  SET_TESTS_PROPERTIES(${TEST_NAME} PROPERTIES
+                                    LABELS "${COMPONENT_NAME}"
+                                    ENVIRONMENT "SALOME_EMB_SERVANT=1"
+                      )
+
+  SET(TEST_NAME ${COMPONENT_NAME}_SaveLoadRun_swig)
+  ADD_TEST(${TEST_NAME} testSaveLoadRun.py)
+  SET_TESTS_PROPERTIES(${TEST_NAME} PROPERTIES
+                                    LABELS "${COMPONENT_NAME}"
+                                    ENVIRONMENT "SALOME_EMB_SERVANT=1"
+                      )
+
+  SET(TEST_NAME ${COMPONENT_NAME}_ValidationChecks_swig)
+  ADD_TEST(${TEST_NAME} testValidationChecks.py)
+  SET_TESTS_PROPERTIES(${TEST_NAME} PROPERTIES
+                                    LABELS "${COMPONENT_NAME}"
+                                    ENVIRONMENT "SALOME_EMB_SERVANT=1"
                       )
 
 ENDIF()

@@ -27,6 +27,7 @@ import loader
 import pilot
 
 import os
+import tempfile
 
 class TestExecForEachGeoMesh(unittest.TestCase):
 
@@ -57,12 +58,11 @@ class TestExecForEachGeoMesh(unittest.TestCase):
     pass
 
 if __name__ == '__main__':
-    import os
-    import sys
-    U = os.getenv('USER')
-    with open(os.path.join("/tmp", U, "UnitTestsResult"), 'a') as f:
+  dir_test = tempfile.mkdtemp(suffix=".yacstest")
+  file_test = os.path.join(dir_test,"UnitTestsResult")
+  with open(file_test, 'a') as f:
         f.write("  --- TEST src/yacsloader: testExec.py\n")
         suite = unittest.makeSuite(TestExecForEachGeoMesh)
         result = unittest.TextTestRunner(f, descriptions=1, verbosity=1).run(suite)
 
-    sys.exit(not result.wasSuccessful())
+  sys.exit(not result.wasSuccessful())

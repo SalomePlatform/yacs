@@ -20,14 +20,16 @@
 IF(NOT WIN32)
   SET(TEST_NAME ${COMPONENT_NAME}_Py2YacsTest)
   # Need a salome session for this test
-  ADD_TEST(${TEST_NAME} ${SALOME_TEST_DRIVER} ${TIMEOUT} ./TestPy2yacs)
+  ADD_TEST(${TEST_NAME} ./TestPy2yacs)
   SET_TESTS_PROPERTIES(${TEST_NAME} PROPERTIES
                                     LABELS "${COMPONENT_NAME}"
+                                    ENVIRONMENT "SALOME_EMB_SERVANT=1"
                       )
 
   SET(TEST_NAME ${COMPONENT_NAME}_PyDecorator)
-  ADD_TEST(${TEST_NAME} ${SALOME_TEST_DRIVER} ${TIMEOUT} testDeco.py)
+  ADD_TEST(${TEST_NAME} testDeco.py)
   SET_TESTS_PROPERTIES(${TEST_NAME} PROPERTIES
                                     LABELS "${COMPONENT_NAME}"
+                                    ENVIRONMENT "SALOME_EMB_SERVANT=1"
                       )
 ENDIF()

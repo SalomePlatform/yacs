@@ -27,6 +27,7 @@ import os
 import SALOMERuntime
 import loader
 import pilot
+import salome
 
 class TestResume(unittest.TestCase):
 
@@ -38,6 +39,12 @@ class TestResume(unittest.TestCase):
         workdir = tempfile.mkdtemp(suffix=".yacstest")
         self.statefile = os.path.join(workdir, 'dumpPartialBloc2.xml')
         pass
+
+    def tearDown(self):
+      salome.salome_init()
+      cm = salome.lcc.getContainerManager()
+      cm.ShutdownContainers()
+      pass
 
     def test1_PartialExec(self):
         # --- stop execution after breakpoint
@@ -88,9 +95,9 @@ class TestResume(unittest.TestCase):
     pass
 
 if __name__ == '__main__':
-  import os
-  U = os.getenv('USER')
-  with open("/tmp/" + U + "/UnitTestsResult", 'a') as f:
+  dir_test = tempfile.mkdtemp(suffix=".yacstest")
+  file_test = os.path.join(dir_test,"UnitTestsResult")
+  with open(file_test, 'a') as f:
       f.write("  --- TEST src/yacsloader: testResume.py\n")
       suite = unittest.makeSuite(TestResume)
       result=unittest.TextTestRunner(f, descriptions=1, verbosity=1).run(suite)

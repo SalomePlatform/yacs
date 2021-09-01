@@ -317,7 +317,7 @@ int main (int argc, char* argv[])
   myArgs.dump = 0;
   myArgs.loadState = (char *)"";
   myArgs.xmlSchema = (char *)"";
-  myArgs.shutdown = 1;
+  myArgs.shutdown = 10;
   myArgs.reset = 0;
   myArgs.killPort = 0;
   myArgs.init_ports.clear();
