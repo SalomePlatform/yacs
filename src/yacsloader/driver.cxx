@@ -31,16 +31,14 @@
 #include "LinkInfo.hxx"
 #include "ObserverAsPlugin.hxx"
 
-#ifdef SALOME_KERNEL
-
 #include "KernelBasis.hxx"
 #include "SALOME_Launcher.hxx"
 #include "ServiceUnreachable.hxx"
 #include "SALOME_NamingService_Wrapper.hxx"
 #include "SALOME_NamingService.hxx"
 #include "SALOME_ModuleCatalog.hh"
+#include "SALOMESDS_DataServerManager.hxx"
 #include "Basics_Utils.hxx"
-#endif
 
 #include <iostream>
 #include <fstream>
@@ -305,6 +303,33 @@ void InitializeSSL()
   KERNEL::getLauncherSA();
 }
 
+void shutdownServers()
+{
+  // shutdown data server scopes
+  try
+    {
+      YACS::ENGINE::RuntimeSALOME* runTime = YACS::ENGINE::getSALOMERuntime();
+      runTime->loadModulCatalog();
+      CORBA::ORB_ptr orb = runTime->getOrb();
+      if (orb)
+      {
+        SALOME_NamingService_Wrapper namingService(orb);
+        CORBA::Object_var objDSM(namingService.Resolve(SALOMESDS::DataServerManager::NAME_IN_NS));
+        SALOME::DataServerManager_var dsm(SALOME::DataServerManager::_narrow(objDSM));
+        if ( !CORBA::is_nil(dsm) )
+          dsm->shutdownScopes();
+      }
+    }
+  catch(const CORBA::Exception& )
+    {
+       // ignore and continue
+    }
+  catch(ServiceUnreachable& e)
+    {
+       // ignore and continue
+    }
+}
+
 int main (int argc, char* argv[])
 {
      
@@ -366,7 +391,6 @@ int main (int argc, char* argv[])
       if (orb)
         {
           SALOME_NamingService_Wrapper namingService(orb);
-          //SALOME_NamingService namingService(orb);
           CORBA::Object_var obj = namingService.Resolve("/Kernel/ModulCatalog");
           SALOME_ModuleCatalog::ModuleCatalog_var aModuleCatalog = SALOME_ModuleCatalog::ModuleCatalog::_narrow(obj);
           if (! CORBA::is_nil(aModuleCatalog))
@@ -502,11 +526,12 @@ int main (int argc, char* argv[])
         }
 
       if (myArgs.stop)
+      {
         if (strlen(myArgs.dumpErrorFile) >0)
           executor.setStopOnError(true, myArgs.dumpErrorFile);
         else
           executor.setStopOnError(false, myArgs.dumpErrorFile);
-
+      }
       if(myArgs.display>0)
         {
           std::ofstream f("toto");
@@ -568,6 +593,7 @@ int main (int argc, char* argv[])
       if(myArgs.shutdown < 999)
         {
           p->shutdown(myArgs.shutdown);
+          shutdownServers();
         }
       delete p;
       Runtime* r=YACS::ENGINE::getRuntime();
