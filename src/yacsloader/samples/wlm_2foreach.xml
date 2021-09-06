@@ -84,7 +84,7 @@ time.sleep(1)
 time.sleep(1)
 ]]></code></script>
    </inline>
-   <foreach name="Create_c1_containers" nbranch="8" loopWeight="-1" type="int">
+   <foreach name="Create_c1_containers" nbranch="15" loopWeight="-1" type="int">
       <remote name="wait_c1" elementaryWeight="-1">
          <script><code><![CDATA[import time
 time.sleep(1)
@@ -169,7 +169,7 @@ time.sleep(1)
    </parameter>
    <parameter>
       <tonode>Create_c1_containers</tonode><toport>nbBranches</toport>
-      <value><int>8</int></value>
+      <value><int>15</int></value>
    </parameter>
    <parameter>
       <tonode>Create_c1_containers</tonode><toport>SmplsCollection</toport>
@@ -182,6 +182,13 @@ time.sleep(1)
 <value><int>6</int></value>
 <value><int>7</int></value>
 <value><int>8</int></value>
+<value><int>9</int></value>
+<value><int>10</int></value>
+<value><int>11</int></value>
+<value><int>12</int></value>
+<value><int>13</int></value>
+<value><int>14</int></value>
+<value><int>15</int></value>
 </data></array></value>
    </parameter>
    <presentation name="delay" x="511" y="53" width="158" height="36" expanded="1" expx="511" expy="53" expWidth="158" expHeight="36" shownState="0"/>

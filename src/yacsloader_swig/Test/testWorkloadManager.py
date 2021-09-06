@@ -36,12 +36,13 @@ class TestEdit(unittest.TestCase):
         self.l = loader.YACSLoader()
         self.e = pilot.ExecutorSwig()
         # We need a catalog which contains only one resource named "localhost"
-        # with 16 cores. The modifications made here are not saved to the
+        # with NB_NODE cores. The modifications made here are not saved to the
         # catalog file.
         salome.salome_init()
         resourceManager = salome.lcc.getResourcesManager()
         resource_definition = resourceManager.GetResourceDefinition("localhost")
         resource_definition.nb_node = NB_NODE
+        resource_definition.nb_proc_per_node = 1
         resourceManager.AddResource(resource_definition, False, "")
         resource_required = salome.ResourceParameters()
         resource_required.can_run_containers = True
@@ -51,6 +52,7 @@ class TestEdit(unittest.TestCase):
             resourceManager.RemoveResource(r, False, "")
         resource_definition = resourceManager.GetResourceDefinition("localhost")
         self.assertEqual(resource_definition.nb_node, NB_NODE)
+        self.assertEqual(resource_definition.nb_proc_per_node, 1)
 
     def tearDown(self):
         cm = salome.lcc.getContainerManager()

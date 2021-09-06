@@ -144,7 +144,7 @@ time.sleep(1)
          <outport name="result" type="pyobj"/>
       </remote>
    </foreach>
-   <foreach name="Create_C1_containers" nbranch="8" loopWeight="-1" type="int">
+   <foreach name="Create_C1_containers" nbranch="15" loopWeight="-1" type="int">
       <remote name="wait_c1" elementaryWeight="-1">
          <script><code><![CDATA[import time
 time.sleep(1)
@@ -231,7 +231,7 @@ time.sleep(1)
    </parameter>
    <parameter>
       <tonode>Create_C1_containers</tonode><toport>nbBranches</toport>
-      <value><int>8</int></value>
+      <value><int>15</int></value>
    </parameter>
    <parameter>
       <tonode>Create_C1_containers</tonode><toport>SmplsCollection</toport>
@@ -244,6 +244,13 @@ time.sleep(1)
 <value><int>6</int></value>
 <value><int>7</int></value>
 <value><int>8</int></value>
+<value><int>9</int></value>
+<value><int>10</int></value>
+<value><int>11</int></value>
+<value><int>12</int></value>
+<value><int>13</int></value>
+<value><int>14</int></value>
+<value><int>15</int></value>
 </data></array></value>
    </parameter>
    <parameter>

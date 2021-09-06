@@ -1750,8 +1750,7 @@ def str2Obj(strr):
   return pickle.loads(strr)
 
 salome.salome_init()
-#dsm=salome.naming_service.Resolve("/DataServerManager")
-dsm = salome.dsm
+dsm=salome.naming_service.Resolve("/DataServerManager")
 dss,isCreated=dsm.giveADataScopeTransactionCalled(scopeName)
 assert(not isCreated)
 
@@ -1781,8 +1780,7 @@ def str2Obj(strr):
   return pickle.loads(strr)
 
 salome.salome_init()
-#dsm=salome.naming_service.Resolve("/DataServerManager") #doesn't work in ssl
-dsm = salome.dsm # works in ssl
+dsm=salome.naming_service.Resolve("/DataServerManager")
 dss,isCreated=dsm.giveADataScopeTransactionCalled(scopeName)
 assert(not isCreated)
 time.sleep(3.)
