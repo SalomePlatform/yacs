@@ -52,6 +52,10 @@ class TestDeco(unittest.TestCase):
       resource_definition = resourceManager.GetResourceDefinition("localhost")
       self.assertEqual(resource_definition.nb_node, NB_NODE)
 
+    def tearDown(self):
+        cm = salome.lcc.getContainerManager()
+        cm.ShutdownContainers()
+
     def test_t1(self):
       """
       Schema:

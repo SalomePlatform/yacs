@@ -21,6 +21,7 @@
 import sys
 import pilot
 import SALOMERuntime
+import salome
 import loader
 import unittest
 import tempfile
@@ -36,6 +37,11 @@ class TestEdit(unittest.TestCase):
         self.l = loader.YACSLoader()
         self.e = pilot.ExecutorSwig()
         pass
+
+    def tearDown(self):
+        salome.salome_init()
+        cm = salome.lcc.getContainerManager()
+        cm.ShutdownContainers()
 
     def test1(self):
       """ Test the conservation of the python context between two nodes sharing

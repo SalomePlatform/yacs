@@ -299,6 +299,7 @@ void Py2yacsTest::schemaExec()
   CPPUNIT_ASSERT(pyVal);
   CPPUNIT_ASSERT(PyFloat_Check(pyVal));
   CPPUNIT_ASSERT_DOUBLES_EQUAL(42., PyFloat_AsDouble(pyVal), 1.E-12);
+  p->shutdown(10); // kill all the containers
 }
 
 // Test the behaviour when there is an error in the python parser
