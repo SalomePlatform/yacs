@@ -1,4 +1,5 @@
-# Copyright (C) 2012-2021  CEA/DEN, EDF R&D
+# -*- coding: iso-8859-1 -*-
+# Copyright (C) 2006-2021  CEA/DEN, EDF R&D
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -17,13 +18,4 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-# scripts / python
-
-SET(_python_SCRIPTS
-  YACS.py
-  )
-
-# --- rules ---
-
-SALOME_INSTALL_SCRIPTS("${_python_SCRIPTS}"  ${SALOME_INSTALL_PYTHON})
-SALOME_CONFIGURE_FILE(__init__.py __init__.py INSTALL ${SALOME_INSTALL_PYTHON}/salome/yacs)
+__version__ = "@SALOMEYACS_GIT_SHA1@"
