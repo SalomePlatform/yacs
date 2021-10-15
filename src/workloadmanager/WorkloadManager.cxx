@@ -18,6 +18,9 @@
 //
 #include "WorkloadManager.hxx"
 #include "Task.hxx"
+#include <chrono>
+#include <thread>
+
 
 namespace WorkloadManager
 {
@@ -96,17 +99,21 @@ namespace WorkloadManager
     bool threadStop = false;
     while(!threadStop)
     {
-      std::unique_lock<std::mutex> lock(_data_mutex);
-      _startCondition.wait(lock, [this] {return !_algo.empty() || _stop;});
-      RunningInfo taskInfo;
-      while(chooseTaskToRun(taskInfo))
       {
-        _runningTasks.emplace(taskInfo.id, std::async(std::launch::async, [this, taskInfo]
-          {
-            runOneTask(taskInfo);
-          }));
+        std::unique_lock<std::mutex> lock(_data_mutex);
+        _startCondition.wait(lock, [this] {return !_algo.empty() || _stop;});
+        RunningInfo taskInfo;
+        while(chooseTaskToRun(taskInfo))
+        {
+          _runningTasks.emplace(taskInfo.id, std::async(std::launch::async, [this, taskInfo]
+            {
+              runOneTask(taskInfo);
+            }));
+        }
+        threadStop = _stop && _algo.empty();
       }
-      threadStop = _stop && _algo.empty();
+      // workaroud to release the lock and give a chance to other tasks to finish
+      std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
   }
 

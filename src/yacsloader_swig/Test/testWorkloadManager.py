@@ -119,6 +119,13 @@ class TestEdit(unittest.TestCase):
         self.assertEqual(proc.getState(),pilot.FAILED)
         self.assertEqual(proc.getChildByName("ErrorNode").getState(),pilot.ERROR)
 
+    def test5(self):
+        """ Foreach with 1000 points and several nodes in the block.
+        """
+        proc = self.l.load("samples/wlm_complex_foreach.xml")
+        self.e.RunW(proc,0)
+        self.assertEqual(proc.getState(),pilot.DONE)
+
 if __name__ == '__main__':
   dir_test = tempfile.mkdtemp(suffix=".yacstest")
   file_test = os.path.join(dir_test,"UnitTestsResult")
