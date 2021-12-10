@@ -1008,7 +1008,8 @@ public:
 {
 from collections import MutableMapping    
 class tname(tname,MutableMapping):pass
-tname##_swigregister(tname)
+import sys
+sys.modules['_'+__name__].##tname##_swigregister(tname)
 }
 %enddef
 
