@@ -85,6 +85,7 @@ SET(_link_LIBRARIES
 SET(YACSRuntimeSALOME_HEADERS
   YACSRuntimeSALOMEExport.hxx 
   CalStreamPort.hxx
+  ConnectionManager.hxx
   CORBAComponent.hxx
   CORBACORBAConv.hxx
   CORBACppConv.hxx
@@ -153,6 +154,7 @@ SET(YACSRuntimeSALOME_HEADERS
 
 SET(YACSRuntimeSALOME_SOURCES
   TypeConversions.cxx            
+  ConnectionManager.cxx
   CORBACORBAConv.cxx             
   CORBAPythonConv.cxx            
   CORBAXMLConv.cxx               

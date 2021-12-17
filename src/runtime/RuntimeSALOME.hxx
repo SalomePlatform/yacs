@@ -22,7 +22,7 @@
 #include <Python.h>
 
 #include "YACSRuntimeSALOMEExport.hxx"
-
+#include "ConnectionManager.hxx"
 // rnv: avoid compilation warning on Linux : "_POSIX_C_SOURCE" and "_XOPEN_SOURCE" are redefined
 #ifdef _POSIX_C_SOURCE
 #undef _POSIX_C_SOURCE
@@ -241,6 +241,7 @@ namespace YACS
       DynamicAny::DynAnyFactory_ptr getDynFactory() const;
       omniORBpyAPI* getApi();
       PyObject * get_omnipy();
+      ConnectionManager& getConnectionManager(){return _connectionManager;}
 
     protected:
       RuntimeSALOME();  // singleton
@@ -255,6 +256,8 @@ namespace YACS
       long _flags;
       bool _usePython, _useCorba, _useCpp, _useXml;
 
+    private:
+      ConnectionManager _connectionManager;
     };
   }
 }

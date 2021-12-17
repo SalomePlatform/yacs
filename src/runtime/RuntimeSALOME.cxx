@@ -247,6 +247,7 @@ RuntimeSALOME::~RuntimeSALOME()
     {
       delete (*pt).second;
     }
+  _connectionManager.ShutdownWithExit();
 }
 
 void RuntimeSALOME::loadModulCatalog()

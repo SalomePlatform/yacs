@@ -352,10 +352,7 @@ void SalomeNode::connectService()
   if(_setOfOutputDataStreamPort.size() == 0)return;
 
   CORBA::Object_var objComponent=((SalomeComponent*)_component)->getCompoPtr();
-  SALOME_NamingService_Wrapper NS(getSALOMERuntime()->getOrb()) ;
-  SALOME_LifeCycleCORBA LCC(&NS) ;
-  CORBA::Object_var obj = NS.Resolve("/ConnectionManager");
-  Engines::ConnectionManager_var manager=Engines::ConnectionManager::_narrow(obj);
+  ConnectionManager& manager = getSALOMERuntime()->getConnectionManager();
   Engines::Superv_Component_var me=Engines::Superv_Component::_narrow(objComponent);
   if( CORBA::is_nil(me) )
     {
@@ -399,7 +396,7 @@ void SalomeNode::connectService()
             }
           try
             {
-              id=manager->connect(me,port->getName().c_str(),other,(*iterout)->getName().c_str());
+              id=manager.connect(me,port->getName().c_str(),other,(*iterout)->getName().c_str());
             }
           catch(Engines::DSC::PortNotDefined& ex)
             {
@@ -473,17 +470,14 @@ void SalomeNode::disconnectService()
   if(ids.size() == 0)
     return;
 
-  SALOME_NamingService_Wrapper NS(getSALOMERuntime()->getOrb()) ;
-  SALOME_LifeCycleCORBA LCC(&NS) ;
-  CORBA::Object_var obj = NS.Resolve("/ConnectionManager");
-  Engines::ConnectionManager_var manager=Engines::ConnectionManager::_narrow(obj);
+  ConnectionManager& manager = getSALOMERuntime()->getConnectionManager();
   std::list<Engines::ConnectionManager::connectionId>::iterator iter;
   for(iter = ids.begin(); iter != ids.end(); iter++)
     {
       DEBTRACE("Trying to disconnect: " << *iter );
       try
         {
-          manager->disconnect(*iter,Engines::DSC::RemovingConnection);
+          manager.disconnect(*iter,Engines::DSC::RemovingConnection);
         }
       catch(Engines::ConnectionManager::BadId& ex)
         {
