@@ -84,7 +84,7 @@ ConnectionManager::disconnect(ConnectionManager::connectionId id,
     }
   catch(CORBA::SystemException& ex)
     {
-      std::cerr << "Problem in disconnect(CORBA::SystemException) provides port: " << infos->provides_port_name << std::endl;
+      std::cerr << "Problem in disconnect(CORBA::SystemException) provides port: " << infos->provides_port_name.c_str() << std::endl;
       err=1;
     }
   try
@@ -94,7 +94,7 @@ ConnectionManager::disconnect(ConnectionManager::connectionId id,
     }
   catch(CORBA::SystemException& ex)
     {
-      std::cerr << "Problem in disconnect(CORBA::SystemException) uses port: " << infos->uses_port_name << std::endl;
+      std::cerr << "Problem in disconnect(CORBA::SystemException) uses port: " << infos->uses_port_name.c_str() << std::endl;
       err=1;
     }
   delete infos;
