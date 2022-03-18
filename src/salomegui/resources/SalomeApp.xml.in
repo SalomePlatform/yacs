@@ -17,7 +17,7 @@
   <section name="YACS" >
     <!-- Module preferences -->
     <parameter name="font" value="Courier,9" />
-    <parameter name="COMPONENT_INSTANCE_NEW" value="true" />
+    <parameter name="COMPONENT_INSTANCE_NEW" value="false" />
     <parameter name="userCatalog" value="YACSUserCatalog.xml" />
     <parameter name="autoComputeLinks" value="true" />
     <parameter name="simplifyLink" value="false" />
