@@ -44,7 +44,6 @@ IF(NOT WIN32)
     optim_plugin.py
     testValidationChecks.py
     testProgress.py
-    testExecForEachGeoMesh.py
     async_plugin.py
     testWorkloadManager.py
     testPynodeWithCache.py
