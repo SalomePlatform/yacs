@@ -77,6 +77,12 @@ const char PyFuncNode::SCRIPT_FOR_SERIALIZATION[]="import pickle\n"
     "  args=pickle.loads(st)\n"
     "  return args\n";
 
+// pickle.load concurrency issue : see https://bugs.python.org/issue12680
+#if PY_VERSION_HEX < 0x03070000
+#include <mutex>
+static std::mutex data_mutex;
+#endif
+
 PythonEntry::PythonEntry():_context(0),_pyfuncSer(0),_pyfuncUnser(0),_pyfuncSimpleSer(0)
 {
 }
@@ -185,6 +191,9 @@ void PythonEntry::loadRemoteContext(InlineNode *reqNode, Engines::Container_ptr 
   Engines::PyNodeBase_var pynode(getRemoteInterpreterHandle());
   ///
   {
+#if PY_VERSION_HEX < 0x03070000
+    std::unique_lock<std::mutex> lock(data_mutex);
+#endif
     AutoGIL agil;
     const char *picklizeScript(getSerializationScript());
     PyObject *res=PyRun_String(picklizeScript,Py_file_input,_context,_context);
@@ -412,6 +421,9 @@ void PythonNode::executeRemote()
   std::unique_ptr<Engines::pickledArgs> serializationInputCorba(new Engines::pickledArgs);
   AutoPyRef serializationInput;
   {
+#if PY_VERSION_HEX < 0x03070000
+      std::unique_lock<std::mutex> lock(data_mutex);
+#endif
       AutoGIL agil;
       PyObject *args(0),*ob(0);
       //===========================================================================
@@ -501,6 +513,9 @@ void PythonNode::executeRemote()
   auto length(resultCorba->length());
   char *resultCorbaC(reinterpret_cast<char *>(resultCorba->get_buffer()));
   {
+#if PY_VERSION_HEX < 0x03070000
+      std::unique_lock<std::mutex> lock(data_mutex);
+#endif
       AutoGIL agil;
       PyObject *args(0),*ob(0);
       PyObject* resultPython=PyMemoryView_FromMemory(resultCorbaC,length,PyBUF_READ);
@@ -1091,6 +1106,9 @@ void PyFuncNode::executeRemote()
   //
   Engines::pickledArgs_var serializationInputCorba(new Engines::pickledArgs);;
   {
+#if PY_VERSION_HEX < 0x03070000
+      std::unique_lock<std::mutex> lock(data_mutex);
+#endif
       AutoGIL agil;
       PyObject *ob(0);
       //===========================================================================
@@ -1150,6 +1168,9 @@ void PyFuncNode::executeRemote()
     resultCorbaC[i]=resultCorba[i];
 
   {
+#if PY_VERSION_HEX < 0x03070000
+      std::unique_lock<std::mutex> lock(data_mutex);
+#endif
       AutoGIL agil;
 
       PyObject *resultPython(PyBytes_FromStringAndSize(resultCorbaC,resultCorba->length()));
