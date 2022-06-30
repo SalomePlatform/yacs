@@ -1006,7 +1006,7 @@ public:
 %template(tname)      std::map<std::string, T* >;
 %pythoncode
 {
-from collections import MutableMapping    
+from collections.abc import MutableMapping
 class tname(tname,MutableMapping):pass
 import sys
 sys.modules['_'+__name__].##tname##_swigregister(tname)
