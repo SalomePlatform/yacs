@@ -25,8 +25,7 @@ import loader
 import os
 import datetime
 import salome
-import sys
-import time
+import tempfile
 import NamingService
 
 class TestBasicFirstSSL(unittest.TestCase):
@@ -80,8 +79,10 @@ def ff(nb,dbg):
             dbg=node0.edAddInputPort("dbg",ti) ; dbg.edInitInt(i+1)
             out0=node0.edAddOutputPort("s",td)
             pass
-        p.saveSchema(fname)
-        p=l.load(fname)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp_fname = os.path.join(tmpdir, fname)
+            p.saveSchema(tmp_fname)
+            p=l.load(tmp_fname)
         ex=pilot.ExecutorSwig()
         self.assertEqual(p.getState(),pilot.READY)
         st=datetime.datetime.now()
