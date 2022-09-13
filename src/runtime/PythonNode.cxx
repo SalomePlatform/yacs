@@ -497,6 +497,60 @@ void PythonNode::executeRemote()
       _errorDetails=msg.str();
       throw Exception(msg.str());
     }
+  catch(CORBA::COMM_FAILURE& ex)
+    {
+      std::ostringstream msg;
+      msg << "Exception on remote python invocation." << std::endl ;
+      msg << "Caught system exception COMM_FAILURE -- unable to contact the "
+          << "object." << std::endl;
+      _errorDetails=msg.str();
+      throw Exception(msg.str());
+    }
+  catch(CORBA::SystemException& ex)
+    {
+      std::ostringstream msg;
+      msg << "Exception on remote python invocation." << std::endl ;
+      msg << "Caught a CORBA::SystemException." ;
+      CORBA::Any tmp;
+      tmp <<= ex;
+      CORBA::TypeCode_var tc = tmp.type();
+      const char *p = tc->name();
+      if ( *p != '\0' )
+        msg <<p;
+      else
+        msg  << tc->id();
+      msg << std::endl;
+      _errorDetails=msg.str();
+      throw Exception(msg.str());
+    }
+  catch(CORBA::Exception& ex)
+    {
+      std::ostringstream msg;
+      msg << "Exception on remote python invocation." << std::endl ;
+      msg << "Caught CORBA::Exception. " ;
+      CORBA::Any tmp;
+      tmp <<= ex;
+      CORBA::TypeCode_var tc = tmp.type();
+      const char *p = tc->name();
+      if ( *p != '\0' )
+        msg <<p;
+      else
+        msg  << tc->id();
+      msg << std::endl;
+      _errorDetails=msg.str();
+      throw Exception(msg.str());
+    }
+  catch(omniORB::fatalException& fe)
+    {
+      std::ostringstream msg;
+      msg << "Exception on remote python invocation." << std::endl ;
+      msg << "Caught omniORB::fatalException:" << std::endl;
+      msg << "  file: " << fe.file() << std::endl;
+      msg << "  line: " << fe.line() << std::endl;
+      msg << "  mesg: " << fe.errmsg() << std::endl;
+      _errorDetails=msg.str();
+      throw Exception(msg.str());
+    }
 //   if(!CORBA::is_nil(_pynode))
 //     {
 //       _pynode->UnRegister();
@@ -1157,6 +1211,60 @@ void PyFuncNode::executeRemote()
       msg += ex.details.text.in();
       _errorDetails=msg;
       throw Exception(msg);
+    }
+  catch(CORBA::COMM_FAILURE& ex)
+    {
+      std::ostringstream msg;
+      msg << "Exception on remote python invocation." << std::endl ;
+      msg << "Caught system exception COMM_FAILURE -- unable to contact the "
+          << "object." << std::endl;
+      _errorDetails=msg.str();
+      throw Exception(msg.str());
+    }
+  catch(CORBA::SystemException& ex)
+    {
+      std::ostringstream msg;
+      msg << "Exception on remote python invocation." << std::endl ;
+      msg << "Caught a CORBA::SystemException." ;
+      CORBA::Any tmp;
+      tmp <<= ex;
+      CORBA::TypeCode_var tc = tmp.type();
+      const char *p = tc->name();
+      if ( *p != '\0' )
+        msg <<p;
+      else
+        msg  << tc->id();
+      msg << std::endl;
+      _errorDetails=msg.str();
+      throw Exception(msg.str());
+    }
+  catch(CORBA::Exception& ex)
+    {
+      std::ostringstream msg;
+      msg << "Exception on remote python invocation." << std::endl ;
+      msg << "Caught CORBA::Exception. " ;
+      CORBA::Any tmp;
+      tmp <<= ex;
+      CORBA::TypeCode_var tc = tmp.type();
+      const char *p = tc->name();
+      if ( *p != '\0' )
+        msg <<p;
+      else
+        msg  << tc->id();
+      msg << std::endl;
+      _errorDetails=msg.str();
+      throw Exception(msg.str());
+    }
+  catch(omniORB::fatalException& fe)
+    {
+      std::ostringstream msg;
+      msg << "Exception on remote python invocation." << std::endl ;
+      msg << "Caught omniORB::fatalException:" << std::endl;
+      msg << "  file: " << fe.file() << std::endl;
+      msg << "  line: " << fe.line() << std::endl;
+      msg << "  mesg: " << fe.errmsg() << std::endl;
+      _errorDetails=msg.str();
+      throw Exception(msg.str());
     }
   DEBTRACE( "-----------------end of remote python invocation-----------------" );
   //===========================================================================
