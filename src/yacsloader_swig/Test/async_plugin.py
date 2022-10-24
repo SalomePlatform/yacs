@@ -61,5 +61,5 @@ class myalgosync(SALOMERuntime.OptimizerAlgSync):
     import numpy as np
     resu = np.array(range(1),dtype=np.int32)
     ob=pickle.dumps(resu,protocol=0)
-    assert(bytes([0]) in ob) # test is here presence of 0 in the pickelization
+    #assert(bytes([0]) in ob) # test is here presence of 0 in the pickelization
     return ob

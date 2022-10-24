@@ -292,6 +292,7 @@ print("PyScript0",entier)
 
     sortie_script="""import numpy as np
 assert(isinstance(resultats,np.ndarray))
+assert(resultats==np.array(range(1),dtype=np.int32))
 """
 
     nbWorkers=1
