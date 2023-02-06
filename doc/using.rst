@@ -48,9 +48,6 @@ be coupled with YACS. In general, this operation requires good knowledge of SALO
 
 For C++ calculation codes, the :ref:`hxx2salome` tool automates this operation to a large extent.
 
-For Fortran, C and Python calculation codes that use CALCIUM type coupling, the :ref:`yacsgen` tool automatically 
-generates the necessary SALOME embedment starting from a brief description of the selected coupling interface.
-
 
 .. toctree::
    :maxdepth: 2

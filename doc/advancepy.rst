@@ -85,8 +85,7 @@ The rest is identical, except for implementation of the component that is as fol
 
 Definition of inline Python components
 --------------------------------------------------
-Normally, a Python SALOME component must be developed outside YACS, either manually or using a SALOME module generator 
-such as :ref:`yacsgen`.  
+Normally, a Python SALOME component must be developed outside YACS.
 A SALOME component implemented in Python can be defined directly in a Python script.  This type of component 
 can be useful in test phases, for example.
 

@@ -60,7 +60,6 @@ SET(RSTFILES
   scratch.rst
   toolbars.rst
   optimizer.rst
-  yacsgen.rst
   )
 
 SET(SPHINXOPTS )

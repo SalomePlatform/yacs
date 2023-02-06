@@ -20,11 +20,8 @@ code, provided that only the dataflow ports are used.
 The sixth chapter (:ref:`progdsc`) is aimed particularly at persons who would like to develop new datastream ports 
 based on the DSC programming model.
 
-The next chapter is a :ref:`calcium`. CALCIUM ports are datastream ports predefined in SALOME that simply implement 
+Finally, the last chapter is a :ref:`calcium`. CALCIUM ports are datastream ports predefined in SALOME that simply implement
 datastream couplings in YACS.
-
-Finally, the last chapter is a guide for use of a tool (:ref:`yacsgen`)  that automates the integration of calculation 
-codes in Fortran, C, Python and that use CALCIUM datastream ports, that is not possible with the :ref:`hxx2salome` tool.
 
 .. toctree::
    :maxdepth: 2
@@ -36,4 +33,3 @@ codes in Fortran, C, Python and that use CALCIUM datastream ports, that is not p
    hxx2salome
    progdsc
    calcium
-   yacsgen
