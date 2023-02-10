@@ -39,6 +39,7 @@ IF(SALOME_YACS_USE_KERNEL)
     ResourcesManager 
     SalomeHDFPersist 
     SalomeGenericObj
+    SalomeCommunication
     )
   SET(SALOME_INCL_PATH ${KERNEL_INCLUDE_DIRS})
 

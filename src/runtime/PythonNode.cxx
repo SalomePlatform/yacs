@@ -27,6 +27,8 @@
 #include "SalomeHPContainer.hxx"
 #include "SalomeContainerTmpForHP.hxx"
 #include "ConversionException.hxx"
+#include "ReceiverFactory.hxx"
+#include "SenderByteImpl.hxx"
 
 #include "PyStdout.hxx"
 #include <iostream>
@@ -417,8 +419,8 @@ void PythonNode::executeRemote()
       loadPythonAdapter(this,dummy);
       _pynode->assignNewCompiledCode(getScript().c_str());
     }
-  //
-  std::unique_ptr<Engines::pickledArgs> serializationInputCorba(new Engines::pickledArgs);
+  // not managed by unique_ptr here because destructed by the order of client.
+  SenderByteImpl *serializationInputCorba = nullptr;
   AutoPyRef serializationInput;
   {
 #if PY_VERSION_HEX < 0x03070000
@@ -446,12 +448,12 @@ void PythonNode::executeRemote()
       serializationInput.set(PyObject_CallFunctionObjArgs(_pyfuncSer,args,nullptr));
       Py_DECREF(args);
       //The pickled string may contain NULL characters so use PyString_AsStringAndSize
-      char *serializationInputC(0);
+      char *serializationInputC(nullptr);
       Py_ssize_t len;
       if (PyBytes_AsStringAndSize(serializationInput, &serializationInputC, &len))
         throw Exception("DistributedPythonNode problem in python pickle");
       // no copy here. The C byte array of Python is taken  as this into CORBA sequence to avoid copy
-      serializationInputCorba.reset(new Engines::pickledArgs(len,len,reinterpret_cast<CORBA::Octet *>(serializationInputC),0));
+      serializationInputCorba = new SenderByteImpl(serializationInputC,len);
   }
 
   //get the list of output argument names
@@ -472,14 +474,15 @@ void PythonNode::executeRemote()
   // Execute in remote Python node
   //===========================================================================
   DEBTRACE( "-----------------starting remote python invocation-----------------" );
-  std::unique_ptr<Engines::pickledArgs> resultCorba;
+  SALOME::SenderByte_var resultCorba;
   try
     {
       //pass outargsname and dict serialized
-      _pynode->executeFirst(*(serializationInputCorba.get()));
+      SALOME::SenderByte_var serializationInputRef = serializationInputCorba->_this();
+      _pynode->executeFirst(serializationInputRef);
       //serializationInput and serializationInputCorba are no more needed for server. Release it.
-      serializationInputCorba.reset(nullptr); serializationInput.set(nullptr);
-      resultCorba.reset(_pynode->executeSecond(myseq));
+      serializationInput.set(nullptr);
+      resultCorba = _pynode->executeSecond(myseq);
     }
   catch( const SALOME::SALOME_Exception& ex )
     {
@@ -564,20 +567,23 @@ void PythonNode::executeRemote()
   //===========================================================================
   // Get results, unpickle and put them in output ports
   //===========================================================================
-  auto length(resultCorba->length());
-  char *resultCorbaC(reinterpret_cast<char *>(resultCorba->get_buffer()));
   {
 #if PY_VERSION_HEX < 0x03070000
       std::unique_lock<std::mutex> lock(data_mutex);
 #endif
       AutoGIL agil;
-      PyObject *args(0),*ob(0);
-      PyObject* resultPython=PyMemoryView_FromMemory(resultCorbaC,length,PyBUF_READ);
-      args = PyTuple_New(1);
-      PyTuple_SetItem(args,0,resultPython);
-      PyObject *finalResult=PyObject_CallObject(_pyfuncUnser,args);
-      resultCorba.reset(nullptr);
-      Py_DECREF(args);
+      PyObject *finalResult( nullptr), *ob( nullptr );
+      {
+        SeqByteReceiver recv(resultCorba);
+        PyObject *args(0);
+        unsigned long length = 0;
+        char *resultCorbaC = recv.data(length);
+        PyObject* resultPython=PyMemoryView_FromMemory(resultCorbaC,length,PyBUF_READ);
+        args = PyTuple_New(1);
+        PyTuple_SetItem(args,0,resultPython);
+        finalResult = PyObject_CallObject(_pyfuncUnser,args);
+        Py_DECREF(args);
+      }
 
       if (finalResult == NULL)
         {
