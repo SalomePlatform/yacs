@@ -27,21 +27,13 @@ import unittest
 import os
 import shutil
 import platform
+import tempfile
 
 class PMMLBasicsTest(unittest.TestCase):
 
     def setUp(self):
         self.resourcesDir = ".." + os.sep + "Test" + os.sep + "samples" + os.sep ;
-        if platform.system() == "Windows" :
-            self.tmpDir = os.environ['TMP'] # %TMP% does exist on WINDOWS
-        else:
-            self.tmpDir = os.sep + "tmp" + os.sep + os.environ['LOGNAME'] + os.sep ;
-        self.tmpDir += "PmmlUnitTest";
-        self.tmpDir += os.sep ;
-        if ( not os.path.exists(self.tmpDir) ):
-            os.makedirs(self.tmpDir);
-            pass
-        pass
+        self.tmpDir = tempfile.mkdtemp(suffix="PmmlUnitTest")
 
     def tearDown(self):
         if ( os.path.exists(self.tmpDir) ):
