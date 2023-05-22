@@ -79,6 +79,9 @@ const char PyFuncNode::SCRIPT_FOR_SERIALIZATION[]="import pickle\n"
     "  args=pickle.loads(st)\n"
     "  return args\n";
 
+static char SCRIPT_FOR_BIGOBJECT[]="import SALOME_PyNode\n"
+    "BigObjectOnDisk = SALOME_PyNode.BigObjectOnDisk\n";
+
 // pickle.load concurrency issue : see https://bugs.python.org/issue12680
 #if PY_VERSION_HEX < 0x03070000
 #include <mutex>
@@ -212,9 +215,11 @@ void PythonEntry::loadRemoteContext(InlineNode *reqNode, Engines::Container_ptr 
         throw Exception("Error during load");
       }
     Py_DECREF(res); Py_DECREF(res2);
+    AutoPyRef res3(PyRun_String(SCRIPT_FOR_BIGOBJECT,Py_file_input,_context,_context));
     _pyfuncSer=PyDict_GetItemString(_context,"pickleForDistPyth2009");
     _pyfuncUnser=PyDict_GetItemString(_context,"unPickleForDistPyth2009");
     _pyfuncSimpleSer=PyDict_GetItemString(_context,"pickleForVarSimplePyth2009");
+    _pyClsBigObject=PyDict_GetItemString(_context,"BigObjectOnDisk");
     if(_pyfuncSer == NULL)
       {
         std::string errorDetails;
@@ -474,7 +479,7 @@ void PythonNode::executeRemote()
   // Execute in remote Python node
   //===========================================================================
   DEBTRACE( "-----------------starting remote python invocation-----------------" );
-  SALOME::SenderByte_var resultCorba;
+  std::unique_ptr<SALOME::SenderByteSeq> resultCorba;
   try
     {
       //pass outargsname and dict serialized
@@ -482,7 +487,7 @@ void PythonNode::executeRemote()
       _pynode->executeFirst(serializationInputRef);
       //serializationInput and serializationInputCorba are no more needed for server. Release it.
       serializationInput.set(nullptr);
-      resultCorba = _pynode->executeSecond(myseq);
+      resultCorba.reset( _pynode->executeSecond(myseq) );
     }
   catch( const SALOME::SALOME_Exception& ex )
     {
@@ -554,15 +559,6 @@ void PythonNode::executeRemote()
       _errorDetails=msg.str();
       throw Exception(msg.str());
     }
-//   if(!CORBA::is_nil(_pynode))
-//     {
-//       _pynode->UnRegister();
-//     }
-//   _pynode = Engines::PyScriptNode::_nil();
-//   //
-//   bool dummy;
-//   Engines::Container_var cont(GetContainerObj(this,dummy));
-//   cont->removePyScriptNode(getName().c_str());
   DEBTRACE( "-----------------end of remote python invocation-----------------" );
   //===========================================================================
   // Get results, unpickle and put them in output ports
@@ -572,43 +568,15 @@ void PythonNode::executeRemote()
       std::unique_lock<std::mutex> lock(data_mutex);
 #endif
       AutoGIL agil;
-      PyObject *finalResult( nullptr), *ob( nullptr );
-      {
-        SeqByteReceiver recv(resultCorba);
-        PyObject *args(0);
-        unsigned long length = 0;
-        char *resultCorbaC = recv.data(length);
-        PyObject* resultPython=PyMemoryView_FromMemory(resultCorbaC,length,PyBUF_READ);
-        args = PyTuple_New(1);
-        PyTuple_SetItem(args,0,resultPython);
-        finalResult = PyObject_CallObject(_pyfuncUnser,args);
-        Py_DECREF(args);
-      }
-
-      if (finalResult == NULL)
-        {
-          std::stringstream msg;
-          msg << "Conversion with pickle of output ports failed !";
-          msg << " : " << __FILE__ << ":" << __LINE__;
-          _errorDetails=msg.str();
-          throw YACS::ENGINE::ConversionException(msg.str());
-        }
-
       DEBTRACE( "-----------------PythonNode::outputs-----------------" );
-      int nres=1;
-      if(finalResult == Py_None)
-        nres=0;
-      else if(PyTuple_Check(finalResult))
-        nres=PyTuple_Size(finalResult);
+      int nres( resultCorba->length() );
 
       if(getNumberOfOutputPorts() != nres)
         {
           std::string msg="Number of output arguments : Mismatch between definition and execution";
-          Py_DECREF(finalResult);
           _errorDetails=msg;
           throw Exception(msg);
         }
-
       pos=0;
       try
       {
@@ -618,19 +586,36 @@ void PythonNode::executeRemote()
               DEBTRACE( "port name: " << p->getName() );
               DEBTRACE( "port kind: " << p->edGetType()->kind() );
               DEBTRACE( "port pos : " << pos );
-              if(PyTuple_Check(finalResult))
-                ob=PyTuple_GetItem(finalResult,pos) ;
-              else
-                ob=finalResult;
-              DEBTRACE( "ob refcnt: " << ob->ob_refcnt );
-              p->put(ob);
+              SALOME::SenderByte_var elt = (*resultCorba)[pos];
+              SeqByteReceiver recv(elt);
+              unsigned long length = 0;
+              char *resultCorbaC = recv.data(length);
+              {
+                AutoPyRef resultPython=PyMemoryView_FromMemory(resultCorbaC,length,PyBUF_READ);
+                AutoPyRef args = PyTuple_New(1);
+                PyTuple_SetItem(args,0,resultPython.retn());
+                AutoPyRef ob = PyObject_CallObject(_pyfuncUnser,args);
+                if (!ob)
+                {
+                  std::stringstream msg;
+                  msg << "Conversion with pickle of output ports failed !";
+                  msg << " : " << __FILE__ << ":" << __LINE__;
+                  _errorDetails=msg.str();
+                  throw YACS::ENGINE::ConversionException(msg.str());
+                }
+
+                if( PyObject_IsInstance( ob, _pyClsBigObject) == 1 )
+                {
+                  AutoPyRef unlinkOnDestructor = PyObject_GetAttrString(ob,"unlinkOnDestructor");
+                  AutoPyRef tmp = PyObject_CallFunctionObjArgs(unlinkOnDestructor,nullptr);
+                }
+                p->put( ob );
+              }
               pos++;
             }
-          Py_DECREF(finalResult);
       }
       catch(ConversionException& ex)
       {
-          Py_DECREF(finalResult);
           _errorDetails=ex.what();
           throw;
       }

@@ -56,6 +56,7 @@ namespace YACS
       PyObject *_pyfuncSer;
       PyObject *_pyfuncUnser;
       PyObject *_pyfuncSimpleSer;
+      PyObject *_pyClsBigObject;
       std::string _imposedResource;
       std::string _imposedContainer;
     public:
