@@ -104,6 +104,12 @@ TARGET_LINK_LIBRARIES(runtimeTestEchoSrv runtime_echo ${OMNIORB_LIBRARIES})
 ADD_EXECUTABLE(echo_clt ${echo_clt_SOURCES})
 TARGET_LINK_LIBRARIES(echo_clt runtime_echo ${OMNIORB_LIBRARIES})
 
+if(WIN32)
+  add_library(TestComponentLocal_lib STATIC  ${TestComponentLocal_SOURCES})
+  TARGET_LINK_LIBRARIES(TestComponentLocal_lib ${_link_LIBRARIES})
+  set_target_properties(TestComponentLocal_lib PROPERTIES OUTPUT_NAME TestComponentLocal)
+endif(WIN32)
+
 ADD_LIBRARY(TestComponentLocal ${TestComponentLocal_SOURCES})
 TARGET_LINK_LIBRARIES(TestComponentLocal YACSlibEngine)
 
