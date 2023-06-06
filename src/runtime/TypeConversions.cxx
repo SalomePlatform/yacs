@@ -33,6 +33,7 @@
 #include "TypeCode.hxx"
 #include "Cstr2d.hxx"
 #include "SALOME_GenericObj.hh"
+#include "PythonNode.hxx"
 
 #include <iostream>
 #include <iomanip>
@@ -785,9 +786,14 @@ namespace YACS
             }
           if(strncmp(t->id(),"python",6)==0)
             {
+              bool somthingToDo = YACS::ENGINE::PythonEntry::GetDestroyStatus(o);
+              if( somthingToDo )
+                YACS::ENGINE::PythonEntry::DoNotTouchFileIfProxy(o);
               // It's a native Python object pickle it
               PyObject* mod=PyImport_ImportModule("pickle");
               PyObject *pickled=PyObject_CallMethod(mod,(char *)"dumps",(char *)"Oi",o,protocol);
+              if( somthingToDo )
+                YACS::ENGINE::PythonEntry::UnlinkOnDestructorIfProxy(o);
               DEBTRACE(PyObject_Repr(pickled) );
               Py_DECREF(mod);
               if(pickled==NULL)

@@ -34,6 +34,11 @@ namespace YACS
   {
     class YACSRUNTIMESALOME_EXPORT PythonEntry
     {
+    public:
+      /*! return true only if ob is a proxy and destroy flag set to true*/
+      static bool GetDestroyStatus( PyObject *ob );
+      static void DoNotTouchFileIfProxy( PyObject *ob );
+      static void UnlinkOnDestructorIfProxy( PyObject *ob );
     protected:
       PythonEntry();
       ~PythonEntry();
@@ -51,12 +56,13 @@ namespace YACS
       void loadRemoteContext(InlineNode *reqNode, Engines::Container_ptr objContainer, bool isInitializeRequested);
       static std::string GetContainerLog(const std::string& mode, Container *container, const Task *askingTask);
       virtual bool hasImposedResource()const;
+      static void IfProxyDoSomething( PyObject *ob, const char *meth );
     protected:
       PyObject *_context;
       PyObject *_pyfuncSer;
       PyObject *_pyfuncUnser;
       PyObject *_pyfuncSimpleSer;
-      PyObject *_pyClsBigObject;
+      static PyObject *_pyClsBigObject;
       std::string _imposedResource;
       std::string _imposedContainer;
     public:

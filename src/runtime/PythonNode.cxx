@@ -56,6 +56,8 @@ const char PythonEntry::SCRIPT_FOR_SIMPLE_SERIALIZATION[]="import pickle\n"
     "  return pickle.dumps(val,-1)\n"
     "\n";
 
+PyObject *PythonEntry::_pyClsBigObject = nullptr;
+
 const char PythonNode::IMPL_NAME[]="Python";
 const char PythonNode::KIND[]="Python";
 
@@ -80,7 +82,7 @@ const char PyFuncNode::SCRIPT_FOR_SERIALIZATION[]="import pickle\n"
     "  return args\n";
 
 static char SCRIPT_FOR_BIGOBJECT[]="import SALOME_PyNode\n"
-    "BigObjectOnDisk = SALOME_PyNode.BigObjectOnDisk\n";
+    "BigObjectOnDiskBase = SALOME_PyNode.BigObjectOnDiskBase\n";
 
 // pickle.load concurrency issue : see https://bugs.python.org/issue12680
 #if PY_VERSION_HEX < 0x03070000
@@ -219,7 +221,11 @@ void PythonEntry::loadRemoteContext(InlineNode *reqNode, Engines::Container_ptr 
     _pyfuncSer=PyDict_GetItemString(_context,"pickleForDistPyth2009");
     _pyfuncUnser=PyDict_GetItemString(_context,"unPickleForDistPyth2009");
     _pyfuncSimpleSer=PyDict_GetItemString(_context,"pickleForVarSimplePyth2009");
-    _pyClsBigObject=PyDict_GetItemString(_context,"BigObjectOnDisk");
+    if(! _pyClsBigObject )
+    {
+      _pyClsBigObject=PyDict_GetItemString(_context,"BigObjectOnDiskBase");
+      Py_INCREF(_pyClsBigObject);
+    }
     if(_pyfuncSer == NULL)
       {
         std::string errorDetails;
@@ -320,6 +326,44 @@ void PythonEntry::commonRemoteLoad(InlineNode *reqNode)
 bool PythonEntry::hasImposedResource()const
 {
   return !_imposedResource.empty() && !_imposedContainer.empty();
+}
+
+bool PythonEntry::GetDestroyStatus( PyObject *ob )
+{
+  if(!_pyClsBigObject)
+    return false;
+  if( PyObject_IsInstance( ob, _pyClsBigObject) == 1 )
+  {
+    AutoPyRef unlinkOnDestructor = PyObject_GetAttrString(ob,"getDestroyStatus");
+    AutoPyRef tmp = PyObject_CallFunctionObjArgs(unlinkOnDestructor,nullptr);
+    if( PyBool_Check(tmp.get()) )
+    {
+      return tmp.get() == Py_True;
+    }
+    return false;
+  }
+  return false;
+}
+
+void PythonEntry::IfProxyDoSomething( PyObject *ob, const char *meth )
+{
+  if(!_pyClsBigObject)
+    return ;
+  if( PyObject_IsInstance( ob, _pyClsBigObject) == 1 )
+  {
+    AutoPyRef unlinkOnDestructor = PyObject_GetAttrString(ob,meth);
+    AutoPyRef tmp = PyObject_CallFunctionObjArgs(unlinkOnDestructor,nullptr);
+  }
+}
+
+void PythonEntry::DoNotTouchFileIfProxy( PyObject *ob )
+{
+  IfProxyDoSomething(ob,"doNotTouchFile");
+}
+
+void PythonEntry::UnlinkOnDestructorIfProxy( PyObject *ob )
+{
+  IfProxyDoSomething(ob,"unlinkOnDestructor");
 }
 
 PythonNode::PythonNode(const PythonNode& other, ComposedNode *father):InlineNode(other,father),_autoSqueeze(other._autoSqueeze)
@@ -605,12 +649,7 @@ void PythonNode::executeRemote()
                   _errorDetails=msg.str();
                   throw YACS::ENGINE::ConversionException(msg.str());
                 }
-
-                if( PyObject_IsInstance( ob, _pyClsBigObject) == 1 )
-                {
-                  AutoPyRef unlinkOnDestructor = PyObject_GetAttrString(ob,"unlinkOnDestructor");
-                  AutoPyRef tmp = PyObject_CallFunctionObjArgs(unlinkOnDestructor,nullptr);
-                }
+                UnlinkOnDestructorIfProxy(ob);
                 p->put( ob );
               }
               pos++;
