@@ -40,7 +40,7 @@
    </container>
    <bloc name="test/run">
       <remote name="testgenerate_conditions" elementaryWeight="-1">
-         <script><code><![CDATA[conditions_list=range(1000)
+         <script><code><![CDATA[conditions_list=list( range(1000) )
 ]]></code></script>
          <load container="default_container"/>
          <outport name="conditions_list" type="list[pyobj]"/>

@@ -673,13 +673,52 @@ void PythonNode::executeRemote()
   }
   DEBTRACE( "++++++++++++++ ENDOF PyNode::executeRemote: " << getName() << " ++++++++++++++++++++" );
 }
+void PythonNode::executeLocalInternal(const std::string& codeStr)
+{
+  DEBTRACE(  code );
+  DEBTRACE( "_context refcnt: " << _context->ob_refcnt );
+  std::ostringstream stream;
+  stream << "/tmp/PythonNode_";
+  stream << getpid();
+  AutoPyRef code=Py_CompileString(codeStr.c_str(), stream.str().c_str(), Py_file_input);
+  if(code == NULL)
+  {
+    _errorDetails=""; 
+    AutoPyRef new_stderr = newPyStdOut(_errorDetails);
+    PySys_SetObject((char*)"stderr", new_stderr);
+    PyErr_Print();
+    PySys_SetObject((char*)"stderr", PySys_GetObject((char*)"__stderr__"));
+    throw Exception("Error during execution");
+  }
+  {
+    AutoPyRef res = PyEval_EvalCode(  code, _context, _context);
+  }
+  DEBTRACE( "_context refcnt: " << _context->ob_refcnt );
+  fflush(stdout);
+  fflush(stderr);
+  if(PyErr_Occurred ())
+  {
+    _errorDetails="";
+    AutoPyRef new_stderr = newPyStdOut(_errorDetails);
+    PySys_SetObject((char*)"stderr", new_stderr);
+    ofstream errorfile(stream.str().c_str());
+    if (errorfile.is_open())
+      {
+        errorfile << codeStr;
+        errorfile.close();
+      }
+    PyErr_Print();
+    PySys_SetObject((char*)"stderr", PySys_GetObject((char*)"__stderr__"));
+    throw Exception("Error during execution");
+  }
+}
 
 void PythonNode::executeLocal()
 {
   DEBTRACE( "++++++++++++++ PyNode::executeLocal: " << getName() << " ++++++++++++++++++++" );
   {
     AutoGIL agil;
-
+    std::ostringstream unpxy; unpxy << "from SALOME_PyNode import UnProxyObjectSimple" << std::endl;
     DEBTRACE( "---------------PyNode::inputs---------------" );
     list<InputPort *>::iterator iter2;
     for(iter2 = _setOfInputPort.begin(); iter2 != _setOfInputPort.end(); iter2++)
@@ -689,6 +728,7 @@ void PythonNode::executeLocal()
         DEBTRACE( "port kind: " << p->edGetType()->kind() );
         PyObject* ob=p->getPyObj();
         DEBTRACE( "ob refcnt: " << ob->ob_refcnt );
+        unpxy << p->getName() << " = UnProxyObjectSimple( " << p->getName() << " )" << std::endl;
 #ifdef _DEVDEBUG_
         PyObject_Print(ob,stderr,Py_PRINT_RAW);
         cerr << endl;
@@ -701,47 +741,10 @@ void PythonNode::executeLocal()
 
     //calculation
     DEBTRACE( "----------------PyNode::calculation---------------" );
-    DEBTRACE(  _script );
-    DEBTRACE( "_context refcnt: " << _context->ob_refcnt );
 
-    std::ostringstream stream;
-    stream << "/tmp/PythonNode_";
-    stream << getpid();
+    executeLocalInternal( unpxy.str() );
 
-    PyObject* code=Py_CompileString(_script.c_str(), stream.str().c_str(), Py_file_input);
-    if(code == NULL)
-      {
-        _errorDetails=""; 
-        PyObject* new_stderr = newPyStdOut(_errorDetails);
-        PySys_SetObject((char*)"stderr", new_stderr);
-        PyErr_Print();
-        PySys_SetObject((char*)"stderr", PySys_GetObject((char*)"__stderr__"));
-        Py_DECREF(new_stderr);
-        throw Exception("Error during execution");
-      }
-    PyObject *res = PyEval_EvalCode(  code, _context, _context);
-
-    Py_DECREF(code);
-    Py_XDECREF(res);
-    DEBTRACE( "_context refcnt: " << _context->ob_refcnt );
-    fflush(stdout);
-    fflush(stderr);
-    if(PyErr_Occurred ())
-      {
-        _errorDetails="";
-        PyObject* new_stderr = newPyStdOut(_errorDetails);
-        PySys_SetObject((char*)"stderr", new_stderr);
-        ofstream errorfile(stream.str().c_str());
-        if (errorfile.is_open())
-          {
-            errorfile << _script;
-            errorfile.close();
-          }
-        PyErr_Print();
-        PySys_SetObject((char*)"stderr", PySys_GetObject((char*)"__stderr__"));
-        Py_DECREF(new_stderr);
-        throw Exception("Error during execution");
-      }
+    executeLocalInternal( _script );
 
     DEBTRACE( "-----------------PyNode::outputs-----------------" );
     list<OutputPort *>::iterator iter;

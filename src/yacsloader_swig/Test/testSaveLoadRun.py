@@ -1253,6 +1253,7 @@ for i in i8:
     pass
 
   def test15(self):
+    from SALOME_PyNode import UnProxyObjectSimple
     #fname=os.path.join(self.workdir, "BugInConcurrentLaunchDftCont.xml")
     p=self.r.createProc("pr")
     ti=p.createType("int","int")
@@ -1294,7 +1295,7 @@ for i in i8:
       ex = pilot.ExecutorSwig()
       self.assertEqual(p.getState(),pilot.READY)
       ex.RunW(p,0)
-      self.assertEqual(res.getPyObj(),6)
+      self.assertEqual(UnProxyObjectSimple( res.getPyObj() ),6)
       self.assertEqual(p.getState(),pilot.DONE)
     pass
 
@@ -1377,7 +1378,7 @@ for i in i8:
     fe0_end.setScript("""assert([elt[0] for elt in my_dpl_localization]==["FE0"])
 assert(my_dpl_localization[0][1]>=0 and my_dpl_localization[0][1]<4)""")
     n0=self.r.createScriptNode("Salome","n0") ; p.edAddChild(n0)
-    n0.setScript("o1=range(10)")
+    n0.setScript("o1=list(range(10))")
     a=n0.edAddOutputPort("o1",tdi)
     p.edAddLink(a,fe0.edGetSeqOfSamplesPort()) ; p.edAddCFLink(n0,fe0)
     # Level1
@@ -1385,7 +1386,7 @@ assert(my_dpl_localization[0][1]>=0 and my_dpl_localization[0][1]<4)""")
     n1=self.r.createScriptNode("Salome","n1") ; b0.edAddChild(n1)
     n1.setScript("""assert([elt[0] for elt in my_dpl_localization]==["FE0"])
 assert(my_dpl_localization[0][1]>=0 and my_dpl_localization[0][1]<4)
-o1=range(10)""")
+o1=list(range(10))""")
     b=n1.edAddOutputPort("o1",tdi)
     fe1=self.r.createForEachLoop("FE1",ti) ; b0.edAddChild(fe1)
     fe1.edGetNbOfBranchesPort().edInitInt(3)
@@ -1456,7 +1457,7 @@ assert(my_dpl_localization[0][1]>=0 and my_dpl_localization[0][1]<3)
     b0=self.r.createBloc("test26/main") ; p.edAddChild(b0)
     n0=self.r.createScriptNode("Salome","test26/n0") ; assignCont(n0,cont) # 1
     n0.setScript("""import os
-dd=range(10)""")
+dd=list( range(10) )""")
     dd=n0.edAddOutputPort("dd",sop) ; b0.edAddChild(n0)
     fe0=self.r.createForEachLoop("test26/FE0",po) ; b0.edAddChild(fe0)
     fe0.edGetNbOfBranchesPort().edInitInt(1) # very important for the test : 1 !

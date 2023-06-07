@@ -26,6 +26,7 @@ import loader
 import unittest
 import tempfile
 import os
+from SALOME_PyNode import UnProxyObjectSimple
 
 dir_test = tempfile.mkdtemp(suffix=".yacstest")
 
@@ -86,7 +87,7 @@ class TestEdit(unittest.TestCase):
       #executor.RunB(proc,0) # always use the "old" executor
       #executor.runWlm(proc,0) # always use the workload manager based executor
       reloaded_res_port = reloaded_proc.getChildByName("n2").getOutputPort("v")
-      self.assertEqual(reloaded_res_port.getPyObj(), 42)
+      self.assertEqual(UnProxyObjectSimple( reloaded_res_port.getPyObj() ), 42)
 
     def test2(self):
       """ Same as test1, but using the old executor instead of workload manager.
@@ -124,7 +125,7 @@ class TestEdit(unittest.TestCase):
       # you can also directly call the executor you wish, ignoring the property
       #executor.RunB(proc,0) # always use the "old" executor
       reloaded_res_port = reloaded_proc.getChildByName("n2").getOutputPort("v")
-      self.assertEqual(reloaded_res_port.getPyObj(), 42)
+      self.assertEqual(UnProxyObjectSimple( reloaded_res_port.getPyObj() ), 42)
 
 if __name__ == '__main__':
   file_test = os.path.join(dir_test,"UnitTestsResult")

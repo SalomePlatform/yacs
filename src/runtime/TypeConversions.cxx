@@ -680,12 +680,10 @@ namespace YACS
       static inline double convert(const TypeCode *t,PyObject* o,void*)
         {
           double x;
-          if (PyFloat_Check(o))
-            x=PyFloat_AS_DOUBLE(o);
-          else if(PyLong_Check(o))
-            x=PyLong_AsLong(o);
-          else
+          x=PyFloat_AsDouble(o);
+          if( PyErr_Occurred() )
             {
+              PyErr_Restore(nullptr,nullptr,nullptr);
               stringstream msg;
               msg << "Not a python double. ";
 #ifdef _DEVDEBUG_
@@ -703,10 +701,10 @@ namespace YACS
       static inline long convert(const TypeCode *t,PyObject* o,void*)
         {
           long l;
-          if(PyLong_Check(o))
-            l=PyLong_AsLong(o);
-          else
+          l=PyLong_AsLong(o);
+          if( PyErr_Occurred() )
             {
+              PyErr_Restore(nullptr,nullptr,nullptr);
               stringstream msg;
               msg << "Not a python integer. ";
 #ifdef _DEVDEBUG_

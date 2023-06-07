@@ -25,6 +25,7 @@
 #include "py2yacs.hxx"
 #include "Proc.hxx"
 #include "Executor.hxx"
+#include "PythonCppUtils.hxx"
 
 #include "RuntimeSALOME.hxx"
 #include "PythonPorts.hxx"
@@ -295,10 +296,15 @@ void Py2yacsTest::schemaExec()
   // verify the output port value
   YACS::ENGINE::OutputPyPort* var = dynamic_cast<YACS::ENGINE::OutputPyPort*>(n->getOutputPort("x"));
   CPPUNIT_ASSERT(var);
+  double x = -2.0;
   PyObject* pyVal = var->get();
-  CPPUNIT_ASSERT(pyVal);
-  CPPUNIT_ASSERT(PyFloat_Check(pyVal));
-  CPPUNIT_ASSERT_DOUBLES_EQUAL(42., PyFloat_AsDouble(pyVal), 1.E-12);
+  {
+    AutoGIL agil;
+    CPPUNIT_ASSERT(pyVal);
+    x = PyFloat_AsDouble(pyVal);
+    CPPUNIT_ASSERT( PyErr_Occurred()==nullptr );// check pyVal is interpretable as float
+  }
+  CPPUNIT_ASSERT_DOUBLES_EQUAL(42., x, 1.E-12);
   p->shutdown(10); // kill all the containers
 }
 

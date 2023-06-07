@@ -41,7 +41,7 @@ def doublefr(v):
 def post(t):
   s = 0
   for e in t:
-    s += e
+    s += int( e )
   return s
 
 @yacsdecorator.block

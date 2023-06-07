@@ -107,6 +107,8 @@ namespace YACS
       void setSqueezeStatus(bool sqStatus) { _autoSqueeze=sqStatus; }
       bool getSqueezeStatus() const { return _autoSqueeze; }
       void squeezeMemorySafe();
+    private:
+      void executeLocalInternal(const std::string& codeStr);
     protected:
       void squeezeMemory();
       void squeezeMemoryRemote();
