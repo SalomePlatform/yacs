@@ -539,8 +539,6 @@ void PythonNode::executeRemote()
       //serializationInput and serializationInputCorba are no more needed for server. Release it.
       serializationInput.set(nullptr);
       resultCorba.reset( _pynode->executeSecond(myseq) );
-      if( ! this->isUsingPythonCache() )
-        _pynode->removeAllVarsInContext();
     }
   catch( const SALOME::SALOME_Exception& ex )
     {
