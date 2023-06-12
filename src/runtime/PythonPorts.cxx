@@ -32,7 +32,7 @@
 using namespace YACS::ENGINE;
 using namespace std;
 
-void releasePyObj(PyObject* data)
+static void RegisterReleasePyObj(PyObject* data, const char *method1)
 {
   if(!data)
     return ;
@@ -44,7 +44,7 @@ void releasePyObj(PyObject* data)
         {
           if(PyLong_AS_LONG(result))
             {
-              PyObject* o=PyObject_CallMethod(data, (char*)"Destroy", (char*)"");
+              PyObject* o=PyObject_CallMethod(data, (char*)method1, (char*)"");
               if(o)
                 Py_XDECREF( o);
               else
@@ -71,40 +71,14 @@ void releasePyObj(PyObject* data)
     }
 }
 
+void releasePyObj(PyObject* data)
+{
+  RegisterReleasePyObj(data,"Destroy");
+}
+
 void registerPyObj(PyObject* data)
 {
-  if (PyObject_HasAttrString(data, (char*)"_is_a"))
-    {
-      PyObject *result = PyObject_CallMethod(data, (char*)"_is_a", (char*)"s",(char*)"IDL:SALOME/GenericObj:1.0");
-      if(result && PyLong_Check(result))
-        {
-          if(PyLong_AS_LONG(result))
-            {
-              PyObject* o= PyObject_CallMethod(data, (char*)"Register", (char*)"") ;
-              if(o)
-                Py_XDECREF( o);
-              else
-                {
-#ifdef _DEVDEBUG_
-                  PyErr_Print();
-#else
-                  PyErr_Clear();
-#endif
-                  throw ConversionException("Corba object does not exist: you have perhaps forgotten to call Register on a GenericObj");      
-                }
-            }
-          Py_XDECREF(result); 
-        }
-      if(!result)
-        {
-#ifdef _DEVDEBUG_
-          PyErr_Print();
-#else
-          PyErr_Clear();
-#endif
-          throw ConversionException("Corba object does not exist: you have perhaps forgotten to call Register on a GenericObj");      
-        }
-    }
+  RegisterReleasePyObj(data,"Register");
 }
 
 InputPyPort::InputPyPort(const std::string& name, Node *node, TypeCode * type)

@@ -791,7 +791,10 @@ namespace YACS
               PyObject* mod=PyImport_ImportModule("pickle");
               PyObject *pickled=PyObject_CallMethod(mod,(char *)"dumps",(char *)"Oi",o,protocol);
               if( somthingToDo )
+              {
                 YACS::ENGINE::PythonEntry::UnlinkOnDestructorIfProxy(o);
+                YACS::ENGINE::PythonEntry::IfProxyDoSomething(o,"incrRef");
+              }
               DEBTRACE(PyObject_Repr(pickled) );
               Py_DECREF(mod);
               if(pickled==NULL)
@@ -863,6 +866,12 @@ namespace YACS
           for(int i=0;i<length;i++)
             {
               PyObject *item=PySequence_ITEM(o,i);
+              bool somthingToDo = YACS::ENGINE::PythonEntry::IsProxy(item);
+              if( somthingToDo )
+              {
+                YACS::ENGINE::PythonEntry::UnlinkOnDestructorIfProxy(item);
+                YACS::ENGINE::PythonEntry::IfProxyDoSomething(item,"incrRef");
+              }
 #ifdef _DEVDEBUG_
               std::cerr <<"item[" << i << "]=";
               PyObject_Print(item,stderr,Py_PRINT_RAW);
@@ -988,6 +997,12 @@ namespace YACS
               PyObject *ob=PyObject_CallMethod(mod,(char *)"loads",(char *)"y#",o.c_str(),o.length());
               DEBTRACE(PyObject_Repr(ob));
               Py_DECREF(mod);
+              bool somthingToDo = YACS::ENGINE::PythonEntry::IsProxy(ob);
+              if( somthingToDo )
+              {
+                // no incrRef here because the incrRef has been done before dumps that construct o.
+                YACS::ENGINE::PythonEntry::UnlinkOnDestructorIfProxy(ob);
+              }
               if(ob==NULL)
                 {
                   PyErr_Print();

@@ -328,6 +328,13 @@ bool PythonEntry::hasImposedResource()const
   return !_imposedResource.empty() && !_imposedContainer.empty();
 }
 
+bool PythonEntry::IsProxy( PyObject *ob )
+{
+  if(!_pyClsBigObject)
+    return false;
+  return PyObject_IsInstance( ob, _pyClsBigObject) == 1;
+}
+
 bool PythonEntry::GetDestroyStatus( PyObject *ob )
 {
   if(!_pyClsBigObject)
@@ -718,7 +725,7 @@ void PythonNode::executeLocal()
   DEBTRACE( "++++++++++++++ PyNode::executeLocal: " << getName() << " ++++++++++++++++++++" );
   {
     AutoGIL agil;
-    std::ostringstream unpxy; unpxy << "from SALOME_PyNode import UnProxyObjectSimple" << std::endl;
+    std::ostringstream unpxy; unpxy << "from SALOME_PyNode import UnProxyObjectSimpleLocal" << std::endl;
     DEBTRACE( "---------------PyNode::inputs---------------" );
     list<InputPort *>::iterator iter2;
     for(iter2 = _setOfInputPort.begin(); iter2 != _setOfInputPort.end(); iter2++)
@@ -727,8 +734,8 @@ void PythonNode::executeLocal()
         DEBTRACE( "port name: " << p->getName() );
         DEBTRACE( "port kind: " << p->edGetType()->kind() );
         PyObject* ob=p->getPyObj();
-        DEBTRACE( "ob refcnt: " << ob->ob_refcnt );
-        unpxy << p->getName() << " = UnProxyObjectSimple( " << p->getName() << " )" << std::endl;
+        DEBTRACE( "ob refcnt: " << ob->ob_refcnt ); 
+        unpxy << p->getName() << " = UnProxyObjectSimpleLocal( " << p->getName() << " )" << std::endl;
 #ifdef _DEVDEBUG_
         PyObject_Print(ob,stderr,Py_PRINT_RAW);
         cerr << endl;
