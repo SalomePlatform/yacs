@@ -30,6 +30,7 @@
 #include "Dispatcher.hxx"
 #include "LinkInfo.hxx"
 #include "ObserverAsPlugin.hxx"
+#include "PythonNode.hxx"
 
 #include "KernelBasis.hxx"
 #include "SALOME_Launcher.hxx"
@@ -78,24 +79,26 @@ static struct argp_option options[] =
     {"reset",           'r', "level", 0,                   "Reset the schema before execution: 0=nothing, 1=reset error nodes to ready state (default 0)"},
     {"kill-port",       'k', "port",  0,                   "Kill Salome application running on the specified port if the driver process is killed (with SIGINT or SIGTERM)"},
     {"init_port",       'i', "value", OPTION_ARG_OPTIONAL, "Initialisation value of a port, specified as bloc.node.port=value."},
-    { 0 }
+    {"donotsqueeze",    'z', "value", 0,                   "Desactivate squeeze memory optimization."},
+    { nullptr }
   };
 #endif
 
 struct arguments
 {
   char *args[1];
-  int display;
-  int verbose;
-  int stop;
-  char *dumpErrorFile;
-  char *finalDump;
-  int dump;
-  char *xmlSchema;
-  char *loadState;
-  int shutdown;
-  int reset;
-  int killPort;
+  int display = 0;
+  int verbose = 0;
+  int stop = 0;
+  std::string dumpErrorFile;
+  std::string finalDump;
+  int dump = 0;
+  std::string xmlSchema;
+  std::string loadState;
+  int shutdown = 10;
+  int reset = 0;
+  int killPort = 0;
+  bool squeezeMemory = true;
   std::list<std::string> init_ports;
 };
 
@@ -140,13 +143,13 @@ parse_opt (int key, char *arg, struct argp_state *state)
       if (arg)
         myArgs->dumpErrorFile = arg;
       else
-        myArgs->dumpErrorFile = (char *)"dumpErrorState.xml";
+        myArgs->dumpErrorFile = "dumpErrorState.xml";
       break;
     case 'f':
       if (arg)
         myArgs->finalDump = arg;
       else
-        myArgs->finalDump = (char *)"finalDumpState.xml";
+        myArgs->finalDump = "finalDumpState.xml";
       break;      
     case 'g':
       if (arg)
@@ -161,7 +164,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
       if (arg)
         myArgs->xmlSchema = arg;
       else
-        myArgs->xmlSchema = (char *)"saveSchema.xml";
+        myArgs->xmlSchema = "saveSchema.xml";
       break;      
     case 'k':
       myArgs->killPort = atoi(arg);
@@ -170,7 +173,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
       if (arg)
         myArgs->init_ports.push_back(std::string(arg));
       break;
-
+    case 'z':
+      myArgs->squeezeMemory = ! ( bool( atoi(arg) ) );
+      break;
     case ARGP_KEY_ARG:
       if (state->arg_num >=1) // Too many arguments.
         argp_usage (state);
@@ -217,7 +222,7 @@ void Handler(int theSigId)
     {
       p->cleanNodes();
       //if requested save state
-      bool isFinalDump = (strlen(myArgs.finalDump) != 0);
+      bool isFinalDump = !myArgs.finalDump.empty();
       if (isFinalDump)
         {
           YACS::ENGINE::VisitorSalomeSaveState vst(p);
@@ -332,21 +337,6 @@ void shutdownServers()
 
 int main (int argc, char* argv[])
 {
-     
-  // Default values.
-  myArgs.display = 0;
-  myArgs.verbose = 0;
-  myArgs.stop = 0;
-  myArgs.dumpErrorFile= (char *)"";
-  myArgs.finalDump = (char *)"";
-  myArgs.dump = 0;
-  myArgs.loadState = (char *)"";
-  myArgs.xmlSchema = (char *)"";
-  myArgs.shutdown = 10;
-  myArgs.reset = 0;
-  myArgs.killPort = 0;
-  myArgs.init_ports.clear();
-
   // Parse our arguments; every option seen by parse_opt will be reflected in arguments.
 #if defined WIN32 || defined __APPLE__
 #else
@@ -418,6 +408,18 @@ int main (int argc, char* argv[])
           std::cerr << "The imported file is probably not a YACS schema file" << std::endl;
           return 1;
         }
+      if(myArgs.squeezeMemory)
+      {
+        std::list<Node *> allNodes = p->getAllRecursiveNodes();
+        for(auto node : allNodes)
+        {
+          PythonNode *nodePy = dynamic_cast<PythonNode *>(node);
+          if( nodePy )
+          {
+            nodePy->setSqueezeStatus( true );
+          }
+        }
+      }
       // Initialize the ports
       for(std::list<std::string>::iterator it=myArgs.init_ports.begin(); it != myArgs.init_ports.end(); it++)
       {
@@ -501,7 +503,7 @@ int main (int argc, char* argv[])
       timer("Elapsed time after check consistency: ");
 
       //execution
-      bool isXmlSchema = (strlen(myArgs.xmlSchema) != 0);
+      bool isXmlSchema = !myArgs.xmlSchema.empty() ;
       if (isXmlSchema)
       {
         YACS::ENGINE::VisitorSaveSalomeSchema vss(p);
@@ -510,7 +512,7 @@ int main (int argc, char* argv[])
         vss.closeFileSchema();
       }
 
-      bool fromScratch = (strlen(myArgs.loadState) == 0);
+      bool fromScratch = myArgs.loadState.empty() ;
       if (!fromScratch)
         {
           p->init();
@@ -527,7 +529,7 @@ int main (int argc, char* argv[])
 
       if (myArgs.stop)
       {
-        if (strlen(myArgs.dumpErrorFile) >0)
+        if ( !myArgs.dumpErrorFile.empty() )
           executor.setStopOnError(true, myArgs.dumpErrorFile);
         else
           executor.setStopOnError(false, myArgs.dumpErrorFile);
@@ -582,7 +584,7 @@ int main (int argc, char* argv[])
           pthread_join(th,NULL);
         }
 
-      bool isFinalDump = (strlen(myArgs.finalDump) != 0);
+      bool isFinalDump = !myArgs.finalDump.empty() ;
       if (isFinalDump)
         {
           YACS::ENGINE::VisitorSalomeSaveState vst(p);
