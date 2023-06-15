@@ -19,9 +19,10 @@
 
 IF(NOT WIN32)
   SET(TEST_NAME ${COMPONENT_NAME}_YacsLoaderTest_swig)
-  ADD_TEST(${TEST_NAME} ${SALOME_TEST_DRIVER} ${TIMEOUT} ./runUnitTest.sh)
+  ADD_TEST(${TEST_NAME} testYacsLoaderSwig.py)
   SET_TESTS_PROPERTIES(${TEST_NAME} PROPERTIES
-                                     LABELS "${COMPONENT_NAME}"
+                                    LABELS "${COMPONENT_NAME}"
+                                    ENVIRONMENT "SALOME_EMB_SERVANT=1"
                       )
 
   SET(TEST_NAME ${COMPONENT_NAME}_StdAloneYacsLoaderTest1)

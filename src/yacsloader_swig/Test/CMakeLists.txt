@@ -41,6 +41,7 @@ IF(NOT WIN32)
     testResume.py
     testSave.py
     testSaveLoadRun.py
+    testYacsLoaderSwig.py
     optim_plugin.py
     testValidationChecks.py
     testProgress.py
@@ -50,8 +51,6 @@ IF(NOT WIN32)
     testFixes.py
    )
   INSTALL(PROGRAMS ${LOCAL_TEST_FILES}
-        DESTINATION ${LOCAL_TEST_DIR})
-  INSTALL(PROGRAMS runUnitTest.sh
         DESTINATION ${LOCAL_TEST_DIR})
   INSTALL(FILES CTestTestfileInstall.cmake
         DESTINATION ${LOCAL_TEST_DIR}

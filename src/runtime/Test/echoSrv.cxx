@@ -27,7 +27,10 @@ using namespace std;
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
 
-static CORBA::Boolean bindObjectToName(CORBA::ORB_ptr, CORBA::Object_ptr,const char*);
+#include <SALOMEconfig.h>
+#include CORBA_CLIENT_HEADER(SALOME_Embedded_NamingService)
+
+static CORBA::Boolean bindObjectToName(Engines::EmbeddedNamingService_ptr ns, CORBA::Object_ptr,const char*);
 
 static ostream& operator<<(ostream& os, const CORBA::Exception& e)
 {
@@ -325,6 +328,15 @@ int main(int argc, char** argv)
   try {
     orb = CORBA::ORB_init(argc, argv);
 
+    std::string theIOR( argv[1] );
+    
+    CORBA::Object_var obj = orb->string_to_object(theIOR.c_str());
+    Engines::EmbeddedNamingService_var ns = Engines::EmbeddedNamingService::_narrow( obj );
+    if( CORBA::is_nil( ns ) )
+      return 1;
+    //std::cout << getpid() << std::endl;
+    //usleep(20000000);
+
     {
       CORBA::Object_var obj = orb->resolve_initial_references("RootPOA");
       PortableServer::POA_var root_poa = PortableServer::POA::_narrow(obj);
@@ -339,7 +351,7 @@ int main(int argc, char** argv)
       v <<= omniPolicy::LOCAL_CALLS_SHORTCUT;
       pl2[0] = orb->create_policy(omniPolicy::LOCAL_SHORTCUT_POLICY_TYPE, v);
       pl2[1] = root_poa->create_implicit_activation_policy(PortableServer::IMPLICIT_ACTIVATION);
-      PortableServer::POA_ptr shortcut_poa = root_poa->create_POA("shortcut", poa_man, pl2);
+      PortableServer::POA_var shortcut_poa = root_poa->create_POA("shortcut", poa_man, pl2);
 
       // Create and activate servant
       Echo_i* myecho = new Echo_i();
@@ -350,7 +362,7 @@ int main(int argc, char** argv)
       DEBTRACE("'" << (char*)sior << "'");
       myechoref = eo::Echo::_narrow(obj);
 
-      if( !bindObjectToName(orb, myechoref,"Echo") ) return 1;
+      if( !bindObjectToName(ns, myechoref,"Echo") ) return 1;
 
       // Decrement the reference count of the object implementation, so
       // that it will be properly cleaned up when the POA has determined
@@ -362,21 +374,21 @@ int main(int argc, char** argv)
       obj=myC->_this();
       eo::C_var myCref=eo::C::_narrow(obj);
       myC->_remove_ref();
-      if( !bindObjectToName(orb, myCref,"C") ) return 1;
+      if( !bindObjectToName(ns, myCref,"C") ) return 1;
 
       //create object D and register it in naming service
       D_i* myD = new D_i();
       obj=myD->_this();
       eo::D_var myDref=eo::D::_narrow(obj);
       myD->_remove_ref();
-      if( !bindObjectToName(orb, myDref,"D") ) return 1;
+      if( !bindObjectToName(ns, myDref,"D") ) return 1;
 
       //create object Obj and register it in naming service
       Obj_i* myObj = new Obj_i();
       obj=myObj->_this();
       eo::Obj_var myObjref=eo::Obj::_narrow(obj);
       myObj->_remove_ref();
-      if( !bindObjectToName(orb, myObjref,"Obj") ) return 1;
+      if( !bindObjectToName(ns, myObjref,"Obj") ) return 1;
     }
     orb->run();
   }
@@ -403,90 +415,16 @@ int main(int argc, char** argv)
 //////////////////////////////////////////////////////////////////////
 
 static CORBA::Boolean
-bindObjectToName(CORBA::ORB_ptr orb, CORBA::Object_ptr objref,const char *name)
+bindObjectToName(Engines::EmbeddedNamingService_ptr ns, CORBA::Object_ptr objref,const char *name)
 {
-  CosNaming::NamingContext_var rootContext;
-
-  try {
-    // Obtain a reference to the root context of the Name service:
-    CORBA::Object_var obj;
-    obj = orb->resolve_initial_references("NameService");
-
-    // Narrow the reference returned.
-    rootContext = CosNaming::NamingContext::_narrow(obj);
-    if( CORBA::is_nil(rootContext) ) {
-      DEBTRACE("Failed to narrow the root naming context.");
-      return 0;
-    }
-  }
-  catch(CORBA::ORB::InvalidName& ex) {
-    // This should not happen!
-    DEBTRACE("Service required is invalid [does not exist]." );
-    return 0;
-  }
-
-  try {
-    // Bind a context called "test" to the root context:
-
-    CosNaming::Name contextName;
-    contextName.length(1);
-    contextName[0].id   = (const char*) "test";       // string copied
-    contextName[0].kind = (const char*) "my_context"; // string copied
-    // Note on kind: The kind field is used to indicate the type
-    // of the object. This is to avoid conventions such as that used
-    // by files (name.type -- e.g. test.ps = postscript etc.)
-
-    CosNaming::NamingContext_var testContext;
-    try {
-      // Bind the context to root.
-      testContext = rootContext->bind_new_context(contextName);
-    }
-    catch(CosNaming::NamingContext::AlreadyBound& ex) {
-      // If the context already exists, this exception will be raised.
-      // In this case, just resolve the name and assign testContext
-      // to the object returned:
-      CORBA::Object_var obj;
-      obj = rootContext->resolve(contextName);
-      testContext = CosNaming::NamingContext::_narrow(obj);
-      if( CORBA::is_nil(testContext) ) {
-        DEBTRACE("Failed to narrow naming context.");
-        return 0;
-      }
-    }
-
-    // Bind objref with name Echo to the testContext:
-    CosNaming::Name objectName;
-    objectName.length(1);
-    objectName[0].id   = name;   // string copied
-    objectName[0].kind = (const char*) "Object"; // string copied
-
-    try {
-      testContext->bind(objectName, objref);
-    }
-    catch(CosNaming::NamingContext::AlreadyBound& ex) {
-      testContext->rebind(objectName, objref);
-    }
-    // Note: Using rebind() will overwrite any Object previously bound
-    //       to /test/Echo with obj.
-    //       Alternatively, bind() can be used, which will raise a
-    //       CosNaming::NamingContext::AlreadyBound exception if the name
-    //       supplied is already bound to an object.
-
-    // Amendment: When using OrbixNames, it is necessary to first try bind
-    // and then rebind, as rebind on it's own will throw a NotFoundexception if
-    // the Name has not already been bound. [This is incorrect behaviour -
-    // it should just bind].
-  }
-  catch(CORBA::COMM_FAILURE& ex) {
-    DEBTRACE("Caught system exception COMM_FAILURE -- unable to contact the "
-             << "naming service.");
-    return 0;
-  }
-  catch(CORBA::SystemException&) {
-    DEBTRACE("Caught a CORBA::SystemException while using the naming service.");
-    return 0;
-  }
-
+  CORBA::String_var iorNSUg = orb->object_to_string(objref);
+  std::string iorNS(iorNSUg);
+  Engines::IORType iorInput;
+  auto len = iorNS.length();
+  iorInput.length( len );
+  for(auto i = 0 ; i < len ; ++i)
+    iorInput[i] = iorNS[i];
+  ns->Register(iorInput,name);
   return 1;
 }
 

@@ -108,6 +108,7 @@ namespace YACS
       void setSqueezeStatus(bool sqStatus) { _autoSqueeze=sqStatus; }
       bool getSqueezeStatus() const { return _autoSqueeze; }
       void squeezeMemorySafe();
+      static void ExecuteLocalInternal(const std::string& codeStr, PyObject *context, std::string& errorDetails);
     private:
       void executeLocalInternal(const std::string& codeStr);
     protected:

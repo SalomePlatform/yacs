@@ -19,8 +19,6 @@
 #
 
 # script used by "salome test" command
-./echoSrv &
-pidecho=$!
 
 BASEDIR=`pwd`
 TESTDIR=$(mktemp -d --suffix=.yacstest)
@@ -34,12 +32,11 @@ LIBDIR=$BASEDIR/../lib
 cp xmlrun.sh $TESTDIR
 cp *.py $TESTDIR
 ln -s $BASEDIR/samples $TESTDIR/samples
+cp $BASEDIR/echoSrv $TESTDIR
 cd $TESTDIR
 LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LIBDIR $BASEDIR/TestYacsLoader
 ret=$?
 cd $BASEDIR
 echo "exec status TestYacsLoader " $ret
-
-kill -9 $pidecho
 
 exit $ret

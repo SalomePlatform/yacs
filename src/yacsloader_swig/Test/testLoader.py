@@ -84,12 +84,22 @@ class TestLoader(unittest.TestCase):
     pass
 
 if __name__ == '__main__':
+  import salome
+  import NamingService
+  import os
+  import subprocess
+  salome.salome_init()
+  ior = NamingService.NamingService.IOROfNS()
+  p = subprocess.Popen(["../yacsloader/echoSrv",ior])
+  import time
+  time.sleep(3)
   import tempfile
   import os
-  dir_test = tempfile.mkdtemp(suffix=".yacstest")
-  file_test = os.path.join(dir_test,"UnitTestsResult")
-  with open(file_test, 'a') as f:
-      f.write("  --- TEST src/yacsloader: testLoader.py\n")
-      suite = unittest.makeSuite(TestLoader)
-      result=unittest.TextTestRunner(f, descriptions=1, verbosity=1).run(suite)
+  with tempfile.TemporaryDirectory(suffix=".yacstest") as dir_test:
+    file_test = os.path.join(dir_test,"UnitTestsResult")
+    with open(file_test, 'a') as f:
+        f.write("  --- TEST src/yacsloader: testLoader.py\n")
+        suite = unittest.makeSuite(TestLoader)
+        result=unittest.TextTestRunner(f, descriptions=1, verbosity=1).run(suite)
+  p.terminate()
   sys.exit(not result.wasSuccessful())

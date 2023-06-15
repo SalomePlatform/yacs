@@ -101,12 +101,10 @@ bool CORBAComponent::isLoaded(Task *askingNode) const
 void CORBAComponent::load(Task *askingNode)
 {
   DEBTRACE( "CORBAComponent::load" );
-  CORBA::ORB_ptr orb;
   try
     {
       DEBTRACE( "+++++++++++++++++" << getCompoName() << " +++++++++++++++++" );
-      orb = getSALOMERuntime()->getOrb();
-      _objComponent= orb->string_to_object(getCompoName().c_str());
+      _objComponent= getSALOMERuntime()->getFromNS(getCompoName().c_str());
 #ifdef REFCNT
       std::cerr << "CORBAComponent::load:refCount: " <<_objComponent->_PR_getobj()->pd_refCount << std::endl;
 #endif

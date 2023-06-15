@@ -20,6 +20,8 @@
 #define UNIT_TEST_HEADER " --- TEST src/runtime"
 
 #include "runtimeTest.hxx"
+#include "PythonCppUtils.hxx"
+#include "SALOME_Embedded_NamingService.hxx"
 
 using namespace YACS;
 using namespace std;
@@ -29,5 +31,26 @@ using namespace std;
 CPPUNIT_TEST_SUITE_REGISTRATION( RuntimeTest );
 
 // --- generic Main program from bases/Test
+#include "BasicMainTestInternal.hxx"
+#include "RuntimeSALOME.hxx"
 
-#include "BasicMainTest.hxx"
+int main()
+{
+  YACS::ENGINE::RuntimeSALOME::setRuntime();
+  YACS::ENGINE::RuntimeSALOME *rt = YACS::ENGINE::getSALOMERuntime();
+  if( !rt )
+    return 1;
+  Engines::EmbeddedNamingService_var ns = GetEmbeddedNamingService();
+  CORBA::ORB_ptr orb = rt->getOrb();
+  CORBA::String_var ior = orb->object_to_string( ns );
+  AutoPyRef proc = rt->launchSubProcess({"./runtimeTestEchoSrv",std::string(ior)});
+  usleep(3000000);
+  int ret = BasicMainTestInternal();
+  //
+  {
+    AutoGIL agil;
+    AutoPyRef terminateStr = PyUnicode_FromString("terminate");
+    AutoPyRef dummy = PyObject_CallMethodObjArgs(proc,terminateStr,nullptr);
+  }
+  return ret;
+}

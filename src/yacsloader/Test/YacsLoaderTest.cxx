@@ -70,6 +70,7 @@ int driverTest(Proc* &p, const char* schema)
       DEBTRACE("+++++++++++++++++++   END execution " << schema);
       std::ofstream g("titi");
       p->writeDot(g);
+      p->shutdown(10);
       g.close();
       DEBTRACE("+++++++++++++++++++ END test " << schema);
       return 0;
@@ -204,6 +205,7 @@ void YacsLoaderTest::cschema()
               CPPUNIT_ASSERT_EQUAL(string("Hello Hello coucou!!"), string(text) );
             }
         }
+      p->shutdown(10);
       delete p;
     }
 #endif
@@ -237,6 +239,7 @@ void YacsLoaderTest::dschema()
               CPPUNIT_ASSERT_EQUAL( string("Hello Hello coucou!!"), string(text));
             }
         }
+      p->shutdown(10);
       delete p;
     }
 #endif
@@ -667,6 +670,7 @@ void YacsLoaderTest::foreachs()
   CPPUNIT_ASSERT_MESSAGE("Schema: foreach2.xml", p->getEffectiveState() == YACS::DONE );
   delete p;
   ret = driverTest(p, "samples/foreach3.xml");
+  p->shutdown(10);
   CPPUNIT_ASSERT_MESSAGE("Schema: foreach3.xml", ret == 1);
   delete p;
   ret = driverTest(p, "samples/foreach4.xml");
@@ -684,6 +688,7 @@ void YacsLoaderTest::foreachs()
   ret = driverTest(p, "samples/foreach8.xml");
   CPPUNIT_ASSERT_MESSAGE("Schema: foreach8.xml", ret == 0);
   CPPUNIT_ASSERT_MESSAGE("Schema: foreach8.xml", p->getEffectiveState() == YACS::DONE );
+  p->shutdown(10);
   delete p;
   ret = driverTest(p, "samples/foreach_init2fin.xml");
   CPPUNIT_ASSERT_MESSAGE("Schema: foreach_init2fin.xml", ret == 0);

@@ -1665,7 +1665,7 @@ void RuntimeTest::classTeardown()
   _tc_seqlong->decrRef();
   _tc_string->decrRef();
 
-  _myRuntime->fini();
+  //_myRuntime->fini();
   delete _myRuntime;
 }
 

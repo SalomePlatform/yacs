@@ -19,7 +19,7 @@
 
 IF(NOT WIN32)
   SET(TEST_NAME ${COMPONENT_NAME}_YacsLoaderTest)
-  ADD_TEST(${TEST_NAME} ${SALOME_TEST_DRIVER} ${TIMEOUT} ./runYacsLoaderTest.sh)
+  ADD_TEST(${TEST_NAME} ${PYTHON_TEST_DRIVER} ${TIMEOUT} ./runYacsLoaderTest.sh)
   SET_TESTS_PROPERTIES(${TEST_NAME} PROPERTIES
                                     LABELS "${COMPONENT_NAME}"
                                     ENVIRONMENT "LD_LIBRARY_PATH=${YACS_TEST_LIB}:$ENV{LD_LIBRARY_PATH}")

@@ -116,6 +116,7 @@
 #include "SALOME_ResourcesManager.hxx"
 #include "SALOME_ContainerManager.hxx"
 #include "SALOMEconfig.h"
+#include "SALOME_Embedded_NamingService.hxx"
 #include CORBA_CLIENT_HEADER(SALOME_ContainerManager)
 
 #endif
@@ -124,7 +125,9 @@
 #include <omniORB4/CORBA.h>
 #include <iostream>
 #include <sstream>
+#include <string>
 #include <cassert>
+#include <memory>
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -462,6 +465,38 @@ void RuntimeSALOME::fini()
           _orb->destroy();
         }
     }
+}
+
+PyObject *RuntimeSALOME::launchSubProcess(const std::vector<std::string>& cmds)
+{
+  std::ostringstream oss; oss << "from subprocess import Popen" << std::endl;
+  oss << "p = Popen([";
+  for(auto i = 0 ; i < cmds.size() ; ++i)
+  {
+    oss << " " << "\"" << cmds[i] << "\"";
+    if(i < cmds.size()-1)
+      oss << ", ";
+    else
+      oss << " ";
+  }
+  oss << "])";
+  AutoGIL agil;
+  AutoPyRef context = PyDict_New();
+  PyDict_SetItemString( context, "__builtins__", getBuiltins() );
+  std::string errorDetails;
+  try
+  {
+    PythonNode::ExecuteLocalInternal(oss.str().c_str(),context,errorDetails);
+  }
+  catch(const YACS::Exception& e)
+  {
+    std::cerr << e.what() << std::endl << errorDetails << std::endl;
+    throw e;
+  }
+  PyObject *ret = PyDict_GetItemString(context,"p");
+  Py_XINCREF(ret);
+  Py_XINCREF(ret);
+  return ret;
 }
 
 std::vector< std::pair<std::string,int> > RuntimeSALOME::getCatalogOfComputeNodes() const
@@ -1873,6 +1908,36 @@ InputPort* RuntimeSALOME::adapt(InputCppPort* source,
 CORBA::ORB_ptr RuntimeSALOME::getOrb() const
 {
   return _orb;
+}
+
+/*!
+ * Retrieve from custom NS the entry. Custom NS is supposed to be hosted in current process.
+ * This method try to emulate CORBA ns convention : "corbaname:rir:#test.my_context/Echo.Object" is converted into "Echo"
+ * 
+ * See Engines::EmbeddedNamingService
+ */
+CORBA::Object_var RuntimeSALOME::getFromNS(const char *entry) const
+{
+  CORBA::Object_var ret;
+  std::string entryCpp(entry);
+  if(entryCpp.substr(0,4) == "IOR:")
+  {
+    ret = _orb->string_to_object( entry );
+  }
+  else
+  {
+    auto pos = entryCpp.find_last_of('/');
+    std::string entry1( entryCpp.substr(pos+1,std::string::npos) );
+    pos = entry1.find_last_of('.');
+    std::string entry2( entry1.substr(0,pos) );
+    Engines::EmbeddedNamingService_var ns = GetEmbeddedNamingService();
+    std::unique_ptr<Engines::IORType> iorRet( ns->Resolve( entry2.c_str() ) );
+    auto len = iorRet->length();
+    std::unique_ptr<char[]> iorTrans(new char[len+1]); iorTrans[len] = '\0';
+    for(auto i = 0 ; i < len ; ++i) iorTrans[i] = (*iorRet)[i];
+    ret = _orb->string_to_object(iorTrans.get());
+  }
+  return ret;
 }
 
 PyObject * RuntimeSALOME::getPyOrb() const

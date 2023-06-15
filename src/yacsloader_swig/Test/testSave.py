@@ -56,6 +56,7 @@ class TestSave(unittest.TestCase):
         l = loader.YACSLoader()
         e = pilot.ExecutorSwig()
         for schema in schemaList:
+            print(schema)
             fileOrig = "samples/" + schema + ".xml"
             saveSchema1 = os.path.join(self.workdir, "schema1_" + schema)
             dumpSchema1 = os.path.join(self.workdir, "dump1_" + schema)
@@ -99,10 +100,20 @@ class TestSave(unittest.TestCase):
             pass
 
 if __name__ == '__main__':
-  dir_test = tempfile.mkdtemp(suffix=".yacstest")
-  file_test = os.path.join(dir_test,"UnitTestsResult")
-  with open(file_test, 'a') as f:
+  import salome
+  import NamingService
+  import os
+  import subprocess
+  salome.salome_init()
+  ior = NamingService.NamingService.IOROfNS()
+  p = subprocess.Popen(["../yacsloader/echoSrv",ior])
+  import time
+  time.sleep(3)
+  with tempfile.TemporaryDirectory(suffix=".yacstest") as dir_test:
+    file_test = os.path.join(dir_test,"UnitTestsResult")
+    with open(file_test, 'a') as f:
       f.write("  --- TEST src/yacsloader: testSave.py\n")
       suite = unittest.makeSuite(TestSave)
       result=unittest.TextTestRunner(f, descriptions=1, verbosity=1).run(suite)
+  p.terminate()
   sys.exit(not result.wasSuccessful())

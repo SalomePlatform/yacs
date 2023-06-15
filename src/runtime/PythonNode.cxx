@@ -678,33 +678,34 @@ void PythonNode::executeRemote()
   }
   DEBTRACE( "++++++++++++++ ENDOF PyNode::executeRemote: " << getName() << " ++++++++++++++++++++" );
 }
-void PythonNode::executeLocalInternal(const std::string& codeStr)
+
+void PythonNode::ExecuteLocalInternal(const std::string& codeStr, PyObject *context, std::string& errorDetails)
 {
   DEBTRACE(  code );
-  DEBTRACE( "_context refcnt: " << _context->ob_refcnt );
+  DEBTRACE( "context refcnt: " << context->ob_refcnt );
   std::ostringstream stream;
   stream << "/tmp/PythonNode_";
   stream << getpid();
   AutoPyRef code=Py_CompileString(codeStr.c_str(), stream.str().c_str(), Py_file_input);
   if(code == NULL)
   {
-    _errorDetails=""; 
-    AutoPyRef new_stderr = newPyStdOut(_errorDetails);
+    errorDetails=""; 
+    AutoPyRef new_stderr = newPyStdOut(errorDetails);
     PySys_SetObject((char*)"stderr", new_stderr);
     PyErr_Print();
     PySys_SetObject((char*)"stderr", PySys_GetObject((char*)"__stderr__"));
-    throw Exception("Error during execution");
+    throw YACS::Exception("Error during execution");
   }
   {
-    AutoPyRef res = PyEval_EvalCode(  code, _context, _context);
+    AutoPyRef res = PyEval_EvalCode(  code, context, context);
   }
-  DEBTRACE( "_context refcnt: " << _context->ob_refcnt );
+  DEBTRACE( "context refcnt: " << context->ob_refcnt );
   fflush(stdout);
   fflush(stderr);
   if(PyErr_Occurred ())
   {
-    _errorDetails="";
-    AutoPyRef new_stderr = newPyStdOut(_errorDetails);
+    errorDetails="";
+    AutoPyRef new_stderr = newPyStdOut(errorDetails);
     PySys_SetObject((char*)"stderr", new_stderr);
     ofstream errorfile(stream.str().c_str());
     if (errorfile.is_open())
@@ -714,8 +715,13 @@ void PythonNode::executeLocalInternal(const std::string& codeStr)
       }
     PyErr_Print();
     PySys_SetObject((char*)"stderr", PySys_GetObject((char*)"__stderr__"));
-    throw Exception("Error during execution");
+    throw YACS::Exception("Error during execution");
   }
+}
+
+void PythonNode::executeLocalInternal(const std::string& codeStr)
+{
+  ExecuteLocalInternal(codeStr,_context,_errorDetails);
 }
 
 void PythonNode::executeLocal()

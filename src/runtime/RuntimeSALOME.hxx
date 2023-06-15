@@ -84,6 +84,7 @@ namespace YACS
 
       virtual void init(long flags, int argc, char* argv[]);
       virtual void fini();
+      PyObject *launchSubProcess(const std::vector<std::string>& cmds);
       virtual std::vector< std::pair<std::string,int> > getCatalogOfComputeNodes() const;
       virtual InputPort* createInputPort(const std::string& name,
                                          const std::string& impl,
@@ -236,6 +237,7 @@ namespace YACS
       void loadModulCatalog();
 
       CORBA::ORB_ptr getOrb() const;
+      CORBA::Object_var getFromNS(const char *entry) const;
       PyObject * getPyOrb() const;
       PyObject * getBuiltins() const;
       DynamicAny::DynAnyFactory_ptr getDynFactory() const;

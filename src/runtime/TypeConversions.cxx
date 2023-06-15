@@ -1039,7 +1039,7 @@ namespace YACS
           CORBA::Object_var obref;
           try
             {
-              obref = getSALOMERuntime()->getOrb()->string_to_object(o.c_str());
+              obref = getSALOMERuntime()->getFromNS(o.c_str());
 #ifdef REFCNT
               DEBTRACE("obref refCount: " << obref->_PR_getobj()->pd_refCount);
 #endif
@@ -2084,7 +2084,7 @@ namespace YACS
             {
               try
                 {
-                  obref=getSALOMERuntime()->getOrb()->string_to_object(o.c_str());
+                  obref=getSALOMERuntime()->getFromNS(o.c_str());
                 }
               catch(CORBA::Exception& ex)
                 {

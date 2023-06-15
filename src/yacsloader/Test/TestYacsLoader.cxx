@@ -20,6 +20,14 @@
 #define UNIT_TEST_HEADER " --- TEST src/yacsloader"
 
 #include "YacsLoaderTest.hxx"
+#include "RuntimeSALOME.hxx"
+#include "PythonCppUtils.hxx"
+
+#if SALOME_KERNEL
+#include "SALOME_Embedded_NamingService.hxx"
+#include "SALOME_ContainerManager.hxx"
+#include "SALOME_NamingService_Wrapper.hxx"
+#endif
 
 using namespace YACS;
 using namespace std;
@@ -30,4 +38,30 @@ CPPUNIT_TEST_SUITE_REGISTRATION( YacsLoaderTest );
 
 // --- generic Main program from bases/Test
 
-#include "BasicMainTest.hxx"
+#include "BasicMainTestInternal.hxx"
+#include "RuntimeSALOME.hxx"
+
+int main()
+{
+  YACS::ENGINE::RuntimeSALOME::setRuntime();
+  YACS::ENGINE::RuntimeSALOME *rt = YACS::ENGINE::getSALOMERuntime();
+  if( !rt )
+    return 1;
+  Engines::EmbeddedNamingService_var ns = GetEmbeddedNamingService();
+  CORBA::ORB_ptr orb = rt->getOrb();
+  CORBA::String_var ior = orb->object_to_string( ns );
+  AutoPyRef proc = rt->launchSubProcess({"./echoSrv",std::string(ior)});
+  //std::cout << getpid() << std::endl;
+  usleep(3000000);
+  int ret = BasicMainTestInternal();
+  //
+  SALOME_NamingService_Wrapper namingService(orb);
+  CORBA::Object_var objDSM(namingService.Resolve(SALOME_ContainerManager::_ContainerManagerNameInNS));
+  Engines::ContainerManager_var dsm(Engines::ContainerManager::_narrow(objDSM));
+  dsm->ShutdownContainers();
+  //
+  AutoGIL agil;
+  AutoPyRef terminateStr = PyUnicode_FromString("terminate");
+  AutoPyRef dummy = PyObject_CallMethodObjArgs(proc,terminateStr,nullptr);
+  return ret;
+}
