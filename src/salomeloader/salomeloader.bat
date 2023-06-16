@@ -1,4 +1,4 @@
-@REM Copyright (C) 2006-2022  CEA/DEN, EDF R&D
+@REM Copyright (C) 2006-2023  CEA/DEN, EDF R&D
 @REM
 @REM This library is free software; you can redistribute it and/or
 @REM modify it under the terms of the GNU Lesser General Public
