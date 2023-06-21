@@ -780,6 +780,8 @@ void PythonNode::executeLocal()
             cerr << endl;
 #endif
             p->put(ob);
+            if(!isUsingPythonCache())
+              PyDict_DelItemString(_context,p->getName().c_str());
           }
     }
     catch(ConversionException& ex)
@@ -790,6 +792,15 @@ void PythonNode::executeLocal()
     if(_autoSqueeze)
       squeezeMemory();
     DEBTRACE( "-----------------End PyNode::outputs-----------------" );
+    if(!isUsingPythonCache())
+    {
+      for(iter2 = _setOfInputPort.begin(); iter2 != _setOfInputPort.end(); iter2++)
+      {
+        AutoPyRef pStr = PyUnicode_FromString( (*iter2)->getName().c_str() );
+        if( PyDict_Contains(_context,pStr) == 1 )
+          { PyDict_DelItem(_context,pStr); }
+      }
+    }
   }
   DEBTRACE( "++++++++++++++ End PyNode::execute: " << getName() << " ++++++++++++++++++++" );
 }
