@@ -98,8 +98,6 @@ Executor::Executor():_mainSched(NULL),_isWaitingEventsFromRunningTasks(false),_n
 
 Executor::~Executor()
 {
-  for(list<Thread *>::iterator iter=_groupOfAllThreadsCreated.begin();iter!=_groupOfAllThreadsCreated.end();iter++)
-    delete *iter;
 }
 
 //! Execute a graph waiting for completion
@@ -295,9 +293,10 @@ void Executor::RunB(Scheduler *graph,int debug, bool fromScratch)
       if (debug > 2) _displayDot(graph);
       { // --- Critical section
         YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForSchedulerUpdate);
-        _tasks=graph->getNextTasks(isMore);
-        graph->selectRunnableTasks(_tasks);
-        FilterTasksConsideringContainers(_tasks);
+        std::vector<Task *> tasks = graph->getNextTasks(isMore);
+        graph->selectRunnableTasks(tasks);
+        filterTasksConsideringContainers(tasks);
+        _tasks = tasks;
         numberAllTasks=_numberOfRunningTasks+_tasks.size();
       } // --- End of critical section
       if (debug > 2) _displayDot(graph);
@@ -1094,16 +1093,6 @@ void Executor::sleepWhileNoEventsFromAnyRunningTask()
   DEBTRACE("---");
 }
 
-//! not implemented
-
-void Executor::notifyEndOfThread(YACS::BASES::Thread *thread)
-{
-  /*_mutexForNbOfConcurrentThreads.lock();
-  _groupOfAllThreadsCreated.remove(thread);
-  delete thread;
-  _mutexForNbOfConcurrentThreads.unlock();*/
-}
-
 
 //! must be used protected by _mutexForSchedulerUpdate!
 
@@ -1119,15 +1108,30 @@ void Executor::wakeUp()
     _numberOfEndedTasks++;
 }
 
-//! number of running tasks
+int Executor::getMaxNbOfThreads() const
+{
+  return (int)_maxNbThreads;
+}
+
+void Executor::setMaxNbOfThreads(int maxNbThreads)
+{
+  _maxNbThreads = static_cast< std::uint32_t >(maxNbThreads);
+}
 
 int Executor::getNbOfThreads()
 {
-  int ret;
+  int ret = 0;
   YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForNbOfConcurrentThreads);
   _isRunningunderExternalControl=true;
-  ret = _groupOfAllThreadsCreated.size();
   return ret;
+}
+
+//! number of running tasks
+int Executor::getNumberOfRunningTasks()
+{
+  YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&_mutexForSchedulerUpdate);
+  _isRunningunderExternalControl=true;
+  return _numberOfRunningTasks;
 }
 
 /*!
@@ -1290,7 +1294,6 @@ void *Executor::functionForTaskExecution(void *arg)
 
   } // --- End of critical section (change state)
 
-  //execInst->notifyEndOfThread(0);
   Thread::exit(0);
   return 0;
 }
@@ -1346,7 +1349,7 @@ struct HPCCompare
  *
  * \param [in,out] tsks - list of tasks to be
  */
-void Executor::FilterTasksConsideringContainers(std::vector<Task *>& tsks)
+void Executor::filterTasksConsideringContainers(std::vector<Task *>& tsks)
 {
   std::map<HomogeneousPoolContainer *, std::vector<Task *>, HPCCompare > m;
   for(auto cur : tsks)
@@ -1375,7 +1378,16 @@ void Executor::FilterTasksConsideringContainers(std::vector<Task *>& tsks)
       const std::vector<Task *>& curtsks(it.second);
       if(!curhpc)
         {
-          ret.insert(ret.end(),curtsks.begin(),curtsks.end());
+          std::uint32_t nbThreadsRunning = _tasks.size();
+          std::uint32_t nbOfFreeSpace = _maxNbThreads - min(_maxNbThreads,nbThreadsRunning);
+          std::uint32_t nbOfCandidates = static_cast<std::uint32_t>( curtsks.size() );
+          std::uint32_t nbOfCandidatesToBeLaunched = std::min(nbOfCandidates,nbOfFreeSpace);
+          DEBTRACE("nb threads running: " << nbThreadsRunning);
+          DEBTRACE("MaxNbThreads: " << _maxNbThreads);
+          DEBTRACE("nbOfFreeSpace: " << nbOfFreeSpace);
+          DEBTRACE("nbOfCandidates: " << nbOfCandidates);
+          DEBTRACE("nbOfCandidatesToBeLaunched: " << nbOfCandidatesToBeLaunched);
+          ret.insert(ret.end(),curtsks.begin(),curtsks.begin() + nbOfCandidatesToBeLaunched);
         }
       else
         {
@@ -1745,7 +1757,7 @@ void Executor::runWlm(Scheduler *graph,int debug, bool fromScratch)
           if(_runningTasks.find(t) == _runningTasks.end())
             _tasks.push_back(t);
         // TODO: to be removed
-        FilterTasksConsideringContainers(_tasks);
+        filterTasksConsideringContainers(_tasks);
         numberAllTasks=_numberOfRunningTasks+_tasks.size();
       } // --- End of critical section
       if (debug > 2) _displayDot(graph);

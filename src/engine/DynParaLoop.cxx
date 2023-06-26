@@ -425,6 +425,7 @@ DynParaLoop::TypeOfNode DynParaLoop::getIdentityOfNotifyerNode(const Node *node,
   for (iter=_execFinalizeNodes.begin() ; iter!=_execFinalizeNodes.end() ; iter++,id++)
     if (*iter==node)
       return FINALIZE_NODE;
+  throw Exception("DynParaLoop::getIdentityOfNotifyerNode: unrecognized node !");
 }
 
 void DynParaLoop::setWeight(double loopWeight)

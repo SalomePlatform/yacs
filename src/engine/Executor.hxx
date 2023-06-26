@@ -38,6 +38,7 @@
 #include <fstream>
 #include <ctime>
 #include <chrono>
+#include <cstdint>
 
 namespace WorkloadManager
 {
@@ -71,6 +72,7 @@ namespace YACS
       YACS::BASES::Condition _condForPilot;
       YACS::BASES::Mutex _mutexForSchedulerUpdate;
       YACS::BASES::Mutex _mutexForTrace;
+      std::uint32_t _maxNbThreads = 10000;
       bool _toContinue;
       bool _isOKToEnd;
       bool _stopOnErrorRequested;
@@ -88,7 +90,6 @@ namespace YACS
       std::list<std::string> _listOfTasksToLoad;
       std::vector<Task *> _tasks; 
       std::vector<Task *> _tasksSave; 
-      std::list< YACS::BASES::Thread * > _groupOfAllThreadsCreated;
       std::ofstream _trace;
       std::string _dumpErrorFile;
       bool _keepGoingOnFail;
@@ -117,8 +118,10 @@ namespace YACS
       void stopExecution();
       bool saveState(const std::string& xmlFile);
       bool loadState();
+      int getMaxNbOfThreads() const;
+      void setMaxNbOfThreads(int maxNbThreads);
       int getNbOfThreads();
-      int getNumberOfRunningTasks() const { return _numberOfRunningTasks; }
+      int getNumberOfRunningTasks();
       void displayDot(Scheduler *graph);
       void setStopOnError(bool dumpRequested=false, std::string xmlFile="");
       void unsetStopOnError();
@@ -145,11 +148,10 @@ namespace YACS
       void launchTask(Task *task);
       void wakeUp();
       void sleepWhileNoEventsFromAnyRunningTask();
-      void notifyEndOfThread(YACS::BASES::Thread *thread);
       void traceExec(Task *task, const std::string& message, const std::string& placement);
       void _displayDot(Scheduler *graph);
       virtual void sendEvent(const std::string& event);
-      static void FilterTasksConsideringContainers(std::vector<Task *>& tsks);
+      void filterTasksConsideringContainers(std::vector<Task *>& tsks);
       static std::string ComputePlacement(Task *zeTask);
     protected:
       static void *functionForTaskLoad(void *);
