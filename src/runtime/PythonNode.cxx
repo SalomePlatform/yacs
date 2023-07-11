@@ -752,8 +752,9 @@ void PythonNode::executeLocal()
 
     //calculation
     DEBTRACE( "----------------PyNode::calculation---------------" );
-
-    executeLocalInternal( unpxy.str() );
+  
+    if( ! getSqueezeStatus() )
+      executeLocalInternal( unpxy.str() );
 
     executeLocalInternal( _script );
 
