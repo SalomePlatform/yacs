@@ -80,4 +80,11 @@ IF(NOT WIN32)
                                     ENVIRONMENT "SALOME_EMB_SERVANT=1"
                       )
 
+  SET(TEST_NAME ${COMPONENT_NAME}_Fixes_swig)
+  ADD_TEST(${TEST_NAME} testFixes.py)
+  SET_TESTS_PROPERTIES(${TEST_NAME} PROPERTIES
+                                    LABELS "${COMPONENT_NAME}"
+                                    ENVIRONMENT "SALOME_EMB_SERVANT=1"
+                      )
+
 ENDIF()

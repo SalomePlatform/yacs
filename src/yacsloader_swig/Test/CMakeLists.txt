@@ -47,6 +47,7 @@ IF(NOT WIN32)
     async_plugin.py
     testWorkloadManager.py
     testPynodeWithCache.py
+    testFixes.py
    )
   INSTALL(PROGRAMS ${LOCAL_TEST_FILES}
         DESTINATION ${LOCAL_TEST_DIR})

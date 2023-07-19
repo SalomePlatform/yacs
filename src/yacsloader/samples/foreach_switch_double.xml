@@ -1,0 +1,224 @@
+<?xml version='1.0' encoding='iso-8859-1' ?>
+<proc name="GeneratedSchema">
+   <property name="executor" value="workloadmanager"/>
+   <type name="string" kind="string"/>
+   <struct name="Engines/dataref">
+      <member name="ref" type="string"/>
+   </struct>
+   <type name="bool" kind="bool"/>
+   <sequence name="boolvec" content="bool"/>
+   <type name="double" kind="double"/>
+   <sequence name="dblevec" content="double"/>
+   <objref name="file" id="file"/>
+   <type name="int" kind="int"/>
+   <sequence name="intvec" content="int"/>
+   <struct name="stringpair">
+      <member name="name" type="string"/>
+      <member name="value" type="string"/>
+   </struct>
+   <sequence name="propvec" content="stringpair"/>
+   <objref name="pyobj" id="python:obj:1.0"/>
+   <sequence name="seqboolvec" content="boolvec"/>
+   <sequence name="seqdblevec" content="dblevec"/>
+   <sequence name="seqintvec" content="intvec"/>
+   <sequence name="seqpyobj" content="pyobj"/>
+   <sequence name="stringvec" content="string"/>
+   <sequence name="seqstringvec" content="stringvec"/>
+   <container name="DefaultContainer">
+      <property name="container_kind" value="Salome"/>
+      <property name="attached_on_cloning" value="0"/>
+      <property name="container_name" value="FactoryServer"/>
+      <property name="name" value="localhost"/>
+   </container>
+   <container name="default_container">
+      <property name="container_kind" value="Salome"/>
+      <property name="attached_on_cloning" value="1"/>
+      <property name="nb_parallel_procs" value="1"/>
+      <property name="type" value="multi"/>
+      <property name="use_py_cache" value="0"/>
+   </container>
+   <foreachdyn name="iteration_0" loopWeight="-1" type="pyobj">
+      <bloc name="block_iteration_0">
+         <inline name="Condition_1">
+            <script><code><![CDATA[r = c % 2
+]]></code></script>
+            <load container="DefaultContainer"/>
+            <inport name="c" type="pyobj"/>
+            <outport name="r" type="int"/>
+         </inline>
+         <switch name="Switch_2">
+            <case id="0">
+               <bloc name="Switch_2_case_0">
+                  <foreachdyn name="iter2_4" loopWeight="-1" type="pyobj">
+                     <bloc name="block_iter2_4">
+                        <inline name="Condition_5">
+                           <script><code><![CDATA[r = c % 2
+]]></code></script>
+                           <load container="DefaultContainer"/>
+                           <inport name="c" type="pyobj"/>
+                           <outport name="r" type="int"/>
+                        </inline>
+                        <switch name="Switch_6">
+                           <case id="0">
+                              <bloc name="Switch_6_case_0">
+                                 <remote name="faux_8" elementaryWeight="-1">
+                                    <script><code><![CDATA[r = "c'est faux!"
+]]></code></script>
+                                    <load container="default_container"/>
+                                    <outport name="r" type="pyobj"/>
+                                 </remote>
+                              </bloc>
+                           </case>
+                           <case id="1">
+                              <bloc name="Switch_6_case_1">
+                                 <remote name="vrai_7" elementaryWeight="-1">
+                                    <script><code><![CDATA[r = "c'est vrai!"
+]]></code></script>
+                                    <load container="default_container"/>
+                                    <outport name="r" type="pyobj"/>
+                                 </remote>
+                              </bloc>
+                           </case>
+                        </switch>
+                        <inline name="SwitchResults_9">
+                           <script><code><![CDATA[]]></code></script>
+                           <inport name="p0" type="pyobj"/>
+                           <outport name="p0" type="pyobj"/>
+                        </inline>
+                        <control> <fromnode>Condition_5</fromnode> <tonode>Switch_6</tonode> </control>
+                        <control> <fromnode>Switch_6</fromnode> <tonode>SwitchResults_9</tonode> </control>
+                        <datalink control="false">
+                           <fromnode>Condition_5</fromnode> <fromport>r</fromport>
+                           <tonode>Switch_6</tonode> <toport>select</toport>
+                        </datalink>
+                        <datalink control="false">
+                           <fromnode>Switch_6.p0_Switch_6_case_0.faux_8</fromnode> <fromport>r</fromport>
+                           <tonode>SwitchResults_9</tonode> <toport>p0</toport>
+                        </datalink>
+                        <datalink control="false">
+                           <fromnode>Switch_6.p1_Switch_6_case_1.vrai_7</fromnode> <fromport>r</fromport>
+                           <tonode>SwitchResults_9</tonode> <toport>p0</toport>
+                        </datalink>
+                     </bloc>
+                  </foreachdyn>
+                  <remote name="output_iter2_4_10" elementaryWeight="-1">
+                     <script><code><![CDATA[]]></code></script>
+                     <load container="default_container"/>
+                     <inport name="p0_0" type="seqpyobj"/>
+                     <outport name="p0_0" type="pyobj"/>
+                  </remote>
+                  <control> <fromnode>iter2_4</fromnode> <tonode>output_iter2_4_10</tonode> </control>
+                  <datalink control="false">
+                     <fromnode>iter2_4</fromnode> <fromport>evalSamples</fromport>
+                     <tonode>iter2_4.block_iter2_4.Condition_5</tonode> <toport>c</toport>
+                  </datalink>
+                  <datalink control="false">
+                     <fromnode>iter2_4.block_iter2_4.SwitchResults_9</fromnode> <fromport>p0</fromport>
+                     <tonode>output_iter2_4_10</tonode> <toport>p0_0</toport>
+                  </datalink>
+               </bloc>
+            </case>
+            <case id="1">
+               <bloc name="Switch_2_case_1">
+                  <remote name="vrai_3" elementaryWeight="-1">
+                     <script><code><![CDATA[r = "c'est vrai!"
+]]></code></script>
+                     <load container="default_container"/>
+                     <outport name="r" type="pyobj"/>
+                  </remote>
+               </bloc>
+            </case>
+         </switch>
+         <inline name="SwitchResults_11">
+            <script><code><![CDATA[]]></code></script>
+            <inport name="p0" type="pyobj"/>
+            <outport name="p0" type="pyobj"/>
+         </inline>
+         <control> <fromnode>Condition_1</fromnode> <tonode>Switch_2</tonode> </control>
+         <control> <fromnode>Switch_2</fromnode> <tonode>SwitchResults_11</tonode> </control>
+         <datalink control="false">
+            <fromnode>Condition_1</fromnode> <fromport>r</fromport>
+            <tonode>Switch_2</tonode> <toport>select</toport>
+         </datalink>
+         <datalink control="false">
+            <fromnode>Switch_2.p0_Switch_2_case_0.output_iter2_4_10</fromnode> <fromport>p0_0</fromport>
+            <tonode>SwitchResults_11</tonode> <toport>p0</toport>
+         </datalink>
+         <datalink control="false">
+            <fromnode>Switch_2.p1_Switch_2_case_1.vrai_3</fromnode> <fromport>r</fromport>
+            <tonode>SwitchResults_11</tonode> <toport>p0</toport>
+         </datalink>
+      </bloc>
+   </foreachdyn>
+   <remote name="output_iteration_0_12" elementaryWeight="-1">
+      <script><code><![CDATA[]]></code></script>
+      <load container="default_container"/>
+      <inport name="p0_0" type="seqpyobj"/>
+      <outport name="p0_0" type="pyobj"/>
+   </remote>
+   <remote name="End" elementaryWeight="-1">
+      <script><code><![CDATA[ok = x == [["c'est faux!", "c'est vrai!"],
+           "c'est vrai!"]
+]]></code></script>
+      <load container="default_container"/>
+      <inport name="x" type="pyobj"/>
+      <outport name="ok" type="bool"/>
+   </remote>
+   <control> <fromnode>iteration_0</fromnode> <tonode>output_iteration_0_12</tonode> </control>
+   <control> <fromnode>output_iteration_0_12</fromnode> <tonode>End</tonode> </control>
+   <datalink control="false">
+      <fromnode>iteration_0</fromnode> <fromport>evalSamples</fromport>
+      <tonode>iteration_0.block_iteration_0.Condition_1</tonode> <toport>c</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>output_iteration_0_12</fromnode> <fromport>p0_0</fromport>
+      <tonode>End</tonode> <toport>x</toport>
+   </datalink>
+   <datalink control="false">
+      <fromnode>iteration_0.block_iteration_0.SwitchResults_11</fromnode> <fromport>p0</fromport>
+      <tonode>output_iteration_0_12</tonode> <toport>p0_0</toport>
+   </datalink>
+   <parameter>
+      <tonode>iteration_0.block_iteration_0.Switch_2.p0_Switch_2_case_0.iter2_4.block_iter2_4.Condition_5</tonode><toport>c</toport>
+      <value><objref><![CDATA[YUkAI5F]]></objref></value>
+   </parameter>
+   <parameter>
+      <tonode>iteration_0.block_iteration_0.Condition_1</tonode><toport>c</toport>
+      <value><objref><![CDATA[YUkAI5F]]></objref></value>
+   </parameter>
+   <parameter>
+      <tonode>iteration_0</tonode><toport>SmplsCollection</toport>
+      <value><array><data>
+<value><objref>.G0dk.........1G.5F</objref></value>
+<value><objref>.G0dk.........1GU5F</objref></value>
+</data></array></value>
+   </parameter>
+   <parameter>
+      <tonode>iteration_0.block_iteration_0.Switch_2.p0_Switch_2_case_0.iter2_4</tonode><toport>SmplsCollection</toport>
+      <value><array><data>
+<value><objref>.G0dk.........1G.5F</objref></value>
+<value><objref>.G0dk.........1GU5F</objref></value>
+</data></array></value>
+   </parameter>
+   <presentation name="iteration_0.block_iteration_0.Switch_2.p0_Switch_2_case_0" x="6" y="61" width="776.75" height="407.625" expanded="1" expx="6" expy="61" expWidth="776.75" expHeight="407.625" shownState="0"/>
+   <presentation name="iteration_0.block_iteration_0.Switch_2.p0_Switch_2_case_0.iter2_4.block_iter2_4" x="6" y="61" width="567.75" height="304.75" expanded="1" expx="6" expy="61" expWidth="567.75" expHeight="304.75" shownState="0"/>
+   <presentation name="iteration_0.block_iteration_0.Switch_2.p0_Switch_2_case_0.output_iter2_4_10" x="614.75" y="187.25" width="158" height="63" expanded="1" expx="614.75" expy="187.25" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="iteration_0.block_iteration_0.Switch_2.p0_Switch_2_case_0.iter2_4.block_iter2_4.Switch_6.p1_Switch_6_case_1" x="6" y="162.75" width="163.75" height="100.75" expanded="1" expx="6" expy="162.75" expWidth="163.75" expHeight="100.75" shownState="0"/>
+   <presentation name="iteration_0.block_iteration_0" x="6" y="61" width="1178.75" height="612.438" expanded="1" expx="6" expy="61" expWidth="1178.75" expHeight="612.438" shownState="0"/>
+   <presentation name="End" x="1419.75" y="341.25" width="158" height="63" expanded="1" expx="1419.75" expy="341.25" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="iteration_0.block_iteration_0.Switch_2.p1_Switch_2_case_1" x="6" y="469.625" width="163.75" height="100.75" expanded="1" expx="6" expy="469.625" expWidth="163.75" expHeight="100.75" shownState="0"/>
+   <presentation name="iteration_0.block_iteration_0.Switch_2.p0_Switch_2_case_0.iter2_4.block_iter2_4.SwitchResults_9" x="405.75" y="135.75" width="158" height="63" expanded="1" expx="405.75" expy="135.75" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="iteration_0.block_iteration_0.Switch_2.p0_Switch_2_case_0.iter2_4.block_iter2_4.Switch_6.p0_Switch_6_case_0.faux_8" x="1.75" y="33.75" width="158" height="63" expanded="1" expx="1.75" expy="33.75" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="iteration_0.block_iteration_0.Switch_2.p0_Switch_2_case_0.iter2_4.block_iter2_4.Condition_5" x="1.75" y="135.75" width="158" height="63" expanded="1" expx="1.75" expy="135.75" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="iteration_0.block_iteration_0.Switch_2" x="194.875" y="34.0625" width="786.75" height="574.375" expanded="1" expx="194.875" expy="34.0625" expWidth="786.75" expHeight="574.375" shownState="0"/>
+   <presentation name="iteration_0.block_iteration_0.Switch_2.p0_Switch_2_case_0.iter2_4.block_iter2_4.Switch_6.p0_Switch_6_case_0" x="6" y="61" width="163.75" height="100.75" expanded="1" expx="6" expy="61" expWidth="163.75" expHeight="100.75" shownState="0"/>
+   <presentation name="iteration_0.block_iteration_0.Condition_1" x="1.75" y="289.75" width="158" height="63" expanded="1" expx="1.75" expy="289.75" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="output_iteration_0_12" x="1225.75" y="341.25" width="158" height="63" expanded="1" expx="1225.75" expy="341.25" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="iteration_0.block_iteration_0.SwitchResults_11" x="1016.75" y="289.75" width="158" height="63" expanded="1" expx="1016.75" expy="289.75" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="iteration_0" x="1.375" y="34.0312" width="1188.75" height="677.438" expanded="1" expx="1.375" expy="34.0312" expWidth="1188.75" expHeight="677.438" shownState="0"/>
+   <presentation name="iteration_0.block_iteration_0.Switch_2.p0_Switch_2_case_0.iter2_4.block_iter2_4.Switch_6" x="195.875" y="33.75" width="173.75" height="267" expanded="1" expx="195.875" expy="33.75" expWidth="173.75" expHeight="267" shownState="0"/>
+   <presentation name="iteration_0.block_iteration_0.Switch_2.p1_Switch_2_case_1.vrai_3" x="1.75" y="33.75" width="158" height="63" expanded="1" expx="1.75" expy="33.75" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="iteration_0.block_iteration_0.Switch_2.p0_Switch_2_case_0.iter2_4" x="1.375" y="33.875" width="577.75" height="369.75" expanded="1" expx="1.375" expy="33.875" expWidth="577.75" expHeight="369.75" shownState="0"/>
+   <presentation name="iteration_0.block_iteration_0.Switch_2.p0_Switch_2_case_0.iter2_4.block_iter2_4.Switch_6.p1_Switch_6_case_1.vrai_7" x="1.75" y="33.75" width="158" height="63" expanded="1" expx="1.75" expy="33.75" expWidth="158" expHeight="63" shownState="0"/>
+   <presentation name="__ROOT__" x="0" y="0" width="1581.75" height="715.469" expanded="1" expx="0" expy="0" expWidth="1581.75" expHeight="715.469" shownState="0"/>
+</proc>

@@ -114,7 +114,10 @@ CollectorSwOutPort::CollectorSwOutPort(Switch *master, InPort *port):OutPort("",
                                                                      Port(master),
                                                                      _consumer(port),_currentProducer(0)
 {
-  _name="Representant_of_"; _name+=master->getName(); _name+="_for_inport_"; _name+=master->getRootNode()->getInPortName(_consumer);
+  _name="Representant_of_";
+  _name+=master->getName();
+  _name+="_for_inport_";
+  _name+=port->getName();
 }
 
 CollectorSwOutPort::CollectorSwOutPort(const CollectorSwOutPort& other, Switch *master):OutPort("",master,other.edGetType()),
