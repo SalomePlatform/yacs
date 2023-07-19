@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2022  CEA/DEN, EDF R&D
+# Copyright (C) 2012-2023  CEA, EDF
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -41,7 +41,11 @@ SET(PluginSimplex_SOURCES
 )
 
 # --- rules ---
-
+if(WIN32)
+  add_library(PluginSimplex_lib STATIC  ${PluginSimplex_SOURCES})
+  TARGET_LINK_LIBRARIES(PluginSimplex_lib ${_link_LIBRARIES})
+  set_target_properties(PluginSimplex_lib PROPERTIES OUTPUT_NAME PluginSimplex)
+endif(WIN32)
 ADD_LIBRARY(PluginSimplex ${PluginSimplex_SOURCES})
 TARGET_LINK_LIBRARIES(PluginSimplex YACSlibEngine)
 INSTALL(TARGETS PluginSimplex EXPORT ${PROJECT_NAME}TargetGroup DESTINATION ${SALOME_INSTALL_LIBS})

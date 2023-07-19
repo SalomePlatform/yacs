@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2022  CEA/DEN, EDF R&D
+# Copyright (C) 2012-2023  CEA, EDF
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -41,6 +41,12 @@ SET(TestBases_SOURCES
 )
 
 # --- rules ---
+
+if(WIN32)
+  add_library(YACSDLTest_lib STATIC  ${YACSDLTest_SOURCES})
+  TARGET_LINK_LIBRARIES(YACSDLTest_lib ${_link_LIBRARIES})
+  set_target_properties(YACSDLTest_lib PROPERTIES OUTPUT_NAME YACSDLTest)
+endif(WIN32)
 
 ADD_LIBRARY(YACSDLTest ${YACSDLTest_SOURCES})
 INSTALL(TARGETS YACSDLTest EXPORT ${PROJECT_NAME}TargetGroup 

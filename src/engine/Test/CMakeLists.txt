@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2022  CEA/DEN, EDF R&D
+# Copyright (C) 2012-2023  CEA, EDF
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -63,7 +63,11 @@ SET(IntegrationTestEngine_SOURCES
 )
 
 # --- rules ---
-
+if(WIN32)
+  add_library(PluginOptEvTest1_lib STATIC  ${PluginOptEvTest1_SOURCES})
+  TARGET_LINK_LIBRARIES(PluginOptEvTest1_lib ${_link_LIBRARIES})
+  set_target_properties(PluginOptEvTest1_lib PROPERTIES OUTPUT_NAME PluginOptEvTest1)
+endif(WIN32)
 ADD_LIBRARY(PluginOptEvTest1 ${PluginOptEvTest1_SOURCES})
 TARGET_LINK_LIBRARIES(PluginOptEvTest1 YACSlibEngine)
 INSTALL(TARGETS PluginOptEvTest1 EXPORT ${PROJECT_NAME}TargetGroup

@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2022  CEA/DEN, EDF R&D
+# Copyright (C) 2012-2023  CEA, EDF
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -82,6 +82,11 @@ IF(SALOME_BUILD_DOC)
 ENDIF(SALOME_BUILD_DOC)
 
 # --- rules ---
+IF(WIN32)
+  add_library(YACS_Swig_lib STATIC  ${YACS_Swig_SOURCES})
+  TARGET_LINK_LIBRARIES(YACS_Swig_lib ${_link_LIBRARIES})
+  set_target_properties(YACS_Swig_lib PROPERTIES OUTPUT_NAME YACS_Swig)
+ENDIF(WIN32)
 ADD_LIBRARY(YACS_Swig ${YACS_Swig_SOURCES})
 TARGET_LINK_LIBRARIES(YACS_Swig ${_link_LIBRARIES})
 INSTALL(TARGETS YACS_Swig EXPORT ${PROJECT_NAME}TargetGroup DESTINATION ${SALOME_INSTALL_LIBS})
