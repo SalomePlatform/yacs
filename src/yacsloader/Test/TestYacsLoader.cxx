@@ -41,6 +41,9 @@ CPPUNIT_TEST_SUITE_REGISTRATION( YacsLoaderTest );
 #include "BasicMainTestInternal.hxx"
 #include "RuntimeSALOME.hxx"
 
+#include <chrono>
+#include <thread>
+
 int main()
 {
   YACS::ENGINE::RuntimeSALOME::setRuntime();
@@ -52,7 +55,7 @@ int main()
   CORBA::String_var ior = orb->object_to_string( ns );
   AutoPyRef proc = rt->launchSubProcess({"./echoSrv",std::string(ior)});
   //std::cout << getpid() << std::endl;
-  usleep(3000000);
+  std::this_thread::sleep_for(std::chrono::microseconds(3000000));
   int ret = BasicMainTestInternal();
   //
   SALOME_NamingService_Wrapper namingService(orb);

@@ -654,7 +654,7 @@ void YacsLoaderTest::refcnt()
   ret = driverTest(p, "samples/refcnt2.xml");
   CPPUNIT_ASSERT(ret == 0);
   data = ((OutputPyPort*)p->nodeMap["b1.b.node1"]->getOutputPort("p1"))->get();
-  CPPUNIT_ASSERT_EQUAL(data->ob_refcnt,(long int)13);
+  CPPUNIT_ASSERT(data->ob_refcnt == 13);
 }
 
 void YacsLoaderTest::foreachs()
