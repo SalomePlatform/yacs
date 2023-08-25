@@ -41,6 +41,7 @@ IF(NOT WIN32)
     testResume.py
     testSave.py
     testSaveLoadRun.py
+    testYacsProxy.py
     testYacsLoaderSwig.py
     optim_plugin.py
     testValidationChecks.py

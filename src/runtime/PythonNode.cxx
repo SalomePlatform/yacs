@@ -332,7 +332,24 @@ bool PythonEntry::IsProxy( PyObject *ob )
 {
   if(!_pyClsBigObject)
     return false;
-  return PyObject_IsInstance( ob, _pyClsBigObject) == 1;
+  if( PyObject_IsInstance( ob, _pyClsBigObject) == 1 )
+  {
+    return true;
+  }
+  else
+  {
+    if( PyList_Check( ob ) )
+    {
+      auto sz = PyList_Size( ob );
+      for( auto i = 0 ; i < sz ; ++i )
+      {
+        PyObject *elt = PyList_GetItem( ob, i );
+        if( PythonEntry::IsProxy(elt) )
+          return true;
+      }
+    }
+  }
+  return false;
 }
 
 bool PythonEntry::GetDestroyStatus( PyObject *ob )
@@ -349,6 +366,19 @@ bool PythonEntry::GetDestroyStatus( PyObject *ob )
     }
     return false;
   }
+  else
+  {
+    if( PyList_Check( ob ) )
+    {
+      auto sz = PyList_Size( ob );
+      for( auto i = 0 ; i < sz ; ++i )
+      {
+        PyObject *elt = PyList_GetItem( ob, i );
+        if( PythonEntry::GetDestroyStatus(elt) )
+          return true;
+      }
+    }
+  }
   return false;
 }
 
@@ -360,6 +390,18 @@ void PythonEntry::IfProxyDoSomething( PyObject *ob, const char *meth )
   {
     AutoPyRef unlinkOnDestructor = PyObject_GetAttrString(ob,meth);
     AutoPyRef tmp = PyObject_CallFunctionObjArgs(unlinkOnDestructor,nullptr);
+  }
+  else
+  {
+    if( PyList_Check( ob ) )
+    {
+      auto sz = PyList_Size( ob );
+      for( auto i = 0 ; i < sz ; ++i )
+      {
+        PyObject *elt = PyList_GetItem( ob, i );
+        PythonEntry::IfProxyDoSomething( elt, meth );
+      }
+    }
   }
 }
 
