@@ -33,10 +33,9 @@ class TestYacsProxy(unittest.TestCase):
     [EDF27816] : test to check
     """
     salome.salome_init()
-    tmpdirname = "/tmp/tmp9kaggixn"
-    if True:
-    #with tempfile.TemporaryDirectory() as tmpdirname:
-      salome.cm.SetOverrideEnvForContainersSimple([("SALOME_BIG_OBJ_ON_DISK_THRES","1000000"),("SALOME_FILE_BIG_OBJ_DIR",str(tmpdirname))])
+    with tempfile.TemporaryDirectory() as tmpdirname:
+      print(tmpdirname)
+      salome.cm.SetOverrideEnvForContainersSimple([("SALOME_BIG_OBJ_ON_DISK_THRES","1"),("SALOME_FILE_BIG_OBJ_DIR",str(tmpdirname))])
       ####
       SALOMERuntime.RuntimeSALOME.setRuntime()
       r=SALOMERuntime.getSALOMERuntime()
@@ -73,13 +72,15 @@ class TestYacsProxy(unittest.TestCase):
       gather2Node.setExecutionMode("local")
       gather2Node.setContainer(None)
       gather2Node.setSqueezeStatus(True)
-      p.edAddChild(gather2Node)
       pi5 = gather2Node.edAddInputPort("i5",seqpyobj)
       po5 = gather2Node.edAddOutputPort("o5",seqpyobj)
       gather2Node.setScript("""
 from glob import glob
 import os
-if len( glob( os.path.join( os.environ["SALOME_FILE_BIG_OBJ_DIR"], "*.pckl" ) ) ) == 1:
+import salome
+salome.salome_init()
+effEnv = {elt.key:elt.val for elt in salome.cm.GetOverrideEnvForContainers()}
+if len( glob( os.path.join( effEnv["SALOME_FILE_BIG_OBJ_DIR"], "*.pckl" ) ) ) != 1:
   raise RuntimeError("Fail !")
 print("gather2")
 o5 = i5""")
