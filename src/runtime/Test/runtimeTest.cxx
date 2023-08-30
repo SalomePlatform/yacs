@@ -1400,8 +1400,12 @@ void RuntimeTest::convertPorts()
               cAny <<= (CORBA::Double) d0;
               break;
             case 2:
+            {
+              PyGILState_STATE gstate = PyGILState_Ensure();
               v = pAny = PyFloat_FromDouble(d0);
+              PyGILState_Release(gstate);
               break;
+            }
             case 3:
               { 
                 ostringstream os;
@@ -1484,8 +1488,12 @@ void RuntimeTest::convertPorts()
                 vAny->decrRef();
                 break;
               case 2:
-                Py_DECREF(pAny);
+              {
+                PyGILState_STATE gstate = PyGILState_Ensure();
+                Py_XDECREF(pAny);
+                PyGILState_Release(gstate);
                 break;
+              }
               default:
                 break;
               }
