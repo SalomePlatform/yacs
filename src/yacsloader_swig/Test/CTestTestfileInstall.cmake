@@ -79,6 +79,12 @@ IF(NOT WIN32)
   SET_TESTS_PROPERTIES(${TEST_NAME} PROPERTIES
                                     LABELS "${COMPONENT_NAME}"
                       )
+                      
+  SET(TEST_NAME ${COMPONENT_NAME}_PerfTest0_swig)
+  ADD_TEST(${TEST_NAME} testYacsPerfTest0.py)
+  SET_TESTS_PROPERTIES(${TEST_NAME} PROPERTIES
+                                    LABELS "${COMPONENT_NAME}"
+                      )
 
   SET(TEST_NAME ${COMPONENT_NAME}_ValidationChecks_swig)
   ADD_TEST(${TEST_NAME} testValidationChecks.py)
