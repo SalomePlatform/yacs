@@ -1378,7 +1378,7 @@ void Executor::filterTasksConsideringContainers(std::vector<Task *>& tsks)
       const std::vector<Task *>& curtsks(it.second);
       if(!curhpc)
         {
-          std::uint32_t nbThreadsRunning = _tasks.size();
+          std::uint32_t nbThreadsRunning = _runningTasks.size();
           std::uint32_t nbOfFreeSpace = _maxNbThreads - min(_maxNbThreads,nbThreadsRunning);
           std::uint32_t nbOfCandidates = static_cast<std::uint32_t>( curtsks.size() );
           std::uint32_t nbOfCandidatesToBeLaunched = std::min(nbOfCandidates,nbOfFreeSpace);
