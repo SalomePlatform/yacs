@@ -33,6 +33,8 @@ CPPUNIT_TEST_SUITE_REGISTRATION( RuntimeTest );
 // --- generic Main program from bases/Test
 #include "BasicMainTestInternal.hxx"
 #include "RuntimeSALOME.hxx"
+#include <chrono>
+#include <thread>
 
 int main()
 {
@@ -44,7 +46,7 @@ int main()
   CORBA::ORB_ptr orb = rt->getOrb();
   CORBA::String_var ior = orb->object_to_string( ns );
   AutoPyRef proc = rt->launchSubProcess({"./runtimeTestEchoSrv",std::string(ior)});
-  usleep(3000000);
+  std::this_thread::sleep_for(std::chrono::microseconds(3000000));
   int ret = BasicMainTestInternal();
   //
   {
