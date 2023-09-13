@@ -415,7 +415,8 @@ void PythonEntry::UnlinkOnDestructorIfProxy( PyObject *ob )
   IfProxyDoSomething(ob,"unlinkOnDestructor");
 }
 
-PythonNode::PythonNode(const PythonNode& other, ComposedNode *father):InlineNode(other,father),_autoSqueeze(other._autoSqueeze)
+PythonNode::PythonNode(const PythonNode& other, ComposedNode *father):
+InlineNode(other,father),_autoSqueeze(other._autoSqueeze),_nonSqueezableOutputNodes(other._nonSqueezableOutputNodes)
 {
   _pynode = Engines::PyScriptNode::_nil();
   _implementation=IMPL_NAME;
@@ -848,6 +849,16 @@ void PythonNode::executeLocal()
   DEBTRACE( "++++++++++++++ End PyNode::execute: " << getName() << " ++++++++++++++++++++" );
 }
 
+/*!
+ * [EDF28562]
+ * \param in squeezeExceptions list on output port name excluded from the squeeze mecanism
+ */
+void PythonNode::setSqueezeStatusWithExceptions(bool sqStatus, const std::vector<std::string>& squeezeExceptions)
+{
+  this->setSqueezeStatus(sqStatus);
+  this->_nonSqueezableOutputNodes = std::set<std::string>(squeezeExceptions.begin(), squeezeExceptions.end());
+}
+
 void PythonNode::squeezeMemorySafe()
 {
   AutoGIL agil;
@@ -868,6 +879,8 @@ void PythonNode::squeezeMemory()
     }
   for(auto p : _setOfOutputPort)
     {
+      if (!this->_nonSqueezableOutputNodes.empty() && this->_nonSqueezableOutputNodes.find(p->getName()) != this->_nonSqueezableOutputNodes.end())
+        continue;
       PyDict_DelItemString(_context,p->getName().c_str());
       OutputPyPort *p2(static_cast<OutputPyPort *>(p));
       p2->putWithoutForward(Py_None);
@@ -884,6 +897,8 @@ void PythonNode::squeezeMemoryRemote()
     }
   for(auto p : _setOfOutputPort)
     {
+      if (!this->_nonSqueezableOutputNodes.empty() && this->_nonSqueezableOutputNodes.find(p->getName()) != this->_nonSqueezableOutputNodes.end())
+        continue;
       OutputPyPort *p2(static_cast<OutputPyPort *>(p));
       p2->putWithoutForward(Py_None);
     }

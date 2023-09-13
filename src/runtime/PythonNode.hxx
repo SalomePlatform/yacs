@@ -28,6 +28,8 @@
 
 #include <Python.h>
 
+#include <set>
+
 namespace YACS
 {
   namespace ENGINE
@@ -105,6 +107,7 @@ namespace YACS
       PythonNode* cloneNode(const std::string& name);
       virtual std::string typeName() { return "YACS__ENGINE__PythonNode"; }
       void applyDPLScope(ComposedNode *gfn);
+      void setSqueezeStatusWithExceptions(bool sqStatus, const std::vector<std::string>& squeezeExceptions);
       void setSqueezeStatus(bool sqStatus) { _autoSqueeze=sqStatus; }
       bool getSqueezeStatus() const { return _autoSqueeze; }
       void squeezeMemorySafe();
@@ -123,6 +126,8 @@ namespace YACS
       static const char DPL_INFO_NAME[];
     protected:
       bool _autoSqueeze = false;
+      //! list on output port name excluded from the squeeze mecanism
+      std::set<std::string> _nonSqueezableOutputNodes;
       Engines::PyScriptNode_var _pynode;
     };
 

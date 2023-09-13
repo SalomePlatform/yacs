@@ -138,7 +138,7 @@ o7 = i7""")
 
       pp = p
       fname = "stressTest3.xml"
-      pp.saveSchema(fname)
+      #pp.saveSchema(fname)
       ####
       l=loader.YACSLoader()
       #p=l.load(fname)
