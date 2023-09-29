@@ -26,6 +26,8 @@
 #include <map>
 #include <mutex>
 
+#include <string>
+
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(DSC_Engines)
 
