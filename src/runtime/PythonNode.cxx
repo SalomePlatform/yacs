@@ -578,10 +578,12 @@ void PythonNode::executeRemote()
     {
       //pass outargsname and dict serialized
       SALOME::SenderByte_var serializationInputRef = serializationInputCorba->_this();
+      DEBUG_YACSTRACE("Before execute first of " << getId());
       _pynode->executeFirst(serializationInputRef);
       //serializationInput and serializationInputCorba are no more needed for server. Release it.
       serializationInput.set(nullptr);
       resultCorba.reset( _pynode->executeSecond(myseq) );
+      DEBUG_YACSTRACE("After execute second of " << getId());
     }
   catch( const SALOME::SALOME_Exception& ex )
     {
@@ -677,6 +679,7 @@ void PythonNode::executeRemote()
           for(iter = _setOfOutputPort.begin(); iter != _setOfOutputPort.end(); ++iter)
             {
               OutputPyPort *p=(OutputPyPort *)*iter;
+              DEBUG_YACSTRACE("Start of dealing with output " << p->getName() << " of "<< getId());
               DEBTRACE( "port name: " << p->getName() );
               DEBTRACE( "port kind: " << p->edGetType()->kind() );
               DEBTRACE( "port pos : " << pos );
@@ -698,7 +701,9 @@ void PythonNode::executeRemote()
                   throw YACS::ENGINE::ConversionException(msg.str());
                 }
                 UnlinkOnDestructorIfProxy(ob);
+                DEBUG_YACSTRACE("Assign PyObj output " << p->getName() << " of "<< getId());
                 p->put( ob );
+                DEBUG_YACSTRACE("End of assign PyObj output " << p->getName() << " of "<< getId());
               }
               pos++;
             }
@@ -717,7 +722,7 @@ void PythonNode::executeRemote()
     freeKernelPynode();
     bool dummy;
     Engines::Container_var cont(GetContainerObj(this,dummy));
-    cont->removePyScriptNode(getName().c_str());
+    cont->removePyScriptNode(getId().c_str());
   }
   DEBTRACE( "++++++++++++++ ENDOF PyNode::executeRemote: " << getName() << " ++++++++++++++++++++" );
 }
@@ -945,7 +950,7 @@ std::string PythonNode::pythonEntryName()const
   if(isUsingPythonCache())
     return "DEFAULT_NAME_FOR_UNIQUE_PYTHON_NODE_ENTRY";
   else
-    return getName();
+    return getId();
 }
 
 bool PythonNode::isUsingPythonCache()const

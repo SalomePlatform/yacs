@@ -534,6 +534,7 @@ void ForEachLoopGen::exUpdateState()
 
       DEBTRACE("nbOfElts=" << nbOfElts);
       DEBTRACE("nbOfBr=" << nbOfBr);
+      INFO_YACSTRACE("nbOfBr (" << getName() << ") = " << nbOfBr);
 
       if(nbOfEltsToDo==0)
         {

@@ -154,13 +154,13 @@ void DistributedPythonNode::load()
       throw Exception("In DistributedPythonNode the ref in NULL ! ");
 
 
-    DEBTRACE( "---------------End PyfuncSerNode::load function---------------" );
+    DEBUG_YACSTRACE( "---------------End PyfuncSerNode::load function---------------" );
   }
 }
 
 void DistributedPythonNode::execute()
 {
-  YACSTRACE(1,"+++++++++++++++++ DistributedPythonNode::execute: " << getName() << " " << getFname() << " +++++++++++++++++" );
+  GURU_YACSTRACE("+++++++++++++++++ DistributedPythonNode::execute: " << getName() << " " << getFname() << " +++++++++++++++++" );
   //////
   PyObject* ob;
   if(!_pyfuncSer)
@@ -170,7 +170,7 @@ void DistributedPythonNode::execute()
   {
     AutoGIL agil;
 
-    DEBTRACE( "---------------DistributedPythonNode::inputs---------------" );
+    GURU_YACSTRACE( "---------------DistributedPythonNode::inputs---------------" );
     args = PyTuple_New(getNumberOfInputPorts()) ;
     int pos=0;
     for(list<InputPort *>::iterator iter2 = _setOfInputPort.begin(); iter2 != _setOfInputPort.end(); iter2++,pos++)
@@ -191,7 +191,7 @@ void DistributedPythonNode::execute()
     Py_DECREF(serializationInput);
   }
   //serializationInputCorba[serializationInputC.length()]='\0';
-  DEBTRACE( "-----------------DistributedPythonNode starting remote python invocation-----------------" );
+  DEBUG_YACSTRACE( "-----------------DistributedPythonNode starting remote python invocation-----------------" );
   Engines::pickledArgs *resultCorba;
   try
   {
@@ -203,7 +203,7 @@ void DistributedPythonNode::execute()
       _errorDetails=msg;
       throw Exception(msg);
   }
-  DEBTRACE( "-----------------DistributedPythonNode end of remote python invocation-----------------" );
+  DEBUG_YACSTRACE( "-----------------DistributedPythonNode end of remote python invocation-----------------" );
   //
   delete serializationInputCorba;
   char *resultCorbaC=new char[resultCorba->length()+1];
@@ -220,7 +220,7 @@ void DistributedPythonNode::execute()
     delete [] resultCorbaC;
     PyTuple_SetItem(args,0,resultPython);
     PyObject *finalResult=PyObject_CallObject(_pyfuncUnser,args);
-    DEBTRACE( "-----------------DistributedPythonNode::outputs-----------------" );
+    GURU_YACSTRACE( "-----------------DistributedPythonNode::outputs-----------------" );
     if(finalResult == NULL)
       {
         std::stringstream msg;
@@ -248,12 +248,12 @@ void DistributedPythonNode::execute()
         for(list<OutputPort *>::iterator iter = _setOfOutputPort.begin(); iter != _setOfOutputPort.end(); iter++, pos++)
           {
             OutputPyPort *p=(OutputPyPort *)*iter;
-            DEBTRACE( "port name: " << p->getName() );
-            DEBTRACE( "port kind: " << p->typeName() );
-            DEBTRACE( "port pos : " << pos );
+            GURU_YACSTRACE( "port name: " << p->getName() );
+            GURU_YACSTRACE( "port kind: " << p->typeName() );
+            GURU_YACSTRACE( "port pos : " << pos );
             if(PyTuple_Check(finalResult))ob=PyTuple_GetItem(finalResult,pos) ;
             else ob=finalResult;
-            DEBTRACE( "ob refcnt: " << ob->ob_refcnt );
+            GURU_YACSTRACE( "ob refcnt: " << ob->ob_refcnt );
             p->put(ob);
           }
     }
@@ -264,7 +264,7 @@ void DistributedPythonNode::execute()
         throw;
     }
   }
-  DEBTRACE( "++++++++++++++ End DistributedPythonNode::execute: " << getName() << " ++++++++++++++++++++" );
+  GURU_YACSTRACE( "++++++++++++++ End DistributedPythonNode::execute: " << getName() << " ++++++++++++++++++++" );
 }
 
 std::string DistributedPythonNode::getEffectiveKindOfServer() const
@@ -296,16 +296,16 @@ void DistributedPythonNode::dealException(CORBA::Exception *exc, const char *met
 {
   if( exc )
     {
-      DEBTRACE( "An exception was thrown!" );
-      DEBTRACE( "The raised exception is of Type:" << exc->_name() );
+      GURU_YACSTRACE( "An exception was thrown!" );
+      GURU_YACSTRACE( "The raised exception is of Type:" << exc->_name() );
 
       CORBA::SystemException* sysexc;
       sysexc=CORBA::SystemException::_downcast(exc);
       if(sysexc != NULL)
         {
           // It's a SystemException
-          DEBTRACE( "minor code: " << sysexc->minor() );
-          DEBTRACE( "completion code: " << sysexc->completed() );
+          GURU_YACSTRACE( "minor code: " << sysexc->minor() );
+          GURU_YACSTRACE( "completion code: " << sysexc->completed() );
           std::string text="Execution problem: ";
           std::string excname=sysexc->_name();
           if(excname == "BAD_OPERATION")
@@ -330,7 +330,7 @@ void DistributedPythonNode::dealException(CORBA::Exception *exc, const char *met
             }
           else
             {
-              DEBTRACE(sysexc->NP_minorString() );
+              GURU_YACSTRACE(sysexc->NP_minorString() );
               text=text+"System Exception "+ excname;
             }
           _errorDetails=text;
@@ -347,8 +347,8 @@ void DistributedPythonNode::dealException(CORBA::Exception *exc, const char *met
           const SALOME::SALOME_Exception* salexc;
           if(anyExcept >>= salexc)
             {
-              DEBTRACE("SALOME_Exception: "<< salexc->details.sourceFile);
-              DEBTRACE("SALOME_Exception: "<<salexc->details.lineNumber);
+              GURU_YACSTRACE("SALOME_Exception: "<< salexc->details.sourceFile);
+              GURU_YACSTRACE("SALOME_Exception: "<<salexc->details.lineNumber);
               _errorDetails=salexc->details.text;
               throw Exception("Execution problem: Salome Exception occurred" + getErrorDetails() );
             }

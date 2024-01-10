@@ -861,15 +861,18 @@ namespace YACS
               throw YACS::ENGINE::ConversionException(msg.str());
             }
           int length=PySequence_Size(o);
-          DEBTRACE("length: " << length );
+          GURU_YACSTRACE("convertToYacsSequence : length = " << length);
           v.resize(length);
           for(int i=0;i<length;i++)
             {
               PyObject *item=PySequence_ITEM(o,i);
+              GURU_YACSTRACE("convertToYacsSequence : analyze if proxy");
               bool somthingToDo = YACS::ENGINE::PythonEntry::IsProxy(item);
               if( somthingToDo )
               {
+                GURU_YACSTRACE("convertToYacsSequence : it s proxy -> unlink");
                 YACS::ENGINE::PythonEntry::UnlinkOnDestructorIfProxy(item);
+                GURU_YACSTRACE("convertToYacsSequence : it s proxy -> incrRef");
                 YACS::ENGINE::PythonEntry::IfProxyDoSomething(item,"incrRef");
               }
 #ifdef _DEVDEBUG_
@@ -994,13 +997,17 @@ namespace YACS
             {
               //It's a python pickled object, unpickled it
               PyObject* mod=PyImport_ImportModule("pickle");
+              GURU_YACSTRACE("convertFromYacsObjref : unpickling...");
               PyObject *ob=PyObject_CallMethod(mod,(char *)"loads",(char *)"y#",o.c_str(),o.length());
+              GURU_YACSTRACE("convertFromYacsObjref : unpickling done...");
               DEBTRACE(PyObject_Repr(ob));
               Py_DECREF(mod);
+              GURU_YACSTRACE("convertFromYacsObjref : Analyze if it's a proxy");
               bool somthingToDo = YACS::ENGINE::PythonEntry::IsProxy(ob);
               if( somthingToDo )
               {
                 // no incrRef here because the incrRef has been done before dumps that construct o.
+                GURU_YACSTRACE("convertFromYacsObjref : It's a proxy -> activate on deletion");
                 YACS::ENGINE::PythonEntry::UnlinkOnDestructorIfProxy(ob);
               }
               if(ob==NULL)

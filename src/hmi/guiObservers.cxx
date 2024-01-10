@@ -3520,7 +3520,6 @@ SubjectDataPort::~SubjectDataPort()
   if (isDestructible())
     {
       Node* node = _dataPort->getNode();
-      YASSERT(node);
       ElementaryNode * father = dynamic_cast<ElementaryNode*>(node);
       if (father)
         {

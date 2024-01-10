@@ -22,6 +22,10 @@
 #include "YacsTrace.hxx"
 #include <cstdlib>
 
+#include <chrono>
+#include <iomanip>
+#include <ctime>
+
 #ifdef WIN32
 #include <process.h>
 #define getpid _getpid
@@ -29,8 +33,20 @@
 #include <unistd.h>
 #endif
 
-namespace YACS{
-    int traceLevel=0;
+namespace YACS {
+  int traceLevel = 0;
+}
+
+void YACS::AppendTimeClock(std::ostream& os)
+{
+  auto now = std::chrono::system_clock::now();
+  auto duration = now.time_since_epoch();
+  auto timestamp = std::chrono::system_clock::to_time_t(now);
+  std::tm *local_time = std::localtime(&timestamp);
+  auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+  os  << std::setfill('0') << std::setw(2) << local_time->tm_hour << ":"
+      << std::setw(2) << local_time->tm_min << ":"
+      << std::setw(2) << local_time->tm_sec << "." << std::setw(3) << millis % 1000 << " - ";
 }
 
 void AttachDebugger()

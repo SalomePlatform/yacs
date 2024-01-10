@@ -22,6 +22,7 @@
 #include "SALOME_NamingService_Wrapper.hxx"
 #include "SALOME_ResourcesManager.hxx"
 #include "SALOME_ContainerManager.hxx"
+
 #include "Container.hxx"
 #include "AutoLocker.hxx"
 
@@ -70,7 +71,7 @@ std::string SalomeContainerTools::getProperty(const std::string& name) const
 
 void SalomeContainerTools::setProperty(const std::string& name, const std::string& value)
 {
-  //DEBTRACE("SalomeContainer::setProperty : " << name << " ; " << value);
+  //DEBUG_YACSTRACE("SalomeContainer::setProperty : " << name << " ; " << value);
   // Container Part
   if (name == "container_name")
     _params.container_name = CORBA::string_dup(value.c_str());
@@ -334,7 +335,7 @@ void SalomeContainerToolsBase::Start(const std::vector<std::string>& compoNames,
 
   bool isEmptyName;
   std::string str(sct.getNotNullContainerName(cont,askingNode,isEmptyName));
-  DEBTRACE("SalomeContainer::start " << str <<";"<< sct.getHostName() );
+  DEBUG_YACSTRACE("SalomeContainer::start " << str <<";"<< sct.getHostName() );
 
   // Finalize parameters with components found in the container
 
@@ -370,7 +371,7 @@ void SalomeContainerToolsBase::Start(const std::vector<std::string>& compoNames,
       myparams.mode="get";
       try
       {
-          DEBTRACE("GiveContainer " << str << " mode " << myparams.mode);
+          DEBUG_YACSTRACE("GiveContainer " << str << " mode " << myparams.mode);
           trueCont=contManager->GiveContainer(myparams);
       }
       catch( const SALOME::SALOME_Exception& ex )
@@ -378,7 +379,7 @@ void SalomeContainerToolsBase::Start(const std::vector<std::string>& compoNames,
           std::string msg="SalomeContainer::start : no existing container : ";
           msg += '\n';
           msg += ex.details.text.in();
-          DEBTRACE( msg );
+          DEBUG_YACSTRACE( msg );
       }
       catch(...)
       {
@@ -387,13 +388,13 @@ void SalomeContainerToolsBase::Start(const std::vector<std::string>& compoNames,
       if(!CORBA::is_nil(trueCont))
         {
           shutdownLevel=3;
-          DEBTRACE( "container found: " << str << " " << shutdownLevel );
+          DEBUG_YACSTRACE( "container found: " << str << " " << shutdownLevel );
         }
       else
         {
           shutdownLevel=2;
           myparams.mode="start";
-          DEBTRACE( "container not found: " << str << " " << shutdownLevel);
+          DEBUG_YACSTRACE( "container not found: " << str << " " << shutdownLevel);
         }
     }
 
@@ -404,7 +405,7 @@ void SalomeContainerToolsBase::Start(const std::vector<std::string>& compoNames,
     {
           // --- GiveContainer is used in batch mode to retreive launched containers,
           //     and is equivalent to StartContainer when not in batch.
-          DEBTRACE("GiveContainer " << str << " mode " << myparams.mode);
+          DEBUG_YACSTRACE("GiveContainer " << str << " mode " << myparams.mode);
           trueCont=contManager->GiveContainer(myparams);
     }
     catch( const SALOME::SALOME_Exception& ex )
@@ -417,7 +418,7 @@ void SalomeContainerToolsBase::Start(const std::vector<std::string>& compoNames,
     catch(CORBA::COMM_FAILURE&)
     {
       //std::cerr << "SalomeContainer::start : CORBA Comm failure detected. Make another try!" << std::endl;
-      DEBTRACE("SalomeContainer::start :" << str << " :CORBA Comm failure detected. Make another try!");
+      DEBUG_YACSTRACE("SalomeContainer::start :" << str << " :CORBA Comm failure detected. Make another try!");
       nbTries++;
       if(nbTries > 5)
         throw Exception("SalomeContainer::start : Unable to launch container in Salome : CORBA Comm failure detected");
@@ -436,12 +437,12 @@ void SalomeContainerToolsBase::Start(const std::vector<std::string>& compoNames,
 
   CORBA::String_var containerName(trueCont->name()),hostName(trueCont->getHostName());
   //std::cerr << "SalomeContainer launched : " << containerName << " " << hostName << " " << trueCont->getPID() << std::endl;
-  DEBTRACE("SalomeContainer launched : " << containerName << " " << hostName << " " << trueCont->getPID() );
+  DEBUG_YACSTRACE("SalomeContainer launched : NS entry : " << containerName << " PID : " << trueCont->getPID() );
 }
 
 CORBA::Object_ptr SalomeContainerToolsBase::LoadComponent(SalomeContainerHelper *launchModeType, Container *cont, Task *askingNode)
 {
-  DEBTRACE("SalomeContainer::loadComponent ");
+  DEBUG_YACSTRACE("SalomeContainer::loadComponent ");
   const ComponentInstance *inst(askingNode?askingNode->getComponent():0);
   {
     YACS::BASES::AutoLocker<Container> alck(cont);//To be sure
@@ -486,7 +487,7 @@ CORBA::Object_ptr SalomeContainerToolsBase::CreateComponentInstance(Container *c
   int item=0;
   for(itm = properties.begin(); itm != properties.end(); ++itm, item++)
     {
-      DEBTRACE("envname="<<itm->first<<" envvalue="<< itm->second);
+      DEBUG_YACSTRACE("envname="<<itm->first<<" envvalue="<< itm->second);
       env[item].key= CORBA::string_dup(itm->first.c_str());
       env[item].value <<= itm->second.c_str();
     }
