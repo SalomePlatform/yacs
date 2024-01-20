@@ -1,4 +1,4 @@
-dnl Copyright (C) 2007-2023  CEA, EDF
+dnl Copyright (C) 2007-2024  CEA, EDF
 dnl
 dnl This library is free software; you can redistribute it and/or
 dnl modify it under the terms of the GNU Lesser General Public
