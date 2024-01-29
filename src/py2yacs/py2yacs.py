@@ -103,7 +103,10 @@ class VisitAST(ast.NodeVisitor):
         self.lastfn.imports.append(n.name)
   def visit_ImportFrom(self, node):
     if self.infunc:
-      m=node.module
+      if node.module :
+        m=str(node.module)
+      else:
+        m=""
       for n in node.names:
         self.lastfn.imports.append(m+"."+n.name)
 
