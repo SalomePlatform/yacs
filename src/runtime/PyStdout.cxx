@@ -52,7 +52,7 @@ static PyObject *
 PyStdOut_write(PyStdOut *self, PyObject *args)
 {
   char *c;
-  int l;
+  Py_ssize_t l;
   if (!PyArg_ParseTuple(args, "s#:write",&c, &l))
     return NULL;
 

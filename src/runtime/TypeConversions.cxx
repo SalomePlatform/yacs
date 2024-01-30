@@ -998,7 +998,8 @@ namespace YACS
               //It's a python pickled object, unpickled it
               PyObject* mod=PyImport_ImportModule("pickle");
               GURU_YACSTRACE("convertFromYacsObjref : unpickling...");
-              PyObject *ob=PyObject_CallMethod(mod,(char *)"loads",(char *)"y#",o.c_str(),o.length());
+              Py_ssize_t l = o.length();
+              PyObject *ob=PyObject_CallMethod(mod,(char *)"loads",(char *)"y#",o.c_str(),l);
               GURU_YACSTRACE("convertFromYacsObjref : unpickling done...");
               DEBTRACE(PyObject_Repr(ob));
               Py_DECREF(mod);
@@ -1026,7 +1027,8 @@ namespace YACS
                   PyErr_Print();
                   throw YACS::ENGINE::ConversionException("Problem in convertToYacsObjref<PYTHONImpl: no simplejson module");
                 }
-              PyObject *ob=PyObject_CallMethod(mod,(char *)"loads",(char *)"y",o.c_str());
+              Py_ssize_t l = o.length();  
+              PyObject *ob=PyObject_CallMethod(mod,(char *)"loads",(char *)"y",o.c_str(),l);
               Py_DECREF(mod);
               if(ob==NULL)
                 {
@@ -1891,7 +1893,8 @@ namespace YACS
 
                   PyGILState_STATE gstate = PyGILState_Ensure(); 
                   PyObject* mod=PyImport_ImportModule("pickle");
-                  PyObject *ob=PyObject_CallMethod(mod,(char *)"loads",(char *)"y#",s,buffer->length());
+                  Py_ssize_t l = buffer->length();
+                  PyObject *ob=PyObject_CallMethod(mod,(char *)"loads",(char *)"y#",s,l);
                   PyObject *pickled=PyObject_CallMethod(mod,(char *)"dumps",(char *)"Oi",ob,protocol);
                   DEBTRACE(PyObject_Repr(pickled));
                   std::string mystr=PyBytes_AsString(pickled);
