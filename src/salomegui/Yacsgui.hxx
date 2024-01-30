@@ -20,6 +20,8 @@
 #ifndef _YACSGUI_HXX_
 #define _YACSGUI_HXX_
 
+#define  PY_SSIZE_T_CLEAN
+
 #include "SalomeWrap_Module.hxx"
 #include "Yacsgui_Resource.hxx"
 #include <SALOMEconfig.h>

@@ -131,7 +131,8 @@ class StdAloneYacsLoaderTest1(unittest.TestCase):
     ex.RunW(p,0)
     self.assertEqual(p.getState(),pilot.DONE)
     #
-    self.assertEqual(p.getChildByName("node2").getOutputPort("o1").get(),['aaa','bcbcbc'])
+    data = p.getChildByName("node2").getOutputPort("o1").get()
+    self.assertEqual(data,['aaa','bcbcbc'])
     pass
 
   def test3(self):

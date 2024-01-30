@@ -175,7 +175,8 @@ bool Yacsgui::activateModule( SUIT_Study* theStudy )
     PyErr_Print();
   else
     {
-      PyObject* result=PyObject_CallMethod( pluginsmanager, (char*)"initialize", (char*)"isss",1,"yacs","YACS",tr("YACS_PLUGINS").toStdString().c_str());
+      Py_ssize_t l = 12;  // size of YACS_PLUGINS string
+      PyObject* result=PyObject_CallMethod( pluginsmanager, (char*)"initialize", (char*)"isss",1,"yacs","YACS",tr("YACS_PLUGINS").toStdString().c_str(),l);
       if(result==NULL)
         PyErr_Print();
       Py_XDECREF(result);

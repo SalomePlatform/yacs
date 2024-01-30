@@ -22,6 +22,8 @@
 
 #include "YACSRuntimeSALOMEExport.hxx"
 
+#define  PY_SSIZE_T_CLEAN
+
 #include <Python.h>
 #include <omniORB4/CORBA.h>
 #include <libxml/parser.h>
