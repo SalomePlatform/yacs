@@ -129,6 +129,7 @@ namespace YACS
       bool exIsControlReady() const;
       std::list<Node *> getOutNodes() const;
       virtual void writeDot(std::ostream &os) const;
+      void writeDotInFile(const std::string& fileName) const;
       virtual void exUpdateState();
       virtual void exFailedState();
       virtual void exDisabledState();

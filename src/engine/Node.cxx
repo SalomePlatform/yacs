@@ -27,6 +27,7 @@
 #include "InputDataStreamPort.hxx"
 #include "OutputDataStreamPort.hxx"
 #include <iostream>
+#include <fstream>
 
 //#define _DEVDEBUG_
 #include "YacsTrace.hxx"
@@ -614,6 +615,12 @@ void Node::writeDot(std::ostream &os) const
   os << getColorState(state);
   os << "\" label=\"" << getImplementation() << "Node:" ;
   os << getQualifiedName() <<"\"];\n";
+}
+
+void Node::writeDotInFile(const std::string& fileName) const
+{
+  std::ofstream f(fileName);
+  this->writeDot(f);
 }
 
 //! same as Node::getName() in most cases, but differs for children of switch

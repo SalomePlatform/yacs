@@ -42,6 +42,8 @@ namespace YACS
       virtual void writeOutNodeParameters(DataNode *node);
       virtual void writeStudyOutNodeParameters(DataNode *node);
     };
+
+    YACSRUNTIMESALOME_EXPORT void VisitorSaveSalomeSchemaUnsafe(ComposedNode* proc, const std::string& xmlSchema);
   }
 }
 

@@ -20,7 +20,8 @@
 #include "SalomeContainerHelper.hxx"
 
 #include "ServiceNode.hxx"
-#include "YacsTrace.hxx"
+
+#include "utilities.h"
 
 #include <sstream>
 #include <iostream>
@@ -92,15 +93,13 @@ void SalomeContainerMonoHelper::shutdown()
     return ;
   try
   {
-      DEBTRACE("shutdown SALOME container: " );
       CORBA::String_var containerName=_trueCont->name();
-      DEBTRACE(containerName);
+      INFO_MESSAGE("shutdown SALOME container: " << containerName);
       _trueCont->Shutdown();
-      std::cerr << "shutdown SALOME container: " << containerName << std::endl;
   }
   catch(...)
   {
-      DEBTRACE("Unknown exception ignored." );
+      ERROR_MESSAGE("Unknown exception ignored." );
   }
   _trueCont=Engines::Container::_nil();
 }
@@ -201,19 +200,17 @@ void SalomeContainerMultiHelper::shutdown()
   {
     try
     {
-        DEBTRACE("shutdown SALOME container: " );
         CORBA::String_var containerName=it->second->name();
-        DEBTRACE(containerName);
+        INFO_MESSAGE("shutdown SALOME container: " << containerName);
         it->second->Shutdown();
-        std::cerr << "shutdown SALOME container: " << containerName << std::endl;
     }
     catch(CORBA::Exception&)
     {
-        DEBTRACE("Unexpected CORBA failure detected." );
+        ERROR_MESSAGE("Unexpected CORBA failure detected." );
     }
     catch(...)
     {
-        DEBTRACE("Unknown exception ignored." );
+        ERROR_MESSAGE("Unknown exception ignored." );
     }
   }
   _containersForTasks.clear();
@@ -222,19 +219,18 @@ void SalomeContainerMultiHelper::shutdown()
     {
       try
       {
-          DEBTRACE("shutdown SALOME container: " );
           CORBA::String_var containerName=it->second->name();
-          DEBTRACE(containerName);
+          INFO_MESSAGE("shutdown SALOME container: " << containerName);
           it->second->Shutdown();
           std::cerr << "shutdown SALOME container: " << containerName << std::endl;
       }
       catch(CORBA::Exception&)
       {
-          DEBTRACE("Unexpected CORBA failure detected." );
+          ERROR_MESSAGE("Unexpected CORBA failure detected." );
       }
       catch(...)
       {
-          DEBTRACE("Unknown exception ignored." );
+          ERROR_MESSAGE("Unknown exception ignored." );
       }
     }
   _containersForComponents.clear();

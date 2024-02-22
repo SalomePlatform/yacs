@@ -177,3 +177,11 @@ void VisitorSaveSalomeSchema::writeStudyOutNodeParameters(DataNode *node)
       _out << inp->getData() << "\"/>" << endl;
     }
 }
+
+void YACS::ENGINE::VisitorSaveSalomeSchemaUnsafe(ComposedNode* proc, const std::string& xmlSchema)
+{
+  VisitorSaveSalomeSchema vss(proc);
+  vss.openFileSchema(xmlSchema);
+  proc->accept(&vss);
+  vss.closeFileSchema();
+}

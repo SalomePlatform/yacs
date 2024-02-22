@@ -69,3 +69,10 @@
 %import "xmlParserBase.hxx"
 %include "LoadState.hxx"
 
+namespace YACS
+{
+  namespace ENGINE
+  {
+    void loadState(YACS::ENGINE::Proc *p,const std::string& xmlStateFile);
+  }
+}

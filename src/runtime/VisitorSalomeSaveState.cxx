@@ -116,6 +116,11 @@ void YACS::ENGINE::schemaSaveState(Proc* proc,
                                   const std::string& xmlSchemaFile)
 {
   YACS::BASES::AutoLocker<YACS::BASES::Mutex> alck(&(exec->getTheMutexForSchedulerUpdate()));
+  schemaSaveStateUnsafe(proc,xmlSchemaFile);
+}
+
+void YACS::ENGINE::schemaSaveStateUnsafe(Proc* proc, const std::string& xmlSchemaFile)
+{
   VisitorSalomeSaveState vss(proc);
   vss.openFileDump(xmlSchemaFile);
   proc->accept(&vss);

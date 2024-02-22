@@ -1,0 +1,76 @@
+#! /usr/bin/env python3
+# -*- coding: utf-8 -*-
+# Copyright (C) 2024  CEA, EDF
+#
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License, or (at your option) any later version.
+#
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+#
+# See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+#
+
+import driver_internal
+import subprocess as sp
+import salome
+import SALOME_Embedded_NamingService_ClientPy
+import NamingService
+from SALOME_PyNode import FileDeleter,FileHolder
+
+import signal
+import os
+
+proc = None
+ior_file = None
+
+def handler(signum, frame):
+  global proc,ior_file
+  try:
+    ns = SALOME_Embedded_NamingService_ClientPy.SALOME_Embedded_NamingService_ClientPy( NamingService.NamingService.LoadIORInFile( ior_file.filename ) )
+    del ior_file
+    ior_file = None # to avoid raises in __main__ function
+    cm = ns.Resolve(salome.CM_NAME_IN_NS)
+    cm.ShutdownContainersNow()
+  except:
+    pass
+  os.kill( proc.pid, signal.SIGKILL )
+
+def generateCmdForInternal():
+  import sys
+  import tempfile
+  global ior_file
+  args, _ = driver_internal.parseArgs()
+  iorNS = args[ driver_internal.IORKeyInARGS ]
+  firstPart = ["python3",driver_internal.__file__] 
+  lastPart = [elt for elt in sys.argv[1:] if elt != ""]
+  middlePart = []
+  #
+  if not iorNS:
+    with tempfile.NamedTemporaryFile(prefix="ior_driver_",suffix=".ior") as f:
+      ior_file = FileDeleter( f.name )
+    middlePart = [ "{}={}".format( driver_internal.IOREntryInCMD, ior_file.filename) ]
+  else:
+    ior_file = FileHolder( iorNS )
+  print(100*"*")
+  print( firstPart + middlePart + lastPart )
+  return firstPart + middlePart + lastPart
+
+if __name__ == "__main__":
+  signal.signal(signal.SIGINT, handler)
+  signal.signal(signal.SIGTERM, handler)
+  cmd = generateCmdForInternal()
+  proc = sp.Popen( cmd )
+  proc.communicate()
+  del ior_file
+  code = proc.returncode
+  if code != 0:
+    raise RuntimeError(f"Subprocess finished with a non zero status ({code}). Command returning non zero status was : {cmd}")

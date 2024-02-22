@@ -420,7 +420,7 @@ void RuntimeSALOME::init(long flags, int argc, char* argv[])
     }
 }
 
-void RuntimeSALOME::fini()
+void RuntimeSALOME::fini(bool isFinalizingPython)
 {
   if (_usePython)
     {
@@ -449,8 +449,9 @@ void RuntimeSALOME::fini()
       nodeMap.erase("PyFunction");
       nodeMap.erase("PyScript");
       nodeMap.erase("SalomePythonNode");
-
-      Py_Finalize();
+      
+      if( isFinalizingPython )
+        Py_Finalize();
 #ifdef REFCNT
       DEBTRACE("_orb refCount: " << ((omniOrbORB*)_orb.in())->pd_refCount);
 #endif

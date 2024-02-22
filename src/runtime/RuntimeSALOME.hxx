@@ -83,7 +83,7 @@ namespace YACS
       virtual std::string getVersion() const;
 
       virtual void init(long flags, int argc, char* argv[]);
-      virtual void fini();
+      virtual void fini(bool isFinalizingPython = true);
       PyObject *launchSubProcess(const std::vector<std::string>& cmds);
       virtual std::vector< std::pair<std::string,int> > getCatalogOfComputeNodes() const;
       virtual InputPort* createInputPort(const std::string& name,

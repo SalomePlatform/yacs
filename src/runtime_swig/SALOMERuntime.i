@@ -67,6 +67,7 @@
 #include "ExecutorSwig.hxx"
 #include <sstream>
 #include "Catalog.hxx"
+#include "ThreadLauncher.hxx"
 %}
 
 // ----------------------------------------------------------------------------
@@ -161,6 +162,9 @@ namespace YACS
     void schemaSaveState(Proc* proc,
                          Executor* exec,
                          const std::string& xmlSchemaFile);
+    void schemaSaveStateUnsafe(Proc* proc, const std::string& xmlSchemaFile);
+    
+    void VisitorSaveSalomeSchemaUnsafe(Proc* proc, const std::string& xmlSchema);
   }
 }
 
@@ -245,5 +249,20 @@ namespace YACS
   {
     return convertPyObjectNeutral(self->getBuiltinCatalog()->_typeMap["pyobj"],
                                   pyobj);
+  }
+}
+
+namespace YACS
+{
+  namespace ENGINE
+  {
+    class YACSLIBENGINE_EXPORT ThreadDumpState
+    {
+    public:
+      ThreadDumpState(Proc *proc, int nbSeconds, const std::string& dumpFile, const std::string& lockFile);
+      ~ThreadDumpState();
+      void start();
+      void join();
+    };
   }
 }

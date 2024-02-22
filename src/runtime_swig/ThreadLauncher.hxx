@@ -1,4 +1,4 @@
-// Copyright (C) 2006-2024  CEA, EDF
+// Copyright (C) 2024  CEA, EDF
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -17,29 +17,34 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-#ifndef VISITORSALOMESAVESTATE_HXX
-#define VISITORSALOMESAVESTATE_HXX
+#pragma once
 
-#include "VisitorSaveState.hxx"
-#include "YACSRuntimeSALOMEExport.hxx"
+#include "YACSlibEngineExport.hxx"
+#include "Proc.hxx"
+
+#include <thread>
+#include <memory>
+#include <string>
 
 namespace YACS
 {
   namespace ENGINE
   {
-    class Executor;
-    class YACSRUNTIMESALOME_EXPORT VisitorSalomeSaveState : public VisitorSaveState
+    class YACSLIBENGINE_EXPORT ThreadDumpState
     {
-      public:
-      VisitorSalomeSaveState(ComposedNode *root);
-      virtual ~VisitorSalomeSaveState();
-      virtual void visitForEachLoop(ForEachLoop *node);
+    public:
+      ThreadDumpState(Proc *proc, int nbSeconds, const std::string& dumpFile, const std::string& lockFile):
+        _proc(proc),_nb_seconds(nbSeconds),_dump_file(dumpFile),_lock_file(lockFile) { }
+      ~ThreadDumpState();
+      void run();
+      void start();
+      void join();
+    private:
+      std::unique_ptr< std::thread > _my_thread;
+      Proc *_proc;
+      int _nb_seconds = 0;
+      std::string _dump_file;
+      std::string _lock_file;
     };
-
-    YACSRUNTIMESALOME_EXPORT void schemaSaveState(Proc* proc,
-                                              Executor* exec,
-                                              const std::string& xmlSchemaFile);
-    YACSRUNTIMESALOME_EXPORT void schemaSaveStateUnsafe(Proc* proc, const std::string& xmlSchemaFile);
   }
 }
-#endif // VISITORSALOMESAVESTATE_HXX
