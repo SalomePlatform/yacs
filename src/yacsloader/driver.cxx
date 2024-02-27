@@ -277,6 +277,10 @@ void * dumpState(void *arg)
 typedef void (*sighandler_t)(int);
 sighandler_t setsig(int sig, sighandler_t handler)
 {
+  sigset_t sigmask;
+  sigemptyset (&sigmask);
+  sigaddset(&sigmask, sig);
+  sigprocmask(SIG_UNBLOCK, &sigmask, NULL);
   struct sigaction context, ocontext;
   context.sa_handler = handler;
   sigemptyset(&context.sa_mask);
