@@ -42,13 +42,18 @@ void ThreadDumpState::run()
   {
 #ifdef WIN32
     Sleep(_nb_seconds);
+	std::string cmd = "COPY /b " + _lock_file + " +,,";
 #else 
     sleep(_nb_seconds);
-#endif
     std::string cmd = "touch " + _lock_file;
+#endif
     system(cmd.c_str());
     schemaSaveStateUnsafe(_proc,_dump_file);
+#ifdef WIN32
+    cmd = "DEL /Q /F " + _lock_file;
+#else
     cmd = "rm -f " + _lock_file;
+#endif
     system(cmd.c_str());
     state = _proc->getEffectiveState();
   }
