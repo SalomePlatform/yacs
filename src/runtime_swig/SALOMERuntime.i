@@ -104,23 +104,6 @@ static PyObject *convertContainer2(YACS::ENGINE::Container *cont, int owner=0)
 }
 %}
 
-%{
-#include "Proc.hxx"
-
-#include <thread>
-#include <memory>
-#include <string>
-using namespace YACS::ENGINE;
-class ThreadDumpState
-{
- public:
-   ThreadDumpState(Proc *proc, int nbSeconds, const std::string& dumpFile, const std::string& lockFile);
-   ~ThreadDumpState();
-   void start();
-   void join();
-};
-%}
-
 // ----------------------------------------------------------------------------
 
 #ifdef SWIGPYTHON
@@ -269,3 +252,17 @@ namespace YACS
   }
 }
 
+namespace YACS
+{
+  namespace ENGINE
+  {
+    class ThreadDumpState
+    {
+    public:
+      ThreadDumpState(Proc *proc, int nbSeconds, const std::string& dumpFile, const std::string& lockFile);
+      ~ThreadDumpState();
+      void start();
+      void join();
+    };
+  }
+}
