@@ -137,7 +137,7 @@ static PyObject *convertContainer2(YACS::ENGINE::Container *cont, int owner=0)
 %rename(getSALOMERuntime) YACS::ENGINE::getSALOMERuntime; // to suppress a 503 warning
 %ignore omniORBpyAPI;
 
-%include <YACSRuntimeSALOMEExport.hxx>
+%include "YACSRuntimeSALOMEExport.hxx"
 %include "SalomeContainer.hxx"
 %include "SalomeHPContainer.hxx"
 %include "RuntimeSALOME.hxx"
@@ -256,7 +256,7 @@ namespace YACS
 {
   namespace ENGINE
   {
-    class ThreadDumpState
+    class YACSRUNTIMESALOME_EXPORT ThreadDumpState
     {
     public:
       ThreadDumpState(Proc *proc, int nbSeconds, const std::string& dumpFile, const std::string& lockFile);

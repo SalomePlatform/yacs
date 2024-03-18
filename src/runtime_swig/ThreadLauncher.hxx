@@ -33,8 +33,7 @@ namespace YACS
     class YACSLIBENGINE_EXPORT ThreadDumpState
     {
     public:
-      ThreadDumpState(Proc *proc, int nbSeconds, const std::string& dumpFile, const std::string& lockFile):
-        _proc(proc),_nb_seconds(nbSeconds),_dump_file(dumpFile),_lock_file(lockFile) { }
+      ThreadDumpState(Proc *proc, int nbSeconds, const std::string& dumpFile, const std::string& lockFile);
       ~ThreadDumpState();
       void run();
       void start();
