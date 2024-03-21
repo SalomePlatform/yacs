@@ -421,16 +421,23 @@ void SalomeContainerToolsBase::Start(const std::vector<std::string>& compoNames,
       DEBUG_YACSTRACE("SalomeContainer::start :" << str << " :CORBA Comm failure detected. Make another try!");
       nbTries++;
       if(nbTries > 5)
-        throw Exception("SalomeContainer::start : Unable to launch container in Salome : CORBA Comm failure detected");
+      {
+        std::ostringstream oss; oss << "SalomeContainer::start : Unable to launch container " << myparams.container_name << " in Salome : CORBA Comm failure detected";
+        throw Exception( oss.str() );
+      }
     }
     catch(CORBA::Exception&)
     {
-        throw Exception("SalomeContainer::start : Unable to launch container in Salome : Unexpected CORBA failure detected");
+      std::ostringstream oss; oss << "SalomeContainer::start : Unable to launch container " << myparams.container_name << " in Salome : Unexpected CORBA failure detected";
+      throw Exception( oss.str() );
     }
   }
 
   if(CORBA::is_nil(trueCont))
-    throw Exception("SalomeContainer::start : Unable to launch container in Salome. Check your CatalogResources.xml file");
+  {
+    std::ostringstream oss; oss << "SalomeContainer::start : Unable to launch container " << myparams.container_name << " in Salome. Check your CatalogResources.xml file";
+    throw Exception( oss.str() );
+  }
 
   // TODO : thread safety!
   schelp->setContainer(askingNode,trueCont);
