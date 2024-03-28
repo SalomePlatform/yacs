@@ -43,6 +43,7 @@ HTOPServerFileTimeResEntryInCMD = "--htop-of-servers-time-res"
 MonitoringDirsEntryInCMD = "--monitoring-dirs-content"
 MonitoringDirsResEntryInCMD = "--monitoring-dirs-content-res"
 MonitoringDirsTimeResEntryInCMD = "--monitoring-dirs-content-time-res"
+ReplayOnErrorEntryInCMD = "--replay-on-error"
 
 DisplayKeyInARGS = "display"
 VerboseKeyInARGS = "verbose"
@@ -66,6 +67,7 @@ HTOPServerFileTimeResKeyInARGS = "htop_of_servers_time_res"
 MonitoringDirsInARGS = "monitoring_dirs_content"
 MonitoringDirsResInARGS = "monitoring_dirs_content_res"
 MonitoringDirsTimeResInARGS = "monitoring_dirs_content_time_res"
+ReplayOnErrorEntryInARGS = "replay_on_error"
 
 KeyValnARGS = [(DisplayEntryInCMD,DisplayKeyInARGS),
                (VerboseEntryInCMD,VerboseKeyInARGS),
@@ -88,18 +90,24 @@ KeyValnARGS = [(DisplayEntryInCMD,DisplayKeyInARGS),
                (MonitoringDirsEntryInCMD,MonitoringDirsInARGS),
                (MonitoringDirsResEntryInCMD,MonitoringDirsResInARGS),
                (MonitoringDirsTimeResEntryInCMD,MonitoringDirsTimeResInARGS),
+               (ReplayOnErrorEntryInCMD,ReplayOnErrorEntryInARGS),
                (IOREntryInCMD,IORKeyInARGS)]
 
 my_runtime_yacs = None
 
 my_ior_ns = None
 
+my_replay_on_error = False
+
 def initializeSALOME():
   import SALOMERuntime
-  global my_runtime_yacs
+  import KernelBasis
+  global my_runtime_yacs,my_ior_ns,my_runtime_yacs
   if my_runtime_yacs:
     return
   salome.salome_init()
+  if my_replay_on_error:
+    KernelBasis.SetPyExecutionMode("OutOfProcessWithReplay")
   if my_ior_ns:
     salome.naming_service.DumpIORInFile( my_ior_ns )
   flags = SALOMERuntime.RuntimeSALOME.UsePython + SALOMERuntime.RuntimeSALOME.UseCorba + SALOMERuntime.RuntimeSALOME.UseXml + SALOMERuntime.RuntimeSALOME.UseCpp + SALOMERuntime.RuntimeSALOME.UseSalome
@@ -240,6 +248,15 @@ def executeGraph( executor, xmlfilename, proc, dump, finalDump, display, shutdow
       pass
     
     def __exit__(self,exctype, exc, tb):
+      if my_replay_on_error:
+        listOfGrps = []
+        for cont in salome.get_all_containers():
+          listOfGrps += cont.getAllLogFileNameGroups()
+        print("{} {} {}".format( 100*"=", "List of replay sessions of failing usecases" , 100*"="))
+        for igrp,grp in enumerate(listOfGrps):
+          print("{} : {}".format("Group {}".format(igrp)," ".join(grp)))
+        print(300*"=")
+      #
       if self._shutdown < 999:
         self._proc.shutdown(self._shutdown)
       salome.dsm.shutdownScopes()
@@ -346,6 +363,7 @@ def getArgumentParser():
   parser.add_argument(MonitoringDirsEntryInCMD, dest = MonitoringDirsInARGS, nargs='+', type=str, default =[], help="List of directories to be monitored")
   parser.add_argument(MonitoringDirsResEntryInCMD, dest = MonitoringDirsResInARGS, nargs='+', type=str, default =[], help=f"List of files with result of monitoring of directories to be monitored (see {MonitoringDirsInARGS}). The size of lists are expected to be the same.")
   parser.add_argument(MonitoringDirsTimeResEntryInCMD, dest = MonitoringDirsTimeResInARGS, nargs='+', type=int, default =[], help=f"List of time resolution (in second) of monitoring of directories to be monitored (see {MonitoringDirsInARGS}). The size of lists are expected to be the same.")
+  parser.add_argument("-w",ReplayOnErrorEntryInCMD,dest=ReplayOnErrorEntryInARGS,help="Mode of execution of YACS where all python execution are wrapped into a subprocess to be able to resist against failure (such as SIGSEV)", action='store_true')
   parser.add_argument(IOREntryInCMD, dest = IORKeyInARGS, type=str, default ="", help="file inside which the ior of NS will be stored")
   parser.add_argument("--options_from_json", dest = "options_from_json", type=str, default ="", help="Json file of options. If defined options in json will override those specified in command line.")
   return parser
@@ -358,13 +376,16 @@ def mainRun( args, xmlFileName):
   args (dict) : options for treatment
 
   """
-  global my_ior_ns
+  global my_ior_ns,my_replay_on_error
   from salome_utils import positionVerbosityOfLoggerRegardingState,setVerboseLevel,setVerbose
   #
   iorNS = args[IORKeyInARGS]
   #
   if iorNS:
     my_ior_ns = iorNS
+  #
+  if args[ReplayOnErrorEntryInARGS]:
+    my_replay_on_error = True
   #
   if args[VerboseKeyInARGS]:
     setVerbose( args[ KernelTraceKeyInARGS ] )
