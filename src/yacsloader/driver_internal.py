@@ -394,6 +394,9 @@ def mainRun( args, xmlFileName):
     logging.info( reprAfterArgParsing(args) )
   #
   proc = loadGraph( xmlFileName )
+  # work around a bug in Executor::Run when there are no tasks to launch.
+  if len(proc.getChildren()) == 0 :
+    return
   patchGraph( proc, not args[DoNotSqueezeKeyInARGS], args[InitPortKeyInARGS], args[SaveXMLSchemaKeyInARGS], args[LoadStateKeyInARGS], args[ResetKeyInARGS], args[DisplayKeyInARGS])
   executor = prepareExecution( proc, args[StopOnErrorKeyInARGS], args[DumpOnErrorKeyInARGS])
   #
