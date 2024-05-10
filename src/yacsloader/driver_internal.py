@@ -44,6 +44,8 @@ MonitoringDirsEntryInCMD = "--monitoring-dirs-content"
 MonitoringDirsResEntryInCMD = "--monitoring-dirs-content-res"
 MonitoringDirsTimeResEntryInCMD = "--monitoring-dirs-content-time-res"
 ReplayOnErrorEntryInCMD = "--replay-on-error"
+BigObjDirInCMD = "--bigobj-dir"
+BigObjThresInCMD = "--bigobj-thres"
 
 DisplayKeyInARGS = "display"
 VerboseKeyInARGS = "verbose"
@@ -68,6 +70,8 @@ MonitoringDirsInARGS = "monitoring_dirs_content"
 MonitoringDirsResInARGS = "monitoring_dirs_content_res"
 MonitoringDirsTimeResInARGS = "monitoring_dirs_content_time_res"
 ReplayOnErrorEntryInARGS = "replay_on_error"
+BigObjDirInARGS = "bigobj_dir"
+BigObjThresInARGS = "bigobj_thres"
 
 KeyValnARGS = [(DisplayEntryInCMD,DisplayKeyInARGS),
                (VerboseEntryInCMD,VerboseKeyInARGS),
@@ -91,6 +95,8 @@ KeyValnARGS = [(DisplayEntryInCMD,DisplayKeyInARGS),
                (MonitoringDirsResEntryInCMD,MonitoringDirsResInARGS),
                (MonitoringDirsTimeResEntryInCMD,MonitoringDirsTimeResInARGS),
                (ReplayOnErrorEntryInCMD,ReplayOnErrorEntryInARGS),
+               (BigObjDirInCMD,BigObjDirInARGS),
+               (BigObjThresInCMD,BigObjThresInARGS),
                (IOREntryInCMD,IORKeyInARGS)]
 
 my_runtime_yacs = None
@@ -292,7 +298,6 @@ def executeGraph( executor, xmlfilename, proc, dump, finalDump, display, shutdow
       return [ salome.LogManagerLaunchMonitoringFileCtxMgr( 1000*HTopOfAllServersTimeRes, HTopOfAllServersFile ) ]
     else:
       return [ ]
-
   #
   salome.cm.SetDeltaTimeBetweenCPUMemMeasureInMilliSecond( 1000*CPUMemContainerTimeRes )
   # Start part of context manager instances
@@ -339,6 +344,7 @@ def reprAfterArgParsing( args ):
   return "\n".join( [ f"{EntryFromCoarseEntry(entry)} : {args[key]}" for entry,key in KeyValnARGS ] )
 
 def getArgumentParser():
+  import KernelBasis
   import argparse
   parser = argparse.ArgumentParser()
   parser.add_argument('xmlfilename',help = "XML file containing YACS schema to be executed")
@@ -364,6 +370,8 @@ def getArgumentParser():
   parser.add_argument(MonitoringDirsResEntryInCMD, dest = MonitoringDirsResInARGS, nargs='+', type=str, default =[], help=f"List of files with result of monitoring of directories to be monitored (see {MonitoringDirsInARGS}). The size of lists are expected to be the same.")
   parser.add_argument(MonitoringDirsTimeResEntryInCMD, dest = MonitoringDirsTimeResInARGS, nargs='+', type=int, default =[], help=f"List of time resolution (in second) of monitoring of directories to be monitored (see {MonitoringDirsInARGS}). The size of lists are expected to be the same.")
   parser.add_argument("-w",ReplayOnErrorEntryInCMD,dest=ReplayOnErrorEntryInARGS,help="Mode of execution of YACS where all python execution are wrapped into a subprocess to be able to resist against failure (such as SIGSEV)", action='store_true')
+  parser.add_argument(BigObjDirInCMD, dest=BigObjDirInARGS, type=str, default ="", help="Directory storing big obj files exchanged between YACS python nodes.")
+  parser.add_argument(BigObjThresInCMD, dest=BigObjThresInARGS, type=int, default = KernelBasis.GetBigObjOnDiskThreshold(), help="Objects whose size exceeds this threshold in bytes will be written inside directory")
   parser.add_argument(IOREntryInCMD, dest = IORKeyInARGS, type=str, default ="", help="file inside which the ior of NS will be stored")
   parser.add_argument("--options_from_json", dest = "options_from_json", type=str, default ="", help="Json file of options. If defined options in json will override those specified in command line.")
   return parser
@@ -397,8 +405,13 @@ def mainRun( args, xmlFileName):
   # work around a bug in Executor::Run when there are no tasks to launch.
   if len(proc.getChildren()) == 0 :
     return
+  #
   patchGraph( proc, not args[DoNotSqueezeKeyInARGS], args[InitPortKeyInARGS], args[SaveXMLSchemaKeyInARGS], args[LoadStateKeyInARGS], args[ResetKeyInARGS], args[DisplayKeyInARGS])
   executor = prepareExecution( proc, args[StopOnErrorKeyInARGS], args[DumpOnErrorKeyInARGS])
+  # proxy parameters management
+  if args[ BigObjDirInARGS ]:
+    salome.cm.SetBigObjOnDiskDirectory( args[ BigObjDirInARGS ] )
+  salome.cm.SetBigObjOnDiskThreshold( args[ BigObjThresInARGS ] )
   #
   executeGraph( executor, xmlFileName, proc, args[DumpKeyInARGS], args[DumpStateKeyInARGS], args[DisplayKeyInARGS], args[ShutdownKeyInARGS], args[CPUTimeResOfContainerKeyInARGS],
                args[HTOPFileKeyInARGS], args[HTOPFileTimeResKeyInARGS],

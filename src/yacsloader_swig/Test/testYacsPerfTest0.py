@@ -143,7 +143,7 @@ o5,o6 = 45,46
         p.edAddChild(endNode)
         p.edAddCFLink(startNode,endNode)
         # disable proxy
-        salome.cm.SetOverrideEnvForContainersSimple([("SALOME_BIG_OBJ_ON_DISK_THRES","-1")])
+        salome.cm.SetBigObjOnDiskThreshold(-1)
         # First part squeeze. 
         ex=pilot.ExecutorSwig()
         ex.RunW(p,0)

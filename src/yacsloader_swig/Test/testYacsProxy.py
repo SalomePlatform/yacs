@@ -35,7 +35,8 @@ class TestYacsProxy(unittest.TestCase):
     salome.salome_init()
     with tempfile.TemporaryDirectory() as tmpdirname:
       print(tmpdirname)
-      salome.cm.SetOverrideEnvForContainersSimple([("SALOME_BIG_OBJ_ON_DISK_THRES","1"),("SALOME_FILE_BIG_OBJ_DIR",str(tmpdirname))])
+      salome.cm.SetBigObjOnDiskDirectory(str(tmpdirname))
+      salome.cm.SetBigObjOnDiskThreshold(1)
       ####
       SALOMERuntime.RuntimeSALOME.setRuntime()
       r=SALOMERuntime.getSALOMERuntime()
@@ -76,11 +77,9 @@ class TestYacsProxy(unittest.TestCase):
       po5 = gather2Node.edAddOutputPort("o5",seqpyobj)
       gather2Node.setScript("""
 from glob import glob
+import KernelBasis
 import os
-import salome
-salome.salome_init()
-effEnv = {elt.key:elt.val for elt in salome.cm.GetOverrideEnvForContainers()}
-if len( glob( os.path.join( effEnv["SALOME_FILE_BIG_OBJ_DIR"], "*.pckl" ) ) ) != 1:
+if len( glob( os.path.join( KernelBasis.GetBigObjOnDiskDirectory(), "*.pckl" ) ) ) != 1:
   raise RuntimeError("Fail !")
 print("gather2")
 o5 = i5""")
