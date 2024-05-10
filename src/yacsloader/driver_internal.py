@@ -23,6 +23,7 @@ import logging
 
 DisplayEntryInCMD = "--display"
 VerboseEntryInCMD = "--verbose"
+VerboseLevelEntryInCMD = "--verbose-level"
 StopOnErrorEntryInCMD = "--stop-on-error"
 DumpOnErrorEntryInCMD = "--dump-on-error"
 DumpEntryInCMD = "--dump"
@@ -49,6 +50,7 @@ BigObjThresInCMD = "--bigobj-thres"
 
 DisplayKeyInARGS = "display"
 VerboseKeyInARGS = "verbose"
+VerboseLevelKeyInARGS = "verbose_level"
 StopOnErrorKeyInARGS = "stop"
 DumpOnErrorKeyInARGS = "dumpErrorFile"
 DumpKeyInARGS = "dump"
@@ -75,6 +77,7 @@ BigObjThresInARGS = "bigobj_thres"
 
 KeyValnARGS = [(DisplayEntryInCMD,DisplayKeyInARGS),
                (VerboseEntryInCMD,VerboseKeyInARGS),
+               (VerboseLevelEntryInCMD,VerboseLevelKeyInARGS),
                (StopOnErrorEntryInCMD,StopOnErrorKeyInARGS),
                (DumpOnErrorEntryInCMD,DumpOnErrorKeyInARGS),
                (DumpEntryInCMD,DumpKeyInARGS),
@@ -350,6 +353,7 @@ def getArgumentParser():
   parser.add_argument('xmlfilename',help = "XML file containing YACS schema to be executed")
   parser.add_argument("-d", DisplayEntryInCMD, dest = DisplayKeyInARGS, type=int, const=1, nargs='?', default=0, help="Display dot files: 0=never to 3=very often")
   parser.add_argument("-v", VerboseEntryInCMD, dest = VerboseKeyInARGS,help="Produce verbose output", action='store_true')
+  parser.add_argument("-vl", VerboseLevelEntryInCMD, dest = VerboseLevelKeyInARGS, type=str, choices=["ERROR", "WARNING", "INFO", "DEBUG"], default="INFO", help="Specifies level of verbosity")
   parser.add_argument("-s",StopOnErrorEntryInCMD,dest=StopOnErrorKeyInARGS,help="Stop on first error", action='store_true')
   parser.add_argument("-e",DumpOnErrorEntryInCMD,dest=DumpOnErrorKeyInARGS, type=str, const='dumpErrorState.xml', default="", nargs='?', help="Stop on first error and dump state")
   parser.add_argument("-g",DumpEntryInCMD,dest=DumpKeyInARGS, type=int, const=60, default=0, nargs='?', help="dump state")
@@ -385,7 +389,7 @@ def mainRun( args, xmlFileName):
 
   """
   global my_ior_ns,my_replay_on_error
-  from salome_utils import positionVerbosityOfLoggerRegardingState,setVerboseLevel,setVerbose
+  from salome_utils import positionVerbosityOfLoggerRegardingState,setVerboseLevel,setVerbose,KernelLogLevelToLogging
   #
   iorNS = args[IORKeyInARGS]
   #
@@ -397,7 +401,7 @@ def mainRun( args, xmlFileName):
   #
   if args[VerboseKeyInARGS]:
     setVerbose( args[ KernelTraceKeyInARGS ] )
-    setVerboseLevel(logging.INFO)
+    setVerboseLevel( KernelLogLevelToLogging[ args[VerboseLevelKeyInARGS] ] )
     positionVerbosityOfLoggerRegardingState()
     logging.info( reprAfterArgParsing(args) )
   #
