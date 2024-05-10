@@ -43,6 +43,7 @@ IF(NOT WIN32)
     testSaveLoadRun.py
     testYacsProxy.py
     testYacsPerfTest0.py
+    testYacsDriverOverrides.py
     testYacsLoaderSwig.py
     optim_plugin.py
     testValidationChecks.py

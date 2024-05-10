@@ -47,6 +47,7 @@ MonitoringDirsTimeResEntryInCMD = "--monitoring-dirs-content-time-res"
 ReplayOnErrorEntryInCMD = "--replay-on-error"
 BigObjDirInCMD = "--bigobj-dir"
 BigObjThresInCMD = "--bigobj-thres"
+CustomOverridesInCMD = "--activate-custom-overrides"
 
 DisplayKeyInARGS = "display"
 VerboseKeyInARGS = "verbose"
@@ -74,6 +75,7 @@ MonitoringDirsTimeResInARGS = "monitoring_dirs_content_time_res"
 ReplayOnErrorEntryInARGS = "replay_on_error"
 BigObjDirInARGS = "bigobj_dir"
 BigObjThresInARGS = "bigobj_thres"
+CustomOverridesInARGS = "activate_custom_overrides"
 
 KeyValnARGS = [(DisplayEntryInCMD,DisplayKeyInARGS),
                (VerboseEntryInCMD,VerboseKeyInARGS),
@@ -100,6 +102,7 @@ KeyValnARGS = [(DisplayEntryInCMD,DisplayKeyInARGS),
                (ReplayOnErrorEntryInCMD,ReplayOnErrorEntryInARGS),
                (BigObjDirInCMD,BigObjDirInARGS),
                (BigObjThresInCMD,BigObjThresInARGS),
+               (CustomOverridesInCMD,CustomOverridesInARGS),
                (IOREntryInCMD,IORKeyInARGS)]
 
 my_runtime_yacs = None
@@ -376,6 +379,7 @@ def getArgumentParser():
   parser.add_argument("-w",ReplayOnErrorEntryInCMD,dest=ReplayOnErrorEntryInARGS,help="Mode of execution of YACS where all python execution are wrapped into a subprocess to be able to resist against failure (such as SIGSEV)", action='store_true')
   parser.add_argument(BigObjDirInCMD, dest=BigObjDirInARGS, type=str, default ="", help="Directory storing big obj files exchanged between YACS python nodes.")
   parser.add_argument(BigObjThresInCMD, dest=BigObjThresInARGS, type=int, default = KernelBasis.GetBigObjOnDiskThreshold(), help="Objects whose size exceeds this threshold in bytes will be written inside directory")
+  parser.add_argument(CustomOverridesInCMD, dest=CustomOverridesInARGS, help="Activate custom overrides. These overrides are incarnated by yacs_driver_overrides module that is expected to loadable in current application.", action='store_true')
   parser.add_argument(IOREntryInCMD, dest = IORKeyInARGS, type=str, default ="", help="file inside which the ior of NS will be stored")
   parser.add_argument("--options_from_json", dest = "options_from_json", type=str, default ="", help="Json file of options. If defined options in json will override those specified in command line.")
   return parser
@@ -416,6 +420,15 @@ def mainRun( args, xmlFileName):
   if args[ BigObjDirInARGS ]:
     salome.cm.SetBigObjOnDiskDirectory( args[ BigObjDirInARGS ] )
   salome.cm.SetBigObjOnDiskThreshold( args[ BigObjThresInARGS ] )
+  # overrides
+  if args[ CustomOverridesInARGS ]:
+    try:
+      import yacs_driver_overrides
+      import pylauncher
+      allresources = pylauncher.RetrieveRMCppSingleton()# pylauncher.ResourcesManager_cpp singleton representing all resources (pylauncher.ResourceDefinition_cpp) devoted for the computation.
+      yacs_driver_overrides.customize( salome.cm, allresources )
+    except:
+      raise RuntimeError("Overrides have be requested to be triggered by the user but module is not available")
   #
   executeGraph( executor, xmlFileName, proc, args[DumpKeyInARGS], args[DumpStateKeyInARGS], args[DisplayKeyInARGS], args[ShutdownKeyInARGS], args[CPUTimeResOfContainerKeyInARGS],
                args[HTOPFileKeyInARGS], args[HTOPFileTimeResKeyInARGS],

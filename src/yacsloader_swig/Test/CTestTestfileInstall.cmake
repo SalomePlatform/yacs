@@ -86,6 +86,12 @@ IF(NOT WIN32)
                                     LABELS "${COMPONENT_NAME}"
                       )
 
+  SET(TEST_NAME ${COMPONENT_NAME}_Driver_Overrides)
+  ADD_TEST(${TEST_NAME} testYacsDriverOverrides.py)
+  SET_TESTS_PROPERTIES(${TEST_NAME} PROPERTIES
+                                    LABELS "${COMPONENT_NAME}"
+                      )
+
   SET(TEST_NAME ${COMPONENT_NAME}_ValidationChecks_swig)
   ADD_TEST(${TEST_NAME} testValidationChecks.py)
   SET_TESTS_PROPERTIES(${TEST_NAME} PROPERTIES
