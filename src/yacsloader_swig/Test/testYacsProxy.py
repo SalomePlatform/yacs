@@ -79,7 +79,8 @@ class TestYacsProxy(unittest.TestCase):
 from glob import glob
 import KernelBasis
 import os
-if len( glob( os.path.join( KernelBasis.GetBigObjOnDiskDirectory(), "*.pckl" ) ) ) != 1:
+_,zeDir = KernelBasis.GetBigObjOnDiskProtocolAndDirectory()
+if len( glob( os.path.join( zeDir, "*.pckl" ) ) ) != 1:
   raise RuntimeError("Fail !")
 print("gather2")
 o5 = i5""")
