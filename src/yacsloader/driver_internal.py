@@ -45,6 +45,7 @@ MonitoringDirsEntryInCMD = "--monitoring-dirs-content"
 MonitoringDirsResEntryInCMD = "--monitoring-dirs-content-res"
 MonitoringDirsTimeResEntryInCMD = "--monitoring-dirs-content-time-res"
 ReplayOnErrorEntryInCMD = "--replay-on-error"
+ReplayDirInCMD = "--replay-dir"
 BigObjDirInCMD = "--bigobj-dir"
 BigObjThresInCMD = "--bigobj-thres"
 CustomOverridesInCMD = "--activate-custom-overrides"
@@ -73,6 +74,7 @@ MonitoringDirsInARGS = "monitoring_dirs_content"
 MonitoringDirsResInARGS = "monitoring_dirs_content_res"
 MonitoringDirsTimeResInARGS = "monitoring_dirs_content_time_res"
 ReplayOnErrorEntryInARGS = "replay_on_error"
+ReplayDirInARGS = "replay_dir"
 BigObjDirInARGS = "bigobj_dir"
 BigObjThresInARGS = "bigobj_thres"
 CustomOverridesInARGS = "activate_custom_overrides"
@@ -100,6 +102,7 @@ KeyValnARGS = [(DisplayEntryInCMD,DisplayKeyInARGS),
                (MonitoringDirsResEntryInCMD,MonitoringDirsResInARGS),
                (MonitoringDirsTimeResEntryInCMD,MonitoringDirsTimeResInARGS),
                (ReplayOnErrorEntryInCMD,ReplayOnErrorEntryInARGS),
+               (ReplayDirInCMD,ReplayDirInARGS),
                (BigObjDirInCMD,BigObjDirInARGS),
                (BigObjThresInCMD,BigObjThresInARGS),
                (CustomOverridesInCMD,CustomOverridesInARGS),
@@ -111,6 +114,8 @@ my_ior_ns = None
 
 my_replay_on_error = False
 
+my_replay_dir = ""
+
 def initializeSALOME():
   import SALOMERuntime
   import KernelBasis
@@ -120,6 +125,7 @@ def initializeSALOME():
   salome.salome_init()
   if my_replay_on_error:
     KernelBasis.SetPyExecutionMode("OutOfProcessWithReplay")
+    KernelBasis.SetDirectoryForReplayFiles( my_replay_dir )
   if my_ior_ns:
     salome.naming_service.DumpIORInFile( my_ior_ns )
   flags = SALOMERuntime.RuntimeSALOME.UsePython + SALOMERuntime.RuntimeSALOME.UseCorba + SALOMERuntime.RuntimeSALOME.UseXml + SALOMERuntime.RuntimeSALOME.UseCpp + SALOMERuntime.RuntimeSALOME.UseSalome
@@ -377,6 +383,7 @@ def getArgumentParser():
   parser.add_argument(MonitoringDirsResEntryInCMD, dest = MonitoringDirsResInARGS, nargs='+', type=str, default =[], help=f"List of files with result of monitoring of directories to be monitored (see {MonitoringDirsInARGS}). The size of lists are expected to be the same.")
   parser.add_argument(MonitoringDirsTimeResEntryInCMD, dest = MonitoringDirsTimeResInARGS, nargs='+', type=int, default =[], help=f"List of time resolution (in second) of monitoring of directories to be monitored (see {MonitoringDirsInARGS}). The size of lists are expected to be the same.")
   parser.add_argument("-w",ReplayOnErrorEntryInCMD,dest=ReplayOnErrorEntryInARGS,help="Mode of execution of YACS where all python execution are wrapped into a subprocess to be able to resist against failure (such as SIGSEV)", action='store_true')
+  parser.add_argument(ReplayDirInCMD, dest=ReplayDirInARGS, type=str, default ="", help="Directory storing replay scenarii if any (see replay-on-error option.")
   parser.add_argument(BigObjDirInCMD, dest=BigObjDirInARGS, type=str, default ="", help="Directory storing big obj files exchanged between YACS python nodes.")
   parser.add_argument(BigObjThresInCMD, dest=BigObjThresInARGS, type=int, default = KernelBasis.GetBigObjOnDiskThreshold(), help="Objects whose size exceeds this threshold in bytes will be written inside directory")
   parser.add_argument(CustomOverridesInCMD, dest=CustomOverridesInARGS, help="Activate custom overrides. These overrides are incarnated by yacs_driver_overrides module that is expected to loadable in current application.", action='store_true')
@@ -392,7 +399,7 @@ def mainRun( args, xmlFileName):
   args (dict) : options for treatment
 
   """
-  global my_ior_ns,my_replay_on_error
+  global my_ior_ns,my_replay_on_error,my_replay_dir
   from salome_utils import positionVerbosityOfLoggerRegardingState,setVerboseLevel,setVerbose,KernelLogLevelToLogging
   #
   iorNS = args[IORKeyInARGS]
@@ -402,6 +409,7 @@ def mainRun( args, xmlFileName):
   #
   if args[ReplayOnErrorEntryInARGS]:
     my_replay_on_error = True
+    my_replay_dir = args[ReplayDirInARGS]
   #
   if args[VerboseKeyInARGS]:
     setVerbose( args[ KernelTraceKeyInARGS ] )
