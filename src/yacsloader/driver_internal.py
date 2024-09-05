@@ -190,7 +190,7 @@ def patchGraph( proc, squeezeMemory, initPorts, xmlSchema, loadStateXmlFile, res
     logging.info("SqueezeMemory requested -> update proc")
     allNodes = proc.getAllRecursiveNodes()
     for node in allNodes:
-      if isinstance(proc,SALOMERuntime.PythonNode):
+      if isinstance(node,SALOMERuntime.PythonNode):
         node.setSqueezeStatus( True )
   #
   for initPort in initPorts:
