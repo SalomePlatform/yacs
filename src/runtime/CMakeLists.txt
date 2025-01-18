@@ -25,23 +25,23 @@ ENDIF(SALOME_BUILD_TESTS)
 
 IF(SALOME_YACS_USE_KERNEL)
   SET(SALOME_LIBS 
-    SalomeLifeCycleCORBA 
-    SalomeIDLKernel 
-    SalomeNS
-    SalomeContainer 
-    SalomeKernelHelpers
-    SALOMEBasics 
-    SalomeResourcesManager 
-    OpUtil 
-    SALOMELocalTrace 
-    Registry 
-    SalomeNotification 
-    ResourcesManager 
-    SalomeHDFPersist 
-    SalomeGenericObj
-    SalomeCommunication
+    ${KERNEL_SalomeLifeCycleCORBA}
+    ${KERNEL_SalomeIDLKernel}
+    ${KERNEL_SalomeNS}
+    ${KERNEL_SalomeContainer}
+    ${KERNEL_SalomeKernelHelpers}
+    ${SALOMEBOOTSTRAP_SALOMEBasics}
+    ${KERNEL_SalomeResourcesManager}
+    ${KERNEL_OpUtil}
+    ${SALOMEBOOTSTRAP_SALOMELocalTrace}
+    ${KERNEL_Registry}
+    ${KERNEL_SalomeNotification}
+    ${KERNEL_ResourcesManager}
+    ${KERNEL_SalomeHDFPersist}
+    ${KERNEL_SalomeGenericObj}
+    ${KERNEL_SalomeCommunication}
     )
-  SET(SALOME_INCL_PATH ${KERNEL_INCLUDE_DIRS})
+  SET(SALOME_INCL_PATH ${KERNEL_INCLUDE_DIRS} ${SALOMEBOOTSTRAP_INCLUDE_DIRS})
 
   IF(SALOME_YACS_USE_DSC)
     SET(DSC_LIBS SalomeDSCContainer)

@@ -18,17 +18,17 @@
 #
 
 IF(SALOME_YACS_USE_KERNEL)
-  INCLUDE_DIRECTORIES(${KERNEL_INCLUDE_DIRS})
+  INCLUDE_DIRECTORIES(${KERNEL_INCLUDE_DIRS} ${SALOMEBOOTSTRAP_INCLUDE_DIRS})
   ADD_DEFINITIONS(${KERNEL_DEFINITIONS})
   SET(SALOME_LIBS 
     ${KERNEL_SalomeLifeCycleCORBA}
     ${KERNEL_SalomeIDLKernel}
     ${KERNEL_SalomeNS}
     ${KERNEL_SalomeContainer}
-    ${KERNEL_SALOMEBasics}
+    ${SALOMEBOOTSTRAP_SALOMEBasics}
     ${KERNEL_SalomeResourcesManager}
     ${KERNEL_OpUtil}
-    ${KERNEL_SALOMELocalTrace}
+    ${SALOMEBOOTSTRAP_SALOMELocalTrace}
     ${KERNEL_Registry}
     ${KERNEL_SalomeNotification}
     ${KERNEL_ResourcesManager}

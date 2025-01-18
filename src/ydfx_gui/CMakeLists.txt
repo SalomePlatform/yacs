@@ -23,6 +23,7 @@ INCLUDE(UseQtExt)
 INCLUDE_DIRECTORIES(
   ${PYTHON_INCLUDE_DIR}
   ${QT_INCLUDES}
+  ${SALOMEBOOTSTRAP_INCLUDE_DIRS}
   ${KERNEL_INCLUDE_DIRS}
   ${PROJECT_SOURCE_DIR}/src/bases
   ${PROJECT_SOURCE_DIR}/src/engine
@@ -48,10 +49,10 @@ IF(SALOME_YACS_USE_KERNEL)
     ${KERNEL_SalomeIDLKernel}
     ${KERNEL_SalomeNS}
     ${KERNEL_SalomeContainer}
-    ${KERNEL_SALOMEBasics}
+    ${SALOMEBOOTSTRAP_SALOMEBasics}
     ${KERNEL_SalomeResourcesManager}
     ${KERNEL_OpUtil}
-    ${KERNEL_SALOMELocalTrace}
+    ${SALOMEBOOTSTRAP_SALOMELocalTrace}
     ${KERNEL_Registry}
     ${KERNEL_SalomeNotification}
     ${KERNEL_ResourcesManager}

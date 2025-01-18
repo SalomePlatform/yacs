@@ -21,6 +21,7 @@
 
 # additional include directories
 INCLUDE_DIRECTORIES(
+  ${SALOMEBOOTSTRAP_INCLUDE_DIRS}
   ${CPPUNIT_INCLUDE_DIRS}
   ${CMAKE_CURRENT_SOURCE_DIR}/..
   ${CMAKE_CURRENT_SOURCE_DIR}/../../bases
@@ -33,7 +34,7 @@ SET(_link_LIBRARIES
   ${PTHREAD_LIBRARIES}
   YACSlibEngine 
   YACSBases
-  SALOMEBasics
+  ${SALOMEBOOTSTRAP_SALOMEBasics}
 )
 
 # additional preprocessor / compiler flags
