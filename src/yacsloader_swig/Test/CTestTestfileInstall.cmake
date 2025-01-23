@@ -18,10 +18,10 @@
 #
 
 IF(NOT WIN32)
-  SET(TEST_NAME ${COMPONENT_NAME}_YacsLoaderTest_swig)
+  SET(TEST_NAME UNSTABLE_${COMPONENT_NAME}_YacsLoaderTest_swig)
   ADD_TEST(${TEST_NAME} testYacsLoaderSwig.py)
   SET_TESTS_PROPERTIES(${TEST_NAME} PROPERTIES
-                                    LABELS "${COMPONENT_NAME}"
+                                    LABELS "UNSTABLE"
                                     ENVIRONMENT "SALOME_EMB_SERVANT=1"
                       )
 
@@ -32,10 +32,10 @@ IF(NOT WIN32)
                                     ENVIRONMENT "SALOME_EMB_SERVANT=1"
                       )
 
-  SET(TEST_NAME ${COMPONENT_NAME}_PyNodeWithCache_swig)
+  SET(TEST_NAME UNSTABLE_${COMPONENT_NAME}_PyNodeWithCache_swig)
   ADD_TEST(${TEST_NAME} testPynodeWithCache.py)
   SET_TESTS_PROPERTIES(${TEST_NAME} PROPERTIES
-                                    LABELS "${COMPONENT_NAME}"
+                                    LABELS "UNSTABLE"
                                     ENVIRONMENT "SALOME_EMB_SERVANT=1"
                       )
 
@@ -67,10 +67,10 @@ IF(NOT WIN32)
                                     ENVIRONMENT "SALOME_EMB_SERVANT=1"
                       )
 
-  SET(TEST_NAME ${COMPONENT_NAME}_SaveLoadRun_swig)
+  SET(TEST_NAME UNSTABLE_${COMPONENT_NAME}_SaveLoadRun_swig)
   ADD_TEST(${TEST_NAME} testSaveLoadRun.py)
   SET_TESTS_PROPERTIES(${TEST_NAME} PROPERTIES
-                                    LABELS "${COMPONENT_NAME}"
+                                    LABELS "UNSTABLE"
                                     ENVIRONMENT "SALOME_EMB_SERVANT=1"
                       )
 

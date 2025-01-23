@@ -40,20 +40,24 @@ IF(NOT WIN32)
     testRefcount.py
     testResume.py
     testSave.py
-    testSaveLoadRun.py
     testYacsProxy.py
     testYacsPerfTest0.py
     testYacsDriverOverrides.py
-    testYacsLoaderSwig.py
     optim_plugin.py
     testValidationChecks.py
     testProgress.py
     async_plugin.py
     testWorkloadManager.py
-    testPynodeWithCache.py
     testFixes.py
    )
-  INSTALL(PROGRAMS ${LOCAL_TEST_FILES}
+
+  SET(LOCAL_UNSTABLE_TESTS
+    testPynodeWithCache.py
+    testSaveLoadRun.py
+    testYacsLoaderSwig.py
+  )
+
+  INSTALL(PROGRAMS ${LOCAL_UNSTABLE_TESTS} ${LOCAL_TEST_FILES}
         DESTINATION ${LOCAL_TEST_DIR})
   INSTALL(FILES CTestTestfileInstall.cmake
         DESTINATION ${LOCAL_TEST_DIR}
