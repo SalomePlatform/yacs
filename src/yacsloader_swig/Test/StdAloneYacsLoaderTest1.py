@@ -28,7 +28,7 @@ import os
 class StdAloneYacsLoaderTest1(unittest.TestCase):
 
   def setUp(self):
-    SALOMERuntime.RuntimeSALOME_setRuntime()
+    SALOMERuntime.RuntimeSALOME.setRuntime()
     self.r = pilot.getRuntime()
     self.l = loader.YACSLoader()# self.l.load("foreachImbr_tmp.xml")
     self.workdir = tempfile.mkdtemp(suffix=".yacstest")
@@ -36,7 +36,7 @@ class StdAloneYacsLoaderTest1(unittest.TestCase):
 
   def test1(self):
     """tests imbrication of foreach loop."""
-    SALOMERuntime.RuntimeSALOME_setRuntime()
+    SALOMERuntime.RuntimeSALOME.setRuntime()
     l=loader.YACSLoader()
     ex=pilot.ExecutorSwig()
     p=self.r.createProc("pr")

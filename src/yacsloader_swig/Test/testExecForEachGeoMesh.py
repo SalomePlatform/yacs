@@ -32,7 +32,7 @@ import tempfile
 class TestExecForEachGeoMesh(unittest.TestCase):
 
     def setUp(self):
-        SALOMERuntime.RuntimeSALOME_setRuntime(1)
+        SALOMERuntime.RuntimeSALOME.setRuntime(1)
         self.l = loader.YACSLoader()
         self.e = pilot.ExecutorSwig()
         self.p = self.l.load("samples/geomesh0ForEach.xml")

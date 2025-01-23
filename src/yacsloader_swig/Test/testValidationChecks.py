@@ -29,7 +29,7 @@ class TestValidationChecks(unittest.TestCase):
   def test_foreach_links(self):
     """ Test tha add of illegal links within a foreach loop.
     """
-    SALOMERuntime.RuntimeSALOME_setRuntime()
+    SALOMERuntime.RuntimeSALOME.setRuntime()
     runtime = pilot.getRuntime()
     
     schema = runtime.createProc("schema")
@@ -94,7 +94,7 @@ class TestValidationChecks(unittest.TestCase):
   def test_optim_links(self):
     """ Test tha add of illegal links within an optimization loop.
     """
-    SALOMERuntime.RuntimeSALOME_setRuntime()
+    SALOMERuntime.RuntimeSALOME.setRuntime()
     runtime = pilot.getRuntime()
     #
     schema = runtime.createProc("schema")

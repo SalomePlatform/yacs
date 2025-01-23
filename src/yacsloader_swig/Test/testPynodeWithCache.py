@@ -33,7 +33,7 @@ dir_test = tempfile.mkdtemp(suffix=".yacstest")
 class TestEdit(unittest.TestCase):
 
     def setUp(self):
-        SALOMERuntime.RuntimeSALOME_setRuntime()
+        SALOMERuntime.RuntimeSALOME.setRuntime()
         self.r = pilot.getRuntime()
         self.l = loader.YACSLoader()
         self.e = pilot.ExecutorSwig()

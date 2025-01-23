@@ -31,7 +31,7 @@ import pilot
 class TestSave(unittest.TestCase):
 
     def setUp(self):
-        SALOMERuntime.RuntimeSALOME_setRuntime(1)
+        SALOMERuntime.RuntimeSALOME.setRuntime(1)
         self.workdir = tempfile.mkdtemp(suffix=".yacstest")
         pass
 

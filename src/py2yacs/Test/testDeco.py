@@ -33,7 +33,7 @@ dir_test = tempfile.mkdtemp(suffix=".yacstest")
 class TestDeco(unittest.TestCase):
 
     def setUp(self):
-      SALOMERuntime.RuntimeSALOME_setRuntime()
+      SALOMERuntime.RuntimeSALOME.setRuntime()
       # We need a catalog which contains only one resource named "localhost"
       # with 16 cores. The modifications made here are not saved to the
       # catalog file.

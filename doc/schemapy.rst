@@ -20,7 +20,7 @@ These modules must be imported at the beginning of the Python program and YACS m
     import pilot
     import SALOMERuntime
     import loader
-    SALOMERuntime.RuntimeSALOME_setRuntime()
+    SALOMERuntime.RuntimeSALOME.setRuntime()
 
 Before YACS modules can be imported, the environment must be correctly configured, as it will be if the 
 SALOME application is used.  Otherwise, the PYTHONPATH environment variable has to be set to 
@@ -30,7 +30,7 @@ When you build your own Salome application and use your own modules and componen
 the module catalog::
 
     import SALOMERuntime
-    SALOMERuntime.RuntimeSALOME_setRuntime()
+    SALOMERuntime.RuntimeSALOME.setRuntime()
     salome_runtime = SALOMERuntime.getSALOMERuntime()
     import salome
     salome.salome_init()
@@ -398,7 +398,7 @@ will appear as follows::
   import pilot
   import SALOMERuntime
   import loader
-  SALOMERuntime.RuntimeSALOME_setRuntime()
+  SALOMERuntime.RuntimeSALOME.setRuntime()
   r = pilot.getRuntime()
   p=r.createProc("pr")
   ti=p.getTypeCode("int")

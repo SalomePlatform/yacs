@@ -38,7 +38,7 @@ import salomeloader
 
 class TestSalomeLoader(unittest.TestCase):
   def setUp(self):
-    SALOMERuntime.RuntimeSALOME_setRuntime()
+    SALOMERuntime.RuntimeSALOME.setRuntime()
     self.loader=salomeloader.SalomeLoader()
 
   def test1(self):

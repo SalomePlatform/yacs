@@ -24,7 +24,7 @@ import SALOMERuntime
 
 class TestContainerRef(unittest.TestCase):
   def setUp(self):
-    SALOMERuntime.RuntimeSALOME_setRuntime()
+    SALOMERuntime.RuntimeSALOME.setRuntime()
     self.r=SALOMERuntime.getSALOMERuntime()
     self.p=self.r.createProc("pr")
 
