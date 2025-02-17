@@ -30,7 +30,7 @@ from gui import adapt
 from qt import *
 from gui.Appli import Appli
 
-SALOMERuntime.RuntimeSALOME_setRuntime()
+SALOMERuntime.RuntimeSALOME.setRuntime()
 
 loader=salomeloader.SalomeLoader()
 

@@ -1129,7 +1129,7 @@ def main():
     print(usage%(sys.argv[0]))
     sys.exit(3)
 
-  SALOMERuntime.RuntimeSALOME_setRuntime()
+  SALOMERuntime.RuntimeSALOME.setRuntime()
   loader=SalomeLoader()
 
   try:

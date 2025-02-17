@@ -1213,7 +1213,7 @@ for i in i8:
   def test14(self):
     """ Non regression EDF11027. Problem after Save/Load of a foreach node with type pyobj with input "SmplsCollection" manually set before. Correction in convertToYacsObjref from XML->Neutral. Objref can hide a string !"""
     xmlFileName=os.path.join(self.workdir, "test14.xml")
-    SALOMERuntime.RuntimeSALOME_setRuntime()
+    SALOMERuntime.RuntimeSALOME.setRuntime()
     r=pilot.getRuntime()
     n0=r.createProc("test23/zeRun")
     tp=n0.createInterfaceTc("python:obj:1.0","pyobj",[])
@@ -1301,7 +1301,7 @@ for i in i8:
 
   def test16(self):
     """ Test to check that a list[pyobj] outputport linked to pyobj inputport is OK."""
-    SALOMERuntime.RuntimeSALOME_setRuntime()
+    SALOMERuntime.RuntimeSALOME.setRuntime()
     self.r=pilot.getRuntime()
     n0=self.r.createProc("test16/zeRun")
     tp=n0.createInterfaceTc("python:obj:1.0","pyobj",[])
@@ -1324,7 +1324,7 @@ for i in i8:
 
   def test17(self):
     """ Same as test16 except that tp2 is not list of tp but a list of copy of tp"""
-    SALOMERuntime.RuntimeSALOME_setRuntime()
+    SALOMERuntime.RuntimeSALOME.setRuntime()
     self.r=pilot.getRuntime()
     n0=self.r.createProc("test17/zeRun")
     tp=n0.createInterfaceTc("python:obj:1.0","pyobj",[])
@@ -1845,7 +1845,7 @@ t1.addKeyValueInVarErrorIfAlreadyExistingNow(obj2Str("ef"),obj2Str([11,12]))
     with open(fname,"wb") as f:
       f.write( pilot.FromBase64Swig(content_of_file) )
 
-    SALOMERuntime.RuntimeSALOME_setRuntime()
+    SALOMERuntime.RuntimeSALOME.setRuntime()
     l=loader.YACSLoader()
     p=l.load(fname)
     self.assertTrue(p.getChildByName("test23/main").getChildByName("test23/run").getChildByName("test23/FE").getChildByName("test23/run_internal").getInputPort("i1").getPyObj() == 3)

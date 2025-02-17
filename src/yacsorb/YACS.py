@@ -246,7 +246,7 @@ class YACS(YACS_ORB__POA.YACS_Gen,
                                                          interfaceName, False)
         SALOME_DriverPy.SALOME_DriverPy_i.__init__(self, interfaceName)
 
-        SALOMERuntime.RuntimeSALOME_setRuntime(1)
+        SALOMERuntime.RuntimeSALOME.setRuntime(1)
         SALOMERuntime.SALOMEDispatcher_setSALOMEDispatcher()
         r=pilot.getRuntime()
 

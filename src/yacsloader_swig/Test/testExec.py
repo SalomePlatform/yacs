@@ -31,7 +31,7 @@ import pilot
 class TestExec(unittest.TestCase):
 
     def setUp(self):
-        SALOMERuntime.RuntimeSALOME_setRuntime(1)
+        SALOMERuntime.RuntimeSALOME.setRuntime(1)
         self.l = loader.YACSLoader()
         self.e = pilot.ExecutorSwig()
         self.p = self.l.load("samples/aschema.xml")
