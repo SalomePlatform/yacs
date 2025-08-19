@@ -20,7 +20,7 @@
 from qt import *
 from . import browser_session
 from . import browser_catalog
-import pilot
+from salome.yacs import pilot
 
 class CatalogTool(QMainWindow):
   """

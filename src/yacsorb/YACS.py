@@ -18,19 +18,19 @@
 #
 
 import sys
-import YACS_ORB__POA
-import YACS_ORB
-import SALOME_ComponentPy
+from salome.yacs import YACS_ORB__POA
+from salome.yacs import YACS_ORB
+from salome.kernel import SALOME_ComponentPy
 import SALOME_DriverPy
 
 import threading
 import tempfile
 import os
 
-import SALOMERuntime
-import loader
+from salome.yacs import SALOMERuntime
+from salome.yacs import loader
 import salomeloader
-import pilot
+from salome.yacs import pilot
 import traceback
 
 class proc_i(YACS_ORB__POA.ProcExec):

@@ -18,7 +18,7 @@
 #
 
 import sys
-import pilot
+from salome.yacs import pilot
 from . import Item
 from qt import *
 from qtcanvas import *

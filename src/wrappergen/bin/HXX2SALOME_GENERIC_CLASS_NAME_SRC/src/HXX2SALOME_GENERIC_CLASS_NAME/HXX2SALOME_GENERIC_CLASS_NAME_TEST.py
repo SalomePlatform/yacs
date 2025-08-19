@@ -17,7 +17,7 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-import salome
+from salome.kernel import salome
 import HXX2SALOME_GENERIC_CLASS_NAME_ORB
 myHXX2SALOME_GENERIC_CLASS_NAME = salome.lcc.FindOrLoadComponent("FactoryServer", "HXX2SALOME_GENERIC_CLASS_NAME")
 #

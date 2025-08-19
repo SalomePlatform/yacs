@@ -130,7 +130,7 @@ The following is an example using those methods:
 ::
 
   # Initialization
-  import salome
+  from salome.kernel import salome
   salome.salome_init()
   launcher = salome.naming_service.Resolve('/SalomeLauncher')
 

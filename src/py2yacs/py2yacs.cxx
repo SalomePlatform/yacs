@@ -43,7 +43,7 @@ const char * Py2yacsException::what() const noexcept
 
 
 Py2yacs::Py2yacs()
-: _python_parser_module("py2yacs"),
+: _python_parser_module("salome.yacs.py2yacs"),
   _python_parser_function("get_properties"),
   _functions(),
   _global_errors(),

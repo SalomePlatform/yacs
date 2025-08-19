@@ -59,6 +59,7 @@ TARGET_LINK_LIBRARIES(TestYACSPMML pmmlLib
                       YACSlibEngine
                       YACSBases 
                       ${CPPUNIT_LIBRARIES} ${PLATFORM_LIBS})
+set_target_properties(TestYACSPMML PROPERTIES INSTALL_RPATH "$ORIGIN/../../../../../lib/salome")
 
 IF(NOT WIN32)
   SET(SHELL /bin/sh)

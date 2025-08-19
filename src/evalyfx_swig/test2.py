@@ -20,8 +20,8 @@
 # bug revealed by otgui on 8/2/16. Several lock/unlock session. test1.xml is Cogeneration.xml.
 
 def buildScheme(fname):
-    import SALOMERuntime
-    import loader
+    from salome.yacs import SALOMERuntime
+    from salome.yacs import loader
     SALOMERuntime.RuntimeSALOME.setRuntime()
     r=SALOMERuntime.getSALOMERuntime()
     p0=r.createProc("run")

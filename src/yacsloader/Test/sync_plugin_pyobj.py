@@ -17,7 +17,7 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-import SALOMERuntime
+from salome.yacs import SALOMERuntime
 import pickle
 
 class myalgosync(SALOMERuntime.OptimizerAlgSync):

@@ -18,7 +18,7 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-import pilot
+from salome.yacs import pilot
 import unittest
 
 class TestPlayGround0(unittest.TestCase):

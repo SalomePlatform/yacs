@@ -21,7 +21,7 @@ import sys
 from qt import *
 from . import browser
 from . import sessions
-import pilot
+from salome.yacs import pilot
 
 class Browser(browser.Browser):
   def init(self):

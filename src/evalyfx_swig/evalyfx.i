@@ -165,7 +165,7 @@ static PyObject *convertVectOfSeqAny(const std::vector<YACSEvalSeqAny *>& retCpp
 %types(YACS::ENGINE::InGate *,YACS::ENGINE::OutGate *,YACS::ENGINE::InPort *,YACS::ENGINE::OutPort *,YACS::ENGINE::Port *);
 %types(YACS::ENGINE::Container *, YACS::ENGINE::HomogeneousPoolContainer *);*/
 
-%import "loader.i"
+%import (module="salome.yacs.loader") "loader.i"
 
 %newobject YACSEvalYFX::BuildFromFile;
 %newobject YACSEvalYFX::BuildFromScheme;

@@ -30,11 +30,11 @@ if __name__ == '__main__':
                       help="File of containers.",
                       default=None)
   args = parser.parse_args()
-  import yacsdecorator
+  from salome.yacs import yacsdecorator
   yacsdecorator.activateYacsMode()
   if not args.containers is None :
     yacsdecorator.loadContainers(args.containers)
-  import yacstools
+  from salome.yacs import yacstools
   fn = yacstools.getFunction(args.path, args.mainbloc)
   fn()
   yacsdecorator.export(args.yacsfile)

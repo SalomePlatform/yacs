@@ -18,8 +18,8 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-import salome
-import NamingService
+from salome.kernel import salome
+from salome.kernel import NamingService
 import os
 import sys
 import subprocess

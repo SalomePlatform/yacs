@@ -105,11 +105,11 @@ void SalomeOptimizerLoop::loadAlgorithm()
 
       std::string pyscript;
       pyscript="import sys\n"
-               "import SALOMERuntime\n"
+               "from salome.yacs import SALOMERuntime\n"
                "filename='";
       pyscript=pyscript+_alglib+"'\nentry='"+_symbol+"'\n";
       pyscript=pyscript+"import os\n"
-                        "import pilot\n"
+                        "from salome.yacs import pilot\n"
                         "rep,mod=os.path.split(os.path.splitext(filename)[0])\n"
                         "if rep != '':\n"
                         "  sys.path.insert(0,rep)\n"

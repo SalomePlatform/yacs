@@ -22,9 +22,9 @@ import time
 import unittest
 import threading
 
-import SALOMERuntime
-import loader
-import pilot
+from salome.yacs import SALOMERuntime
+from salome.yacs import loader
+from salome.yacs import pilot
 
 import os
 import tempfile

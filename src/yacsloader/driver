@@ -19,12 +19,11 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-import driver_internal
 import subprocess as sp
-import salome
-import SALOME_Embedded_NamingService_ClientPy
-import NamingService
-from SALOME_PyNode import FileDeleter,FileHolder
+from salome.kernel import salome
+from salome.kernel import SALOME_Embedded_NamingService_ClientPy
+from salome.kernel import NamingService
+from salome.kernel.SALOME_PyNode import FileDeleter,FileHolder
 
 import signal
 import os
@@ -48,6 +47,11 @@ def generateCmdForInternal():
   import sys
   import tempfile
   global ior_file
+  from pathlib import Path
+  p = Path( __file__ ).parent
+  sys.path.append( p.as_posix() )
+  import driver_internal
+  sys.path.pop()
   args, _ = driver_internal.parseArgs()
   iorNS = args[ driver_internal.IORKeyInARGS ]
   firstPart = ["python3",driver_internal.__file__] 

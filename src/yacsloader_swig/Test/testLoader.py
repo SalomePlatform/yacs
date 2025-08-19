@@ -18,9 +18,9 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-import pilot
-import SALOMERuntime
-import loader
+from salome.yacs import pilot
+from salome.yacs import SALOMERuntime
+from salome.yacs import loader
 import unittest
 
 class TestLoader(unittest.TestCase):
@@ -84,7 +84,7 @@ class TestLoader(unittest.TestCase):
     pass
 
 if __name__ == '__main__':
-  import salome
+  from salome.kernel import salome
   import NamingService
   import os
   import subprocess

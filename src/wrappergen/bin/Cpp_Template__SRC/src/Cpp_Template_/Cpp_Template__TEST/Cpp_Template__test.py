@@ -19,7 +19,7 @@
 
 from os import getenv
 if getenv("SALOMEPATH"):
-    import salome
+    from salome.kernel import salome
     import Cpp_Template__ORB
     my_Cpp_Template_ = salome.lcc.FindOrLoadComponent("FactoryServer", "Cpp_Template_")
     IN_SALOME_GUI = 1

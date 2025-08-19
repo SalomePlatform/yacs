@@ -45,7 +45,7 @@ Engines::SalomeLauncher_var YACSEvalSession::YACSEvalSessionInternal::goFetching
     throw YACS::Exception("YACSEvalSessionInternal contrctor : ORB is null !");
   //
   const char methName[]="goFetchingSalomeLauncherInNS";
-  const char fetchPyCmd[]="import salome,CORBA\nsalome.salome_init()\nsl=salome.naming_service.Resolve(\"/SalomeLauncher\")\nif not CORBA.is_nil(sl):\n  return salome.orb.object_to_string(sl)\nelse:\n  raise Exception(\"Impossible to locate salome launcher !\")";
+  const char fetchPyCmd[]="from salome.kernel import salome,CORBA\nsalome.salome_init()\nsl=salome.naming_service.Resolve(\"/SalomeLauncher\")\nif not CORBA.is_nil(sl):\n  return salome.orb.object_to_string(sl)\nelse:\n  raise Exception(\"Impossible to locate salome launcher !\")";
   AutoPyRef func(YACS::ENGINE::evalPy(methName,fetchPyCmd));
   AutoPyRef val(YACS::ENGINE::evalFuncPyWithNoParams(func));
   std::string ior;

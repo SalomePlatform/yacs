@@ -20,7 +20,7 @@
 import sys,traceback
 from qt import *
 from qtcanvas import *
-import pilot
+from salome.yacs import pilot
 import pypilot
 from . import Item
 import math

@@ -23,10 +23,11 @@ import tempfile
 import os
 import subprocess
 
-import SALOMERuntime
-import loader
-import pilot
-import salome
+from salome.yacs import SALOMERuntime
+from salome.yacs import loader
+from salome.yacs import pilot
+from salome.kernel import salome
+from salome.kernel.LifeCycleCORBA import ResourceParameters
 
 dir_test = tempfile.mkdtemp(suffix=".yacstest")
 
@@ -43,7 +44,7 @@ class TestDeco(unittest.TestCase):
       resource_definition = resourceManager.GetResourceDefinition("localhost")
       resource_definition.nb_node = NB_NODE
       resourceManager.AddResource(resource_definition, False, "")
-      resource_required = salome.ResourceParameters()
+      resource_required = ResourceParameters()
       resource_required.can_run_containers = True
       res_list = resourceManager.GetFittingResources(resource_required)
       for r in res_list:
@@ -65,7 +66,7 @@ class TestDeco(unittest.TestCase):
       f1 -> f3 -> f1
       """
       import testforeach
-      from SALOME_PyNode import UnProxyObjectSimple
+      from salome.kernel.SALOME_PyNode import UnProxyObjectSimple
       expected_1, expected_2 = testforeach.main()
       yacs_schema_file = os.path.join(dir_test, "schema_t1.xml")
       yacs_build_command = "yacsbuild.py"
@@ -87,7 +88,7 @@ class TestDeco(unittest.TestCase):
       Foreach initialized by value.
       """
       import testforeach
-      from SALOME_PyNode import UnProxyObjectSimple
+      from salome.kernel.SALOME_PyNode import UnProxyObjectSimple
       expected_1, expected_2 = testforeach.mainblock()
       yacs_schema_file = os.path.join(dir_test, "schema_t2.xml")
       yacs_build_command = "yacsbuild.py"
@@ -109,7 +110,7 @@ class TestDeco(unittest.TestCase):
       Foreach on 2 levels.
       """
       import testforeach
-      from SALOME_PyNode import UnProxyObjectSimple
+      from salome.kernel.SALOME_PyNode import UnProxyObjectSimple
       expected = testforeach.maindoublefr()
       yacs_schema_file = os.path.join(dir_test, "schema_t3.xml")
       yacs_build_command = "yacsbuild.py"
@@ -129,14 +130,14 @@ class TestDeco(unittest.TestCase):
       Using specific containers.
       This test needs at least 4 cores declared in the catalog of resources.
       """
-      import yacsdecorator
+      from salome.yacs import yacsdecorator
       cm = yacsdecorator.ContainerManager()
       cm.addContainer("c1", 1, False)
       cm.addContainer("c2", 4, True)
       cm.addContainer(yacsdecorator.ContainerManager.defaultContainerName, 1, False)
       cont_file = os.path.join(dir_test, "containers_t4.json")
       cm.saveFile(cont_file)
-      script = """import yacsdecorator
+      script = """from salome.yacs import yacsdecorator
 @yacsdecorator.leaf("c1")
 def f_c1(x,y):
   s = x + y

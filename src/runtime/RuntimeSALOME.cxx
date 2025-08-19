@@ -387,7 +387,7 @@ void RuntimeSALOME::init(long flags, int argc, char* argv[])
                            "orb = CORBA.ORB_init([], CORBA.ORB_ID)\n"
                            "#print(sys.getrefcount(orb))\n"
                            "try:\n"
-                           "  import SALOME\n"
+                           "  from salome.kernel import SALOME\n"
                            "except:\n"
                            "  pass\n"
                            "\n",

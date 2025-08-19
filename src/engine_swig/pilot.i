@@ -21,7 +21,7 @@
 "All is needed to create and execute a calculation schema."
 %enddef
 
-%module(docstring=DOCSTRING) pilot
+%module(docstring=DOCSTRING,package="salome.yacs") pilot
 
 #ifndef SWIGIMPORTED
 //work around SWIG bug #1863647

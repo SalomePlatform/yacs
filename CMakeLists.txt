@@ -36,6 +36,9 @@ ELSE()
   MESSAGE(FATAL_ERROR "We absolutely need the Salome CMake configuration files, please define CONFIGURATION_ROOT_DIR !")
 ENDIF()
 
+# This file sets global RPATH rules for all the targets and must be include before they are defined.
+INCLUDE(${CONFIGURATION_ROOT_DIR}/cmake/ConfigureRPath.cmake)
+
 # Versioning
 # ===========
 SALOME_SETUP_VERSION(9.15.0)
@@ -132,7 +135,6 @@ ENDIF()
 ##
 ## From KERNEL:
 ##
-
 # Mandatory products
 FIND_PACKAGE(SalomePythonInterp REQUIRED)
 FIND_PACKAGE(SalomePythonLibs REQUIRED)
@@ -173,7 +175,6 @@ IF(SALOME_BUILD_GUI)
   # Qt
   FIND_PACKAGE(SalomeQt5 REQUIRED)
 ENDIF(SALOME_BUILD_GUI)
-
 ##
 ## YACS specifics
 ##
@@ -206,7 +207,9 @@ IF( SALOME_YACS_USE_KERNEL )
     "Install path: SALOME script data")
   SET(SALOME_INSTALL_SCRIPT_PYTHON "${SALOME_INSTALL_SCRIPT_PYTHON}" CACHE PATH 
     "Install path: SALOME Python scripts")
-  SET(SALOME_INSTALL_PYTHON "${SALOME_INSTALL_PYTHON}" CACHE PATH "Install path: SALOME Python stuff")
+  SET(_pydir lib/python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}/site-packages)
+  SET(SALOME_YACS_INSTALL_PYTHON ${_pydir}/salome/yacs CACHE PATH "Install path: SALOME Python stuff")
+  SET(SALOME_YACS_INSTALL_PYTHON "${SALOME_YACS_INSTALL_PYTHON}" CACHE PATH "Install path: SALOME Python stuff")
   SET(SALOME_INSTALL_PYTHON_SHARED "${SALOME_INSTALL_PYTHON_SHARED}" CACHE PATH 
     "Install path: SALOME Python shared modules")
   SET(SALOME_INSTALL_CMAKE_LOCAL adm/cmake CACHE PATH 
@@ -234,8 +237,8 @@ ELSE(SALOME_YACS_USE_KERNEL)
     "Install path: local SALOME config files (obsolete, to be removed)")
 
   SET(_pydir lib/python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}/site-packages)
-  SET(SALOME_INSTALL_PYTHON ${_pydir}/salome CACHE PATH "Install path: SALOME Python stuff")
-  SET(SALOME_INSTALL_PYTHON_SHARED ${SALOME_INSTALL_PYTHON}/shared_modules CACHE PATH 
+  SET(SALOME_YACS_INSTALL_PYTHON ${_pydir}/salome/yacs CACHE PATH "Install path: SALOME Python stuff")
+  SET(SALOME_INSTALL_PYTHON_SHARED ${SALOME_YACS_INSTALL_PYTHON}/shared_modules CACHE PATH 
     "Install path: SALOME Python shared modules")
 
   SET(SALOME_INSTALL_RES share/salome/resources CACHE PATH "Install path: SALOME resources")
@@ -254,7 +257,7 @@ SET(SALOME_YACS_INSTALL_SUPERV_SAMPLES share/salome/yacssupervsamples CACHE PATH
   "Install path: SALOME YACS SUPERV samples")
 SET(SALOME_INSTALL_HXX2SALOME bin/HXX2SALOME_Test CACHE PATH 
   "Install path: SALOME HXX2SALOME Test files")
-SET(SALOME_YACS_INSTALL_TEST ${SALOME_INSTALL_SCRIPT_SCRIPTS}/test CACHE PATH 
+SET(SALOME_YACS_INSTALL_TEST ${SALOME_INSTALL_SCRIPT_SCRIPTS}/test/yacs CACHE PATH 
   "Install path: SALOME YACS Test files")
 MARK_AS_ADVANCED(
   SALOME_YACS_INSTALL_RES_DATA
@@ -265,9 +268,11 @@ MARK_AS_ADVANCED(
   SALOME_YACS_INSTALL_TEST
   )
 
+SET (INSTALL_PYIDL_DIR ${_pydir} CACHE PATH "Install path: SALOME Python IDL")
+
 # Accumulate environment variables for YACS module
 SALOME_ACCUMULATE_ENVIRONMENT(PYTHONPATH NOCHECK ${CMAKE_INSTALL_PREFIX}/${SALOME_INSTALL_BINS}
-                                                 ${CMAKE_INSTALL_PREFIX}/${SALOME_INSTALL_PYTHON})
+                                                 ${CMAKE_INSTALL_PREFIX}/${SALOME_YACS_INSTALL_PYTHON})
 SALOME_ACCUMULATE_ENVIRONMENT(LD_LIBRARY_PATH NOCHECK ${CMAKE_INSTALL_PREFIX}/${SALOME_INSTALL_LIBS}) 
 
 # Sources 
@@ -367,3 +372,5 @@ INSTALL(FILES
 # Install the export set for use with the install-tree
 INSTALL(EXPORT ${PROJECT_NAME}TargetGroup DESTINATION "${SALOME_INSTALL_CMAKE_LOCAL}" 
         FILE ${PROJECT_NAME}Targets.cmake)
+
+add_subdirectory( postinstall )

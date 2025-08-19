@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2025  CEA, EDF
+# Copyright (C) 2025  CEA, EDF
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -17,20 +17,15 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-SET(_link_LIBRARIES
-  ${CPPUNIT_LIBRARIES}
-  ${PTHREAD_LIBRARIES}
-  YACSlibWorkloadmanager
-)
+# The only goal of this file is to put execution of ConfigureRPathPostEx.cmake script
+# at the end of the installation process. This is necessary to ensure that
+# all the targets are already installed and all the paths are set correctly.
+# NOTE: Now this script fails because it can't get property from targets.
 
-ADD_EXECUTABLE(WorkloadManagerTest TestMain.cxx)
-TARGET_LINK_LIBRARIES(WorkloadManagerTest ${_link_LIBRARIES})
-set_target_properties(WorkloadManagerTest PROPERTIES INSTALL_RPATH "$ORIGIN/../../../../../lib/salome")
-ADD_TEST(WorkloadManager WorkloadManagerTest)
+# The only goal of this file is to run RPATH configuration on post install step.
 
-# For salome test
-SET(LOCAL_TEST_DIR ${SALOME_YACS_INSTALL_TEST}/workloadmanager)
-INSTALL(TARGETS WorkloadManagerTest DESTINATION ${LOCAL_TEST_DIR})
-INSTALL(FILES CTestTestfileInstall.cmake
-        DESTINATION ${LOCAL_TEST_DIR}
-        RENAME CTestTestfile.cmake)
+include(${CONFIGURATION_ROOT_DIR}/cmake/ConfigureRPathPostEx.cmake)
+
+# Pass the parent of SALOME_INSTALL_LIBS to process both lib/salome and lib/pythonx.x/site-packages
+configure_rpath_post_install("${SALOME_INSTALL_BINS};${SALOME_INSTALL_LIBS}/..")
+

@@ -1009,7 +1009,11 @@ public:
 from collections.abc import MutableMapping
 class tname(tname,MutableMapping):pass
 import sys
-sys.modules['_'+__name__].##tname##_swigregister(tname)
+def zeFunc( moduleName ):
+  elt = moduleName.split(".")
+  return ( ".".join( elt[:-1] + [ "_{}".format(elt[-1]) ] ) )
+sys.modules[ zeFunc( __name__ ) ].##tname##_swigregister(tname)
+del zeFunc
 }
 %enddef
 

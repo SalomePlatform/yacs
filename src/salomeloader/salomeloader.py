@@ -33,8 +33,8 @@ except ImportError:
 #from sets import Set
 Set=set
 import graph
-import pilot
-import SALOMERuntime
+from salome.yacs import pilot
+from salome.yacs import SALOMERuntime
 
 class UnknownKind(Exception):pass
 

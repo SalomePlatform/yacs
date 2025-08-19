@@ -21,8 +21,8 @@
 #
 import sys
 import glob
-import SALOMERuntime
-import pilot
+from salome.yacs import SALOMERuntime
+from salome.yacs import pilot
 import salomeloader
 from gui import Item
 from gui import Items

@@ -24,9 +24,9 @@ import threading
 import tempfile
 import os
 
-import SALOMERuntime
-import loader
-import pilot
+from salome.yacs import SALOMERuntime
+from salome.yacs import loader
+from salome.yacs import pilot
 
 class TestExec(unittest.TestCase):
 
@@ -185,8 +185,8 @@ class TestExec(unittest.TestCase):
     pass
 
 if __name__ == '__main__':
-  import salome
-  import NamingService
+  from salome.kernel import salome
+  from salome.kernel import NamingService
   import os
   import subprocess
   salome.salome_init()

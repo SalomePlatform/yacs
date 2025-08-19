@@ -94,16 +94,19 @@ SET(TestOptLoop_SOURCES
 SET(LOCAL_TEST_DIR ${SALOME_YACS_INSTALL_TEST}/yacsloader)
 
 OMNIORB_ADD_MODULE(yacsloader_echo "${echo_IDL_FILES}" "${IDL_INCLUDE_DIRS}" "${IDL_LINK_FLAGS}")
-INSTALL(TARGETS yacsloader_echo DESTINATION ${SALOME_INSTALL_LIBS})
+set_target_properties(yacsloader_echo PROPERTIES INSTALL_RPATH "$ORIGIN/../lib:$ORIGIN/../../../../../lib/salome")
 
 ADD_EXECUTABLE(TestYacsLoader ${TestYacsLoader_SOURCES})
 TARGET_LINK_LIBRARIES(TestYacsLoader yacsloader_echo ${TestYacsLoader_LIBRARIES})
+set_target_properties(TestYacsLoader PROPERTIES INSTALL_RPATH "$ORIGIN/../lib:$ORIGIN/../../../../../lib/salome")
 
 ADD_EXECUTABLE(echoSrv ${echoSrv_SOURCES})
 TARGET_LINK_LIBRARIES(echoSrv yacsloader_echo ${echoSrv_LIBRARIES})
+set_target_properties(echoSrv PROPERTIES INSTALL_RPATH "$ORIGIN/../lib:$ORIGIN/../../../../../lib/salome")
 
 ADD_LIBRARY(TestOptLoop ${TestOptLoop_SOURCES})
 TARGET_LINK_LIBRARIES(TestOptLoop yacsloader_echo YACSlibEngine)
+set_target_properties(TestOptLoop PROPERTIES INSTALL_RPATH "$ORIGIN/../lib:$ORIGIN/../../../../../lib/salome")
 
 IF(NOT WIN32)
   SET(SHELL /bin/sh)

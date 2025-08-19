@@ -18,8 +18,8 @@
 #
 
 def buildScheme(fname):
-    import SALOMERuntime
-    import loader
+    from salome.yacs import SALOMERuntime
+    from salome.yacs import loader
     SALOMERuntime.RuntimeSALOME.setRuntime()
     r=SALOMERuntime.getSALOMERuntime()
     p=r.createProc("run")
@@ -99,9 +99,9 @@ assert(efx.getResults()==[[11.110000000000001, 11.22, 11.330000000000002], [93.6
 #ex.RunW(efx.getUndergroundGeneratedGraph())
 #
 """
-import pilot
-import SALOMERuntime
-import loader
+from salome.yacs import pilot
+from salome.yacs import SALOMERuntime
+from salome.yacs import loader
 import os,sys
 zePath=os.path.join(os.environ["KERNEL_ROOT_DIR"],"bin","salome","appliskel")
 sys.path.append(zePath)

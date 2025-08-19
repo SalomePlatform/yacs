@@ -392,7 +392,7 @@ void RuntimeTest::createPythonNodesWithScript()
     ElementaryNode* node = _myRuntime->createScriptNode("",s);
     _nodeMap[s] = node;
     ((InlineNode*) node)->setScript("print('node 13')\n"
-                                     "import eo\n"
+                                     "from salome.kernel import eo\n"
                                      "print(ob)\n"
                                      "o=ob._narrow(eo.Obj)\n"
                                      "print(o)\n"
@@ -1174,6 +1174,8 @@ void RuntimeTest::manualInitInputPort()
 
   }
 }
+
+#include <stdlib.h>
 
 void RuntimeTest::manualExecuteNoThread()
 {

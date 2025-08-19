@@ -66,8 +66,8 @@ class TestEvalYFX(unittest.TestCase):
         pass
 
     def __buildScheme(self,fname):
-        import SALOMERuntime
-        import loader
+        from salome.yacs import SALOMERuntime
+        from salome.yacs import loader
         SALOMERuntime.RuntimeSALOME.setRuntime()
         r=SALOMERuntime.getSALOMERuntime()
         p=r.createProc("run")

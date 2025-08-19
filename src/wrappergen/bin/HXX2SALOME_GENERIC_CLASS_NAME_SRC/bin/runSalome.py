@@ -305,7 +305,7 @@ import orbmodule
 #
 
 def startGUI():
-    import SALOME
+    from salome.kernel import SALOME
     session=clt.waitNS("/Kernel/Session",SALOME.Session)
 
     #
@@ -385,7 +385,7 @@ def startSalome():
     #
     # Attente de la disponibilit?? du Session Server dans le Naming Service
     #
-    import SALOME
+    from salome.kernel import SALOME
     session=clt.waitNS("/Kernel/Session",SALOME.Session)
 
     #

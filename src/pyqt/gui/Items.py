@@ -18,8 +18,8 @@
 #
 
 import sys
-import pilot
-import SALOMERuntime
+from salome.yacs import pilot
+from salome.yacs import SALOMERuntime
 from . import Item
 from . import adapt
 from qt import *

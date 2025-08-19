@@ -18,9 +18,9 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-import pilot
-import SALOMERuntime
-import loader
+from salome.yacs import pilot
+from salome.yacs import SALOMERuntime
+from salome.yacs import loader
 import unittest
 import tempfile
 import os

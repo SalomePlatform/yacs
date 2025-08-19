@@ -63,8 +63,8 @@ SET(SALOME_INSTALL_HEADERS include/salome CACHE PATH "Install path: SALOME heade
 
 IF(SALOME_YACS_USE_SWIG)
   SET(_pydir lib/python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}/site-packages)
-  SET(SALOME_INSTALL_PYTHON ${_pydir}/salome CACHE PATH "Install path: SALOME Python stuff")
-  SET(SALOME_INSTALL_PYTHON_SHARED ${SALOME_INSTALL_PYTHON}/shared_modules CACHE PATH 
+  SET(SALOME_YACS_INSTALL_PYTHON ${_pydir}/salome CACHE PATH "Install path: SALOME Python stuff")
+  SET(SALOME_INSTALL_PYTHON_SHARED ${SALOME_YACS_INSTALL_PYTHON}/shared_modules CACHE PATH 
     "Install path: SALOME Python shared modules")
 ENDIF(SALOME_YACS_USE_SWIG)
 

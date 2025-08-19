@@ -37,7 +37,7 @@
     <foreach name="b1" nbranch="3" type="string" >
       <sinline name="node2" >
         <function name="f">
-          <code>import salome</code>
+          <code>from salome.kernel import salome</code>
           <code>salome.salome_init()</code>
           <code>import PYHELLO_ORB</code>
           <code>print(__container__from__YACS__)</code>

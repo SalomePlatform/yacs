@@ -74,7 +74,7 @@ void SalomeProc::saveSchema(std::string xmlSchemaFile)
 void SalomeProc::init(bool start)
 {
   //initialise Python module salome with the study id given by value
-  std::string cmd="import salome;salome.salome_init()";
+  std::string cmd="from salome.kernel import salome;salome.salome_init()";
   PyGILState_STATE gstate = PyGILState_Ensure(); // acquire the Global Interpreter Lock
   PyRun_SimpleString(cmd.c_str());
   PyGILState_Release(gstate); // Release the Global Interpreter Lock

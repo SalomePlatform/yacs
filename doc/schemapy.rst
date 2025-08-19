@@ -32,7 +32,7 @@ the module catalog::
     import SALOMERuntime
     SALOMERuntime.RuntimeSALOME.setRuntime()
     salome_runtime = SALOMERuntime.getSALOMERuntime()
-    import salome
+    from salome.kernel import salome
     salome.salome_init()
     mc = salome.naming_service.Resolve('/Kernel/ModulCatalog')
     ior = salome.orb.object_to_string(mc)
@@ -710,7 +710,7 @@ The following is an example similar to that given in :ref:`schemaxml`::
   n2=r.createSInlineNode("","node2")
   p.edAddChild(n2)
   n2.setScript("""
-  import salome
+  from salome.kernel import salome
   salome.salome_init()
   import PYHELLO_ORB
   def f(p1):

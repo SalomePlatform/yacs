@@ -158,7 +158,7 @@ class SchemaGenerator():
   Link to Salome for YACS schema generation.
   """
   def __init__(self):
-    import SALOMERuntime
+    from salome.yacs import SALOMERuntime
     SALOMERuntime.RuntimeSALOME.setRuntime()
     self.runtime = SALOMERuntime.getSALOMERuntime()
     self.proc = self.runtime.createProc("GeneratedSchema")
@@ -233,7 +233,7 @@ class SchemaGenerator():
     script = """'''
 {call_stack}
 '''
-import yacstools
+from salome.yacs import yacstools
 study_function = yacstools.getFunction("{file_path}", "{function_name}")
 {result}study_function({parameters})
 """.format(call_stack=stack_info,
@@ -448,7 +448,7 @@ class LeafDecorator():
     if this_module._exec_mode == this_module._default_mode:
       return f
     co = f.__code__
-    import py2yacs
+    from salome.yacs import py2yacs
     props = py2yacs.function_properties(co.co_filename, co.co_name)
     nodeType = LeafNodeType(co.co_filename, co.co_name,
                             props.inputs, props.outputs, self.container_name)

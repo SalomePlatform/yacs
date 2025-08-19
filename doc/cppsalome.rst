@@ -222,7 +222,7 @@ We import the LifeCycle module from the Python window, and use its services to l
 
     >>> import LifeCycleCORBA
     >>> lcc = LifeCycleCORBA.LifeCycleCORBA()
-    >>> import salome
+    >>> from salome.kernel import salome
     >>> salome.salome_init()
     createNewStudy
     []

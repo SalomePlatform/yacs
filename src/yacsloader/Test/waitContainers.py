@@ -20,7 +20,7 @@
 
 import os
 import orbmodule
-import salome_utils
+from salome.kernel import salome_utils
 clt = orbmodule.client()
 FactoryContainer = "/Containers/" + salome_utils.getShortHostName() + "/FactoryServer"
 clt.waitNS(FactoryContainer)

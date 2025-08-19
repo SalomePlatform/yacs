@@ -27,20 +27,21 @@ echo ${TESTDIR}
 
 # this find should work both for make test and for salome test
 mkdir -p ${TESTDIR}/lib/salome
-LIBTEST=`find .. -name libTestComponentLocal.so | head -n 1`
+#LIBTEST=`find .. -name libTestComponentLocal.so | head -n 1`
+LIBTEST=$BASEDIR/../lib/libTestComponentLocal.so
 cp $LIBTEST ${TESTDIR}/lib/salome
 
 export TESTCOMPONENT_ROOT_DIR=${TESTDIR}
 
 cp xmlrun.sh ${TESTDIR}
-cp TestRuntime ${TESTDIR}
-cp runtimeTestEchoSrv ${TESTDIR}
-LIBDIR=$BASEDIR/../../test/lib
+( cd ${TESTDIR} && ln -s $BASEDIR/TestRuntime )
+( cd ${TESTDIR} && ln -s $BASEDIR/runtimeTestEchoSrv )
+LIBDIR=$BASEDIR/../lib
 cd ${TESTDIR}
-LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LIBDIR ./TestRuntime
+LD_LIBRARY_PATH=$LIBDIR ./TestRuntime
 ret=$?
 echo $ret
 cd -
 
-cat /tmp/${USER}/UnitTestsResult
+cat ${TESTDIR}/UnitTestsResult
 exit $ret

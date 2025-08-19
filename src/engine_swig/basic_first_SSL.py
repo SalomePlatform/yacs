@@ -19,14 +19,14 @@
 #
 
 import unittest
-import pilot
-import SALOMERuntime
-import loader
+from salome.yacs import pilot
+from salome.yacs import SALOMERuntime
+from salome.yacs import loader
 import os
 import datetime
-import salome
+from salome.kernel import salome
 import tempfile
-import NamingService
+from salome.kernel import NamingService
 
 class TestBasicFirstSSL(unittest.TestCase):
     def test0(self):

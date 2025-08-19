@@ -19,10 +19,10 @@
 
 import time
 
-import salome
+from salome.kernel import salome
 salome.salome_init()
 
-import YACS_ORB
+from salome.yacs import YACS_ORB
 comp = salome.lcc.FindOrLoadComponent( "YACSContainer","YACS" )
 yacsgen = comp._narrow(YACS_ORB.YACS_Gen)
 

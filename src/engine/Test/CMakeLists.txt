@@ -76,10 +76,12 @@ INSTALL(TARGETS PluginOptEvTest1 EXPORT ${PROJECT_NAME}TargetGroup
 
 ADD_EXECUTABLE(TestEngine ${TestEngine_SOURCES})
 TARGET_LINK_LIBRARIES(TestEngine ${_link_LIBRARIES})
+set_target_properties(TestEngine PROPERTIES INSTALL_RPATH "$ORIGIN/../../../../../lib/salome")
 ADD_TEST(TestEngine TestEngine)
 
 ADD_EXECUTABLE(IntegrationTestEngine ${IntegrationTestEngine_SOURCES})
 TARGET_LINK_LIBRARIES(IntegrationTestEngine ${_link_LIBRARIES})
+set_target_properties(IntegrationTestEngine PROPERTIES INSTALL_RPATH "$ORIGIN/../../../../../lib/salome")
 SALOME_GENERATE_TESTS_ENVIRONMENT(tests_env)
 ADD_TEST(IntegrationTestEngine IntegrationTestEngine)
 SET_TESTS_PROPERTIES(IntegrationTestEngine PROPERTIES ENVIRONMENT "${tests_env}")

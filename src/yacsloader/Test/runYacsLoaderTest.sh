@@ -25,7 +25,7 @@ TESTDIR=$(mktemp -d --suffix=.yacstest)
 export TESTCOMPONENT_ROOT_DIR=${TESTDIR}
 
 mkdir -p ${TESTDIR}/lib/salome
-LIBTEST=$BASEDIR/../runtime/lib/salome/libTestComponentLocal.so
+LIBTEST=$BASEDIR/../lib/libTestComponentLocal.so
 cp $LIBTEST ${TESTDIR}/lib/salome
 LIBDIR=$BASEDIR/../lib
 

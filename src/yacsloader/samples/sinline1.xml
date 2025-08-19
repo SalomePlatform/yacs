@@ -24,7 +24,7 @@
     <!--nodes -->
     <sinline name="node1" >
       <function name="f">
-        <code>import salome</code>
+        <code>from salome.kernel import salome</code>
         <code>salome.salome_init()</code>
         <code>import PYHELLO_ORB</code>
         <code>def f(p1):</code>
@@ -61,7 +61,7 @@
     </sinline>
     <sinline name="node3" >
       <function name="f">
-        <code>import salome</code>
+        <code>from salome.kernel import salome</code>
         <code>salome.salome_init()</code>
         <code>import PYHELLO_ORB</code>
         <code>def f(p1):</code>
@@ -79,7 +79,7 @@
 
     <sinline name="node4" >
       <function name="f">
-        <code>import salome</code>
+        <code>from salome.kernel import salome</code>
         <code>salome.salome_init()</code>
         <code>import HELLO_ORB</code>
         <code>def f(p1):</code>

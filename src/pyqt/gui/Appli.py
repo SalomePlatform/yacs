@@ -29,7 +29,7 @@ from . import Items
 from . import adapt
 from . import Item
 from . import logview
-import pilot
+from salome.yacs import pilot
 import threading
 import time
 from . import CONNECTOR
@@ -287,8 +287,8 @@ class Appli(QMainWindow):
     self.help.insertItem('About &Qt',self.aboutQt)
 
   def initYACS(self):
-    import pilot
-    import loader
+    from salome.yacs import pilot
+    from salome.yacs import loader
     import salomeloader
     self.runtime= pilot.getRuntime()
     self.loader = loader.YACSLoader()

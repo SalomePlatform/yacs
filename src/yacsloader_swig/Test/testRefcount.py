@@ -19,8 +19,8 @@
 #
 
 import unittest
-import pilot
-import SALOMERuntime
+from salome.yacs import pilot
+from salome.yacs import SALOMERuntime
 
 class TestContainerRef(unittest.TestCase):
   def setUp(self):

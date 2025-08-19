@@ -1,6 +1,6 @@
-import pilot
-import SALOMERuntime
-import loader
+from salome.yacs import pilot
+from salome.yacs import SALOMERuntime
+from salome.yacs import loader
 import datetime
 
 fname="testFEDyn.xml"

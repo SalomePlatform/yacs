@@ -22,10 +22,10 @@ import unittest
 import tempfile
 import os
 
-import pilot
-import SALOMERuntime
-import loader
-import salome
+from salome.yacs import pilot
+from salome.yacs import SALOMERuntime
+from salome.yacs import loader
+from salome.kernel import salome
 
 class TestYacsProxy(unittest.TestCase):
   def test0(self):
@@ -77,7 +77,7 @@ class TestYacsProxy(unittest.TestCase):
       po5 = gather2Node.edAddOutputPort("o5",seqpyobj)
       gather2Node.setScript("""
 from glob import glob
-import KernelBasis
+from salome.kernel import KernelBasis
 import os
 _,zeDir = KernelBasis.GetBigObjOnDiskProtocolAndDirectory()
 if len( glob( os.path.join( zeDir, "*.pckl" ) ) ) != 1:

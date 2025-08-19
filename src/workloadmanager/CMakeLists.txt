@@ -37,6 +37,7 @@ SET (_wlm_headers
 
 ADD_LIBRARY(YACSlibWorkloadmanager ${_wlm_sources})
 TARGET_LINK_LIBRARIES(YACSlibWorkloadmanager ${_link_LIBRARIES})
+set_target_properties(YACSlibWorkloadmanager PROPERTIES INSTALL_RPATH "$ORIGIN")
 INSTALL(TARGETS YACSlibWorkloadmanager EXPORT ${PROJECT_NAME}TargetGroup DESTINATION ${SALOME_INSTALL_LIBS})
 INSTALL(FILES ${_wlm_headers} DESTINATION ${SALOME_INSTALL_HEADERS}/workloadmanager)
 

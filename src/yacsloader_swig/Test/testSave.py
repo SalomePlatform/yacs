@@ -24,9 +24,9 @@ import threading
 import tempfile
 import os
 
-import SALOMERuntime
-import loader
-import pilot
+from salome.yacs import SALOMERuntime
+from salome.yacs import loader
+from salome.yacs import pilot
 
 class TestSave(unittest.TestCase):
 
@@ -100,7 +100,7 @@ class TestSave(unittest.TestCase):
             pass
 
 if __name__ == '__main__':
-  import salome
+  from salome.kernel import salome
   import NamingService
   import os
   import subprocess

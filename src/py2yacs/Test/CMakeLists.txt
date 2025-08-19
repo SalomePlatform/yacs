@@ -35,9 +35,11 @@ SET(Py2yacsTest_SOURCES
 
 ADD_EXECUTABLE(TestPy2yacs ${Py2yacsTest_SOURCES})
 TARGET_LINK_LIBRARIES(TestPy2yacs ${_link_LIBRARIES})
+set_target_properties(TestPy2yacs PROPERTIES INSTALL_RPATH "$ORIGIN/../../../../../lib/salome")
 
 ADD_EXECUTABLE(test_py2yacs test_py2yacs.cxx)
 TARGET_LINK_LIBRARIES(test_py2yacs py2yacslib)
+set_target_properties(test_py2yacs PROPERTIES INSTALL_RPATH "$ORIGIN/../../../../../lib/salome")
 
 # For salome test
 IF(NOT WIN32)

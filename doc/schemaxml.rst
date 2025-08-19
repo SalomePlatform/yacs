@@ -883,7 +883,7 @@ The following is an example of a call to the PYHELLO component from a SalomePyth
 
     <sinline name="node1" >
       <function name="f">
-        <code>import salome</code>
+        <code>from salome.kernel import salome</code>
         <code>salome.salome_init()</code>
         <code>import PYHELLO_ORB</code>
         <code>def f(p1):</code>

@@ -110,7 +110,7 @@
     </inline>
     <inline name="node33" >
         <script>
-           <code>import eo</code>
+           <code>from salome.kernel import eo</code>
            <code>obj=obj._narrow(eo.Echo)</code>
            <code>print(p1)</code>
            <code>print(obj)</code>

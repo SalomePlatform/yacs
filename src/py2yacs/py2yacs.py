@@ -115,8 +115,8 @@ class vtest(ast.NodeVisitor):
     ast.NodeVisitor.generic_visit(self, node)
 
 def create_yacs_schema(text, fn_name, fn_args, fn_returns, file_name):
-  import pilot
-  import SALOMERuntime
+  from salome.yacs import pilot
+  from salome.yacs import SALOMERuntime
   SALOMERuntime.RuntimeSALOME.setRuntime()
   runtime = pilot.getRuntime()
   schema = runtime.createProc("schema")

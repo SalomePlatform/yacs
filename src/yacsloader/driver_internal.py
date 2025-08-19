@@ -18,7 +18,7 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-import salome
+from salome.kernel import salome
 import logging
 
 DisplayEntryInCMD = "--display"
@@ -117,8 +117,8 @@ my_replay_on_error = False
 my_replay_dir = ""
 
 def initializeSALOME():
-  import SALOMERuntime
-  import KernelBasis
+  from salome.yacs import SALOMERuntime
+  from salome.kernel import KernelBasis
   global my_runtime_yacs,my_ior_ns,my_runtime_yacs
   if my_runtime_yacs:
     return
@@ -153,7 +153,7 @@ def loadGraph( xmlFileName ):
 
   SALOMERuntime.SalomeProc : YACS graph instance
   """
-  import loader
+  from salome.yacs import loader
   l=loader.YACSLoader()
   p=l.load( xmlFileName )
   return p
@@ -171,9 +171,9 @@ def patchGraph( proc, squeezeMemory, initPorts, xmlSchema, loadStateXmlFile, res
   reset (int) : 
   display (int) :
   """
-  import SALOMERuntime
-  import loader
-  import pilot
+  from salome.yacs import SALOMERuntime
+  from salome.yacs import loader
+  from salome.yacs import pilot
   def parse_init_port(input):
     """
     Returns
@@ -225,7 +225,7 @@ def prepareExecution(proc, isStop, dumpErrorFile):
 
   pilot.ExecutorSwig : Instance of executor
   """
-  import pilot
+  from salome.yacs import pilot
   ex=pilot.ExecutorSwig()
   if isStop:
     logging.info(f"Stop has been activated with {dumpErrorFile}")
@@ -253,8 +253,8 @@ def executeGraph( executor, xmlfilename, proc, dump, finalDump, display, shutdow
   HTopOfAllServersFile (str) : file name (if not empty) containing the result of measure of all servers
   HTopOfAllServersTimeRes (int) : time in second between two measures of CPU/Mem of any of server
   """
-  import SALOMERuntime
-  import pilot
+  from salome.yacs import SALOMERuntime
+  from salome.yacs import pilot
   import os
   import contextlib
 
@@ -292,14 +292,14 @@ def executeGraph( executor, xmlfilename, proc, dump, finalDump, display, shutdow
       self._dump_thread.join()
   
   def MonitoringDirectories( DirectoriesToMonitor ):
-    import SALOME_PyNode
+    from salome.kernel import SALOME_PyNode
     if len( DirectoriesToMonitor ) > 0:
       return [ SALOME_PyNode.GenericPythonMonitoringLauncherCtxMgr( SALOME_PyNode.FileSystemMonitoring(timeRes*1000,zeDir,zeDirRes) ) for zeDir,zeDirRes,timeRes in DirectoriesToMonitor ]
     else:
       return [ ]
 
   def MonitoringThisProcess(HTopOfThisProcessFile,HTopTimeRes):
-    import SALOME_PyNode
+    from salome.kernel import SALOME_PyNode
     if HTopOfThisProcessFile:
       return [ SALOME_PyNode.GenericPythonMonitoringLauncherCtxMgr( SALOME_PyNode.CPUMemoryMonitoring(1000*HTopTimeRes,HTopOfThisProcessFile) ) ]
     else:
@@ -356,7 +356,7 @@ def reprAfterArgParsing( args ):
   return "\n".join( [ f"{EntryFromCoarseEntry(entry)} : {args[key]}" for entry,key in KeyValnARGS ] )
 
 def getArgumentParser():
-  import KernelBasis
+  from salome.kernel import KernelBasis
   import argparse
   parser = argparse.ArgumentParser()
   parser.add_argument('xmlfilename',help = "XML file containing YACS schema to be executed")
@@ -400,7 +400,7 @@ def mainRun( args, xmlFileName):
 
   """
   global my_ior_ns,my_replay_on_error,my_replay_dir
-  from salome_utils import positionVerbosityOfLoggerRegardingState,setVerboseLevel,setVerbose,KernelLogLevelToLogging
+  from salome.kernel.salome_utils import positionVerbosityOfLoggerRegardingState,setVerboseLevel,setVerbose,KernelLogLevelToLogging
   #
   iorNS = args[IORKeyInARGS]
   #
@@ -432,7 +432,7 @@ def mainRun( args, xmlFileName):
   if args[ CustomOverridesInARGS ]:
     try:
       import yacs_driver_overrides
-      import pylauncher
+      from salome.kernel import pylauncher
       allresources = pylauncher.RetrieveRMCppSingleton()# pylauncher.ResourcesManager_cpp singleton representing all resources (pylauncher.ResourceDefinition_cpp) devoted for the computation.
       yacs_driver_overrides.customize( salome.cm, allresources )
     except:

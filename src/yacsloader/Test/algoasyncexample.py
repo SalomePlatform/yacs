@@ -17,7 +17,7 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-import SALOMERuntime
+from salome.yacs import SALOMERuntime
 
 class myalgoasync(SALOMERuntime.OptimizerAlgASync):
   def __init__(self):

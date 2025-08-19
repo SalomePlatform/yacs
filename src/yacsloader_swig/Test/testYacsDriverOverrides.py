@@ -22,10 +22,10 @@ import unittest
 import tempfile
 import os
 
-import pilot
-import SALOMERuntime
-import loader
-import salome
+from salome.yacs import pilot
+from salome.yacs import SALOMERuntime
+from salome.yacs import loader
+from salome.kernel import salome
 import subprocess as sp
 
 class TestYacsDriverOverrides(unittest.TestCase):
@@ -68,7 +68,7 @@ class TestYacsDriverOverrides(unittest.TestCase):
             internalNode = r.createScriptNode("Salome","internalNode")
             internalNode.setExecutionMode("remote")
             internalNode.setContainer(cont)
-            internalNode.setScript("""import KernelBasis
+            internalNode.setScript("""from salome.kernel import KernelBasis
 ret = KernelBasis.tony*ppp
 """)
             fe.edSetNode(internalNode)
@@ -96,7 +96,7 @@ with open("res.txt","w") as f:
 import multiprocessing as mp
                            
 def customize(cm, allresources):
-  cm.SetCodeOnContainerStartUp("import KernelBasis\\nKernelBasis.tony = 5")
+  cm.SetCodeOnContainerStartUp("from salome.kernel import KernelBasis\\nKernelBasis.tony = 5")
   #
   cpy = {elt:allresources[elt] for elt in allresources.GetListOfEntries()}
   allresources.DeleteAllResourcesInCatalog()

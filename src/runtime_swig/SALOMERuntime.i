@@ -23,7 +23,7 @@
 "Implementation of nodes for SALOME platform."
 %enddef
 
-%module(directors="1",docstring=SALOMEDOCSTRING) SALOMERuntime
+%module(directors="1",docstring=SALOMEDOCSTRING,package="salome.yacs") SALOMERuntime
 
 //work around SWIG bug #1863647
 #if SWIG_VERSION >= 0x010336

@@ -24,7 +24,7 @@ import sys
 from omniORB import CORBA
 import CosNaming
 
-import eo
+from salome.kernel import eo
 
 # Initialise the ORB
 orb = CORBA.ORB_init(sys.argv, CORBA.ORB_ID)

@@ -81,7 +81,7 @@ const char PyFuncNode::SCRIPT_FOR_SERIALIZATION[]="import pickle\n"
     "  args=pickle.loads(st)\n"
     "  return args\n";
 
-static char SCRIPT_FOR_BIGOBJECT[]="import SALOME_PyNode\n"
+static char SCRIPT_FOR_BIGOBJECT[]="from salome.kernel import SALOME_PyNode\n"
     "BigObjectOnDiskBase = SALOME_PyNode.BigObjectOnDiskBase\n";
 
 // pickle.load concurrency issue : see https://bugs.python.org/issue12680
@@ -777,7 +777,7 @@ void PythonNode::executeLocal()
   DEBTRACE( "++++++++++++++ PyNode::executeLocal: " << getName() << " ++++++++++++++++++++" );
   {
     AutoGIL agil;
-    std::ostringstream unpxy; unpxy << "from SALOME_PyNode import UnProxyObjectSimpleLocal" << std::endl;
+    std::ostringstream unpxy; unpxy << "from salome.kernel.SALOME_PyNode import UnProxyObjectSimpleLocal" << std::endl;
     DEBTRACE( "---------------PyNode::inputs---------------" );
     list<InputPort *>::iterator iter2;
     for(iter2 = _setOfInputPort.begin(); iter2 != _setOfInputPort.end(); iter2++)

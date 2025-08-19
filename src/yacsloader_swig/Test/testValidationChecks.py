@@ -22,8 +22,8 @@
 import unittest
 import os
 import sys
-import pilot
-import SALOMERuntime
+from salome.yacs import pilot
+from salome.yacs import SALOMERuntime
 
 class TestValidationChecks(unittest.TestCase):
   def test_foreach_links(self):

@@ -28,8 +28,8 @@ CatalogResources="""<?xml version="1.0"?>
 </resources>"""
 
 def buildScheme(fname):
-    import SALOMERuntime
-    import loader
+    from salome.yacs import SALOMERuntime
+    from salome.yacs import loader
     SALOMERuntime.RuntimeSALOME.setRuntime()
     r=SALOMERuntime.getSALOMERuntime()
     p0=r.createProc("run")

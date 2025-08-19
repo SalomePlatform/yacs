@@ -19,14 +19,14 @@
 #
 
 import sys
-import pilot
-import SALOMERuntime
-import salome
-import loader
+from salome.yacs import pilot
+from salome.yacs import SALOMERuntime
+from salome.kernel import salome
+from salome.yacs import loader
 import unittest
 import tempfile
 import os
-from SALOME_PyNode import UnProxyObjectSimple
+from salome.kernel.SALOME_PyNode import UnProxyObjectSimple
 
 dir_test = tempfile.mkdtemp(suffix=".yacstest")
 

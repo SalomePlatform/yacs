@@ -94,15 +94,19 @@ SET(TestComponentLocal_SOURCES
 # --- rules ---
 
 OMNIORB_ADD_MODULE(runtime_echo "${echo_IDL_FILES}" "${IDL_INCLUDE_DIRS}" "${IDL_LINK_FLAGS}")
+set_target_properties(runtime_echo PROPERTIES INSTALL_RPATH "$ORIGIN/../../../../../lib/salome")
 
 ADD_EXECUTABLE(TestRuntime ${TestRuntime_SOURCES})
 TARGET_LINK_LIBRARIES(TestRuntime ${TestRuntime_LIBRARIES})
+set_target_properties(TestRuntime PROPERTIES INSTALL_RPATH "$ORIGIN/../../../../../lib/salome")
 
 ADD_EXECUTABLE(runtimeTestEchoSrv ${runtimeTestEchoSrv_SOURCES})
 TARGET_LINK_LIBRARIES(runtimeTestEchoSrv runtime_echo ${OMNIORB_LIBRARIES})
+set_target_properties(runtimeTestEchoSrv PROPERTIES INSTALL_RPATH "$ORIGIN/../lib:$ORIGIN/../../../../../lib/salome")
 
 ADD_EXECUTABLE(echo_clt ${echo_clt_SOURCES})
 TARGET_LINK_LIBRARIES(echo_clt runtime_echo ${OMNIORB_LIBRARIES})
+set_target_properties(echo_clt PROPERTIES INSTALL_RPATH "$ORIGIN/../lib:$ORIGIN/../../../../../lib/salome")
 
 if(WIN32)
   add_library(TestComponentLocal_lib STATIC  ${TestComponentLocal_SOURCES})
@@ -113,10 +117,11 @@ endif(WIN32)
 ADD_LIBRARY(TestComponentLocal ${TestComponentLocal_SOURCES})
 TARGET_LINK_LIBRARIES(TestComponentLocal YACSlibEngine)
 
+
 # For salome test
 SET(LOCAL_TEST_DIR ${SALOME_YACS_INSTALL_TEST}/runtime)
 INSTALL(TARGETS TestComponentLocal EXPORT ${PROJECT_NAME}TargetGroup
-        DESTINATION ${LOCAL_TEST_DIR}/lib/salome)
+        DESTINATION ${SALOME_YACS_INSTALL_TEST_LIB})
 
 SALOME_GENERATE_TESTS_ENVIRONMENT(tests_env)
 

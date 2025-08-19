@@ -53,10 +53,12 @@ INSTALL(TARGETS YACSDLTest EXPORT ${PROJECT_NAME}TargetGroup
         DESTINATION ${SALOME_YACS_INSTALL_TEST_LIB})
 
 ADD_EXECUTABLE(InitTests ${InitTests_SOURCES})
+set_target_properties(InitTests PROPERTIES INSTALL_RPATH "$ORIGIN/../../../../../lib/salome")
 ADD_TEST(InitTests InitTests)
 
 ADD_EXECUTABLE(TestBases ${TestBases_SOURCES})
 TARGET_LINK_LIBRARIES(TestBases YACSBases ${CPPUNIT_LIBRARIES} ${PTHREAD_LIBRARIES})
+set_target_properties(TestBases PROPERTIES INSTALL_RPATH "$ORIGIN/../../../../../lib/salome")
 SALOME_GENERATE_TESTS_ENVIRONMENT(tests_env)
 ADD_TEST(TestBases TestBases)
 SET_TESTS_PROPERTIES(TestBases PROPERTIES ENVIRONMENT "${tests_env}")
