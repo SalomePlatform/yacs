@@ -357,7 +357,7 @@ def startSalome():
     #
     # Attente de la disponibilit?? du Catalog Server dans le Naming Service
     #
-    import SALOME_ModuleCatalog
+    from salome.kernel import SALOME_ModuleCatalog
     clt.waitNS("/Kernel/ModulCatalog",SALOME_ModuleCatalog.ModuleCatalog)
 
     #
