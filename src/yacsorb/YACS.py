@@ -18,10 +18,10 @@
 #
 
 import sys
-from salome.yacs import YACS_ORB__POA
-from salome.yacs import YACS_ORB
+from salome.kernel import YACS_ORB__POA
+from salome.kernel import YACS_ORB
 from salome.kernel import SALOME_ComponentPy
-import SALOME_DriverPy
+from salome.kernel import SALOME_DriverPy
 
 import threading
 import tempfile
