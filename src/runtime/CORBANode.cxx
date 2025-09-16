@@ -418,7 +418,7 @@ void SalomeNode::connectService()
               _errorDetails=msg;
               throw Exception(msg);
             }
-          catch( const SALOME::SALOME_Exception& ex )
+          catch( const SALOME_CMOD::SALOME_Exception& ex )
             {
               std::string msg="Problem in connectService. ";
               msg += ex.details.text.in();
@@ -630,7 +630,7 @@ void SalomeNode::execute()
         if(nfiles)
           compo->checkInputFilesToService(_method.c_str());
       }
-    catch( const SALOME::SALOME_Exception& ex )
+    catch( const SALOME_CMOD::SALOME_Exception& ex )
       {
         std::string text="Execution problem in checkInputFilesToService: ";
         text += (const char*)ex.details.text;
@@ -666,7 +666,7 @@ void SalomeNode::execute()
     //as the first out argument (don't forget to add it as the first output argument)
     req->set_return_type(CORBA::_tc_void);
     //user exceptions
-    req->exceptions()->add(SALOME::_tc_SALOME_Exception);
+    req->exceptions()->add(SALOME_CMOD::_tc_SALOME_Exception);
     
     DEBTRACE( "+++++++++++++++++SalomeNode::calculation+++++++++++++++++" << _method )
     req->invoke();
@@ -726,7 +726,7 @@ void SalomeNode::execute()
         {
           CORBA::Any anyExcept = userexc->exception(); 
 
-          const SALOME::SALOME_Exception* salexc;
+          const SALOME_CMOD::SALOME_Exception* salexc;
           if(anyExcept >>= salexc)
             {
               DEBTRACE("SALOME_Exception: "<< salexc->details.sourceFile);
@@ -812,7 +812,7 @@ void SalomeNode::execute()
         if(nfiles)
           compo->checkOutputFilesToService(_method.c_str());
       }
-    catch( const SALOME::SALOME_Exception& ex )
+    catch( const SALOME_CMOD::SALOME_Exception& ex )
       {
         std::string text=(const char*)ex.details.text;
         _errorDetails=text;

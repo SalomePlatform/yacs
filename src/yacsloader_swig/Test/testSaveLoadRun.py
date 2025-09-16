@@ -1705,7 +1705,7 @@ o2=2*i1
     ts=p.createType("string","string")
     n0=r.createScriptNode("","n0")
     n0.setScript("""from salome.kernel import SalomeSDSClt
-from salome.kernel import SALOME
+from salome.kernel import SALOME_CMOD
 from salome.kernel import salome
 import unittest
 import pickle
@@ -1737,7 +1737,7 @@ dss.atomicApply([t0])
     n1_sn=n1.edAddInputPort("scopeName",ts)
     n1_vn=n1.edAddInputPort("varName",ts)
     n1.setScript("""from salome.kernel import SalomeSDSClt
-from salome.kernel import SALOME
+from salome.kernel import SALOME_CMOD
 from salome.kernel import salome
 import unittest
 import pickle
@@ -1767,7 +1767,7 @@ assert(str2Obj(dss.waitForMonoThrRev(wk2))==[11,12])""")
     n2_sn=n2.edAddInputPort("scopeName",ts)
     n2_vn=n2.edAddInputPort("varName",ts)
     n2.setScript("""from salome.kernel import SalomeSDSClt
-from salome.kernel import SALOME
+from salome.kernel import SALOME_CMOD
 from salome.kernel import salome
 import unittest
 import pickle

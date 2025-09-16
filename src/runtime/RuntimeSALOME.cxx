@@ -548,7 +548,7 @@ std::vector< std::pair<std::string,int> > RuntimeSALOME::getCatalogOfComputeNode
       ret.push_back(std::pair<std::string,int>(resource_name, nb_cores));
     }
   }
-  catch(SALOME::SALOME_Exception& e)
+  catch(SALOME_CMOD::SALOME_Exception& e)
   {
     std::string message;
     message=e.details.text.in();

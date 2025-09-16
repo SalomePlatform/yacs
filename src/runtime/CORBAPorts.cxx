@@ -50,10 +50,10 @@ void releaseObj(CORBA::Any& data)
   CORBA::Object_var obj;
   if(data >>= CORBA::Any::to_object(obj))
     {
-      SALOME::GenericObj_var gobj;
+      SALOME_CMOD::GenericObj_var gobj;
       try
         {
-          gobj=SALOME::GenericObj::_narrow(obj);
+          gobj=SALOME_CMOD::GenericObj::_narrow(obj);
         }
       catch(const CORBA::SystemException& )
         {
@@ -76,10 +76,10 @@ void registerObj(CORBA::Any& data)
   CORBA::Object_var obj;
   if(data >>= CORBA::Any::to_object(obj))
     {
-      SALOME::GenericObj_var gobj;
+      SALOME_CMOD::GenericObj_var gobj;
       try
         {
-          gobj=SALOME::GenericObj::_narrow(obj);
+          gobj=SALOME_CMOD::GenericObj::_narrow(obj);
         }
       catch(const CORBA::SystemException& )
         {

@@ -324,7 +324,7 @@ void shutdownServers()
       {
         SALOME_NamingService_Wrapper namingService(orb);
         CORBA::Object_var objDSM(namingService.Resolve(SALOMESDS::DataServerManager::NAME_IN_NS));
-        SALOME::DataServerManager_var dsm(SALOME::DataServerManager::_narrow(objDSM));
+        SALOME_CMOD::DataServerManager_var dsm(SALOME_CMOD::DataServerManager::_narrow(objDSM));
         if ( !CORBA::is_nil(dsm) )
           dsm->shutdownScopes();
       }

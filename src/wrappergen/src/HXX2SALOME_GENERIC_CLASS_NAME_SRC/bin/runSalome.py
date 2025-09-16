@@ -305,8 +305,8 @@ import orbmodule
 #
 
 def startGUI():
-    from salome.kernel import SALOME
-    session=clt.waitNS("/Kernel/Session",SALOME.Session)
+    from salome.kernel import SALOME_CMOD
+    session=clt.waitNS("/Kernel/Session",SALOME_CMOD.Session)
 
     #
     # Activation du GUI de Session Server
@@ -385,8 +385,8 @@ def startSalome():
     #
     # Attente de la disponibilit?? du Session Server dans le Naming Service
     #
-    from salome.kernel import SALOME
-    session=clt.waitNS("/Kernel/Session",SALOME.Session)
+    from salome.kernel import SALOME_CMOD
+    session=clt.waitNS("/Kernel/Session",SALOME_CMOD.Session)
 
     #
     # Lancement containers

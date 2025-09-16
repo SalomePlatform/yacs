@@ -1739,10 +1739,10 @@ namespace YACS
               throw YACS::ENGINE::ConversionException(msg.str());
             }
 
-          SALOME::GenericObj_var gobj=SALOME::GenericObj::_narrow(obref);
+          SALOME_CMOD::GenericObj_var gobj=SALOME_CMOD::GenericObj::_narrow(obref);
           if(!CORBA::is_nil(gobj))
             {
-              DEBTRACE("It's a SALOME::GenericObj register it");
+              DEBTRACE("It's a SALOME_CMOD::GenericObj register it");
               gobj->Register();
             }
           else
@@ -2066,7 +2066,7 @@ namespace YACS
                   obref = aSalome_file->_this();
                   aSalome_file->_remove_ref();
                 }
-              catch (const SALOME::SALOME_Exception& e)
+              catch (const SALOME_CMOD::SALOME_Exception& e)
                 {
                   stringstream msg;
                   msg << e.details.text;

@@ -141,7 +141,7 @@ void DistributedPythonNode::load()
               _pynode = dftPyScript;
           }
     }
-    catch( const SALOME::SALOME_Exception& ex )
+    catch( const SALOME_CMOD::SALOME_Exception& ex )
     {
         std::string msg="Exception on remote python node creation ";
         msg += '\n';
@@ -344,7 +344,7 @@ void DistributedPythonNode::dealException(CORBA::Exception *exc, const char *met
         {
           CORBA::Any anyExcept = userexc->exception(); 
 
-          const SALOME::SALOME_Exception* salexc;
+          const SALOME_CMOD::SALOME_Exception* salexc;
           if(anyExcept >>= salexc)
             {
               GURU_YACSTRACE("SALOME_Exception: "<< salexc->details.sourceFile);

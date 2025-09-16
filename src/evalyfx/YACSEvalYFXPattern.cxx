@@ -984,7 +984,7 @@ bool YACSEvalYFXGraphGenCluster::go(const YACSEvalExecParams& params, YACSEvalSe
   {
     sl->launchJob(_jobid);
   }
-  catch (const SALOME::SALOME_Exception & ex)
+  catch (const SALOME_CMOD::SALOME_Exception & ex)
   {
     _errors = ex.details.text.in();
     return false;

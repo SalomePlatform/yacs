@@ -178,7 +178,7 @@ Engines::Container_var PythonEntry::loadPythonAdapter(InlineNode *reqNode, bool&
     else
       assignRemotePyInterpretor(dftPyScript);
   }
-  catch( const SALOME::SALOME_Exception& ex )
+  catch( const SALOME_CMOD::SALOME_Exception& ex )
   {
       std::string msg="Exception on remote python node creation ";
       msg += '\n';
@@ -268,7 +268,7 @@ void PythonEntry::loadRemoteContext(InlineNode *reqNode, Engines::Container_ptr 
           if(!zeInitScriptKey.empty())
             pynode->executeAnotherPieceOfCode(zeInitScriptKey.c_str());
       }
-      catch( const SALOME::SALOME_Exception& ex )
+      catch( const SALOME_CMOD::SALOME_Exception& ex )
       {
           std::string msg="Exception on PythonNode::loadRemote python invocation of initializisation py script !";
           msg += '\n';
@@ -573,11 +573,11 @@ void PythonNode::executeRemote()
   // Execute in remote Python node
   //===========================================================================
   DEBTRACE( "-----------------starting remote python invocation-----------------" );
-  std::unique_ptr<SALOME::SenderByteSeq> resultCorba;
+  std::unique_ptr<SALOME_CMOD::SenderByteSeq> resultCorba;
   try
     {
       //pass outargsname and dict serialized
-      SALOME::SenderByte_var serializationInputRef = serializationInputCorba->_this();
+      SALOME_CMOD::SenderByte_var serializationInputRef = serializationInputCorba->_this();
       DEBUG_YACSTRACE("Before execute first of " << getId());
       _pynode->executeFirst(serializationInputRef);
       //serializationInput and serializationInputCorba are no more needed for server. Release it.
@@ -585,7 +585,7 @@ void PythonNode::executeRemote()
       resultCorba.reset( _pynode->executeSecond(myseq) );
       DEBUG_YACSTRACE("After execute second of " << getId());
     }
-  catch( const SALOME::SALOME_Exception& ex )
+  catch( const SALOME_CMOD::SALOME_Exception& ex )
     {
       std::ostringstream msg; msg << "Exception on remote python invocation" << std::endl << ex.details.text.in() << std::endl;
       msg << "PyScriptNode CORBA ref : ";
@@ -683,7 +683,7 @@ void PythonNode::executeRemote()
               DEBTRACE( "port name: " << p->getName() );
               DEBTRACE( "port kind: " << p->edGetType()->kind() );
               DEBTRACE( "port pos : " << pos );
-              SALOME::SenderByte_var elt = (*resultCorba)[pos];
+              SALOME_CMOD::SenderByte_var elt = (*resultCorba)[pos];
               SeqByteReceiver recv(elt);
               unsigned long length = 0;
               char *resultCorbaC = recv.data(length);
@@ -1324,7 +1324,7 @@ void PyFuncNode::executeRemote()
     {
       resultCorba=_pynode->execute(getFname().c_str(),serializationInputCorba);
     }
-  catch( const SALOME::SALOME_Exception& ex )
+  catch( const SALOME_CMOD::SALOME_Exception& ex )
     {
       std::string msg="Exception on remote python invocation";
       msg += '\n';

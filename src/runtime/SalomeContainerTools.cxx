@@ -374,7 +374,7 @@ void SalomeContainerToolsBase::Start(const std::vector<std::string>& compoNames,
           DEBUG_YACSTRACE("GiveContainer " << str << " mode " << myparams.mode);
           trueCont=contManager->GiveContainer(myparams);
       }
-      catch( const SALOME::SALOME_Exception& ex )
+      catch( const SALOME_CMOD::SALOME_Exception& ex )
       {
           std::string msg="SalomeContainer::start : no existing container : ";
           msg += '\n';
@@ -408,7 +408,7 @@ void SalomeContainerToolsBase::Start(const std::vector<std::string>& compoNames,
           DEBUG_YACSTRACE("GiveContainer " << str << " mode " << myparams.mode);
           trueCont=contManager->GiveContainer(myparams);
     }
-    catch( const SALOME::SALOME_Exception& ex )
+    catch( const SALOME_CMOD::SALOME_Exception& ex )
     {
         std::string msg="SalomeContainer::start : Unable to launch container in Salome : ";
         msg += '\n';
