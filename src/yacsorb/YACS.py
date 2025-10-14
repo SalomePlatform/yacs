@@ -29,7 +29,7 @@ import os
 
 from salome.yacs import SALOMERuntime
 from salome.yacs import loader
-import salomeloader
+from salome.yacs import salomeloader
 from salome.yacs import pilot
 import traceback
 

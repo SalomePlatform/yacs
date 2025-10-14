@@ -257,7 +257,7 @@ void RuntimeSALOME::loadModulCatalog()
 {
   AutoGIL agil;
   const char * SCRIPT = "from salome_kernel import list_of_catalogs_regarding_environement\n"
-"import KernelModuleCatalog\n"
+"from salome.kernel import KernelModuleCatalog\n"
 "KernelModuleCatalog.myModuleCatalog( list_of_catalogs_regarding_environement() )\n";
   PyRun_SimpleString(SCRIPT);
 }
@@ -387,7 +387,7 @@ void RuntimeSALOME::init(long flags, int argc, char* argv[])
                            "orb = CORBA.ORB_init([], CORBA.ORB_ID)\n"
                            "#print(sys.getrefcount(orb))\n"
                            "try:\n"
-                           "  from salome.kernel import SALOME\n"
+                           "  from salome.kernel import SALOME_CMOD\n"
                            "except:\n"
                            "  pass\n"
                            "\n",

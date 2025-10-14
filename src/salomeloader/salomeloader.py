@@ -32,7 +32,7 @@ except ImportError:
 
 #from sets import Set
 Set=set
-import graph
+from salome.yacs import graph
 from salome.yacs import pilot
 from salome.yacs import SALOMERuntime
 

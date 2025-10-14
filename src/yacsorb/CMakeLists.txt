@@ -25,5 +25,5 @@ SET(_python_SCRIPTS
 
 # --- rules ---
 
-SALOME_INSTALL_SCRIPTS("${_python_SCRIPTS}"  ${SALOME_YACS_INSTALL_PYTHON})
+SALOME_INSTALL_SCRIPTS("${_python_SCRIPTS}"  ${_pydir})
 SALOME_CONFIGURE_FILE(__init__.py __init__.py INSTALL ${SALOME_YACS_INSTALL_PYTHON}/salome/yacs)
