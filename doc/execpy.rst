@@ -57,7 +57,7 @@ the name of the file containing the saved state.
 
 For example, proceed as follows to initialise scheme p with the previously saved state::
 
-  import loader
+  from salome.yacs import loader
   loader.loadState(p,"state.xml")
 
 This initialisation is only possible if the structures of the scheme and the saved state are identical.

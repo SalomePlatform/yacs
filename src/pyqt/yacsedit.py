@@ -23,7 +23,7 @@ import sys
 import glob
 from salome.yacs import SALOMERuntime
 from salome.yacs import pilot
-import salomeloader
+from salome.yacs import salomeloader
 from gui import Item
 from gui import Items
 from gui import adapt

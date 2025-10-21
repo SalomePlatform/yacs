@@ -93,7 +93,7 @@ A template python test file was also generated, that can be callable both from p
     
     from os import getenv
     if getenv("SALOMEPATH"):
-        import salome
+        from salome.kernel import salome
         import CALC_ORB
         my_CALC = salome.lcc.FindOrLoadComponent("FactoryServer", "CALC")
         IN_SALOME_GUI = 1

@@ -18,5 +18,5 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-import salomeloader
+from salome.yacs import salomeloader
 salomeloader.main()

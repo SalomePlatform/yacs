@@ -34,7 +34,7 @@ sys.path.insert(0,"@CMAKE_SOURCE_DIR@/src/runtime_swig")
 import unittest
 from salome.yacs import pilot
 from salome.yacs import SALOMERuntime
-import salomeloader
+from salome.yacs import salomeloader
 
 class TestSalomeLoader(unittest.TestCase):
   def setUp(self):

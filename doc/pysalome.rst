@@ -192,7 +192,7 @@ The PYHELLO_ORB module has to be imported before making a request to load the co
 container, to obtain access to methods of the component.  This Python container was made accessible 
 in the runSalome.py by means of the container variable::
 
-    import PYHELLO_ORB
+    from salome.kernel import PYHELLO_ORB
     c=container.load_impl("PYHELLO","PYHELLO")
     c.makeBanner("Christian")
 
@@ -260,7 +260,7 @@ The test function creates the LifeCycle.  It then asks for the PYHELLO component
        """
        import LifeCycleCORBA
        lcc = LifeCycleCORBA.LifeCycleCORBA(clt.orb)
-       import PYHELLO_ORB
+       from salome.kernel import PYHELLO_ORB
        pyhello = lcc.FindOrLoadComponent("FactoryServerPy", "PYHELLO")
        return pyhello
 

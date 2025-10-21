@@ -231,7 +231,7 @@ This script illustrates the use of DSC ports:
 ::
 
  import LifeCycleCORBA
- import Engines
+ from salome.kernel import Engines
  import Ports
  import HelloWorld_idl
 

@@ -17,9 +17,9 @@ The pilot module is used to create calculation schemes.
 These modules must be imported at the beginning of the Python program and YACS must be initialised::
 
     import sys
-    import pilot
-    import SALOMERuntime
-    import loader
+    from salome.yacs import pilot
+    from salome.yacs import SALOMERuntime
+    from salome.yacs import loader
     SALOMERuntime.RuntimeSALOME.setRuntime()
 
 Before YACS modules can be imported, the environment must be correctly configured, as it will be if the 
@@ -29,7 +29,7 @@ SALOME application is used.  Otherwise, the PYTHONPATH environment variable has 
 When you build your own Salome application and use your own modules and components (using YACSGEN for example), you may need to load
 the module catalog::
 
-    import SALOMERuntime
+    from salome.yacs import SALOMERuntime
     SALOMERuntime.RuntimeSALOME.setRuntime()
     salome_runtime = SALOMERuntime.getSALOMERuntime()
     from salome.kernel import salome
@@ -395,9 +395,9 @@ By collecting all previous definition elements, a complete calculation scheme id
 will appear as follows::
 
   import sys
-  import pilot
-  import SALOMERuntime
-  import loader
+  from salome.yacs import pilot
+  from salome.yacs import SALOMERuntime
+  from salome.yacs import loader
   SALOMERuntime.RuntimeSALOME.setRuntime()
   r = pilot.getRuntime()
   p=r.createProc("pr")
@@ -712,7 +712,7 @@ The following is an example similar to that given in :ref:`schemaxml`::
   n2.setScript("""
   from salome.kernel import salome
   salome.salome_init()
-  import PYHELLO_ORB
+  from salome.kernel import PYHELLO_ORB
   def f(p1):
     print __container__from__YACS__
     machine,container=__container__from__YACS__.split('/')

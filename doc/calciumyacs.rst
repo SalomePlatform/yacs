@@ -849,7 +849,7 @@ The following is an extract from the CAS_1.py file that can be found in <path to
 
     
     import LifeCycleCORBA
-    import Engines
+    from salome.kernel import Engines
     import Ports
     import CALCIUM_TESTS
     import orbmodule

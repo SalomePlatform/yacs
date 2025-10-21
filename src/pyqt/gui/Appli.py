@@ -289,7 +289,7 @@ class Appli(QMainWindow):
   def initYACS(self):
     from salome.yacs import pilot
     from salome.yacs import loader
-    import salomeloader
+    from salome.yacs import salomeloader
     self.runtime= pilot.getRuntime()
     self.loader = loader.YACSLoader()
     self.executor = pilot.ExecutorSwig()
