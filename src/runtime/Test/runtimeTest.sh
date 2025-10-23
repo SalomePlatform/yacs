@@ -38,6 +38,12 @@ cp xmlrun.sh ${TESTDIR}
 ( cd ${TESTDIR} && ln -s $BASEDIR/runtimeTestEchoSrv )
 LIBDIR=$BASEDIR/../lib
 cd ${TESTDIR}
+# ---------------------------------------------------------------------
+# Here we overwrite LD_LIBRARY_PATH to include only LIBDIR.
+# All required shared libraries are loaded via the RUNPATH of the binaries
+# Modifying LD_LIBRARY_PATH could interfere with Python/pip environments.
+# See EDF33869
+# ---------------------------------------------------------------------
 LD_LIBRARY_PATH=$LIBDIR ./TestRuntime
 ret=$?
 echo $ret
