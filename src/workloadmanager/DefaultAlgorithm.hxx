@@ -58,7 +58,7 @@ private:
     const ContainerType& type()const { return _ctype;}
   private:
     ContainerType _ctype;
-    const Resource& _resource; // same ref as ResourceLoadInfo
+    const Resource* _resource; // same ref as ResourceLoadInfo
     std::set<unsigned int> _runningContainers; // 0 to max possible containers on this resource
     unsigned int _firstFreeContainer;
   };
