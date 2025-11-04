@@ -130,7 +130,7 @@ void DefaultAlgorithm::liberate(const LaunchInfo& info)
 DefaultAlgorithm::ResourceInfoForContainer::ResourceInfoForContainer
                                 (const Resource& r, const ContainerType& ctype)
 : _ctype(ctype)
-, _resource(r)
+, _resource(&r)
 , _runningContainers()
 , _firstFreeContainer(0)
 {
@@ -138,7 +138,7 @@ DefaultAlgorithm::ResourceInfoForContainer::ResourceInfoForContainer
 
 unsigned int DefaultAlgorithm::ResourceInfoForContainer::maxContainers()const
 {
-  return float(_resource.nbCores) / _ctype.neededCores;
+  return float(_resource->nbCores) / _ctype.neededCores;
 }
 
 unsigned int  DefaultAlgorithm::ResourceInfoForContainer::alloc()
