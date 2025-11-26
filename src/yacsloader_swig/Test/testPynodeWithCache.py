@@ -23,12 +23,12 @@ from salome.yacs import pilot
 from salome.yacs import SALOMERuntime
 from salome.kernel import salome
 from salome.yacs import loader
+from salome.kernel import pylauncher
 import unittest
 import tempfile
 import os
 from salome.kernel.SALOME_PyNode import UnProxyObjectSimple
-
-dir_test = tempfile.mkdtemp(suffix=".yacstest")
+from pathlib import Path
 
 class TestEdit(unittest.TestCase):
 
@@ -40,7 +40,6 @@ class TestEdit(unittest.TestCase):
         pass
 
     def tearDown(self):
-        salome.salome_init()
         cm = salome.lcc.getContainerManager()
         cm.ShutdownContainers()
 
@@ -128,9 +127,19 @@ class TestEdit(unittest.TestCase):
       self.assertEqual(UnProxyObjectSimple( reloaded_res_port.getPyObj() ), 42)
 
 if __name__ == '__main__':
-  file_test = os.path.join(dir_test,"UnitTestsResult")
-  with open(file_test, 'a') as f:
-      f.write("  --- TEST src/yacsloader: testPynodeWithCache.py\n")
-      suite = unittest.makeSuite(TestEdit)
-      result=unittest.TextTestRunner(f, descriptions=1, verbosity=1).run(suite)
-  sys.exit(not result.wasSuccessful())
+  salome.salome_init()
+  # EDF33455 : force single core
+  rmcpp = pylauncher.RetrieveRMCppSingleton()
+  a = rmcpp.GetResourceDefinition("localhost")
+  rmcpp.DeleteAllResourcesInCatalog()
+  res = pylauncher.CreateContainerResource("localhost", applipath=a.applipath, protocol="sh", nbOfNodes=1)
+  res.hostname = a.hostname
+  rmcpp.AddResourceInCatalogNoQuestion( res )
+  # EDF33455 : end of forcing single core
+  with  tempfile.TemporaryDirectory() as dir_test:
+    file_test = Path(dir_test) / "UnitTestsResult"
+    with open( str( file_test ), 'a') as f:
+        f.write("  --- TEST src/yacsloader: testPynodeWithCache.py\n")
+        suite = unittest.makeSuite(TestEdit)
+        result=unittest.TextTestRunner(f, descriptions=1, verbosity=1).run(suite)
+    sys.exit(not result.wasSuccessful())
