@@ -113,7 +113,7 @@ if __name__ == '__main__':
     file_test = os.path.join(dir_test,"UnitTestsResult")
     with open(file_test, 'a') as f:
       f.write("  --- TEST src/yacsloader: testSave.py\n")
-      suite = unittest.makeSuite(TestSave)
+      suite = unittest.TestLoader().loadTestsFromTestCase(TestSave)
       result=unittest.TextTestRunner(f, descriptions=1, verbosity=1).run(suite)
   p.terminate()
   sys.exit(not result.wasSuccessful())

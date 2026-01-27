@@ -140,6 +140,6 @@ if __name__ == '__main__':
     file_test = Path(dir_test) / "UnitTestsResult"
     with open( str( file_test ), 'a') as f:
         f.write("  --- TEST src/yacsloader: testPynodeWithCache.py\n")
-        suite = unittest.makeSuite(TestEdit)
+        suite = unittest.TestLoader().loadTestsFromTestCase(TestEdit)
         result=unittest.TextTestRunner(f, descriptions=1, verbosity=1).run(suite)
     sys.exit(not result.wasSuccessful())

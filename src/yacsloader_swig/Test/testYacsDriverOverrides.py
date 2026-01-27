@@ -118,7 +118,7 @@ if __name__ == '__main__':
     file_test = os.path.join(dir_test,"UnitTestsResult")
     with open(file_test, 'a') as f:
         f.write("  --- TEST src/yacsloader_swig : TestYacsOverrides.py\n")
-        suite = unittest.makeSuite(TestYacsDriverOverrides)
+        suite = unittest.TestLoader().loadTestsFromTestCase(TestYacsDriverOverrides)
         result=unittest.TextTestRunner(f, descriptions=1, verbosity=1).run(suite)
         if not result.wasSuccessful():
            raise RuntimeError("Test failed !")

@@ -138,6 +138,6 @@ if __name__ == '__main__':
   file_test = os.path.join(dir_test,"UnitTestsResult")
   with open(file_test, 'a') as f:
       f.write("  --- TEST src/yacsloader: testProgress.py\n")
-      suite = unittest.makeSuite(TestEdit)
+      suite = unittest.TestLoader().loadTestsFromTestCase(TestEdit)
       result=unittest.TextTestRunner(f, descriptions=1, verbosity=3).run(suite)
   sys.exit(not result.wasSuccessful())

@@ -62,7 +62,7 @@ if __name__ == '__main__':
   file_test = os.path.join(dir_test,"UnitTestsResult")
   with open(file_test, 'a') as f:
         f.write("  --- TEST src/yacsloader: testExec.py\n")
-        suite = unittest.makeSuite(TestExecForEachGeoMesh)
+        suite = unittest.TestLoader().loadTestsFromTestCase(TestExecForEachGeoMesh)
         result = unittest.TextTestRunner(f, descriptions=1, verbosity=1).run(suite)
 
   sys.exit(not result.wasSuccessful())
