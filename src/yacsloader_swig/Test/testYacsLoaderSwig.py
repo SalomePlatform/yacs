@@ -43,7 +43,7 @@ with tempfile.TemporaryDirectory(suffix=".yacstest") as dir_test:
   with open(file_test, 'a') as f:
       f.write("  --- TEST src/yacsloader: testLoader.py\n")
       for zeTest in [TestEdit,TestExec,TestLoader,TestSave]:
-        suite = unittest.makeSuite(zeTest)
+        suite = unittest.TestLoader().loadTestsFromTestCase(zeTest)
         result=unittest.TextTestRunner(f, descriptions=1, verbosity=1).run(suite)
         zeResult = result.wasSuccessful()
         zezeResult = zeResult and zezeResult

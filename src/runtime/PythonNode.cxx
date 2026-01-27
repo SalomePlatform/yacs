@@ -581,7 +581,10 @@ void PythonNode::executeRemote()
       DEBUG_YACSTRACE("Before execute first of " << getId());
       _pynode->executeFirst(serializationInputRef);
       //serializationInput and serializationInputCorba are no more needed for server. Release it.
-      serializationInput.set(nullptr);
+      {
+        AutoGIL agil;
+        serializationInput.set(nullptr);
+      }
       resultCorba.reset( _pynode->executeSecond(myseq) );
       DEBUG_YACSTRACE("After execute second of " << getId());
     }

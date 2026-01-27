@@ -176,7 +176,7 @@ if __name__ == '__main__':
     file_test = os.path.join(dir_test,"UnitTestsResult")
     with open(file_test, 'a') as f:
         f.write("  --- TEST src/yacsloader: testYacsPerfTest0.py\n")
-        suite = unittest.makeSuite(TestYacsPerf0)
+        suite = unittest.TestLoader().loadTestsFromTestCase(TestYacsPerf0)
         result=unittest.TextTestRunner(f, descriptions=1, verbosity=1).run(suite)
         if not result.wasSuccessful():
            raise RuntimeError("Test failed !")

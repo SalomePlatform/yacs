@@ -273,8 +273,8 @@ if __name__ == '__main__':
   file_test = os.path.join(dir_test,"UnitTestsResult")
   with open(file_test, 'a') as f:
       f.write("  --- TEST src/yacsloader: testRefcount.py\n")
-      suite1 = unittest.makeSuite(TestContainerRef)
-      suite2 = unittest.makeSuite(TestTypeCodeRef)
+      suite1 = unittest.TestLoader().loadTestsFromTestCase(TestContainerRef)
+      suite2 = unittest.TestLoader().loadTestsFromTestCase(TestTypeCodeRef)
       suite = unittest.TestSuite((suite1, suite2))
-      result=unittest.TextTestRunner(f, descriptions=1, verbosity=1).run(suite)
+      result=unittest.TextTestRunner(stream = f, descriptions=1, verbosity=1).run(suite)
   sys.exit(not result.wasSuccessful())

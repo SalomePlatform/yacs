@@ -74,7 +74,7 @@ class TestSalomeLoader(unittest.TestCase):
 U = os.getenv('USER')
 with open("/tmp/" + U + "/UnitTestsResult", 'a') as f:
   f.write("  --- TEST src/salomeloader: testSalomeLoader.py\n")
-  suite = unittest.makeSuite(TestSalomeLoader)
+  suite = unittest.TestLoader().loadTestsFromTestCase(TestSalomeLoader)
   result=unittest.TextTestRunner(f, descriptions=1, verbosity=1).run(suite)
 sys.exit(not result.wasSuccessful())
 
