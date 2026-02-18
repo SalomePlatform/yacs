@@ -43,8 +43,10 @@ cd ${TESTDIR}
 # All required shared libraries are loaded via the RUNPATH of the binaries
 # Modifying LD_LIBRARY_PATH could interfere with Python/pip environments.
 # See EDF33869
+# [bos49045] : Addition of $PYTHONHOME/lib because TestRuntime executable spawn child python process.
+# python dyn library must be aligned with python in PATH for non native configurations.
 # ---------------------------------------------------------------------
-LD_LIBRARY_PATH=$LIBDIR ./TestRuntime
+LD_LIBRARY_PATH=$PYTHONHOME/lib:$LIBDIR ./TestRuntime
 ret=$?
 echo $ret
 cd -
