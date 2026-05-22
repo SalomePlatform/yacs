@@ -26,6 +26,7 @@ import loader
 import unittest
 import tempfile
 import os
+import pylauncher
 from SALOME_PyNode import UnProxyObjectSimple
 
 from pathlib import Path
