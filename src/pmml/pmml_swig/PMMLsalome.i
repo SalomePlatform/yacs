@@ -18,7 +18,7 @@
 //
 // Author : InckA
 
-%module PMML
+%module(moduleimport="from salome.yacs import _PMML") PMML
 
 %include std_vector.i
 %include std_string.i
