@@ -46,7 +46,15 @@ cd ${TESTDIR}
 # [bos49045] : Addition of $PYTHONHOME/lib because TestRuntime executable spawn child python process.
 # python dyn library must be aligned with python in PATH for non native configurations.
 # ---------------------------------------------------------------------
+OLD_LD_LIBRARY_PATH=$LD_LIBRARY_PATH
+# First test without original LD_LIBRARY_PATH
 LD_LIBRARY_PATH=$PYTHONHOME/lib:$LIBDIR ./TestRuntime
+ret=$?
+# If failure, test with original LD_LIBRARY_PATH
+if [ $ret != 0 ]; then
+    LD_LIBRARY_PATH=$OLD_LD_LIBRARY_PATH ./TestRuntime
+    ret=$?
+fi
 ret=$?
 echo $ret
 cd -
