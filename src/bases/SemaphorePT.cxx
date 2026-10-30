@@ -21,6 +21,47 @@
 
 using namespace YACS::BASES;
 
+#if defined(__APPLE__)
+
+SemaphorePT::SemaphorePT(int initValue):_value(initValue)
+{
+  pthread_mutex_init(&_mutex, NULL);
+  pthread_cond_init(&_cond, NULL);
+}
+
+SemaphorePT::~SemaphorePT()
+{
+  pthread_cond_destroy(&_cond);
+  pthread_mutex_destroy(&_mutex);
+}
+
+void SemaphorePT::post()
+{
+  pthread_mutex_lock(&_mutex);
+  _value++;
+  pthread_cond_signal(&_cond);
+  pthread_mutex_unlock(&_mutex);
+}
+
+void SemaphorePT::wait()
+{
+  pthread_mutex_lock(&_mutex);
+  while(_value <= 0)
+    pthread_cond_wait(&_cond, &_mutex);
+  _value--;
+  pthread_mutex_unlock(&_mutex);
+}
+
+int SemaphorePT::getValue()
+{
+  pthread_mutex_lock(&_mutex);
+  int val = _value;
+  pthread_mutex_unlock(&_mutex);
+  return val;
+}
+
+#else
+
 SemaphorePT::SemaphorePT(int initValue)
 {
   sem_init(&_semDesc, 0, initValue);
@@ -47,3 +88,5 @@ int SemaphorePT::getValue()
   sem_getvalue(&_semDesc,&val);
   return val;
 }
+
+#endif

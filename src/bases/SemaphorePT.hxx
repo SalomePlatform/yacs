@@ -22,7 +22,13 @@
 
 #include "YACSBasesExport.hxx"
 
+#if defined(__APPLE__)
+// macOS: unnamed POSIX semaphores (sem_init) are not implemented,
+// use a counting semaphore built on a mutex and a condition variable
+#include <pthread.h>
+#else
 #include <semaphore.h>
+#endif
 
 namespace YACS
 {
@@ -37,7 +43,13 @@ namespace YACS
       void wait();
       int getValue();
     private:
+#if defined(__APPLE__)
+      pthread_mutex_t _mutex;
+      pthread_cond_t _cond;
+      int _value;
+#else
       sem_t _semDesc;
+#endif
     };
   }
 }
